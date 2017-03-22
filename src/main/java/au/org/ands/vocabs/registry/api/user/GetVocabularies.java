@@ -20,6 +20,7 @@ import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import au.org.ands.vocabs.registry.api.context.ApiPaths;
 import au.org.ands.vocabs.registry.db.converter.VersionDbSchemaMapper;
 import au.org.ands.vocabs.registry.db.converter.VocabularyDbSchemaMapper;
 import au.org.ands.vocabs.registry.db.dao.VersionDAO;
@@ -33,7 +34,7 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 
 /** REST web services for getting vocabularies. */
-@Path("/api/resource")
+@Path(ApiPaths.API_RESOURCE)
 @Api
 public class GetVocabularies {
 
@@ -49,7 +50,7 @@ public class GetVocabularies {
      * published and deprecated vocabularies.
      * @param includeDraft If true, also include draft vocabularies.
      * @return The list of vocabularies, in either XML or JSON format. */
-    @Path("vocabulary")
+    @Path(ApiPaths.VOCABULARIES)
     @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     @GET
     @ApiOperation(value = "Get all the current vocabularies. This includes "
@@ -106,7 +107,7 @@ public class GetVocabularies {
      * @param vocabularyId The VocabularyId of the vocabulary to be fetched.
      * @return The vocabulary, in either XML or JSON format,
      *      or an error result, if there is no such vocabulary. */
-    @Path("vocabulary/{vocabularyId}")
+    @Path(ApiPaths.VOCABULARIES + "/" + ApiPaths.VOCABULARY_ID)
     @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     @GET
     @ApiOperation(value = "Get a current vocabulary by its id.",
@@ -139,7 +140,7 @@ public class GetVocabularies {
      * @param vocabularyId The VocabularyId of the vocabulary to be checked.
      * @return True, if the vocabulary has a draft instance. False,
      *      if there is no draft instance with that vocabulary id.*/
-    @Path("vocabulary/{vocabularyId}/hasDraft")
+    @Path(ApiPaths.VOCABULARIES + "/" + ApiPaths.VOCABULARY_ID + "/hasDraft")
     @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     @GET
     @ApiOperation(value = "Determine if a vocabulary has a draft instance.",
@@ -160,7 +161,8 @@ public class GetVocabularies {
      * @param vocabularyId The VocabularyId of the versions to be fetched.
      * @return The list of versions, in either XML or JSON format,
      *      or an error result, if there is no such vocabulary. */
-    @Path("vocabulary/{vocabularyId}/version")
+    @Path(ApiPaths.VOCABULARIES + "/" + ApiPaths.VOCABULARY_ID
+            + "/" + ApiPaths.VERSIONS)
     @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     @GET
     @ApiOperation(value = "Get the current versions of a vocabulary, "

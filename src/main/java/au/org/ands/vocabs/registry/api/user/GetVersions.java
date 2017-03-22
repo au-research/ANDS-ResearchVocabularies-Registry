@@ -17,6 +17,7 @@ import javax.ws.rs.core.Response.Status;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import au.org.ands.vocabs.registry.api.context.ApiPaths;
 import au.org.ands.vocabs.registry.db.converter.AccessPointDbSchemaMapper;
 import au.org.ands.vocabs.registry.db.converter.VersionDbSchemaMapper;
 import au.org.ands.vocabs.registry.db.dao.AccessPointDAO;
@@ -28,7 +29,7 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 
 /** REST web services for getting versions. */
-@Path("/api/resource")
+@Path(ApiPaths.API_RESOURCE)
 @Api
 public class GetVersions {
 
@@ -40,7 +41,7 @@ public class GetVersions {
      * @param versionId The VersionId of the version to be fetched.
      * @return The version, in either XML or JSON format,
      *      or an error result, if there is no such version. */
-    @Path("version/{versionId}")
+    @Path(ApiPaths.VERSIONS + "/" + ApiPaths.VERSION_ID)
     @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     @GET
     @ApiOperation(value = "Get a current version by its id.",
@@ -68,7 +69,7 @@ public class GetVersions {
      * @param versionId The VersionId of the vocabulary to be checked.
      * @return True, if the version has a draft instance. False,
      *      if there is no draft instance with that version id.*/
-    @Path("version/{versionId}/hasDraft")
+    @Path(ApiPaths.VERSIONS + "/" + ApiPaths.VERSION_ID + "/hasDraft")
     @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     @GET
     @ApiOperation(value = "Determine if a version has a draft instance.",
@@ -89,7 +90,8 @@ public class GetVersions {
      * @param versionId The VersionId of the access points to be fetched.
      * @return The list of access points, in either XML or JSON format,
      *      or an error result, if there is no such version. */
-    @Path("version/{versionId}/accessPoint")
+    @Path(ApiPaths.VERSIONS + "/" + ApiPaths.VERSION_ID
+            + "/" + ApiPaths.ACCESS_POINTS)
     @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     @GET
     @ApiOperation(value = "Get the current access points of a version, "
@@ -114,7 +116,5 @@ public class GetVersions {
 
         return outputAPs;
     }
-
-
 
 }
