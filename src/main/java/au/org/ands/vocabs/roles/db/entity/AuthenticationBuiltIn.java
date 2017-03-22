@@ -9,6 +9,8 @@ import javax.persistence.EntityListeners;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -19,11 +21,33 @@ import javax.persistence.TemporalType;
 @Entity
 @EntityListeners(ReadOnly.class)
 @Table(name = AuthenticationBuiltIn.TABLE_NAME)
+@NamedQueries({
+    @NamedQuery(
+            name = AuthenticationBuiltIn.CHECK_USERNAME_PASSWORD,
+            query = AuthenticationBuiltIn.CHECK_USERNAME_PASSWORD_QUERY)
+})
 public class AuthenticationBuiltIn {
 
     /** The name of the underlying database table.
      * Use this in the class's {@code @Table} annotation. */
     public static final String TABLE_NAME = "authentication_built_in";
+
+    /** Name of checkUsernamePassword query. */
+    public static final String CHECK_USERNAME_PASSWORD =
+            "checkUsernamePassword";
+    /** Name of checkUsernamePassword query's roleId parameter. */
+    public static final String CHECK_USERNAME_PASSWORD_ROLEID =
+            "roleId";
+    /** Name of checkUsernamePassword query's passphrase SHA1 parameter. */
+    public static final String CHECK_USERNAME_PASSWORD_PASSPHRASE_SHA1 =
+            "passphrase";
+    /** Query of checkUsernamePassword query. */
+    protected static final String CHECK_USERNAME_PASSWORD_QUERY =
+            "SELECT COUNT(entity) > 0 FROM AuthenticationBuiltIn entity"
+            + " WHERE roleId = :"
+            + CHECK_USERNAME_PASSWORD_ROLEID
+            + " AND passphraseSHA1 = :"
+            + CHECK_USERNAME_PASSWORD_PASSPHRASE_SHA1;
 
     /** id. */
     private Integer id;

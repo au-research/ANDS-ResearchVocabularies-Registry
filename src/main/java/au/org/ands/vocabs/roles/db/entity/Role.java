@@ -30,7 +30,10 @@ import javax.persistence.TemporalType;
 @NamedQueries({
     @NamedQuery(
             name = Role.GET_ROLES_FOR_ROLEID,
-            query = Role.GET_ROLES_FOR_ROLEID_QUERY)
+            query = Role.GET_ROLES_FOR_ROLEID_QUERY),
+    @NamedQuery(
+            name = Role.CHECK_ROLE_EXISTS_ENABLED,
+            query = Role.CHECK_ROLE_EXISTS_ENABLED_QUERY)
 })
 public class Role {
 
@@ -49,6 +52,26 @@ public class Role {
             "SELECT role FROM Role role "
             + " WHERE roleId = :"
             + GET_ROLES_FOR_ROLEID_ROLEID
+            + " AND enabled = '1'";
+
+    /** Name of checkRoleExistsEnabled query. */
+    public static final String CHECK_ROLE_EXISTS_ENABLED =
+            "checkRoleExistsEnabled";
+    /** Name of checkRoleExistsEnabled query's roleId parameter. */
+    public static final String CHECK_ROLE_EXISTS_ENABLED_ROLEID =
+            "roleId";
+    /** Name of checkRoleExistsEnabled query's authentication type parameter. */
+    public static final String CHECK_ROLE_EXISTS_ENABLED_AUTHENTICATION_TYPE =
+            "authenticationType";
+    /** Query of checkRoleExistsEnabled query. */
+    protected static final String CHECK_ROLE_EXISTS_ENABLED_QUERY =
+            "SELECT COUNT(role) > 0 FROM Role role "
+            + " WHERE roleId = :"
+            + CHECK_ROLE_EXISTS_ENABLED_ROLEID
+            + " AND roleTypeId ="
+            + " au.org.ands.vocabs.roles.db.entity.RoleTypeId.ROLE_USER"
+            + " AND authenticationServiceId = :"
+            + CHECK_ROLE_EXISTS_ENABLED_AUTHENTICATION_TYPE
             + " AND enabled = '1'";
 
     /** id. */

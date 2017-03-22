@@ -8,7 +8,11 @@ import java.util.Set;
 import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
 
+import org.apache.commons.codec.digest.DigestUtils;
+
 import au.org.ands.vocabs.roles.UserInfo;
+import au.org.ands.vocabs.roles.db.entity.AuthenticationBuiltIn;
+import au.org.ands.vocabs.roles.db.entity.AuthenticationServiceId;
 import au.org.ands.vocabs.roles.db.entity.Role;
 import au.org.ands.vocabs.roles.db.entity.RoleRelation;
 import au.org.ands.vocabs.roles.db.entity.RoleTypeId;
@@ -16,6 +20,10 @@ import au.org.ands.vocabs.roles.utils.RolesConstants;
 
 /** Work with database roles. */
 public final class RolesUtils {
+
+//    /** Logger for this class. */
+//    private static Logger logger = LoggerFactory.getLogger(
+//            MethodHandles.lookup().lookupClass());
 
     /** Private constructor for a utility class. */
     private RolesUtils() {
@@ -25,7 +33,7 @@ public final class RolesUtils {
      * @param id The id.
      * @return The role.
      */
-    public static Role getRolesById(final int id) {
+    public static Role getRoleById(final int id) {
         EntityManager em = DBContext.getEntityManager();
         Role v = em.find(Role.class, id);
         em.close();
@@ -80,6 +88,7 @@ public final class RolesUtils {
                     // We already know about this roleId.
                     continue;
                 }
+//            logger.info("I have not yet seen role: " + role.getFullName());
                 roleIdsUnseen.add(parentRoleId);
                 parentRoles.add(role);
                 if (parentRoleId.equals(RolesConstants.AUTH_FUNCTION_SUPERUSER)
@@ -109,6 +118,57 @@ public final class RolesUtils {
         userInfo.setFullName(role.getName());
         updateRoles(roleId, userInfo);
         return userInfo;
+    }
+
+    /** Check a username/password combination against the built-in
+     * roles.
+     * @param username The username to be used as a role id to check.
+     * @param password The password to be used as a check. Plain text.
+     * @return True, if the username/password combination corresponds
+     *      to a valid built-in role.
+     */
+    public static boolean isValidBuiltinRole(final String username,
+            final String password) {
+        EntityManager em = DBContext.getEntityManager();
+        TypedQuery<Boolean> query =
+                em.createNamedQuery(
+                        AuthenticationBuiltIn.CHECK_USERNAME_PASSWORD,
+                        Boolean.class).
+                setParameter(
+                        AuthenticationBuiltIn.CHECK_USERNAME_PASSWORD_ROLEID,
+                        username).
+                setParameter(
+                        AuthenticationBuiltIn.
+                        CHECK_USERNAME_PASSWORD_PASSPHRASE_SHA1,
+                        DigestUtils.sha1Hex(password));
+        Boolean isValid = query.getSingleResult();
+        em.close();
+        return isValid;
+    }
+
+    /** Check a username/authentication type combination against the
+     * user roles.
+     * @param username The username to be used as a role id to check.
+     * @param authenticationType The authentication type to be used as a check.
+     * @return True, if the username/authentication type combination corresponds
+     *      to a valid user role.
+     */
+    public static boolean isValidRole(final String username,
+            final AuthenticationServiceId authenticationType) {
+        EntityManager em = DBContext.getEntityManager();
+        TypedQuery<Boolean> query =
+                em.createNamedQuery(
+                        Role.CHECK_ROLE_EXISTS_ENABLED,
+                        Boolean.class).
+                setParameter(
+                        Role.CHECK_ROLE_EXISTS_ENABLED_ROLEID,
+                        username).
+                setParameter(
+                        Role.CHECK_ROLE_EXISTS_ENABLED_AUTHENTICATION_TYPE,
+                        authenticationType);
+        Boolean isValid = query.getSingleResult();
+        em.close();
+        return isValid;
     }
 
 }
