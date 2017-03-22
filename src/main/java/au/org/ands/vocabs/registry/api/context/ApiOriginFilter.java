@@ -10,8 +10,11 @@ import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.container.ContainerResponseFilter;
+
+import au.org.ands.vocabs.registry.api.auth.AuthConfig;
 
 /** Servlet filter for the registry API that addresses CORS issues.
  * We could have done this as a {@link ContainerResponseFilter},
@@ -35,14 +38,29 @@ public class ApiOriginFilter implements Filter {
     public void doFilter(final ServletRequest request,
             final ServletResponse response,
             final FilterChain chain) throws IOException, ServletException {
-        HttpServletResponse hsr = (HttpServletResponse) response;
-        hsr.addHeader("Access-Control-Allow-Origin", "*");
+        HttpServletRequest hsRequest = (HttpServletRequest) request;
+        String origin = hsRequest.getHeader("Origin");
+        // If no Origin header was provided, no CORS applies.
+        if (origin != null) {
+            HttpServletResponse hsResponse = (HttpServletResponse) response;
+//            hsResponse.addHeader("Access-Control-Allow-Origin", "*");
+            // Send back the origin we got ...
+            hsResponse.addHeader("Access-Control-Allow-Origin", origin);
+            // ... because we allow credentials.
+            hsResponse.addHeader("Access-Control-Allow-Credentials", "true");
+            // And see the advice at
+            // https://www.w3.org/TR/cors/#resource-implementation
+            // to add a header "Vary: Origin" in this case.
+            hsResponse.addHeader("Vary", "Origin");
         // Future work, if needed: add additional headers to
         // control methods and other headers:
 //        hsr.addHeader("Access-Control-Allow-Methods",
 //                      "GET, POST, DELETE, PUT");
-//        hsr.addHeader("Access-Control-Allow-Headers",
-//                      "Content-Type, api_key, Authorization");
+            hsResponse.addHeader("Access-Control-Allow-Headers",
+//                "Content-Type, api_key, Authorization");
+                    "Content-Type, Authorization, "
+                    + AuthConfig.RDA_COOKIE_NAME);
+        }
         chain.doFilter(request, response);
     }
 

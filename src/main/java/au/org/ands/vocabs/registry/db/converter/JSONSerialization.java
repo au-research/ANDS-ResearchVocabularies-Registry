@@ -76,4 +76,17 @@ public final class JSONSerialization {
         }
     }
 
+    /** Serialize an object into a String in JSON format.
+     * @param object The Object to be serialized.
+     * @return The serialization as a JSON String of object.
+     */
+    public static String serializeObjectAsJsonString(final Object object) {
+        try {
+            return jsonMapper.writeValueAsString(object);
+        } catch (IOException e) {
+            LOGGER.error("Unable to serialize as JSON", e);
+            return null;
+        }
+    }
+
 }

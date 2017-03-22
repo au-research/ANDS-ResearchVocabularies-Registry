@@ -2,16 +2,20 @@
 
 package au.org.ands.vocabs.registry.api.context;
 
+import io.swagger.annotations.ApiKeyAuthDefinition;
+import io.swagger.annotations.BasicAuthDefinition;
 import io.swagger.annotations.Contact;
 import io.swagger.annotations.ExternalDocs;
 import io.swagger.annotations.Info;
 import io.swagger.annotations.License;
+import io.swagger.annotations.SecurityDefinition;
 import io.swagger.annotations.SwaggerDefinition;
 import io.swagger.annotations.Tag;
 
 /** Empty interface that serves as as an anchor to which the
  * top-level Swagger definition is attached.
  */
+@SuppressWarnings("checkstyle:InterfaceIsType")
 @SwaggerDefinition(
         info = @Info(
                 description = "Public access to the Vocabulary Registry API",
@@ -50,7 +54,30 @@ import io.swagger.annotations.Tag;
         },
         externalDocs = @ExternalDocs(
                 value = "Research Vocabularies Australia",
-                url = "http://documentation.ands.org.au/")
+                url = "http://documentation.andsorg.au/"),
+        securityDefinition = @SecurityDefinition(
+                basicAuthDefinitions = {
+                        @BasicAuthDefinition(key = SwaggerInterface.BASIC_AUTH)
+                        },
+                apiKeyAuthDefinitions = {
+                        @ApiKeyAuthDefinition(
+                                key = SwaggerInterface.API_KEY_AUTH,
+                                name = "ands_authentication",
+                                in =
+                                ApiKeyAuthDefinition.ApiKeyLocation.HEADER,
+                                description = "RDA cookie passed as header")}
+                )
 )
 public interface SwaggerInterface {
+
+    /** The name of the basic authentication security definition.
+     * Use this within
+     * {@link io.swagger.annotations.Authorization} annotations. */
+    String BASIC_AUTH = "basicAuth";
+
+    /** The name of the API key authentication security definition.
+     * Use this within
+     * {@link io.swagger.annotations.Authorization} annotations. */
+    String API_KEY_AUTH = "apiKeyAuth";
+
 }
