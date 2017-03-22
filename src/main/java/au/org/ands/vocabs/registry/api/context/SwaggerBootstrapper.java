@@ -9,6 +9,7 @@ import javax.servlet.http.HttpServlet;
 import com.fasterxml.jackson.databind.AnnotationIntrospector;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationModule;
 
@@ -51,9 +52,15 @@ public class SwaggerBootstrapper extends HttpServlet {
         // Need to create an instance of an anonymous class that
         // overrides the _addEnumProps() method!
         // (Could also be done as a separate subclass, of course.)
-        final AnnotationIntrospector introspector =
+        final AnnotationIntrospector jaxbIntrospector =
                 new JaxbAnnotationIntrospector(mapper.getTypeFactory());
-        mapper.setAnnotationIntrospector(introspector);
+        // Also need Jackson's introspector, as it is used for
+        // swagger-core's own enums (e.g., io.swagger.models.auth.In).
+        final AnnotationIntrospector jacksonIntrospector =
+                new JacksonAnnotationIntrospector();
+        mapper.setAnnotationIntrospector(
+                AnnotationIntrospector.pair(jacksonIntrospector,
+                        jaxbIntrospector));
 
         ModelResolver modelResolver = new ModelResolver(mapper) {
             @Override
@@ -77,7 +84,7 @@ public class SwaggerBootstrapper extends HttpServlet {
                         // introspector, which is Swagger's, not ours.
 //                        n = _intr.findEnumValue(en);
                         // Instead, use the introspector we created above.
-                        n = introspector.findEnumValue(en);
+                        n = jaxbIntrospector.findEnumValue(en);
                     }
                     if (property instanceof StringProperty) {
                         StringProperty sp = (StringProperty) property;
