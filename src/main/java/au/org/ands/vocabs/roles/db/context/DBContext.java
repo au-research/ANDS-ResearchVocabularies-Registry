@@ -5,7 +5,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 
-import au.org.ands.vocabs.roles.db.utils.RolesProperties;
+import au.org.ands.vocabs.roles.utils.RolesProperties;
 
 /** Provide access to the roles database. */
 public final class DBContext {

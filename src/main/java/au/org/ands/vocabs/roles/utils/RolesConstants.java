@@ -1,6 +1,6 @@
 /** See the file "LICENSE" for the full license governing this code. */
 
-package au.org.ands.vocabs.roles.db.utils;
+package au.org.ands.vocabs.roles.utils;
 
 /** Constants used within values stored in the tables of the roles database.
  */

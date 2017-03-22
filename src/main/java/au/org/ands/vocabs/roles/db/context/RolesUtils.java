@@ -12,7 +12,7 @@ import au.org.ands.vocabs.roles.UserInfo;
 import au.org.ands.vocabs.roles.db.entity.Role;
 import au.org.ands.vocabs.roles.db.entity.RoleRelation;
 import au.org.ands.vocabs.roles.db.entity.RoleTypeId;
-import au.org.ands.vocabs.roles.db.utils.RolesConstants;
+import au.org.ands.vocabs.roles.utils.RolesConstants;
 
 /** Work with database roles. */
 public final class RolesUtils {

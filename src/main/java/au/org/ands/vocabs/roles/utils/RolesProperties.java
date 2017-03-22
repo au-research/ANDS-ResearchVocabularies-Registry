@@ -1,5 +1,5 @@
 /** See the file "LICENSE" for the full license governing this code. */
-package au.org.ands.vocabs.roles.db.utils;
+package au.org.ands.vocabs.roles.utils;
 
 import java.io.File;
 import java.io.FileInputStream;
