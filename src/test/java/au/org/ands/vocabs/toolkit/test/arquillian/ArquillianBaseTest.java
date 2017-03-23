@@ -141,6 +141,12 @@ public class ArquillianBaseTest extends Arquillian {
                 // context shutdown when this is commented out.
                 .filter(p -> !p.getParent().getFileName().
                         toString().startsWith("mysql"))
+                // Don't include Hibernate's cdi-api and Jersey's
+                // CDI implementation, as we get them from Weld.
+                .filter(p -> !p.getFileName().
+                        toString().startsWith("cdi-api"))
+                .filter(p -> !p.getFileName().
+                        toString().startsWith("jersey-cdi1x"))
                 .forEach(p -> war.addAsLibrary(p.toFile()));
             // Add all the needed JAR files from the libtest directory.
             Files.walk(Paths.get("libtest"))

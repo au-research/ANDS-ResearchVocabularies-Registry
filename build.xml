@@ -648,6 +648,8 @@
         com.mysql.jdbc.exceptions.jdbc4.CommunicationsException.
       exclude name="mysql*/*.jar"  -->
       <exclude name="mysql*/*.jar" />
+      <exclude name="*/cdi-api*.jar" />
+      <exclude name="*/jersey-cdi*.jar" />
       <exclude name="**/*javadoc*.jar" />
       <exclude name="**/*sources*.jar" />
     </fileset>
