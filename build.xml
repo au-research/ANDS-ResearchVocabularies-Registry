@@ -43,6 +43,9 @@
   <property name="jacoco-output" value="jacoco.exec" />
   <property name="jacoco-report" value="jacoco-report" />
 
+  <property name="tomcat-managed"
+            value="tomcatmanaged/apache-tomcat-7.0.69/" />
+
   <!-- Task definitions -->
 
   <taskdef
@@ -117,6 +120,12 @@
     <delete file="conf/toolkit-h2-bamboo.properties" />
     <delete file="conf/registry-h2-bamboo.properties" />
     <delete file="conf/roles-h2-bamboo.properties" />
+    <!-- Work files and log files within managed Tomcat -->
+    <delete dir="${tomcat-managed}/conf/Catalina" />
+    <delete dir="${tomcat-managed}/work/Catalina" />
+    <delete>
+      <fileset dir="${tomcat-managed}/logs" includes="*"/>
+    </delete>
   </target>
 
   <!-- xjc plugin to make generated fields private -->
