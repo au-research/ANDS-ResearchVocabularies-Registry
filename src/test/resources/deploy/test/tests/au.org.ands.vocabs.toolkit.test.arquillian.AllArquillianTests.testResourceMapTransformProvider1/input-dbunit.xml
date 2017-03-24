@@ -27,7 +27,7 @@
                 {
                   ''type'': ''HARVEST'',
                   ''provider_type'': ''File'',
-                  ''file_path'': ''src/test/resources/input/au.org.ands.vocabs.toolkit.test.arquillian.AllArquillianTests.testResourceMapTransformProvider1/test-data1.ttl''
+                  ''file_path'': ''{CLASSES}/test/tests/au.org.ands.vocabs.toolkit.test.arquillian.AllArquillianTests.testResourceMapTransformProvider1/test-data1.ttl''
                 },
                 {
                   ''type'': ''IMPORT'',

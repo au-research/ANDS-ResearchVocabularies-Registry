@@ -148,6 +148,7 @@ public class ArquillianBaseTest extends Arquillian {
                 .filter(p -> !p.getFileName().
                         toString().startsWith("jersey-cdi1x"))
                 .forEach(p -> war.addAsLibrary(p.toFile()));
+
             // Add all the needed JAR files from the libtest directory.
             Files.walk(Paths.get("libtest"))
                 .filter(Files::isRegularFile)
@@ -167,6 +168,20 @@ public class ArquillianBaseTest extends Arquillian {
                 .forEach(p -> war.addAsResource(p.toFile(),
                         p.toString().substring(
                                 RESOURCES_DEPLOY_PATH.length())));
+
+            // Add certain JAR files from the libdev directory.
+            // For now, that means Mean Bean and DbUnit.
+            Files.walk(Paths.get("libdev"))
+                .filter(Files::isRegularFile)
+                .filter(p -> p.getFileName().toString().endsWith(".jar"))
+                .filter(p -> {
+                    String fileName = p.getParent().getFileName().
+                            toString();
+                    return (fileName.startsWith("meanbean")
+                            || fileName.startsWith("dbunit"));
+                })
+                .forEach(p -> war.addAsLibrary(p.toFile()));
+
             // Uncomment the following, if log4j configuration required.
             //war.addAsResource(new File("conf/logging.properties"),
             //        "logging.properties");

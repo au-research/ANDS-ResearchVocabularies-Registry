@@ -46,6 +46,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import au.org.ands.vocabs.toolkit.db.DBContext;
 import au.org.ands.vocabs.toolkit.test.utils.NetClientUtils;
+import au.org.ands.vocabs.toolkit.utils.ApplicationContextListener;
 
 /** Support methods for testing with Arquillian. */
 public final class ArquillianTestUtils {
@@ -80,6 +81,31 @@ public final class ArquillianTestUtils {
                     + filename);
         }
         return inputStream;
+    }
+
+    /** Get the absolute path to {@code /WEB-INF/classes} within the web app.
+     * Only works within the container.
+     * @return The absolute path to the {@code /WEB-INF/classes} directory
+     * within the running webapp.
+     */
+    public static String getClassesPath() {
+        return ApplicationContextListener.getServletContext().
+                getRealPath("/WEB-INF/classes");
+    }
+
+    /** Add our standard replacement settings to the dataset.
+     * For now, we support: replacing two consecutive apostrophes ({@code ''})
+     * with a double-quote ({@code "}), and replacing the string
+     * {@code {CLASSES}} with the absolute path to the {@code /WEB-INF/classes}
+     * directory in the running webapp.
+     * @param dataset The dataset to which the replacement settings
+     * are to be added.
+     */
+    public static void addReplacementSubstringsToDataset(
+            final ReplacementDataSet dataset) {
+        dataset.addReplacementSubstring("''", "\"");
+        String classesPath = getClassesPath();
+        dataset.addReplacementSubstring("{CLASSES}", classesPath);
     }
 
     /* Methods for the Toolkit database. */
@@ -181,7 +207,7 @@ public final class ArquillianTestUtils {
                             + testName
                             + "/input-dbunit.xml"));
             ReplacementDataSet dataset = new ReplacementDataSet(xmlDataset);
-            dataset.addReplacementSubstring("''", "\"");
+            addReplacementSubstringsToDataset(dataset);
             logger.info("doing clean_insert");
             DatabaseOperation.CLEAN_INSERT.execute(connection, dataset);
             // Force commit at the JDBC level, as closing the EntityManager
@@ -211,6 +237,7 @@ public final class ArquillianTestUtils {
     public static void loadDbUnitTestFileAsUpdate(final String testName,
             final String filename) throws
         DatabaseUnitException, HibernateException, IOException, SQLException {
+
         EntityManager em = DBContext.getEntityManager();
         try (Connection conn = em.unwrap(SessionImpl.class).connection()) {
 
@@ -225,7 +252,7 @@ public final class ArquillianTestUtils {
                             + testName
                             + "/" + filename));
             ReplacementDataSet dataset = new ReplacementDataSet(xmlDataset);
-            dataset.addReplacementSubstring("''", "\"");
+            addReplacementSubstringsToDataset(dataset);
             logger.info("doing update");
             DatabaseOperation.UPDATE.execute(connection, dataset);
             // Force commit at the JDBC level, as closing the EntityManager
@@ -379,7 +406,7 @@ public final class ArquillianTestUtils {
                 .build(getResourceAsInputStream(
                         filename));
         ReplacementDataSet dataset = new ReplacementDataSet(xmlDataset);
-        dataset.addReplacementSubstring("''", "\"");
+        addReplacementSubstringsToDataset(dataset);
         return dataset;
     }
 
@@ -477,7 +504,7 @@ public final class ArquillianTestUtils {
                             + testName
                             + "/input-roles-dbunit.xml"));
             ReplacementDataSet dataset = new ReplacementDataSet(xmlDataset);
-            dataset.addReplacementSubstring("''", "\"");
+            addReplacementSubstringsToDataset(dataset);
             logger.info("doing clean_insert");
             DatabaseOperation.CLEAN_INSERT.execute(connection, dataset);
             // Force commit at the JDBC level, as closing the EntityManager

@@ -280,6 +280,8 @@ public class AllArquillianTests extends ArquillianBaseTest {
     public final void testJsonTreeTransformProvider1() throws
         DatabaseUnitException, HibernateException, IOException, SQLException {
         logger.info("In testJsonTreeTransformProvider1()");
+        String testsPath = ArquillianTestUtils.getClassesPath()
+                + "/test/tests/";
         ArquillianTestUtils.clearDatabase();
         ArquillianTestUtils.loadDbUnitTestFile(
                 "testJsonTreeTransformProvider1");
@@ -297,7 +299,7 @@ public class AllArquillianTests extends ArquillianBaseTest {
                 "JsonTreeTransformProvider failed on task 1");
         String conceptsTreeFilename = results.get("concepts_tree");
         ArquillianTestUtils.compareJson(conceptsTreeFilename,
-                "src/test/resources/input/"
+                testsPath
                 + "au.org.ands.vocabs.toolkit.test.arquillian."
                 + "AllArquillianTests.testJsonTreeTransformProvider1/"
                 + "test-data1-concepts_tree.json");
@@ -314,7 +316,7 @@ public class AllArquillianTests extends ArquillianBaseTest {
         conceptsTreeFilename = results.get("concepts_tree");
         // Note the use of the same correct output as the previous test.
         ArquillianTestUtils.compareJson(conceptsTreeFilename,
-                "src/test/resources/input/"
+                testsPath
                 + "au.org.ands.vocabs.toolkit.test.arquillian."
                 + "AllArquillianTests.testJsonTreeTransformProvider1/"
                 + "test-data1-concepts_tree.json");
@@ -368,7 +370,7 @@ public class AllArquillianTests extends ArquillianBaseTest {
                 "JsonTreeTransformProvider failed on task 5");
         conceptsTreeFilename = results.get("concepts_tree");
         ArquillianTestUtils.compareJson(conceptsTreeFilename,
-                "src/test/resources/input/"
+                testsPath
                 + "au.org.ands.vocabs.toolkit.test.arquillian."
                 + "AllArquillianTests.testJsonTreeTransformProvider1/"
                 + "test-data5-concepts_tree.json");
