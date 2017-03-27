@@ -256,9 +256,13 @@
          >
       <!-- Option -Xpf to use our xjc plugin for private fields,
            and classpath element to tell xjc how to find it.
+           Option -npa to move the namespace property down to
+           the class level, where Swagger processing can find them.
+           Unfortunately, swagger-core does not (yet) support
+           reading package-level annotations.
       -->
       <classpath location="${xjc-private-fields-plugin-jar}" />
-      <arg line="-Xpf"/>
+      <arg line="-Xpf -npa"/>
       <binding dir="src/main/jaxb">
         <include name="**/*.xjb"/>
       </binding>
@@ -273,7 +277,17 @@
       <fileset dir="src/jaxb-gen/java"
                includes="**/*.java" />
     </replaceregexp>
-    <touch file="src/jaxb-gen/timestamp" />
+    <!-- Copy in hand-written package-info.java files, since
+         we had to suppress the auto-generated ones with the "-npa"
+         option.
+    -->
+    <copy
+      file="src/main/jaxb/au.org.ands.vocabs.registry.db.internal.package-info.java"
+      tofile="src/jaxb-gen/java/au/org/ands/vocabs/registry/db/internal/package-info.java" />
+    <copy
+      file="src/main/jaxb/au.org.ands.vocabs.registry.schema.vocabulary201701.package-info.java"
+      tofile="src/jaxb-gen/java/au/org/ands/vocabs/registry/schema/vocabulary201701/package-info.java" />
+        <touch file="src/jaxb-gen/timestamp" />
   </target>
 
   <!-- Compilation of source code -->
