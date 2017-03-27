@@ -413,11 +413,6 @@
 			<attribute name="org.eclipse.jst.component.nondependency" value=""/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="libdev/arquillian-1.1.11/arquillian-tomcat-embedded-7-1.0.0.CR7.jar">
-		<attributes>
-			<attribute name="org.eclipse.jst.component.nondependency" value=""/>
-		</attributes>
-	</classpathentry>
 	<classpathentry kind="lib" path="libdev/arquillian-1.1.11/arquillian-container-spi-1.1.11.Final.jar">
 		<attributes>
 			<attribute name="org.eclipse.jst.component.nondependency" value=""/>
