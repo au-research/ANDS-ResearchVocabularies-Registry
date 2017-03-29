@@ -99,6 +99,8 @@ public class AuthConfig implements ContextResolver<Config> {
                   AuthConstants.MAY_HAVE_CREDENTIALS);
           configInstance.getClients().setUrlResolver(
                 new JaxRsUrlResolver());
+          configInstance.setHttpActionAdapter(
+                  AuthHttpActionAdapter.INSTANCE);
 
         return configInstance;
     }
