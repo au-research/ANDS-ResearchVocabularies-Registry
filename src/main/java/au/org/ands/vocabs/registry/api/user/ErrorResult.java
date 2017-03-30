@@ -2,7 +2,11 @@
 
 package au.org.ands.vocabs.registry.api.user;
 
+import java.util.List;
+
 import javax.xml.bind.annotation.XmlRootElement;
+
+import org.glassfish.jersey.server.validation.ValidationError;
 
 /** Class for representing an error result for an API call. */
 @SuppressWarnings("checkstyle:DesignForExtension")
@@ -11,6 +15,9 @@ public class ErrorResult {
 
     /** The text of the error message. */
     private String message;
+
+    /** Constraint violations. */
+    private List<ValidationError> constraintViolations;
 
     /** Default constructor.
      */
@@ -36,6 +43,21 @@ public class ErrorResult {
      */
     public String getMessage() {
         return message;
+    }
+
+    /** Set the constraint violations.
+     * @param aConstraintViolations The constraint violations.
+     */
+    public void setConstraintViolations(
+            final List<ValidationError> aConstraintViolations) {
+        constraintViolations = aConstraintViolations;
+    }
+
+    /** Get the constraint violations.
+     * @return The contraint violations.
+     */
+    public List<ValidationError> getConstraintViolations() {
+        return constraintViolations;
     }
 
 }

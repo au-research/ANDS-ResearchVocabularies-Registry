@@ -324,6 +324,11 @@
       <src path="src/test/java" />
       -->
       <classpath refid="compile-main.classpath" />
+      <!-- Add -parameters for use by Hibernate Validator's
+           ReflectionParameterNameProvider, which we mention
+           in validation.xml. -->
+      <compilerarg line="-parameters" />
+      <!-- Options for MapStruct. -->
       <compilerarg
           line="-processorpath ${mapstruct-processor}"/>
       <compilerarg line="-s ${mapstruct-sources}"/>
