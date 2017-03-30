@@ -2,6 +2,8 @@
 
 package au.org.ands.vocabs.registry.api.context;
 
+import javax.annotation.Priority;
+import javax.ws.rs.Priorities;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
@@ -15,6 +17,9 @@ import au.org.ands.vocabs.registry.api.user.ErrorResult;
  * For the {@link ExceptionMapper} that handles
  * errors with XML input data, see {@link BadRequestExceptionMapper}.
  */
+// @Priority specified, in order to override the JsonParseExceptionMapper
+// classes that come with Jackson.
+@Priority(Priorities.ENTITY_CODER)
 @Provider
 public class JsonParseExceptionMapper
     implements ExceptionMapper<JsonParseException> {
