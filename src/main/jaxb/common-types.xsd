@@ -3,26 +3,26 @@
     targetNamespace="http://vocabs.ands.org.au/registry/schema/2017/01/common"
     xmlns="http://vocabs.ands.org.au/registry/schema/2017/01/common">
     <xs:simpleType name="vocabulary-status">
-        <xs:restriction base="xs:string">
+        <xs:restriction base="xs:token">
             <xs:enumeration value="published"/>
             <xs:enumeration value="draft"/>
             <xs:enumeration value="deprecated"/>
         </xs:restriction>
     </xs:simpleType>
     <xs:simpleType name="version-status">
-        <xs:restriction base="xs:string">
+        <xs:restriction base="xs:token">
             <xs:enumeration value="current"/>
             <xs:enumeration value="superseded"/>
         </xs:restriction>
     </xs:simpleType>
     <xs:simpleType name="ap-source">
-        <xs:restriction base="xs:string">
+        <xs:restriction base="xs:token">
             <xs:enumeration value="system"/>
             <xs:enumeration value="user"/>
         </xs:restriction>
     </xs:simpleType>
     <xs:simpleType name="access-point-type">
-        <xs:restriction base="xs:string">
+        <xs:restriction base="xs:token">
             <xs:enumeration value="apiSparql"/>
             <xs:enumeration value="file"/>
             <xs:enumeration value="sesameDownload"/>
@@ -31,26 +31,26 @@
         </xs:restriction>
     </xs:simpleType>
     <xs:simpleType name="version-artefact-status">
-        <xs:restriction base="xs:string">
+        <xs:restriction base="xs:token">
             <xs:enumeration value="current"/>
             <xs:enumeration value="pending"/>
         </xs:restriction>
     </xs:simpleType>
     <xs:simpleType name="version-artefact-type">
-        <xs:restriction base="xs:string">
+        <xs:restriction base="xs:token">
             <xs:enumeration value="conceptList"/>
             <xs:enumeration value="conceptTree"/>
         </xs:restriction>
     </xs:simpleType>
     <xs:simpleType name="related-entity-type">
-        <xs:restriction base="xs:string">
+        <xs:restriction base="xs:token">
             <xs:enumeration value="party"/>
             <xs:enumeration value="service"/>
             <xs:enumeration value="vocabulary"/>
         </xs:restriction>
     </xs:simpleType>
     <xs:simpleType name="related-entity-identifier-type">
-        <xs:restriction base="xs:string">
+        <xs:restriction base="xs:token">
             <xs:enumeration value="AU-ANL:PEAU">
                 <xs:annotation>
                     <xs:documentation>National Library of Australia identifier.
@@ -148,7 +148,7 @@ http://viaf.org/</xs:documentation>
         </xs:restriction>
     </xs:simpleType>
     <xs:simpleType name="related-entity-relation">
-        <xs:restriction base="xs:string">
+        <xs:restriction base="xs:token">
             <xs:enumeration value="publishedBy"/>
             <xs:enumeration value="hasAuthor"/>
             <xs:enumeration value="hasContributor"/>
@@ -164,7 +164,7 @@ http://viaf.org/</xs:documentation>
         </xs:restriction>
     </xs:simpleType>
     <xs:simpleType name="related-vocabulary-relation">
-        <xs:restriction base="xs:string">
+        <xs:restriction base="xs:token">
             <xs:enumeration value="hasAssociationWith"/>
             <xs:enumeration value="isDerivedFrom"/>
             <xs:enumeration value="enriches"/>
@@ -172,7 +172,7 @@ http://viaf.org/</xs:documentation>
         </xs:restriction>
     </xs:simpleType>
     <xs:simpleType name="task-status">
-        <xs:restriction base="xs:string">
+        <xs:restriction base="xs:token">
             <xs:enumeration value="success"/>
             <xs:enumeration value="error"/>
             <xs:enumeration value="harvesting"/>
@@ -186,7 +186,7 @@ http://viaf.org/</xs:documentation>
         </xs:restriction>
     </xs:simpleType>
     <xs:simpleType name="registry-event-element-type">
-        <xs:restriction base="xs:string">
+        <xs:restriction base="xs:token">
             <xs:enumeration value="vocabularies"/>
             <xs:enumeration value="versions"/>
         </xs:restriction>

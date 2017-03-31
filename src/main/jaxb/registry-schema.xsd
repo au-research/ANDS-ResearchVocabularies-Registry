@@ -16,50 +16,50 @@
                 <xs:element minOccurs="0" name="poolparty-project">
                     <xs:complexType>
                         <xs:attribute name="server-id" type="xs:int"/>
-                        <xs:attribute name="project-id"/>
+                        <xs:attribute name="project-id" type="xs:token"/>
                     </xs:complexType>
                 </xs:element>
                 <xs:element maxOccurs="unbounded" minOccurs="0" name="subject">
                     <xs:complexType>
-                        <xs:attribute name="source" use="required"/>
-                        <xs:attribute name="label" use="required"/>
-                        <xs:attribute name="notation"/>
-                        <xs:attribute name="iri"/>
+                        <xs:attribute name="source" use="required" type="xs:token"/>
+                        <xs:attribute name="label" use="required" type="xs:token"/>
+                        <xs:attribute name="notation" type="xs:token"/>
+                        <xs:attribute name="iri" type="xs:anyURI"/>
                     </xs:complexType>
                 </xs:element>
                 <xs:element maxOccurs="unbounded" minOccurs="0" ref="version"/>
                 <xs:element maxOccurs="unbounded" name="other-language" minOccurs="0"
-                    type="xs:string"> </xs:element>
-                <xs:element maxOccurs="unbounded" minOccurs="0" name="top-concept" type="xs:string"/>
+                    type="xs:token"> </xs:element>
+                <xs:element maxOccurs="unbounded" minOccurs="0" name="top-concept" type="xs:token"/>
                 <xs:element maxOccurs="unbounded" name="related-entity-ref">
                     <xs:complexType>
                         <xs:attribute name="id" type="id-type"/>
-                        <xs:attribute name="relation" type="related-relation"/>
+                        <xs:attribute name="relation" type="common:related-entity-relation"/>
                     </xs:complexType>
                 </xs:element>
             </xs:sequence>
             <xs:attribute name="id" type="id-type" use="required"> </xs:attribute>
             <xs:attribute name="status" use="required" type="common:vocabulary-status"> </xs:attribute>
-            <xs:attribute name="owner" use="required" type="xs:string"/>
-            <xs:attribute name="slug" type="xs:string"/>
-            <xs:attribute name="title" use="required" type="xs:string"/>
-            <xs:attribute name="acronym" type="xs:string"/>
-            <xs:attribute name="description" type="xs:string"/>
-            <xs:attribute name="note" type="xs:string"/>
-            <xs:attribute name="revision-cycle" type="xs:string"/>
-            <xs:attribute name="creation-date" type="xs:string"/>
-            <xs:attribute name="primary-language" type="xs:string"/>
-            <xs:attribute name="licence" type="xs:string"/>
+            <xs:attribute name="owner" use="required" type="xs:token"/>
+            <xs:attribute name="slug" type="xs:token"/>
+            <xs:attribute name="title" use="required" type="xs:token"/>
+            <xs:attribute name="acronym" type="xs:token"/>
+            <xs:attribute name="description" type="xs:token"/>
+            <xs:attribute name="note" type="xs:token"/>
+            <xs:attribute name="revision-cycle" type="xs:token"/>
+            <xs:attribute name="creation-date" type="xs:token"/>
+            <xs:attribute name="primary-language" type="xs:token"/>
+            <xs:attribute name="licence" type="xs:token"/>
         </xs:complexType>
     </xs:element>
     <xs:element name="version">
         <xs:complexType>
             <xs:attribute name="id" type="id-type" use="required"> </xs:attribute>
             <xs:attribute name="status" use="required" type="common:version-status"> </xs:attribute>
-            <xs:attribute name="title" use="required"/>
-            <xs:attribute name="slug"/>
-            <xs:attribute name="note"/>
-            <xs:attribute name="release-date"/>
+            <xs:attribute name="title" use="required" type="xs:token"/>
+            <xs:attribute name="slug" type="xs:token"/>
+            <xs:attribute name="note" type="xs:token"/>
+            <xs:attribute name="release-date" type="xs:token"/>
             <xs:attribute name="do-import" type="xs:boolean"/>
             <xs:attribute name="do-publish" type="xs:boolean"/>
         </xs:complexType>
@@ -88,7 +88,7 @@
     <xs:complexType name="ap-file">
         <xs:complexContent>
             <xs:extension base="ap-common">
-                <xs:attribute name="format" type="xs:string"/>
+                <xs:attribute name="format" type="xs:token"/>
                 <xs:attribute name="url" type="xs:anyURI"/>
             </xs:extension>
         </xs:complexContent>
@@ -123,30 +123,22 @@
             </xs:sequence>
             <xs:attribute name="id" type="id-type" use="required"/>
             <xs:attribute name="type" use="required" type="common:related-entity-type"/>
-            <xs:attribute name="title" type="xs:string"/>
-            <xs:attribute name="email" type="xs:string"/>
-            <xs:attribute name="phone" type="xs:string"/>
+            <xs:attribute name="title" type="xs:token"/>
+            <xs:attribute name="email" type="xs:token"/>
+            <xs:attribute name="phone" type="xs:token"/>
         </xs:complexType>
     </xs:element>
     <xs:element name="related-entity-identifier">
         <xs:complexType>
             <xs:attribute name="id" type="id-type"/>
             <xs:attribute name="identifier-type" type="common:related-entity-identifier-type"/>
-            <xs:attribute name="identifier-value" type="xs:string"/>
+            <xs:attribute name="identifier-value" type="xs:token"/>
         </xs:complexType>
     </xs:element>
     <xs:complexType name="related-vocabulary">
         <xs:attribute name="related-id" type="id-type" use="required"/>
-        <xs:attribute name="relation" use="required"/>
+        <xs:attribute name="relation" use="required" type="common:related-vocabulary-relation"/>
     </xs:complexType>
-    <xs:simpleType name="related-relation">
-        <xs:restriction base="xs:string">
-            <xs:enumeration value="publishedBy"/>
-            <xs:enumeration value="hasAuthor"/>
-            <xs:enumeration value="hasContributor"/>
-            <xs:enumeration value="hasPointOfContact"/>
-        </xs:restriction>
-    </xs:simpleType>
     <xs:complexType name="version-artefact">
         <xs:attribute name="id" type="id-type"/>
         <xs:attribute name="status" type="common:version-artefact-status"/>
