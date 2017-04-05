@@ -45,6 +45,37 @@
        >
     <idKey keyColumn="vocabulary_id" entityName="VocabularyId" />
     <column db="status" enum="VocabularyStatus" />
+    <extraQueries>
+      <extraQuery name="IS_SLUG_IN_USE">
+        <extraQueryParameter name="slug" />
+        <queryText temporal="true">
+          SELECT COUNT(entity) > 0 FROM Vocabulary entity WHERE
+          slug = :slug AND (
+          #TEMPORAL_QUERY_VALID_CLAUSE
+          OR
+          #TEMPORAL_QUERY_ALL_DRAFT_CLAUSE
+          )
+        </queryText>
+        <method>    /** Is a certain slug already in use, either for a
+       published or draft vocabulary?
+     * @param slug The slug to be looked up.
+     * @return true, if the slug is already in use by a published
+     *   or draft vocabulary.
+     */
+    public static boolean isSlugInUse(final String slug) {
+        EntityManager em = DBContext.getEntityManager();
+        TypedQuery&lt;Boolean&gt; q = em.createNamedQuery(
+                Vocabulary.IS_SLUG_IN_USE, Boolean.class)
+                .setParameter(Vocabulary.IS_SLUG_IN_USE_SLUG, slug);
+        q = TemporalUtils.setDatetimeConstantParameters(q);
+        Boolean slugInUse = q.getSingleResult();
+        em.close();
+        return slugInUse;
+    }
+
+</method>
+      </extraQuery>
+    </extraQueries>
   </map>
   <map tableName="versions"
        entityName="Version"

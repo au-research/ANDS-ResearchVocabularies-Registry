@@ -3,6 +3,8 @@
 package au.org.ands.vocabs.registry.api.validation;
 
 import java.lang.invoke.MethodHandles;
+import java.util.HashSet;
+import java.util.Iterator;
 
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
@@ -10,7 +12,10 @@ import javax.validation.ConstraintValidatorContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import au.org.ands.vocabs.registry.db.dao.PoolPartyServerDAO;
+import au.org.ands.vocabs.registry.db.dao.VocabularyDAO;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.Vocabulary;
+import au.org.ands.vocabs.registry.schema.vocabulary201701.Vocabulary.PoolpartyProject;
 
 /** Validation of input data provided for vocabulary creation.
  */
@@ -39,10 +44,9 @@ public class CheckNewVocabularyImpl
 
         // id: required _not_ to be provided
         if (newVocabulary.getId() != 0) {
-            /* Can't specify an id, for a new vocab.
-             * Note: we can't distinguish omitting an id,
+            /* User can't specify an id for a new vocab.
+             * Note: _we_ can't distinguish omitting an id,
              * from specifying an id of 0. */
-            logger.info("id is not 0");
             valid = false;
             constraintContext.disableDefaultConstraintViolation();
             constraintContext.buildConstraintViolationWithTemplate(
@@ -51,35 +55,51 @@ public class CheckNewVocabularyImpl
             addConstraintViolation();
         }
 
-
         // status: required
-        valid = requireFieldNotNull(CheckNewVocabulary.INTERFACE_NAME,
+        valid = ValidationUtils.requireFieldNotNull(
+                CheckNewVocabulary.INTERFACE_NAME,
                 newVocabulary.getStatus(), "status",
                 constraintContext, valid);
-        /*
-        if (newVocabulary.getStatus() == null) {
-            logger.info("status is null");
-            valid = false;
-            constraintContext.disableDefaultConstraintViolation();
-            constraintContext.buildConstraintViolationWithTemplate(
-                    "{au.org.ands.vocabs.registry.api.validation."
-                    + "CheckNewVocabulary.status}").
-            addConstraintViolation();
-
-        }
-        */
 
         // owner: required
         // NB: we can't do authorization checks here.
+        valid = ValidationUtils.requireFieldNotEmptyString(
+                CheckNewVocabulary.INTERFACE_NAME,
+                newVocabulary.getOwner(), "owner",
+                constraintContext, valid);
 
         // slug: optional, but if specified, must not already exist
+        String slug = newVocabulary.getSlug();
+        if (slug != null) {
+            if (!ValidationUtils.isValidSlug(slug)) {
+                valid = false;
+                constraintContext.disableDefaultConstraintViolation();
+                constraintContext.buildConstraintViolationWithTemplate(
+                    "{" + CheckNewVocabulary.INTERFACE_NAME + ".slug}").
+                addPropertyNode("slug").
+                addConstraintViolation();
+            } else if (!ValidationUtils.isValidSlug(slug)
+                    || VocabularyDAO.isSlugInUse(slug)) {
+                valid = false;
+                constraintContext.disableDefaultConstraintViolation();
+                constraintContext.buildConstraintViolationWithTemplate(
+                    "{" + CheckNewVocabulary.INTERFACE_NAME + ".slug.inUse}").
+                addPropertyNode("slug").
+                addConstraintViolation();
+            }
+        }
 
         // title: required
+        valid = ValidationUtils.requireFieldNotEmptyString(
+                CheckNewVocabulary.INTERFACE_NAME,
+                newVocabulary.getTitle(), "title",
+                constraintContext, valid);
 
         // acronym: optional
 
         // description: required
-        valid = requireFieldNotEmptyString(CheckNewVocabulary.INTERFACE_NAME,
+        valid = ValidationUtils.requireFieldNotEmptyString(
+                CheckNewVocabulary.INTERFACE_NAME,
                 newVocabulary.getDescription(), "description",
                 constraintContext, valid);
 
@@ -87,17 +107,124 @@ public class CheckNewVocabularyImpl
 
         // subject: at least from ANZSRC-FOR required
 
-        // primaryLanguage: required
+        // primaryLanguage: required, and must come from the list
+        String primaryLanguage = newVocabulary.getPrimaryLanguage();
+        valid = ValidationUtils.
+                requireFieldNotEmptyStringAndSatisfiesPredicate(
+                        CheckNewVocabulary.INTERFACE_NAME,
+                        primaryLanguage,
+                        "primaryLanguage",
+                        Languages::isValidLanguage,
+                        constraintContext, valid);
+        // We use primaryLanguage below. Be careful, since it may be null.
+        // (If it's null, the vocabulary is invalid, but we keep checking
+        // anyway. So the following code mustn't _assume_ it's non-null,
+        // otherwise we might get a NullPointerException.)
+        // For now, that concern applies to
+        // Languages.isValidLanguageNotPrimary(). It does not require
+        // the primaryLanguage parameter to be non-null.
 
         // otherLanguages: optional, and must come from the list
+        int olIndex = 0;
+        for (Iterator<String> it = newVocabulary.getOtherLanguage().iterator();
+                it.hasNext(); olIndex++) {
+            String tc = it.next();
+            final int index = olIndex;
+            // See https://hibernate.atlassian.net/browse/BVAL-191
+            // for why we need the otherwise bogus addBeanNode().
+            // Without it, we get, e.g., newVocab[1].topConcept
+            // instead of newVocab.topConcept[1].
+            valid = ValidationUtils.
+                    requireFieldNotEmptyStringAndSatisfiesPredicate(
+                            CheckNewVocabulary.INTERFACE_NAME,
+                            tc, "otherLanguage",
+                            lang -> Languages.isValidLanguageNotPrimary(
+                                    primaryLanguage, lang),
+                            constraintContext,
+                            cvb -> cvb.addPropertyNode("otherLanguage").
+                                addBeanNode().inIterable().
+                                atIndex(index).addConstraintViolation(),
+                                valid);
+        }
+
+        // Check for duplicates in the list of other languages.
+        HashSet<String> otherLanguagesSet = new HashSet<>();
+        otherLanguagesSet.addAll(newVocabulary.getOtherLanguage());
+        if (otherLanguagesSet.size()
+                != newVocabulary.getOtherLanguage().size()) {
+            // There is at least one duplicate in the list!
+            valid = false;
+            constraintContext.disableDefaultConstraintViolation();
+            constraintContext.buildConstraintViolationWithTemplate(
+                    "{au.org.ands.vocabs.registry.api.validation."
+                    + "CheckNewVocabulary.otherLanguage.duplicate}").
+            addPropertyNode("otherLanguage").
+            addConstraintViolation();
+        }
 
         // licence: optional
 
         // poolpartyProject: optional
+        // If specified, check it is a project in the server specified
+        PoolpartyProject poolpartyProject =
+                newVocabulary.getPoolpartyProject();
+        if (poolpartyProject != null) {
+            int serverId = poolpartyProject.getServerId();
+            if (PoolPartyServerDAO.getPoolPartyServerById(serverId) == null) {
+                valid = false;
+                constraintContext.disableDefaultConstraintViolation();
+                constraintContext.buildConstraintViolationWithTemplate(
+                        "{au.org.ands.vocabs.registry.api.validation."
+                        + "CheckNewVocabulary.poolpartyProject.serverId}").
+                addPropertyNode("poolpartyProject").
+                addPropertyNode("serverId").
+                addConstraintViolation();
+            }
+        }
 
-        // topConcept: required
+
+        // topConcept: optional
+        // But, each one specified must be a non-empty string.
+        int tcIndex = 0;
+        for (Iterator<String> it = newVocabulary.getTopConcept().iterator();
+                it.hasNext(); tcIndex++) {
+            String tc = it.next();
+            final int index = tcIndex;
+            // See https://hibernate.atlassian.net/browse/BVAL-191
+            // for why we need the otherwise bogus addBeanNode().
+            // Without it, we get, e.g., newVocab[1].topConcept
+            // instead of newVocab.topConcept[1].
+            valid = ValidationUtils.requireFieldNotEmptyString(
+                    CheckNewVocabulary.INTERFACE_NAME,
+                    tc, "topConcept",
+                    constraintContext,
+                    cvb -> cvb.addPropertyNode("topConcept").
+                        addBeanNode().inIterable().
+                        atIndex(index).addConstraintViolation(),
+                    valid);
+        }
+
+        // Check for duplicates in the list of top concepts.
+        HashSet<String> topConceptsSet = new HashSet<>();
+        topConceptsSet.addAll(newVocabulary.getTopConcept());
+        if (topConceptsSet.size()
+                != newVocabulary.getTopConcept().size()) {
+            // There is at least one duplicate in the list!
+            valid = false;
+            constraintContext.disableDefaultConstraintViolation();
+            constraintContext.buildConstraintViolationWithTemplate(
+                    "{au.org.ands.vocabs.registry.api.validation."
+                    + "CheckNewVocabulary.topConcept.duplicate}").
+            addPropertyNode("topConcept").
+            addConstraintViolation();
+        }
 
         // creationDate: required
+        // Must match a regular expression: YYYY, or YYYY-MM, or YYYY-MM-DD.
+        valid = ValidationUtils.requireFieldValidDate(
+                CheckNewVocabulary.INTERFACE_NAME,
+                newVocabulary.getCreationDate(), "creationDate", false,
+                constraintContext, valid);
 
         // revisionCycle: optional
 
@@ -108,61 +235,5 @@ public class CheckNewVocabularyImpl
         return valid;
     }
 
-    /** Check that a field of a bean is not null. If it is in fact
-     * null, register a constraint violation.
-     * @param constraintInterfaceName The name of the interface
-     *      for the constraint.
-     * @param objectToTest The object that is required to be not null.
-     * @param fieldName The name of the field that is being tested.
-     * @param constraintContext The constraint context. If there is a
-     *      violation, it is recorded here.
-     * @param valid The state of validity, up to this point.
-     * @return The updated validity state.
-    */
-    private boolean requireFieldNotNull(final String constraintInterfaceName,
-            final Object objectToTest,
-            final String fieldName,
-            final ConstraintValidatorContext constraintContext,
-            final boolean valid) {
-        boolean validToReturn = valid;
-        if (objectToTest == null) {
-            validToReturn = false;
-            constraintContext.disableDefaultConstraintViolation();
-            constraintContext.buildConstraintViolationWithTemplate(
-                    "{" + constraintInterfaceName + "." + fieldName + "}").
-            addPropertyNode(fieldName).
-            addConstraintViolation();
-        }
-        return validToReturn;
-    }
-
-    /** Check that a field of a bean is not an empty string.
-     * If it is in fact an empty string, register a constraint violation.
-     * @param constraintInterfaceName The name of the interface
-     *      for the constraint.
-     * @param stringToTest The object that is required to be not null.
-     * @param fieldName The name of the field that is being tested.
-     * @param constraintContext The constraint context. If there is a
-     *      violation, it is recorded here.
-     * @param valid The state of validity, up to this point.
-     * @return The updated validity state.
-    */
-    private boolean requireFieldNotEmptyString(
-            final String constraintInterfaceName,
-            final String stringToTest,
-            final String fieldName,
-            final ConstraintValidatorContext constraintContext,
-            final boolean valid) {
-        boolean validToReturn = valid;
-        if (stringToTest == null || stringToTest.isEmpty()) {
-            validToReturn = false;
-            constraintContext.disableDefaultConstraintViolation();
-            constraintContext.buildConstraintViolationWithTemplate(
-                    "{" + constraintInterfaceName + "." + fieldName + "}").
-            addPropertyNode(fieldName).
-            addConstraintViolation();
-        }
-        return validToReturn;
-    }
 
 }
