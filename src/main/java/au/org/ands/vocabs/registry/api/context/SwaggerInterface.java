@@ -54,7 +54,7 @@ import io.swagger.annotations.Tag;
         },
         externalDocs = @ExternalDocs(
                 value = "Research Vocabularies Australia",
-                url = "http://documentation.andsorg.au/"),
+                url = "http://documentation.ands.org.au/"),
         securityDefinition = @SecurityDefinition(
                 basicAuthDefinitions = {
                         @BasicAuthDefinition(key = SwaggerInterface.BASIC_AUTH)
