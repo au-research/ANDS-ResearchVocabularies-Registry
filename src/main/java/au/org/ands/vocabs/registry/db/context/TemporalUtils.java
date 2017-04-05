@@ -36,11 +36,15 @@ public final class TemporalUtils {
      * class. */
     public static final String END_DATE = "endDate";
 
+    /** Clause for JPQL queries to select only currently-valid rows. */
+    public static final String TEMPORAL_QUERY_VALID_CLAUSE =
+            " " + END_DATE + " = :" + CURRENTLY_VALID_END_DATE;
+
     /** Suffix for JPQL queries to select only currently-valid rows.
      * This version of the suffix is for queries that already
      * have a WHERE clause. */
     public static final String AND_TEMPORAL_QUERY_VALID_SUFFIX =
-            " AND " + END_DATE + " = :" + CURRENTLY_VALID_END_DATE;
+            " AND " + TEMPORAL_QUERY_VALID_CLAUSE;
     // Original version follows. Less efficient than the previous.
 //    public static final String AND_TEMPORAL_QUERY_VALID_SUFFIX =
 //            " AND start_date <= :" + DATETIME_PARAMETER
@@ -50,23 +54,27 @@ public final class TemporalUtils {
      * This version of the suffix is for queries that do not already
      * have a WHERE clause. */
     public static final String WHERE_TEMPORAL_QUERY_VALID_SUFFIX =
-            " WHERE " + END_DATE + " = :" + CURRENTLY_VALID_END_DATE;
+            " WHERE " + TEMPORAL_QUERY_VALID_CLAUSE;
     // Original version follows. Less efficient than the previous.
 //    public static final String WHERE_TEMPORAL_QUERY_VALID_SUFFIX =
 //            " WHERE start_date <= :" + DATETIME_PARAMETER
 //            + " AND :" + DATETIME_PARAMETER + " < end_date";
 
+    /** Clause for JPQL queries to select only draft rows. */
+    public static final String TEMPORAL_QUERY_ALL_DRAFT_CLAUSE =
+            " " + START_DATE + " = :" + DRAFT_START_DATE;
+
     /** Suffix for JPQL queries to select only draft rows.
      * This version of the suffix is for queries that already
      * have a WHERE clause. */
     public static final String AND_TEMPORAL_QUERY_ALL_DRAFT_SUFFIX =
-            " AND " + START_DATE + " = :" + DRAFT_START_DATE;
+            " AND " + TEMPORAL_QUERY_ALL_DRAFT_CLAUSE;
 
     /** Suffix for JPQL queries to select only draft rows.
      * This version of the suffix is for queries that do not already
      * have a WHERE clause. */
     public static final String WHERE_TEMPORAL_QUERY_ALL_DRAFT_SUFFIX =
-            " WHERE " + START_DATE + " = :" + DRAFT_START_DATE;
+            " WHERE " + TEMPORAL_QUERY_ALL_DRAFT_CLAUSE;
 
     /** Entity name E1, for use in JPQL queries. */
     public static final String E1 = "e1";
