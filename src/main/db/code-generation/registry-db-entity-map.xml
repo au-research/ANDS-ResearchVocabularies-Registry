@@ -204,5 +204,96 @@
        serialVersionUID="-7521129755199622960L"
        >
   </map>
+  <map tableName="subject_resolver_sources"
+       entityName="SubjectResolverSource"
+       serialVersionUID="-3935011431416885320L"
+       >
+  </map>
+  <map tableName="subject_resolver"
+       entityName="SubjectResolverEntry"
+       serialVersionUID="-7882031463978706641L"
+       >
+    <extraQueries>
+      <extraQuery name="DOES_SUBJECT_RESOLVE">
+        <extraQueryParameter name="source" />
+        <extraQueryParameter name="iri" />
+        <queryText>
+          SELECT COUNT(entity) > 0 FROM SubjectResolverEntry entity WHERE
+          source = :source AND iri = :iri
+        </queryText>
+        <method>    /** Does a subject resolve?
+     * @param source The vocabulary source for the subject.
+     * @param iri The IRI of the subject being looked up.
+     * @return true, if the source/IRI is valid.
+     */
+    public static boolean
+        doesSubjectResolve(final String source, final String iri) {
+        EntityManager em = DBContext.getEntityManager();
+        TypedQuery&lt;Boolean&gt; q = em.createNamedQuery(
+                SubjectResolverEntry.DOES_SUBJECT_RESOLVE,
+                Boolean.class)
+                .setParameter(SubjectResolverEntry.
+                    DOES_SUBJECT_RESOLVE_SOURCE, source)
+                    .setParameter(SubjectResolverEntry.
+                    DOES_SUBJECT_RESOLVE_IRI, iri);
+        Boolean subjectValid = q.getSingleResult();
+        em.close();
+        return subjectValid;
+    }
+
+</method>
+      </extraQuery>
+      <extraQuery name="GET_SUBJECT_RESOLVED">
+        <extraQueryParameter name="source" />
+        <extraQueryParameter name="iri" />
+        <queryText>
+          SELECT entity FROM SubjectResolverEntry entity WHERE
+          source = :source AND iri = :iri
+        </queryText>
+        <method>    /** Get the SubjectResolverEntry instances for a subject.
+     * @param source The vocabulary source for the subject.
+     * @param iri The IRI of the subject being looked up.
+     * @return An list of all SubjectResolverEntry instances for the subject.
+     */
+    public static List&lt;SubjectResolverEntry&gt;
+        getSubjectResolverEntries(final String source, final String iri) {
+        EntityManager em = DBContext.getEntityManager();
+        TypedQuery&lt;SubjectResolverEntry&gt; q = em.createNamedQuery(
+                SubjectResolverEntry.
+                    GET_SUBJECT_RESOLVED,
+                SubjectResolverEntry.class)
+                .setParameter(SubjectResolverEntry.
+                    GET_SUBJECT_RESOLVED_SOURCE,
+                    source)
+                .setParameter(SubjectResolverEntry.
+                    GET_SUBJECT_RESOLVED_IRI,
+                    iri);
+        List&lt;SubjectResolverEntry&gt; entityList = q.getResultList();
+        em.close();
+        return entityList;
+    }
+
+</method>
+      </extraQuery>
+      <extraQuery name="DELETE_ALL_ENTRIES" type="update">
+        <queryText>
+          DELETE FROM SubjectResolverEntry entity
+        </queryText>
+        <method>    /** Delete all resolver entries.
+     */
+    public static void deleteAllResolverEntries() {
+        EntityManager em = DBContext.getEntityManager();
+        em.getTransaction().begin();
+        Query q = em.createNamedQuery(SubjectResolverEntry.
+                    DELETE_ALL_ENTRIES);
+        q.executeUpdate();
+        em.getTransaction().commit();
+        em.close();
+    }
+
+</method>
+      </extraQuery>
+    </extraQueries>
+  </map>
 
 </db-entity-map>

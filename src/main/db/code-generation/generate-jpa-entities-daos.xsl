@@ -131,6 +131,14 @@
     <xsl:variable name="hasEnumeratedType"
                   select="key('db-to-entity', lower-case(@tableName),
                           $db-entity-mapping)/column[@enum]" />
+    <!-- Whether or not the DAO has an update or delete.
+         This is used to decide whether or not to import the
+         supporting Query class.
+    -->
+    <xsl:variable name="hasUpdateOrDelete"
+                  select="key('db-to-entity', lower-case(@tableName),
+                          $db-entity-mapping)/extraQueries/extraQuery
+                          [@type='update']" />
     <!-- The directory into which the generated entity class will go.
          Based on the entity class's package name. -->
     <xsl:variable name="entity-output-directory"
@@ -337,7 +345,10 @@ package </xsl:text>
 import java.util.List;
 
 import javax.persistence.EntityManager;
-import javax.persistence.TypedQuery;
+</xsl:text><xsl:choose>
+  <xsl:when test="$hasUpdateOrDelete">import javax.persistence.Query;
+</xsl:when>
+</xsl:choose><xsl:text>import javax.persistence.TypedQuery;
 
 import </xsl:text><xsl:value-of select="$context-package"/>.DBContext;
 <xsl:choose>

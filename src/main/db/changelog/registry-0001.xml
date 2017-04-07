@@ -730,6 +730,44 @@
       </column>
   -->
 
+    <changeSet id="0001-subject_resolver_sources-createTable"
+             author="Richard.Walker@ands.org.au">
+    <comment>Create subject_resolver_sources table</comment>
+    <createTable tableName="subject_resolver_sources">
+      <column autoIncrement="true" name="id" type="INTEGER">
+        <constraints primaryKey="true"/>
+      </column>
+      <column name="source" type="VARCHAR(10)">
+        <constraints nullable="false"/>
+      </column>
+      <column name="iri" type="VARCHAR(1023)">
+        <constraints nullable="false"/>
+      </column>
+    </createTable>
+  </changeSet>
+
+  <changeSet id="0001-subject_resolver-createTable"
+             author="Richard.Walker@ands.org.au">
+    <comment>Create subject_resolver table</comment>
+    <createTable tableName="subject_resolver">
+      <column autoIncrement="true" name="id" type="INTEGER">
+        <constraints primaryKey="true"/>
+      </column>
+      <column name="source" type="VARCHAR(10)">
+        <constraints nullable="false"/>
+      </column>
+      <column name="iri" type="VARCHAR(1023)">
+        <constraints nullable="false"/>
+      </column>
+      <column name="notation" type="VARCHAR(255)">
+        <constraints nullable="false"/>
+      </column>
+      <column name="label" type="TEXT">
+        <constraints nullable="false"/>
+      </column>
+    </createTable>
+  </changeSet>
+
 
 
 
