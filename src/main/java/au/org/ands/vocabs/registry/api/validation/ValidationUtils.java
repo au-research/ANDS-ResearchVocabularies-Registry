@@ -345,7 +345,9 @@ public final class ValidationUtils {
 
     /** Check that a field of a bean contains only acceptable HTML.
      * Here, "acceptable" means according to jsoup's "basic"
-     * whitelist.
+     * whitelist. A field value of null is also considered to
+     * be "acceptable", so if the field is required, you must
+     * test for this separately.
      * @param constraintInterfaceName The name of the interface
      *      for the constraint.
      * @param stringToTest The String that is required to have valid
@@ -380,18 +382,23 @@ public final class ValidationUtils {
         return validToReturn;
     }
 
-    /** The set of allowed relations for related entities that are parties. */
+    /** The set of allowed relations for related entities that are parties.
+     * Initialized in a static block. */
     private static final HashSet<RelatedEntityRelation>
         ALLOWED_RELATIONS_FOR_PARTY = new HashSet<>();
-    /** The set of allowed relations for related entities that are services. */
+    /** The set of allowed relations for related entities that are services.
+     * Initialized in a static block. */
     private static final HashSet<RelatedEntityRelation>
         ALLOWED_RELATIONS_FOR_SERVICE = new HashSet<>();
     /** The set of allowed relations for related entities that are
-     * vocabularies. */
+     * vocabularies. Initialized in a static block. */
     private static final HashSet<RelatedEntityRelation>
         ALLOWED_RELATIONS_FOR_VOCABULARY = new HashSet<>();
 
     static {
+        // Business rules as specified in:
+        // https://intranet.ands.org.au/display/PROJ/
+        //   Vocabularies+for+vocabulary+schema
         ALLOWED_RELATIONS_FOR_PARTY.add(RelatedEntityRelation.CONSUMER_OF);
         ALLOWED_RELATIONS_FOR_PARTY.add(RelatedEntityRelation.HAS_AUTHOR);
         ALLOWED_RELATIONS_FOR_PARTY.add(RelatedEntityRelation.HAS_CONTRIBUTOR);
@@ -414,7 +421,8 @@ public final class ValidationUtils {
     }
 
     /** Decide whether a vocabulary may have a particular relation with
-     * a related entity of a certain type.
+     * a related entity of a certain type, according to the business
+     * rules about relations.
      * @param type The type of the related entity.
      * @param relation The relation being tested.
      * @return true, if the vocabulary is allowed to have the relation
