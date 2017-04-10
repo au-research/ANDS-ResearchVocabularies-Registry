@@ -21,6 +21,7 @@ import au.org.ands.vocabs.registry.db.dao.VocabularyDAO;
 import au.org.ands.vocabs.registry.db.entity.RelatedEntity;
 import au.org.ands.vocabs.registry.enums.RelatedEntityRelation;
 import au.org.ands.vocabs.registry.enums.RelatedVocabularyRelation;
+import au.org.ands.vocabs.registry.schema.vocabulary201701.Version;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.Vocabulary;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.Vocabulary.PoolpartyProject;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.Vocabulary.RelatedEntityRef;
@@ -72,6 +73,7 @@ public class CheckNewVocabularyImpl
         // revisionCycle
         // relatedEntityRef
         // relatedVocabularyRef
+        // version
 
         // id: required _not_ to be provided
         if (newVocabulary.getId() != 0) {
@@ -461,6 +463,30 @@ public class CheckNewVocabularyImpl
             addConstraintViolation();
         }
 
+        // version
+        int versionIndex = 0;
+        // Keep track of version slugs, so we can check if there are
+        // duplicates.
+        Set<String> versionSlugs = new HashSet<>();
+        for (Iterator<Version> it =
+                newVocabulary.getVersion().iterator();
+                it.hasNext(); versionIndex++) {
+            Version version = it.next();
+            if (!isValidVersion(versionIndex, version, constraintContext)) {
+                valid = false;
+            }
+            if (version.getSlug() != null
+                    && versionSlugs.contains(version.getSlug())) {
+                valid = false;
+                constraintContext.buildConstraintViolationWithTemplate(
+                        "{" + CheckNewVocabulary.INTERFACE_NAME
+                        + ".version.slug.duplicate}").
+                    addPropertyNode("version").addPropertyNode("slug").
+                    inIterable().atIndex(versionIndex).
+                    addConstraintViolation();
+            }
+            versionSlugs.add(version.getSlug());
+        }
 
         // what else?
         if (!valid) {
@@ -468,6 +494,110 @@ public class CheckNewVocabularyImpl
             // add the default violation.
             constraintContext.disableDefaultConstraintViolation();
         }
+
+        return valid;
+    }
+
+    /** Validate a proposed new version.
+     * @param versionIndex The index of the version being created.
+     * @param newVersion The new version that is being created.
+     * @param constraintContext The constraint context, into which
+     *      validation errors are reported.
+     * @return true, if newVersion represents a valid version.
+     */
+    private boolean isValidVersion(final int versionIndex,
+            final Version newVersion,
+            final ConstraintValidatorContext constraintContext) {
+        boolean valid = true;
+        logger.info("In CheckNewVocabularyImpl.isValidVersion("
+                + versionIndex + ")");
+
+        // Table of contents of this method:
+        // id
+        // status
+        // title
+        // slug
+        // note
+        // releaseDate
+        // doImport
+        // doPublish
+
+        // id: required _not_ to be provided
+        if (newVersion.getId() != 0) {
+            /* User can't specify an id for a new version.
+             * Note: _we_ can't distinguish omitting an id,
+             * from specifying an id of 0. */
+            valid = false;
+            constraintContext.buildConstraintViolationWithTemplate(
+                    "{" + CheckNewVocabulary.INTERFACE_NAME + ".version.id}").
+            addPropertyNode("version").
+            addPropertyNode("id").inIterable().atIndex(versionIndex).
+            addConstraintViolation();
+        }
+
+        // status: required
+        valid = ValidationUtils.requireFieldNotNull(
+                CheckNewVocabulary.INTERFACE_NAME,
+                newVersion.getStatus(), "version.status",
+                constraintContext,
+                cvb -> cvb.addPropertyNode("version").
+                    addPropertyNode("status").inIterable().
+                    atIndex(versionIndex).addConstraintViolation(),
+                valid);
+
+        // title
+        valid = ValidationUtils.requireFieldNotEmptyString(
+                CheckNewVocabulary.INTERFACE_NAME,
+                newVersion.getTitle(), "version.title",
+                constraintContext,
+                cvb -> cvb.addPropertyNode("version").
+                    addPropertyNode("title").inIterable().
+                    atIndex(versionIndex).addConstraintViolation(),
+                valid);
+
+        // slug: optional, but if specified, must be in the right format
+        String slug = newVersion.getSlug();
+        if (slug != null) {
+            if (!ValidationUtils.isValidSlug(slug)) {
+                valid = false;
+                constraintContext.buildConstraintViolationWithTemplate(
+                    "{" + CheckNewVocabulary.INTERFACE_NAME + ".version.slug}").
+                addPropertyNode("version").
+                addPropertyNode("slug").inIterable().atIndex(versionIndex).
+                addConstraintViolation();
+            }
+        }
+
+        // note: optional, but, if specified, must be valid HTML
+        logger.info("version note valid: "
+                + ValidationUtils.isValidHTML(newVersion.getNote()));
+        logger.info("version note cleaned: "
+                + ValidationUtils.cleanHTML(newVersion.getNote()));
+        valid = ValidationUtils.requireFieldValidHTML(
+                CheckNewVocabulary.INTERFACE_NAME,
+                newVersion.getNote(), "version.note",
+                constraintContext,
+                cvb -> cvb.addPropertyNode("version").
+                    addPropertyNode("note").inIterable().
+                    atIndex(versionIndex).addConstraintViolation(),
+                valid);
+
+        // releaseDate: required
+        // Must match a regular expression: YYYY, or YYYY-MM, or YYYY-MM-DD.
+        valid = ValidationUtils.requireFieldValidDate(
+                CheckNewVocabulary.INTERFACE_NAME,
+                newVersion.getReleaseDate(), "version.creationDate", false,
+                constraintContext,
+                cvb -> cvb.addPropertyNode("version").
+                    addPropertyNode("releaseDate").inIterable().
+                    atIndex(versionIndex).addConstraintViolation(),
+                valid);
+
+        // doImport: we can't distinguish between a missing value,
+        // and the value specified as false.
+
+        // doPublish: we can't distinguish between a missing value,
+        // and the value specified as false.
 
         return valid;
     }
