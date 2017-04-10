@@ -2,8 +2,10 @@
 
 package au.org.ands.vocabs.registry.api.validation;
 
+import java.lang.invoke.MethodHandles;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.HashSet;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
@@ -11,8 +13,20 @@ import java.util.regex.Pattern;
 import javax.validation.ConstraintValidatorContext;
 import javax.validation.ConstraintValidatorContext.ConstraintViolationBuilder;
 
+import org.jsoup.Jsoup;
+import org.jsoup.safety.Whitelist;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import au.org.ands.vocabs.registry.enums.RelatedEntityRelation;
+import au.org.ands.vocabs.registry.enums.RelatedEntityType;
+
 /** Utility methods to support validation. */
 public final class ValidationUtils {
+
+    /** Logger for this class. */
+    private static Logger logger = LoggerFactory.getLogger(
+            MethodHandles.lookup().lookupClass());
 
     /** Private constructor for a utility class. */
     private ValidationUtils() {
@@ -53,7 +67,6 @@ public final class ValidationUtils {
         boolean validToReturn = valid;
         if (objectToTest == null) {
             validToReturn = false;
-            constraintContext.disableDefaultConstraintViolation();
             constraintContext.buildConstraintViolationWithTemplate(
                     "{" + constraintInterfaceName + "." + fieldName + "}").
             addPropertyNode(fieldName).
@@ -82,7 +95,6 @@ public final class ValidationUtils {
         boolean validToReturn = valid;
         if (stringToTest == null || stringToTest.isEmpty()) {
             validToReturn = false;
-            constraintContext.disableDefaultConstraintViolation();
             constraintContext.buildConstraintViolationWithTemplate(
                     "{" + constraintInterfaceName + "." + fieldName + "}").
             addPropertyNode(fieldName).
@@ -116,7 +128,6 @@ public final class ValidationUtils {
         if (stringToTest == null || stringToTest.isEmpty()
                 || !predicate.test(stringToTest)) {
             validToReturn = false;
-            constraintContext.disableDefaultConstraintViolation();
             constraintContext.buildConstraintViolationWithTemplate(
                     "{" + constraintInterfaceName + "." + fieldName + "}").
             addPropertyNode(fieldName).
@@ -153,7 +164,6 @@ public final class ValidationUtils {
         boolean validToReturn = valid;
         if (stringToTest == null || stringToTest.isEmpty()) {
             validToReturn = false;
-            constraintContext.disableDefaultConstraintViolation();
             nodeModifier.accept(constraintContext.
                     buildConstraintViolationWithTemplate(
                     "{" + constraintInterfaceName + "." + fieldName + "}"));
@@ -192,7 +202,6 @@ public final class ValidationUtils {
         if (stringToTest == null || stringToTest.isEmpty()
                 || !predicate.test(stringToTest)) {
             validToReturn = false;
-            constraintContext.disableDefaultConstraintViolation();
             nodeModifier.accept(constraintContext.
                     buildConstraintViolationWithTemplate(
                     "{" + constraintInterfaceName + "." + fieldName + "}"));
@@ -270,7 +279,6 @@ public final class ValidationUtils {
         }
         if (!validDate) {
             validToReturn = false;
-            constraintContext.disableDefaultConstraintViolation();
             constraintContext.buildConstraintViolationWithTemplate(
                     "{" + constraintInterfaceName + "." + fieldName + "}"
                     + extraErrorInfo).
@@ -304,6 +312,128 @@ public final class ValidationUtils {
             return false;
         }
         return SLUG_PATTERN.matcher(slug).matches();
+    }
+
+    /** Whitelist for jsoup to use to validate HTML. Initialized
+     * in a static block to {@link Whitelist#basic()},
+     * and customized further with regard to "a" tags. */
+    private static Whitelist validWhitelist;
+
+    static {
+        validWhitelist = Whitelist.basic();
+        validWhitelist.addEnforcedAttribute("a", "target", "_blank");
+    }
+
+    /** Utility method to determine if a String value contains
+     * an HTML body fragment that parses correctly and contains
+     * only the permitted tags/attributes.
+     * @param stringToTest The String to be tested.
+     * @return true, if stringToTest is valid.
+     */
+    public static boolean isValidHTML(final String stringToTest) {
+        return Jsoup.isValid(stringToTest, validWhitelist);
+    }
+
+    /** Utility method to clean a a String value so that it
+     * contains the required attributes.
+     * @param stringToClean The String to be cleaned.
+     * @return The cleaned string.
+     */
+    public static String cleanHTML(final String stringToClean) {
+        return Jsoup.clean(stringToClean, validWhitelist);
+    }
+
+    /** Check that a field of a bean contains only acceptable HTML.
+     * Here, "acceptable" means according to jsoup's "basic"
+     * whitelist.
+     * @param constraintInterfaceName The name of the interface
+     *      for the constraint.
+     * @param stringToTest The String that is required to have valid
+     *      HTML. It must already have been checked to be a non-empty
+     *      string. If null, or an empty string is passed in, return
+     *      immediately with the value of valid.
+     * @param fieldName The name of the field that is being tested.
+     * @param constraintContext The constraint context. If there is a
+     *      violation, it is recorded here.
+     * @param valid The state of validity, up to this point.
+     * @return The updated validity state.
+    */
+    public static boolean requireFieldValidHTML(
+            final String constraintInterfaceName,
+            final String stringToTest,
+            final String fieldName,
+            final ConstraintValidatorContext constraintContext,
+            final boolean valid) {
+        if (stringToTest == null || stringToTest.isEmpty()) {
+            return valid;
+        }
+        boolean validToReturn = valid;
+
+        if (!isValidHTML(stringToTest)) {
+            validToReturn = false;
+            constraintContext.buildConstraintViolationWithTemplate(
+                    "{" + constraintInterfaceName + "." + fieldName
+                    + ".html}").
+            addPropertyNode(fieldName).
+            addConstraintViolation();
+        }
+        return validToReturn;
+    }
+
+    /** The set of allowed relations for related entities that are parties. */
+    private static final HashSet<RelatedEntityRelation>
+        ALLOWED_RELATIONS_FOR_PARTY = new HashSet<>();
+    /** The set of allowed relations for related entities that are services. */
+    private static final HashSet<RelatedEntityRelation>
+        ALLOWED_RELATIONS_FOR_SERVICE = new HashSet<>();
+    /** The set of allowed relations for related entities that are
+     * vocabularies. */
+    private static final HashSet<RelatedEntityRelation>
+        ALLOWED_RELATIONS_FOR_VOCABULARY = new HashSet<>();
+
+    static {
+        ALLOWED_RELATIONS_FOR_PARTY.add(RelatedEntityRelation.CONSUMER_OF);
+        ALLOWED_RELATIONS_FOR_PARTY.add(RelatedEntityRelation.HAS_AUTHOR);
+        ALLOWED_RELATIONS_FOR_PARTY.add(RelatedEntityRelation.HAS_CONTRIBUTOR);
+        ALLOWED_RELATIONS_FOR_PARTY.add(RelatedEntityRelation.IMPLEMENTED_BY);
+        ALLOWED_RELATIONS_FOR_PARTY.add(RelatedEntityRelation.POINT_OF_CONTACT);
+        ALLOWED_RELATIONS_FOR_PARTY.add(RelatedEntityRelation.PUBLISHED_BY);
+
+        ALLOWED_RELATIONS_FOR_SERVICE.add(
+                RelatedEntityRelation.HAS_ASSOCIATION_WITH);
+        ALLOWED_RELATIONS_FOR_SERVICE.add(RelatedEntityRelation.IS_USED_BY);
+        ALLOWED_RELATIONS_FOR_SERVICE.add(
+                RelatedEntityRelation.IS_PRESENTED_BY);
+
+        ALLOWED_RELATIONS_FOR_VOCABULARY.add(RelatedEntityRelation.ENRICHES);
+        ALLOWED_RELATIONS_FOR_VOCABULARY.add(
+                RelatedEntityRelation.HAS_ASSOCIATION_WITH);
+        ALLOWED_RELATIONS_FOR_VOCABULARY.add(
+                RelatedEntityRelation.IS_DERIVED_FROM);
+        ALLOWED_RELATIONS_FOR_VOCABULARY.add(RelatedEntityRelation.IS_PART_OF);
+    }
+
+    /** Decide whether a vocabulary may have a particular relation with
+     * a related entity of a certain type.
+     * @param type The type of the related entity.
+     * @param relation The relation being tested.
+     * @return true, if the vocabulary is allowed to have the relation
+     *      to the related entity.
+     */
+    public static boolean isAllowedRelation(final RelatedEntityType type,
+            final RelatedEntityRelation relation) {
+        switch (type) {
+        case PARTY:
+            return ALLOWED_RELATIONS_FOR_PARTY.contains(relation);
+        case SERVICE:
+            return ALLOWED_RELATIONS_FOR_SERVICE.contains(relation);
+        case VOCABULARY:
+            return ALLOWED_RELATIONS_FOR_VOCABULARY.contains(relation);
+        default:
+            // Can't happen.
+            logger.error("Unknown RelatedEntityType!");
+            return false;
+        }
     }
 
 }

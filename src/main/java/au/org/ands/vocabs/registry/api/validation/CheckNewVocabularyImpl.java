@@ -13,9 +13,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import au.org.ands.vocabs.registry.db.dao.PoolPartyServerDAO;
+import au.org.ands.vocabs.registry.db.dao.RelatedEntityDAO;
 import au.org.ands.vocabs.registry.db.dao.VocabularyDAO;
+import au.org.ands.vocabs.registry.db.entity.RelatedEntity;
+import au.org.ands.vocabs.registry.enums.RelatedEntityRelation;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.Vocabulary;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.Vocabulary.PoolpartyProject;
+import au.org.ands.vocabs.registry.schema.vocabulary201701.Vocabulary.RelatedEntityRef;
+import au.org.ands.vocabs.registry.schema.vocabulary201701.Vocabulary.Subject;
 
 /** Validation of input data provided for vocabulary creation.
  */
@@ -48,7 +53,6 @@ public class CheckNewVocabularyImpl
              * Note: _we_ can't distinguish omitting an id,
              * from specifying an id of 0. */
             valid = false;
-            constraintContext.disableDefaultConstraintViolation();
             constraintContext.buildConstraintViolationWithTemplate(
                     "{" + CheckNewVocabulary.INTERFACE_NAME + ".id}").
             addPropertyNode("id").
@@ -73,7 +77,6 @@ public class CheckNewVocabularyImpl
         if (slug != null) {
             if (!ValidationUtils.isValidSlug(slug)) {
                 valid = false;
-                constraintContext.disableDefaultConstraintViolation();
                 constraintContext.buildConstraintViolationWithTemplate(
                     "{" + CheckNewVocabulary.INTERFACE_NAME + ".slug}").
                 addPropertyNode("slug").
@@ -81,7 +84,6 @@ public class CheckNewVocabularyImpl
             } else if (!ValidationUtils.isValidSlug(slug)
                     || VocabularyDAO.isSlugInUse(slug)) {
                 valid = false;
-                constraintContext.disableDefaultConstraintViolation();
                 constraintContext.buildConstraintViolationWithTemplate(
                     "{" + CheckNewVocabulary.INTERFACE_NAME + ".slug.inUse}").
                 addPropertyNode("slug").
@@ -102,10 +104,61 @@ public class CheckNewVocabularyImpl
                 CheckNewVocabulary.INTERFACE_NAME,
                 newVocabulary.getDescription(), "description",
                 constraintContext, valid);
+        valid = ValidationUtils.requireFieldValidHTML(
+                CheckNewVocabulary.INTERFACE_NAME,
+                newVocabulary.getDescription(), "description",
+                constraintContext, valid);
 
         // note: optional
 
-        // subject: at least from ANZSRC-FOR required
+        // subject: at least one from ANZSRC-FOR required
+        boolean validSubjects = false;
+        int subjectIndex = 0;
+        for (Iterator<Subject> it = newVocabulary.getSubject().iterator();
+                it.hasNext(); subjectIndex++) {
+            Subject subject = it.next();
+            final int index = subjectIndex;
+            valid = ValidationUtils.
+                    requireFieldNotEmptyStringAndSatisfiesPredicate(
+                            CheckNewVocabulary.INTERFACE_NAME,
+                            subject.getSource(), "subject.source",
+                            SubjectSources::isValidSubjectSource,
+                            constraintContext,
+                            cvb -> cvb.addPropertyNode("subject").
+                                addPropertyNode("source").inIterable().
+                                atIndex(index).addConstraintViolation(),
+                                valid);
+            valid = ValidationUtils.
+                    requireFieldNotEmptyString(
+                            CheckNewVocabulary.INTERFACE_NAME,
+                            subject.getLabel(), "subject.label",
+                            constraintContext,
+                            cvb -> cvb.addPropertyNode("subject").
+                                addPropertyNode("label").inIterable().
+                                atIndex(index).addConstraintViolation(),
+                                valid);
+            if (SubjectSources.subjectRequiresIRI(subject)
+                    && !SubjectSources.subjectHasValidIRI(subject)) {
+                valid = false;
+                constraintContext.buildConstraintViolationWithTemplate(
+                    "{" + CheckNewVocabulary.INTERFACE_NAME
+                    + ".subject.unknown}").
+                addPropertyNode("subject").addBeanNode().inIterable().
+                atIndex(index).
+                addConstraintViolation();
+            }
+            if (SubjectSources.ANZSRC_FOR.equals(subject.getSource())) {
+                validSubjects = true;
+            }
+        }
+        if (!validSubjects) {
+            valid = false;
+            constraintContext.buildConstraintViolationWithTemplate(
+                "{" + CheckNewVocabulary.INTERFACE_NAME
+                + ".subject.noAnzsrcFor}").
+            addPropertyNode("subject").
+            addConstraintViolation();
+        }
 
         // primaryLanguage: required, and must come from the list
         String primaryLanguage = newVocabulary.getPrimaryLanguage();
@@ -154,7 +207,6 @@ public class CheckNewVocabularyImpl
                 != newVocabulary.getOtherLanguage().size()) {
             // There is at least one duplicate in the list!
             valid = false;
-            constraintContext.disableDefaultConstraintViolation();
             constraintContext.buildConstraintViolationWithTemplate(
                     "{au.org.ands.vocabs.registry.api.validation."
                     + "CheckNewVocabulary.otherLanguage.duplicate}").
@@ -172,7 +224,6 @@ public class CheckNewVocabularyImpl
             int serverId = poolpartyProject.getServerId();
             if (PoolPartyServerDAO.getPoolPartyServerById(serverId) == null) {
                 valid = false;
-                constraintContext.disableDefaultConstraintViolation();
                 constraintContext.buildConstraintViolationWithTemplate(
                         "{au.org.ands.vocabs.registry.api.validation."
                         + "CheckNewVocabulary.poolpartyProject.serverId}").
@@ -181,7 +232,6 @@ public class CheckNewVocabularyImpl
                 addConstraintViolation();
             }
         }
-
 
         // topConcept: optional
         // But, each one specified must be a non-empty string.
@@ -211,7 +261,6 @@ public class CheckNewVocabularyImpl
                 != newVocabulary.getTopConcept().size()) {
             // There is at least one duplicate in the list!
             valid = false;
-            constraintContext.disableDefaultConstraintViolation();
             constraintContext.buildConstraintViolationWithTemplate(
                     "{au.org.ands.vocabs.registry.api.validation."
                     + "CheckNewVocabulary.topConcept.duplicate}").
@@ -229,8 +278,55 @@ public class CheckNewVocabularyImpl
         // revisionCycle: optional
 
         // relatedEntityRef
+        boolean validRelatedEntities = false;
+        int reIndex = 0;
+        for (Iterator<RelatedEntityRef> it =
+                newVocabulary.getRelatedEntityRef().iterator();
+                it.hasNext(); reIndex++) {
+            RelatedEntityRef reRef = it.next();
+            RelatedEntity re =
+                    RelatedEntityDAO.getCurrentRelatedEntityByRelatedEntityId(
+                            reRef.getId());
+            if (re == null) {
+                valid = false;
+                constraintContext.buildConstraintViolationWithTemplate(
+                    "{" + CheckNewVocabulary.INTERFACE_NAME
+                    + ".relatedEntity.unknown}").
+                addPropertyNode("relatedEntity").addBeanNode().inIterable().
+                atIndex(reIndex).
+                addConstraintViolation();
+                continue;
+            }
+            if (!ValidationUtils.isAllowedRelation(re.getType(),
+                    reRef.getRelation())) {
+                valid = false;
+                constraintContext.buildConstraintViolationWithTemplate(
+                        "{" + CheckNewVocabulary.INTERFACE_NAME
+                        + ".relatedEntity.badRelation}").
+                addPropertyNode("relatedEntity").addBeanNode().inIterable().
+                atIndex(reIndex).
+                addConstraintViolation();
+                continue;
+            }
+            if (reRef.getRelation() == RelatedEntityRelation.PUBLISHED_BY) {
+                validRelatedEntities = true;
+            }
+        }
+        if (!validRelatedEntities) {
+            valid = false;
+            constraintContext.buildConstraintViolationWithTemplate(
+                "{" + CheckNewVocabulary.INTERFACE_NAME
+                + ".relatedEntity.noPublisher}").
+            addPropertyNode("relatedEntity").
+            addConstraintViolation();
+        }
 
         // what else?
+        if (!valid) {
+            // A custom constraint violation has been added, so don't also
+            // add the default violation.
+            constraintContext.disableDefaultConstraintViolation();
+        }
 
         return valid;
     }
