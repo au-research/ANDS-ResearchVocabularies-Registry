@@ -386,10 +386,12 @@ public final class ValidationUtils {
      * Initialized in a static block. */
     private static final HashSet<RelatedEntityRelation>
         ALLOWED_RELATIONS_FOR_PARTY = new HashSet<>();
+
     /** The set of allowed relations for related entities that are services.
      * Initialized in a static block. */
     private static final HashSet<RelatedEntityRelation>
         ALLOWED_RELATIONS_FOR_SERVICE = new HashSet<>();
+
     /** The set of allowed relations for related entities that are
      * vocabularies. Initialized in a static block. */
     private static final HashSet<RelatedEntityRelation>

@@ -20,9 +20,11 @@ import au.org.ands.vocabs.registry.db.dao.RelatedEntityDAO;
 import au.org.ands.vocabs.registry.db.dao.VocabularyDAO;
 import au.org.ands.vocabs.registry.db.entity.RelatedEntity;
 import au.org.ands.vocabs.registry.enums.RelatedEntityRelation;
+import au.org.ands.vocabs.registry.enums.RelatedVocabularyRelation;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.Vocabulary;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.Vocabulary.PoolpartyProject;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.Vocabulary.RelatedEntityRef;
+import au.org.ands.vocabs.registry.schema.vocabulary201701.Vocabulary.RelatedVocabularyRef;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.Vocabulary.Subject;
 
 /** Validation of input data provided for vocabulary creation.
@@ -43,12 +45,33 @@ public class CheckNewVocabularyImpl
      * @param newVocabulary The new vocabulary that is being created.
      * @return true, if newVocabulary represents a valid vocabulary.
      */
+    @SuppressWarnings("checkstyle:MethodLength")
     @Override
     public boolean isValid(final Vocabulary newVocabulary,
             final ConstraintValidatorContext constraintContext) {
 
         boolean valid = true;
         logger.info("In CheckNewVocabularyImpl.isValid()");
+
+        // Table of contents of this method:
+        // id
+        // status
+        // owner
+        // slug
+        // title
+        // acronym
+        // description
+        // note
+        // subject
+        // primaryLanguage
+        // otherLanguage
+        // licence
+        // poolpartyProject
+        // topConcept
+        // creationDate
+        // revisionCycle
+        // relatedEntityRef
+        // relatedVocabularyRef
 
         // id: required _not_ to be provided
         if (newVocabulary.getId() != 0) {
@@ -337,8 +360,8 @@ public class CheckNewVocabularyImpl
                 valid = false;
                 constraintContext.buildConstraintViolationWithTemplate(
                     "{" + CheckNewVocabulary.INTERFACE_NAME
-                    + ".relatedEntity.unknown}").
-                addPropertyNode("relatedEntity").addBeanNode().inIterable().
+                    + ".relatedEntityRef.unknown}").
+                addPropertyNode("relatedEntityRef").addBeanNode().inIterable().
                 atIndex(reIndex).
                 addConstraintViolation();
                 continue;
@@ -352,8 +375,8 @@ public class CheckNewVocabularyImpl
                 valid = false;
                 constraintContext.buildConstraintViolationWithTemplate(
                         "{" + CheckNewVocabulary.INTERFACE_NAME
-                        + ".relatedEntity.badRelation}").
-                addPropertyNode("relatedEntity").addBeanNode().inIterable().
+                        + ".relatedEntityRef.badRelation}").
+                addPropertyNode("relatedEntityRef").addBeanNode().inIterable().
                 atIndex(reIndex).
                 addConstraintViolation();
                 continue;
@@ -366,8 +389,8 @@ public class CheckNewVocabularyImpl
             valid = false;
             constraintContext.buildConstraintViolationWithTemplate(
                 "{" + CheckNewVocabulary.INTERFACE_NAME
-                + ".relatedEntity.noPublisher}").
-            addPropertyNode("relatedEntity").
+                + ".relatedEntityRef.noPublisher}").
+            addPropertyNode("relatedEntityRef").
             addConstraintViolation();
         }
         // Add up the sizes of all the Sets within allRERefs.
@@ -378,12 +401,66 @@ public class CheckNewVocabularyImpl
             valid = false;
             constraintContext.buildConstraintViolationWithTemplate(
                 "{" + CheckNewVocabulary.INTERFACE_NAME
-                + ".relatedEntity.duplicate}").
-            addPropertyNode("relatedEntity").
+                + ".relatedEntityRef.duplicate}").
+            addPropertyNode("relatedEntityRef").
             addConstraintViolation();
         }
 
         // relatedVocabularyRef
+        // We keep track of the related vocabulary relations we've seen
+        // for each related vocabulary. At the end, we will check that
+        // there were no duplicate pairs (related vocabulary, relation).
+        Map<Integer, Set<RelatedVocabularyRelation>> allRVRefs =
+                new HashMap<>();
+        int rvIndex = 0;
+        for (Iterator<RelatedVocabularyRef> it =
+                newVocabulary.getRelatedVocabularyRef().iterator();
+                it.hasNext(); reIndex++) {
+            RelatedVocabularyRef rvRef = it.next();
+            if (!allRVRefs.containsKey(rvRef.getId())) {
+                allRVRefs.put(rvRef.getId(), new HashSet<>());
+            }
+            allRVRefs.get(rvRef.getId()).add(rvRef.getRelation());
+            au.org.ands.vocabs.registry.db.entity.Vocabulary vocab =
+                    VocabularyDAO.getCurrentVocabularyByVocabularyId(
+                            rvRef.getId());
+            if (vocab == null) {
+                valid = false;
+                constraintContext.buildConstraintViolationWithTemplate(
+                    "{" + CheckNewVocabulary.INTERFACE_NAME
+                    + ".relatedVocabularyRef.unknown}").
+                addPropertyNode("relatedVocabularyRef").addBeanNode().
+                inIterable().atIndex(rvIndex).
+                addConstraintViolation();
+                continue;
+            }
+            // NB: If the relation type specified in the input is not even
+            // in the enumerated type (e.g., it is misspelled), then
+            // reRef.getRelation() returns null ... and you correctly
+            // get an error generated for this.
+            if (rvRef.getRelation() == null) {
+                valid = false;
+                constraintContext.buildConstraintViolationWithTemplate(
+                        "{" + CheckNewVocabulary.INTERFACE_NAME
+                        + ".relatedVocabularyRef.badRelation}").
+                addPropertyNode("relatedVocabularyRef").addBeanNode().
+                inIterable().atIndex(reIndex).
+                addConstraintViolation();
+                continue;
+            }
+        }
+        // Add up the sizes of all the Sets within allRVRefs.
+        totalRefs = allRVRefs.values().stream().
+                map(s -> s.size()).reduce(0, (a, b) -> a + b);
+        if (totalRefs != newVocabulary.getRelatedVocabularyRef().size()) {
+            // There's a duplicate instance of a relation to a related entity.
+            valid = false;
+            constraintContext.buildConstraintViolationWithTemplate(
+                "{" + CheckNewVocabulary.INTERFACE_NAME
+                + ".relatedVocabularyRef.duplicate}").
+            addPropertyNode("relatedVocabularyRef").
+            addConstraintViolation();
+        }
 
 
         // what else?
