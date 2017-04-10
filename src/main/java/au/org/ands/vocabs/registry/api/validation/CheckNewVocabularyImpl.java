@@ -3,8 +3,11 @@
 package au.org.ands.vocabs.registry.api.validation;
 
 import java.lang.invoke.MethodHandles;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
@@ -99,7 +102,7 @@ public class CheckNewVocabularyImpl
 
         // acronym: optional
 
-        // description: required
+        // description: required, and must be valid HTML
         valid = ValidationUtils.requireFieldNotEmptyString(
                 CheckNewVocabulary.INTERFACE_NAME,
                 newVocabulary.getDescription(), "description",
@@ -109,14 +112,34 @@ public class CheckNewVocabularyImpl
                 newVocabulary.getDescription(), "description",
                 constraintContext, valid);
 
-        // note: optional
+        // note: optional, but, if specified, must be valid HTML
+        valid = ValidationUtils.requireFieldValidHTML(
+                CheckNewVocabulary.INTERFACE_NAME,
+                newVocabulary.getNote(), "note",
+                constraintContext, valid);
 
         // subject: at least one from ANZSRC-FOR required
         boolean validSubjects = false;
+        // Keep track of the local subjects that were specified, so
+        // we can check for duplicates at the end. We keep track of their
+        // labels.
+        int numLocalSubjectsSpecified = 0;
+        Set<String> localSubjectsSpecified = new HashSet<>();
+        // Also, keep track of the non-local subjects, so we can check
+        // for duplicates of them, too. We keep track of their IRIs.
+        int numNonLocalSubjectsSpecified = 0;
+        Set<String> nonLocalSubjectsSpecified = new HashSet<>();
         int subjectIndex = 0;
         for (Iterator<Subject> it = newVocabulary.getSubject().iterator();
                 it.hasNext(); subjectIndex++) {
             Subject subject = it.next();
+            if (SubjectSources.LOCAL.equals(subject.getSource())) {
+                numLocalSubjectsSpecified++;
+                localSubjectsSpecified.add(subject.getLabel());
+            } else {
+                numNonLocalSubjectsSpecified++;
+                nonLocalSubjectsSpecified.add(subject.getIri());
+            }
             final int index = subjectIndex;
             valid = ValidationUtils.
                     requireFieldNotEmptyStringAndSatisfiesPredicate(
@@ -156,6 +179,22 @@ public class CheckNewVocabularyImpl
             constraintContext.buildConstraintViolationWithTemplate(
                 "{" + CheckNewVocabulary.INTERFACE_NAME
                 + ".subject.noAnzsrcFor}").
+            addPropertyNode("subject").
+            addConstraintViolation();
+        }
+        if (numLocalSubjectsSpecified != localSubjectsSpecified.size()) {
+            valid = false;
+            constraintContext.buildConstraintViolationWithTemplate(
+                "{" + CheckNewVocabulary.INTERFACE_NAME
+                + ".subject.duplicateLocal}").
+            addPropertyNode("subject").
+            addConstraintViolation();
+        }
+        if (numNonLocalSubjectsSpecified != nonLocalSubjectsSpecified.size()) {
+            valid = false;
+            constraintContext.buildConstraintViolationWithTemplate(
+                "{" + CheckNewVocabulary.INTERFACE_NAME
+                + ".subject.duplicateNonLocal}").
             addPropertyNode("subject").
             addConstraintViolation();
         }
@@ -253,7 +292,6 @@ public class CheckNewVocabularyImpl
                         atIndex(index).addConstraintViolation(),
                     valid);
         }
-
         // Check for duplicates in the list of top concepts.
         HashSet<String> topConceptsSet = new HashSet<>();
         topConceptsSet.addAll(newVocabulary.getTopConcept());
@@ -279,11 +317,19 @@ public class CheckNewVocabularyImpl
 
         // relatedEntityRef
         boolean validRelatedEntities = false;
+        // We keep track of the related entity relations we've seen
+        // for each related entity. At the end, we will check that
+        // there were no duplicate pairs (related entity, relation).
+        Map<Integer, Set<RelatedEntityRelation>> allRERefs = new HashMap<>();
         int reIndex = 0;
         for (Iterator<RelatedEntityRef> it =
                 newVocabulary.getRelatedEntityRef().iterator();
                 it.hasNext(); reIndex++) {
             RelatedEntityRef reRef = it.next();
+            if (!allRERefs.containsKey(reRef.getId())) {
+                allRERefs.put(reRef.getId(), new HashSet<>());
+            }
+            allRERefs.get(reRef.getId()).add(reRef.getRelation());
             RelatedEntity re =
                     RelatedEntityDAO.getCurrentRelatedEntityByRelatedEntityId(
                             reRef.getId());
@@ -297,6 +343,10 @@ public class CheckNewVocabularyImpl
                 addConstraintViolation();
                 continue;
             }
+            // NB: If the relation type specified in the input is not even
+            // in the enumerated type (e.g., it is misspelled), then
+            // reRef.getRelation() returns null ... and you correctly
+            // get an error generated for this.
             if (!ValidationUtils.isAllowedRelation(re.getType(),
                     reRef.getRelation())) {
                 valid = false;
@@ -320,6 +370,21 @@ public class CheckNewVocabularyImpl
             addPropertyNode("relatedEntity").
             addConstraintViolation();
         }
+        // Add up the sizes of all the Sets within allRERefs.
+        int totalRefs = allRERefs.values().stream().
+                map(s -> s.size()).reduce(0, (a, b) -> a + b);
+        if (totalRefs != newVocabulary.getRelatedEntityRef().size()) {
+            // There's a duplicate instance of a relation to a related entity.
+            valid = false;
+            constraintContext.buildConstraintViolationWithTemplate(
+                "{" + CheckNewVocabulary.INTERFACE_NAME
+                + ".relatedEntity.duplicate}").
+            addPropertyNode("relatedEntity").
+            addConstraintViolation();
+        }
+
+        // relatedVocabularyRef
+
 
         // what else?
         if (!valid) {
