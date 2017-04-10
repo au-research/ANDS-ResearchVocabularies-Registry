@@ -64,13 +64,50 @@ public final class ValidationUtils {
             final String fieldName,
             final ConstraintValidatorContext constraintContext,
             final boolean valid) {
+        return requireFieldNotNull(constraintInterfaceName,
+                 objectToTest, fieldName, constraintContext, null,
+                 valid);
+    }
+
+    /** Check that a field of a bean is not null. If it is in fact
+     * null, register a constraint violation.
+     * @param constraintInterfaceName The name of the interface
+     *      for the constraint.
+     * @param objectToTest The object that is required to be not null.
+     * @param fieldName The name of the field that is being tested.
+     * @param constraintContext The constraint context. If there is a
+     *      violation, it is recorded here.
+     * @param nodeModifier If null, the generated ConstraintViolationBuilder
+     *      has {@code addPropertyNode(fieldName).addConstraintViolation()}
+     *      invoked.
+     *      If not null, this is taken to be a consumer of the
+     *      ConstraintViolationBuilder
+     *      to qualify the location of the error, and the caller is then
+     *      responsible for specying a consumer that adds all location
+     *      information, including,
+     *      e.g., invoking {@code addPropertyNode()},
+     *      and for invoking {@code addConstraintViolation()} at the end.
+     * @param valid The state of validity, up to this point.
+     * @return The updated validity state.
+    */
+    public static boolean requireFieldNotNull(
+            final String constraintInterfaceName,
+            final Object objectToTest,
+            final String fieldName,
+            final ConstraintValidatorContext constraintContext,
+            final Consumer<ConstraintViolationBuilder> nodeModifier,
+            final boolean valid) {
         boolean validToReturn = valid;
         if (objectToTest == null) {
             validToReturn = false;
-            constraintContext.buildConstraintViolationWithTemplate(
-                    "{" + constraintInterfaceName + "." + fieldName + "}").
-            addPropertyNode(fieldName).
-            addConstraintViolation();
+            ConstraintViolationBuilder cvb = constraintContext.
+                    buildConstraintViolationWithTemplate(
+                    "{" + constraintInterfaceName + "." + fieldName + "}");
+            if (nodeModifier != null) {
+                nodeModifier.accept(cvb);
+            } else {
+                cvb.addPropertyNode(fieldName).addConstraintViolation();
+            }
         }
         return validToReturn;
     }
@@ -92,13 +129,50 @@ public final class ValidationUtils {
             final String fieldName,
             final ConstraintValidatorContext constraintContext,
             final boolean valid) {
+        return requireFieldNotEmptyString(constraintInterfaceName,
+                stringToTest, fieldName, constraintContext, null,
+                valid);
+    }
+
+    /** Check that a field of a bean is not an empty string.
+     * If it is in fact an empty string, register a constraint violation.
+     * @param constraintInterfaceName The name of the interface
+     *      for the constraint.
+     * @param stringToTest The String that is required to be not null.
+     * @param fieldName The name of the field that is being tested.
+     * @param constraintContext The constraint context. If there is a
+     *      violation, it is recorded here.
+     * @param nodeModifier If null, the generated ConstraintViolationBuilder
+     *      has {@code addPropertyNode(fieldName).addConstraintViolation()}
+     *      invoked.
+     *      If not null, this is taken to be a consumer of the
+     *      ConstraintViolationBuilder
+     *      to qualify the location of the error, and the caller is then
+     *      responsible for specying a consumer that adds all location
+     *      information, including,
+     *      e.g., invoking {@code addPropertyNode()},
+     *      and for invoking {@code addConstraintViolation()} at the end.
+     * @param valid The state of validity, up to this point.
+     * @return The updated validity state.
+    */
+    public static boolean requireFieldNotEmptyString(
+            final String constraintInterfaceName,
+            final String stringToTest,
+            final String fieldName,
+            final ConstraintValidatorContext constraintContext,
+            final Consumer<ConstraintViolationBuilder> nodeModifier,
+            final boolean valid) {
         boolean validToReturn = valid;
         if (stringToTest == null || stringToTest.isEmpty()) {
             validToReturn = false;
-            constraintContext.buildConstraintViolationWithTemplate(
-                    "{" + constraintInterfaceName + "." + fieldName + "}").
-            addPropertyNode(fieldName).
-            addConstraintViolation();
+            ConstraintViolationBuilder cvb = constraintContext.
+                    buildConstraintViolationWithTemplate(
+                    "{" + constraintInterfaceName + "." + fieldName + "}");
+            if (nodeModifier != null) {
+                nodeModifier.accept(cvb);
+            } else {
+                cvb.addPropertyNode(fieldName).addConstraintViolation();
+            }
         }
         return validToReturn;
     }
@@ -124,51 +198,9 @@ public final class ValidationUtils {
             final Predicate<String> predicate,
             final ConstraintValidatorContext constraintContext,
             final boolean valid) {
-        boolean validToReturn = valid;
-        if (stringToTest == null || stringToTest.isEmpty()
-                || !predicate.test(stringToTest)) {
-            validToReturn = false;
-            constraintContext.buildConstraintViolationWithTemplate(
-                    "{" + constraintInterfaceName + "." + fieldName + "}").
-            addPropertyNode(fieldName).
-            addConstraintViolation();
-        }
-        return validToReturn;
-    }
-
-
-    /** Check that a field of a bean is not an empty string.
-     * If it is in fact an empty string, register a constraint violation.
-     * @param constraintInterfaceName The name of the interface
-     *      for the constraint.
-     * @param stringToTest The String that is required to be not null.
-     * @param fieldName The name of the field that is being tested.
-     * @param constraintContext The constraint context. If there is a
-     *      violation, it is recorded here.
-     * @param nodeModifier A consumer of the ConstraintViolationBuilder
-     *      to qualify the location of the error. The caller is
-     *      responsible for specying a consumer that adds all location
-     *      information, including,
-     *      e.g., invoking {@code addPropertyNode()},
-     *      and for invoking {@code addConstraintViolation()} at the end.
-     * @param valid The state of validity, up to this point.
-     * @return The updated validity state.
-    */
-    public static boolean requireFieldNotEmptyString(
-            final String constraintInterfaceName,
-            final String stringToTest,
-            final String fieldName,
-            final ConstraintValidatorContext constraintContext,
-            final Consumer<ConstraintViolationBuilder> nodeModifier,
-            final boolean valid) {
-        boolean validToReturn = valid;
-        if (stringToTest == null || stringToTest.isEmpty()) {
-            validToReturn = false;
-            nodeModifier.accept(constraintContext.
-                    buildConstraintViolationWithTemplate(
-                    "{" + constraintInterfaceName + "." + fieldName + "}"));
-        }
-        return validToReturn;
+        return requireFieldNotEmptyStringAndSatisfiesPredicate(
+                constraintInterfaceName, stringToTest, fieldName,
+                predicate, constraintContext, null, valid);
     }
 
     /** Check that a field of a bean is not an empty string, and
@@ -181,8 +213,12 @@ public final class ValidationUtils {
      * @param predicate The Predicate to be tested for the String.
      * @param constraintContext The constraint context. If there is a
      *      violation, it is recorded here.
-     * @param nodeModifier A consumer of the ConstraintViolationBuilder
-     *      to qualify the location of the error. The caller is
+     * @param nodeModifier If null, the generated ConstraintViolationBuilder
+     *      has {@code addPropertyNode(fieldName).addConstraintViolation()}
+     *      invoked.
+     *      If not null, this is taken to be a consumer of the
+     *      ConstraintViolationBuilder
+     *      to qualify the location of the error, and the caller is then
      *      responsible for specying a consumer that adds all location
      *      information, including,
      *      e.g., invoking {@code addPropertyNode()},
@@ -202,13 +238,17 @@ public final class ValidationUtils {
         if (stringToTest == null || stringToTest.isEmpty()
                 || !predicate.test(stringToTest)) {
             validToReturn = false;
-            nodeModifier.accept(constraintContext.
+            ConstraintViolationBuilder cvb = constraintContext.
                     buildConstraintViolationWithTemplate(
-                    "{" + constraintInterfaceName + "." + fieldName + "}"));
+                    "{" + constraintInterfaceName + "." + fieldName + "}");
+            if (nodeModifier != null) {
+                nodeModifier.accept(cvb);
+            } else {
+                cvb.addPropertyNode(fieldName).addConstraintViolation();
+            }
         }
         return validToReturn;
     }
-
 
     /** Check that a field of a bean is a valid date, according to
      * the supported formats: "YYYY", "YYYY-MM", and "YYYY-MM-DD".
@@ -232,6 +272,45 @@ public final class ValidationUtils {
             final String fieldName,
             final boolean mayBeEmpty,
             final ConstraintValidatorContext constraintContext,
+            final boolean valid) {
+        return requireFieldValidDate(constraintInterfaceName,
+                dateToTest, fieldName, mayBeEmpty, constraintContext, null,
+                valid);
+    }
+
+    /** Check that a field of a bean is a valid date, according to
+     * the supported formats: "YYYY", "YYYY-MM", and "YYYY-MM-DD".
+     * If it is not valid, register a constraint violation.
+     * @param constraintInterfaceName The name of the interface
+     *      for the constraint.
+     * @param dateToTest The String that is required to be a valid date.
+     * @param fieldName The name of the field that is being tested.
+     * @param mayBeEmpty If the field is allowed to be missing/empty.
+     *      If this is true, validation passes if the field is null
+     *      or an empty string. If this is false, a date value
+     *      must be provided.
+     * @param constraintContext The constraint context. If there is a
+     *      violation, it is recorded here.
+     * @param nodeModifier If null, the generated ConstraintViolationBuilder
+     *      has {@code addPropertyNode(fieldName).addConstraintViolation()}
+     *      invoked.
+     *      If not null, this is taken to be a consumer of the
+     *      ConstraintViolationBuilder
+     *      to qualify the location of the error, and the caller is then
+     *      responsible for specying a consumer that adds all location
+     *      information, including,
+     *      e.g., invoking {@code addPropertyNode()},
+     *      and for invoking {@code addConstraintViolation()} at the end.
+     * @param valid The state of validity, up to this point.
+     * @return The updated validity state.
+    */
+    public static boolean requireFieldValidDate(
+            final String constraintInterfaceName,
+            final String dateToTest,
+            final String fieldName,
+            final boolean mayBeEmpty,
+            final ConstraintValidatorContext constraintContext,
+            final Consumer<ConstraintViolationBuilder> nodeModifier,
             final boolean valid) {
         /* validToReturn: what will be the return value of this method. */
         boolean validToReturn = valid;
@@ -279,11 +358,15 @@ public final class ValidationUtils {
         }
         if (!validDate) {
             validToReturn = false;
-            constraintContext.buildConstraintViolationWithTemplate(
+            ConstraintViolationBuilder cvb = constraintContext.
+                    buildConstraintViolationWithTemplate(
                     "{" + constraintInterfaceName + "." + fieldName + "}"
-                    + extraErrorInfo).
-            addPropertyNode(fieldName).
-            addConstraintViolation();
+                    + extraErrorInfo);
+            if (nodeModifier != null) {
+                nodeModifier.accept(cvb);
+            } else {
+                cvb.addPropertyNode(fieldName).addConstraintViolation();
+            }
         }
         return validToReturn;
     }
@@ -366,6 +449,45 @@ public final class ValidationUtils {
             final String fieldName,
             final ConstraintValidatorContext constraintContext,
             final boolean valid) {
+        return requireFieldValidHTML(constraintInterfaceName,
+                stringToTest, fieldName, constraintContext, null,
+                valid);
+    }
+
+    /** Check that a field of a bean contains only acceptable HTML.
+     * Here, "acceptable" means according to jsoup's "basic"
+     * whitelist. A field value of null is also considered to
+     * be "acceptable", so if the field is required, you must
+     * test for this separately.
+     * @param constraintInterfaceName The name of the interface
+     *      for the constraint.
+     * @param stringToTest The String that is required to have valid
+     *      HTML. It must already have been checked to be a non-empty
+     *      string. If null, or an empty string is passed in, return
+     *      immediately with the value of valid.
+     * @param fieldName The name of the field that is being tested.
+     * @param constraintContext The constraint context. If there is a
+     *      violation, it is recorded here.
+     * @param nodeModifier If null, the generated ConstraintViolationBuilder
+     *      has {@code addPropertyNode(fieldName).addConstraintViolation()}
+     *      invoked.
+     *      If not null, this is taken to be a consumer of the
+     *      ConstraintViolationBuilder
+     *      to qualify the location of the error, and the caller is then
+     *      responsible for specying a consumer that adds all location
+     *      information, including,
+     *      e.g., invoking {@code addPropertyNode()},
+     *      and for invoking {@code addConstraintViolation()} at the end.
+     * @param valid The state of validity, up to this point.
+     * @return The updated validity state.
+    */
+    public static boolean requireFieldValidHTML(
+            final String constraintInterfaceName,
+            final String stringToTest,
+            final String fieldName,
+            final ConstraintValidatorContext constraintContext,
+            final Consumer<ConstraintViolationBuilder> nodeModifier,
+            final boolean valid) {
         if (stringToTest == null || stringToTest.isEmpty()) {
             return valid;
         }
@@ -373,11 +495,15 @@ public final class ValidationUtils {
 
         if (!isValidHTML(stringToTest)) {
             validToReturn = false;
-            constraintContext.buildConstraintViolationWithTemplate(
+            ConstraintViolationBuilder cvb = constraintContext.
+                    buildConstraintViolationWithTemplate(
                     "{" + constraintInterfaceName + "." + fieldName
-                    + ".html}").
-            addPropertyNode(fieldName).
-            addConstraintViolation();
+                    + ".html}");
+            if (nodeModifier != null) {
+                nodeModifier.accept(cvb);
+            } else {
+                cvb.addPropertyNode(fieldName).addConstraintViolation();
+            }
         }
         return validToReturn;
     }
