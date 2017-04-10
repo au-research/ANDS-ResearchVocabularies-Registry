@@ -107,8 +107,7 @@ public class CheckNewVocabularyImpl
                     "{" + CheckNewVocabulary.INTERFACE_NAME + ".slug}").
                 addPropertyNode("slug").
                 addConstraintViolation();
-            } else if (!ValidationUtils.isValidSlug(slug)
-                    || VocabularyDAO.isSlugInUse(slug)) {
+            } else if (VocabularyDAO.isSlugInUse(slug)) {
                 valid = false;
                 constraintContext.buildConstraintViolationWithTemplate(
                     "{" + CheckNewVocabulary.INTERFACE_NAME + ".slug.inUse}").
