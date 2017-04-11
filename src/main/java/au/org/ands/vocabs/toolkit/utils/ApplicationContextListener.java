@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory;
 import com.mchange.v2.c3p0.C3P0Registry;
 import com.mchange.v2.c3p0.PooledDataSource;
 
+import au.org.ands.vocabs.registry.utils.SlugGenerator;
 import au.org.ands.vocabs.toolkit.db.DBContext;
 
 /** Context listener for the Toolkit web application.
@@ -122,6 +123,7 @@ public class ApplicationContextListener implements ServletContextListener {
 
         // Invoke any remaining shutdown methods.
         ToolkitNetUtils.doShutdown();
+        SlugGenerator.shutdown();
 
         // When running tests, log4j may have started a thread;
         // shut it down. However, note that if Arquillian uses
