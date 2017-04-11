@@ -18,6 +18,9 @@ public final class ApiPaths {
     /** The top level of the roles API. */
     public static final String API_ROLES = "/api/roles";
 
+    /** Utility methods of the API. */
+    public static final String API_UTILITIES = "/api/utilities";
+
     /* Model elements. */
 
     /** Subpath for vocabulary resources. */

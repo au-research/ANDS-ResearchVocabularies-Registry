@@ -8,7 +8,6 @@ import java.time.format.DateTimeParseException;
 import java.util.HashSet;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
-import java.util.regex.Pattern;
 
 import javax.validation.ConstraintValidatorContext;
 import javax.validation.ConstraintValidatorContext.ConstraintViolationBuilder;
@@ -20,6 +19,7 @@ import org.slf4j.LoggerFactory;
 
 import au.org.ands.vocabs.registry.enums.RelatedEntityRelation;
 import au.org.ands.vocabs.registry.enums.RelatedEntityType;
+import au.org.ands.vocabs.registry.utils.SlugGenerator;
 
 /** Utility methods to support validation. */
 public final class ValidationUtils {
@@ -371,18 +371,6 @@ public final class ValidationUtils {
         return validToReturn;
     }
 
-    /** String of a regular expression used to match valid slugs.
-     * Does not contain anchors to the beginning and end of the string,
-     * so use with {@link java.util.regex.Matcher#matches()}. */
-    private static final String SLUG_REGEX_STRING = "[a-z0-9-]+";
-
-    /** Regular expression used to match valid slugs. */
-    private static final Pattern SLUG_PATTERN =
-            Pattern.compile(SLUG_REGEX_STRING);
-
-    /** Maximum allowed length of a slug. */
-    private static final int SLUG_MAX_LENGTH = 50;
-
     /** Determine if a user-specified slug is valid, i.e., has the
      * correct format. That means, it has only the allowed characters,
      * and is not too long.
@@ -390,11 +378,12 @@ public final class ValidationUtils {
      * @return true, if the slug value is valid.
      */
     public static boolean isValidSlug(final String slug) {
-        if (slug == null || slug.isEmpty()
-                || slug.length() > SLUG_MAX_LENGTH) {
+        if (slug == null || slug.isEmpty()) {
             return false;
         }
-        return SLUG_PATTERN.matcher(slug).matches();
+        // Slug generation is idempotent. So, the proposed slug
+        // is valid iff it comes out of the slug generator unchanged.
+        return slug.equals(SlugGenerator.generateSlug(slug));
     }
 
     /** Whitelist for jsoup to use to validate HTML. Initialized

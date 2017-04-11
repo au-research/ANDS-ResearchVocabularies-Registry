@@ -27,6 +27,7 @@ import au.org.ands.vocabs.registry.schema.vocabulary201701.Vocabulary.PoolpartyP
 import au.org.ands.vocabs.registry.schema.vocabulary201701.Vocabulary.RelatedEntityRef;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.Vocabulary.RelatedVocabularyRef;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.Vocabulary.Subject;
+import au.org.ands.vocabs.registry.utils.SlugGenerator;
 
 /** Validation of input data provided for vocabulary creation.
  */
@@ -60,6 +61,7 @@ public class CheckNewVocabularyImpl
         // owner
         // slug
         // title
+        // title passed through slug generation, when slug not provided
         // acronym
         // description
         // note
@@ -123,6 +125,21 @@ public class CheckNewVocabularyImpl
                 CheckNewVocabulary.INTERFACE_NAME,
                 newVocabulary.getTitle(), "title",
                 constraintContext, valid);
+
+        // If slug was not specified, but the title was, then pass
+        // the title through slug generation and check that instead.
+        if (slug == null && newVocabulary.getTitle() != null) {
+            String slugFromTitle =
+                    SlugGenerator.generateSlug(newVocabulary.getTitle());
+            if (VocabularyDAO.isSlugInUse(slugFromTitle)) {
+                valid = false;
+                constraintContext.buildConstraintViolationWithTemplate(
+                    "{" + CheckNewVocabulary.INTERFACE_NAME
+                    + ".title.slugInUse}").
+                addPropertyNode("title").
+                addConstraintViolation();
+            }
+        }
 
         // acronym: optional
 
@@ -467,6 +484,11 @@ public class CheckNewVocabularyImpl
         int versionIndex = 0;
         // Keep track of version slugs, so we can check if there are
         // duplicates.
+        // Check if there _would_ be duplicate slugs, in the
+        // case that slugs are not specified: i.e., because there
+        // are duplicate titles, or, there is a version with a
+        // title but no slug, where the generated slug matches another
+        // version where the slug _is_ specified.
         Set<String> versionSlugs = new HashSet<>();
         for (Iterator<Version> it =
                 newVocabulary.getVersion().iterator();
@@ -475,17 +497,20 @@ public class CheckNewVocabularyImpl
             if (!isValidVersion(versionIndex, version, constraintContext)) {
                 valid = false;
             }
-            if (version.getSlug() != null
-                    && versionSlugs.contains(version.getSlug())) {
+            String versionSlug = version.getSlug();
+            if (versionSlug == null) {
+                versionSlug = SlugGenerator.generateSlug(version.getTitle());
+            }
+            if (versionSlugs.contains(versionSlug)) {
                 valid = false;
                 constraintContext.buildConstraintViolationWithTemplate(
                         "{" + CheckNewVocabulary.INTERFACE_NAME
                         + ".version.slug.duplicate}").
-                    addPropertyNode("version").addPropertyNode("slug").
+                    addPropertyNode("version").addBeanNode().
                     inIterable().atIndex(versionIndex).
                     addConstraintViolation();
             }
-            versionSlugs.add(version.getSlug());
+            versionSlugs.add(versionSlug);
         }
 
         // what else?
@@ -569,10 +594,6 @@ public class CheckNewVocabularyImpl
         }
 
         // note: optional, but, if specified, must be valid HTML
-        logger.info("version note valid: "
-                + ValidationUtils.isValidHTML(newVersion.getNote()));
-        logger.info("version note cleaned: "
-                + ValidationUtils.cleanHTML(newVersion.getNote()));
         valid = ValidationUtils.requireFieldValidHTML(
                 CheckNewVocabulary.INTERFACE_NAME,
                 newVersion.getNote(), "version.note",
@@ -601,6 +622,5 @@ public class CheckNewVocabularyImpl
 
         return valid;
     }
-
 
 }

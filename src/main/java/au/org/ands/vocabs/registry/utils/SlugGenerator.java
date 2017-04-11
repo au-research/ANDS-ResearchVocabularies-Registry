@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.util.HashMap;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.icu.ICUFoldingFilterFactory;
 import org.apache.lucene.analysis.icu.ICUTransformFilterFactory;
@@ -33,6 +34,9 @@ public final class SlugGenerator {
     /** Private constructor for a utility class. */
     private SlugGenerator() {
     }
+
+    /** Maximum allowed length of a slug. */
+    private static final int SLUG_MAX_LENGTH = 50;
 
     /** The Lucene {@link TokenizerChain} used to generate slugs. */
     private static TokenizerChain tokenizerChain;
@@ -103,14 +107,15 @@ public final class SlugGenerator {
                 }
                 result += term;
             }
-            System.out.println("Output: " + result);
             stream.end();
-            // System.out.println(line);
         } catch (IOException e) {
             logger.error("Exception while generating slug", e);
             return "Error";
         }
-        return result;
+        return StringUtils.stripEnd(
+                result.substring(0, Math.min(SLUG_MAX_LENGTH,
+                result.length())),
+                "-");
     }
 
     /** Close the Lucene {@link TokenizerChain} used to generate slugs. */

@@ -37,6 +37,10 @@
     <filter-name>ApiOriginFilter</filter-name>
     <url-pattern>/api/resource/*</url-pattern>
   </filter-mapping>
+  <filter-mapping>
+    <filter-name>ApiOriginFilter</filter-name>
+    <url-pattern>/api/utilities/*</url-pattern>
+  </filter-mapping>
 
   <servlet-mapping>
     <servlet-name>javax.ws.rs.core.Application</servlet-name>
