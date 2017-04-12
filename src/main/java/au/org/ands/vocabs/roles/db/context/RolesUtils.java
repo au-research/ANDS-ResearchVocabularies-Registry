@@ -105,13 +105,15 @@ public final class RolesUtils {
      * @param roleId The role ID to be looked up.
      * @return A UserInfo object containing the role information
      *      associated with the role ID.
+     * @throws IllegalArgumentException if there is no matching role.
      */
     public static UserInfo getUserInfoForRole(final String roleId) {
         UserInfo userInfo = new UserInfo();
         List<Role> roles = getRolesByRoleId(roleId);
-        if (roles.size() != 1) {
-            throw new IllegalArgumentException("Not exactly one matching role");
+        if (roles.size() == 0) {
+            throw new IllegalArgumentException("No matching role");
         }
+        // Sigh, "cope" with duplicates by just taking the first one.
         Role role = roles.get(0);
         userInfo.setId(roleId);
         userInfo.setAuthenticationServiceId(role.getAuthenticationServiceId());
