@@ -48,6 +48,10 @@ public class BuiltinAuthenticator
         // We have a username and password to check. Look them up.
 
         if (!RolesUtils.isValidBuiltinRole(username, password)) {
+//            throw HttpAction.unauthorized("Username : '" + username
+//                    + "' supplied, but either wrong password or no such user",
+//                    context, "My realm");
+
             throwsException("Username : '" + username
                     + "' supplied, but either wrong password or no such user");
         }

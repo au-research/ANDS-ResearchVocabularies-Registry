@@ -22,14 +22,22 @@ public class AuthHttpActionAdapter
     /** For an authentication failure, insert an error response. */
     @Override
     public Object adapt(final int code, final JaxRsContext context) {
-        if (code == HttpStatus.SC_FORBIDDEN) {
-        context.getRequestContext().abortWith(
-                context.getAbortBuilder().
-                entity(new ErrorResult("Not authenticated")).
-                build());
+        if (code == HttpStatus.SC_UNAUTHORIZED) {
+            context.getRequestContext().abortWith(
+                    context.getAbortBuilder().
+                    entity(new ErrorResult("Not authenticated")).
+//                    header(HttpConstants.AUTHENTICATE_HEADER,
+//                            "Basic realm=\"My realm2\"").
+                    build());
+        } else
+            if (code == HttpStatus.SC_FORBIDDEN) {
+            context.getRequestContext().abortWith(
+                    context.getAbortBuilder().
+                    entity(new ErrorResult("Not authorized")).
+                    build());
         } else {
-          context.getRequestContext().abortWith(
-                  context.getAbortBuilder().build());
+            context.getRequestContext().abortWith(
+                    context.getAbortBuilder().build());
         }
         return null;
     }

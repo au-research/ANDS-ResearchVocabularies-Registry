@@ -8,7 +8,6 @@ import javax.ws.rs.ext.ContextResolver;
 import javax.ws.rs.ext.Provider;
 
 import org.pac4j.core.client.Clients;
-import org.pac4j.core.client.direct.AnonymousClient;
 import org.pac4j.core.config.Config;
 import org.pac4j.core.credentials.authenticator.LocalCachingAuthenticator;
 import org.pac4j.http.client.direct.CookieClient;
@@ -75,10 +74,6 @@ public class AuthConfig implements ContextResolver<Config> {
                 CACHE_SIZE, CACHE_TIME, TimeUnit.MINUTES));
         rdaCookieClient.setName(AuthConstants.RDA_COOKIE_CLIENT);
 
-        // Anonymous Client.
-        AnonymousClient anonClient = new AnonymousClient();
-        anonClient.setName(AuthConstants.ANON_CLIENT);
-
         // For a successful login, fetch the user's roles.
         userpassClient.addAuthorizationGenerator(new AuthorizationFetcher());
         rdaCookieClient.addAuthorizationGenerator(new AuthorizationFetcher());
@@ -89,14 +84,15 @@ public class AuthConfig implements ContextResolver<Config> {
         Clients clients = new Clients(
                 userpassClient,
                 rdaHeaderClient,
-                rdaCookieClient,
-                anonClient
+                rdaCookieClient
                 );
 
           configInstance = new JaxRsConfig();
           configInstance.setClients(clients);
+//          configInstance.setDefaultClients(
+//                  AuthConstants.MAY_HAVE_CREDENTIALS);
           configInstance.setDefaultClients(
-                  AuthConstants.MAY_HAVE_CREDENTIALS);
+                  AuthConstants.MUST_HAVE_CREDENTIALS);
           configInstance.getClients().setUrlResolver(
                 new JaxRsUrlResolver());
           configInstance.setHttpActionAdapter(

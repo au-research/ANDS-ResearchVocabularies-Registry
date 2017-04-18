@@ -2,6 +2,8 @@
 
 package au.org.ands.vocabs.registry.api.auth;
 
+import org.pac4j.jax.rs.annotations.Pac4JSecurity;
+
 /** Constants used in authorization and authentication. */
 public final class AuthConstants {
 
@@ -27,10 +29,6 @@ public final class AuthConstants {
     /** Attribute used in Profiles to store complete UserInfo data. */
     public static final String USER_INFO = "rolesUserInfo";
 
-    /** Name of the pac4j direct Client that "authenticates" as an
-     * anonymous user. */
-    public static final String ANON_CLIENT = "anon";
-
     /** Name of the pac4j direct Client that authenticates using
      * a provided username and password. */
     public static final String USERPASS_CLIENT = "userpass";
@@ -50,16 +48,13 @@ public final class AuthConstants {
      * Pac4JSecurity annotation, to require that the user log in
      * to be able to access this method. */
     public static final String MUST_HAVE_CREDENTIALS =
-            USERPASS_CLIENT + "," + RDA_HEADER_CLIENT + RDA_COOKIE_CLIENT;
-
-    /** List of clients that require authorization credentials,
-     * or that allow "anonymous" access.
-     * Use this as the value of the clients parameter of the
-     * Pac4JSecurity annotation, to allow access to the method
-     * with or without logging in. */
-    public static final String MAY_HAVE_CREDENTIALS =
             USERPASS_CLIENT + "," + RDA_HEADER_CLIENT
-            + "," + RDA_COOKIE_CLIENT + "," + ANON_CLIENT;
+            + "," + RDA_COOKIE_CLIENT;
+
+    /** Value of the "authorizers" parameter of the {@link Pac4JSecurity}
+     * annotation, to require that the invoking user be
+     * authenticated. */
+    public static final String IS_AUTHENTICATED = "isAuthenticated";
 
 
 //    /** . */

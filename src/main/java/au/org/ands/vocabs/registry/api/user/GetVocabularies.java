@@ -17,9 +17,11 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import org.apache.http.HttpStatus;
+import org.pac4j.jax.rs.annotations.Pac4JSecurity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import au.org.ands.vocabs.registry.api.auth.AuthConstants;
 import au.org.ands.vocabs.registry.api.context.ApiPaths;
 import au.org.ands.vocabs.registry.db.converter.VersionDbSchemaMapper;
 import au.org.ands.vocabs.registry.db.converter.VocabularyDbSchemaMapper;
@@ -53,6 +55,7 @@ public class GetVocabularies {
     @Path(ApiPaths.VOCABULARIES)
     @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     @GET
+    @Pac4JSecurity(authorizers = AuthConstants.IS_AUTHENTICATED)
     @ApiOperation(value = "Get all the current vocabularies. This includes "
             + "both published and deprecated vocabularies.")
     public final List<Vocabulary> getVocabularies(
