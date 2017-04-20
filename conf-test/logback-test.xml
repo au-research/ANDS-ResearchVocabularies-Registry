@@ -22,14 +22,41 @@
     </encoder>
   </appender>
 
+  <appender name="LOGSTASH"
+    class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <file>${catalina.base}/logs/ands-vocabs-registry-logstash.log</file>
+    <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+      <!-- daily rollover -->
+      <fileNamePattern>${catalina.base}/logs/ands-vocabs-registry-logstash.%d{yyyy-MM-dd}.log</fileNamePattern>
+      <!-- Optional: uncomment the following setting to limit the number
+        of log files kept. -->
+      <!-- Keep 31 days' worth of history -->
+      <!-- <maxHistory>31</maxHistory> -->
+    </rollingPolicy>
+    <encoder class="net.logstash.logback.encoder.LogstashEncoder" />
+  </appender>
+
   <root level="${root-level:-INFO}">
     <!-- Comment out CONSOLE line for production. -->
     <appender-ref ref="CONSOLE" />
     <appender-ref ref="FILE" />
   </root>
+
+  <!-- The main internal logs, including for debugging. -->
   <!-- Set to INFO for production. -->
   <logger name="au.org.ands.vocabs" level="DEBUG" />
   <!-- <logger name="au.org.ands.vocabs" level="INFO" /> -->
+
+  <!-- System logger for analytics. The name must match
+       the value of au.org.ands.vocabs.registry.utils.Logging.LOGGER_NAME.
+  -->
+  <!-- Set to INFO for production. -->
+  <logger name="au.org.ands.vocabs.logstash"
+          additivity="false"
+          level="DEBUG">
+    <appender-ref ref="LOGSTASH" />
+  </logger>
+
   <!-- logger name="org.dbunit" level="ERROR" /-->
   <logger name="org.dbunit" level="INFO" />
   <!-- Uncomment for lots of Mean Bean output.
