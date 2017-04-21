@@ -21,7 +21,6 @@ import com.mchange.v2.c3p0.PooledDataSource;
 
 import au.org.ands.vocabs.registry.utils.SlugGenerator;
 import au.org.ands.vocabs.toolkit.db.DBContext;
-import ch.qos.logback.classic.servlet.LogbackServletContextListener;
 
 /** Context listener for the Toolkit web application.
  */
@@ -149,17 +148,6 @@ public class ApplicationContextListener implements ServletContextListener {
         } catch (InterruptedException e) {
             // No problem.
         }
-
-        // And last, shut down logback logging. By default, logback
-        // installs its own ServletContextListener, but this has the
-        // annoying habit of getting in first, so that by the time
-        // _this_ method is run, logging has already been shut down,
-        // and none of the above logging messages appear.
-        // Defining logback's ServletContextListener first in web.xml
-        // didn't help. So, logback's ServletContextListener has been
-        // disabled in web.xml, and instead, we create an instance of
-        // that listener directly here.
-        new LogbackServletContextListener().contextDestroyed(sce);
     }
 
     /** Shut down the database context. This method takes care not
