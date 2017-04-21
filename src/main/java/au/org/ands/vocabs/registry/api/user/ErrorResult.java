@@ -6,8 +6,6 @@ import java.util.List;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
-import org.glassfish.jersey.server.validation.ValidationError;
-
 /** Class for representing an error result for an API call. */
 @SuppressWarnings("checkstyle:DesignForExtension")
 @XmlRootElement(name = "error")
@@ -31,7 +29,7 @@ public class ErrorResult {
         message = aMessage;
     }
 
-    /** Set the text of error message.
+    /** Set the text of the error message.
      * @param aMessage The text of the error message.
      */
     public void setMessage(final String aMessage) {
@@ -48,7 +46,7 @@ public class ErrorResult {
     /** Set the constraint violations.
      * @param aConstraintViolations The constraint violations.
      */
-    public void setConstraintViolations(
+    public void setConstraintViolation(
             final List<ValidationError> aConstraintViolations) {
         constraintViolations = aConstraintViolations;
     }
@@ -56,7 +54,7 @@ public class ErrorResult {
     /** Get the constraint violations.
      * @return The contraint violations.
      */
-    public List<ValidationError> getConstraintViolations() {
+    public List<ValidationError> getConstraintViolation() {
         return constraintViolations;
     }
 

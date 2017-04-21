@@ -15,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import au.org.ands.vocabs.registry.api.user.ErrorResult;
+import au.org.ands.vocabs.registry.api.validation.ValidationUtils;
 
 /** An {@link ExceptionMapper} that intercepts
  * {@link ConstraintViolationException}s,
@@ -50,14 +51,20 @@ public class ConstraintViolationExceptionMapper
 
         ErrorResult errorResult =
                 new ErrorResult("Bad request: Constraint violations");
-        // Again, use Jersey's internal helper class. This time, to
-        // get a "prettier" version of the violations. We can't
-        // directly serialize the set of violations returned by
+        // We can't directly serialize the set of violations returned by
         // cve.getConstraintViolations(), because
         // ConstraintViolation is an interface, and interfaces can't
         // be serialized by JAXB.
-        errorResult.setConstraintViolations(
-                ValidationHelper.constraintViolationToValidationErrors(cve));
+        // So we previously used Jersey's internal helper class again here,
+        // this time, to get a "prettier" version of the violations.
+        // So this was:
+        //   errorResult.setConstraintViolations(
+        //      ValidationHelper.constraintViolationToValidationErrors(cve));
+        // But now, use our own method, so as to omit the bits
+        // we don't want the user to see (and which aren't helpful to
+        // them anyway).
+        errorResult.setConstraintViolation(
+                ValidationUtils.constraintViolationToValidationErrors(cve));
 
         return Response.status(Response.Status.BAD_REQUEST).
                 entity(errorResult).build();

@@ -6,17 +6,21 @@ import java.lang.invoke.MethodHandles;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.HashSet;
+import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import javax.validation.ConstraintValidatorContext;
 import javax.validation.ConstraintValidatorContext.ConstraintViolationBuilder;
+import javax.validation.ConstraintViolationException;
 
 import org.jsoup.Jsoup;
 import org.jsoup.safety.Whitelist;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import au.org.ands.vocabs.registry.api.user.ValidationError;
 import au.org.ands.vocabs.registry.enums.RelatedEntityRelation;
 import au.org.ands.vocabs.registry.enums.RelatedEntityType;
 import au.org.ands.vocabs.registry.utils.SlugGenerator;
@@ -559,6 +563,23 @@ public final class ValidationUtils {
             logger.error("Unknown RelatedEntityType!");
             return false;
         }
+    }
+
+    /**
+     * Convert the constraint violations contained in
+     * the given exception into a list of
+     * validation errors that can be returned to the caller.
+     * This method is based on Jersey's "default" implementation
+     * in its ValidationHelper class.
+     * @param cve The exception containing all of the constraint violations.
+     * @return A list of validation errors ready for serialization.
+     */
+    public static List<ValidationError> constraintViolationToValidationErrors(
+            final ConstraintViolationException cve) {
+        return cve.getConstraintViolations().stream().map(
+                v -> new ValidationError(v.getMessage(),
+                        v.getPropertyPath().toString())
+        ).collect(Collectors.toList());
     }
 
 }
