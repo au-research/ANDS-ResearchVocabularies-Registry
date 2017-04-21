@@ -13,13 +13,10 @@ import java.time.ZoneOffset;
 import java.util.HashMap;
 import java.util.List;
 
-import javax.servlet.ServletException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status.Family;
 
-import org.apache.catalina.LifecycleException;
-import org.apache.catalina.startup.Tomcat;
 import org.apache.commons.io.FileUtils;
 import org.dbunit.Assertion;
 import org.dbunit.DatabaseUnitException;
@@ -60,11 +57,9 @@ import au.org.ands.vocabs.toolkit.tasks.TaskRunner;
 import au.org.ands.vocabs.toolkit.test.factory.LocalDateTimeFactory;
 import au.org.ands.vocabs.toolkit.test.utils.DbUnitConstants;
 import au.org.ands.vocabs.toolkit.test.utils.NetClientUtils;
-import au.org.ands.vocabs.toolkit.test.utils.TestPropertyConstants;
 import au.org.ands.vocabs.toolkit.utils.ApplicationContextListener;
 import au.org.ands.vocabs.toolkit.utils.ToolkitConfig;
 import au.org.ands.vocabs.toolkit.utils.ToolkitFileUtils;
-import au.org.ands.vocabs.toolkit.utils.ToolkitProperties;
 
 /** All Arquillian tests of the Toolkit.
  * Very unfortunately, there is no way to share Arquillian deployments
@@ -86,9 +81,6 @@ public class AllArquillianTests extends ArquillianBaseTest {
                 MethodHandles.lookup().lookupClass());
     }
 
-    /** Embedded Tomcat for running OpenRDF Sesame. */
-    private static Tomcat tomcat;
-
     /** Have we run setupSuite on server side at least once? */
     private static boolean setupSuiteRunServerSide;
 
@@ -99,51 +91,13 @@ public class AllArquillianTests extends ArquillianBaseTest {
      * the directory pointed to by property {@code Toolkit.storagePath}).
      * Note: Arquillian invokes this method first on the client side, and
      * then on the server side after deployment.
-     * @throws IOException If unable to remove and create the working
-     *      directory for the embedded Tomcat server, or to
-     *      remove the repository directory
+     * @throws IOException If unable to remove the repository directory
      *      {@code Toolkit.storagePath}.
-     * @throws LifecycleException If unable to start the embedded Tomcat
-     *      server.
-     * @throws ServletException If unable to deploy the Sesame webapp
-     *      to the embedded Tomcat.
      */
     @BeforeSuite(groups = "arquillian")
-    public final void setupSuite() throws IOException, ServletException,
-        LifecycleException {
+    public final void setupSuite() throws IOException {
         if (ApplicationContextListener.getServletContext() == null) {
             logger.info("In AllArquillianTests.setupSuite() on client side");
-            // Start Tomcat for Sesame here. Null test, "just in case"
-            // already started (but this probably can't be the case).
-            if (tomcat == null) {
-                final String tomcatDirectory = ToolkitProperties.getProperty(
-                        TestPropertyConstants.TEST_TOMCAT_DIRECTORY);
-                final File catalinaHome = new File(tomcatDirectory);
-                // Always start the this Tomcat with a scratch work area.
-                FileUtils.deleteQuietly(catalinaHome);
-                // The webapps directory must already exist, for
-                // deployment of a webapp to succeed.
-                FileUtils.forceMkdir(new File(catalinaHome, "webapps"));
-                // Force Sesame to store repositories here, rather
-                // than elsewhere (e.g., in ~/.aduna, etc.).
-                System.setProperty("info.aduna.platform.appdata.basedir",
-                        (new File(tomcatDirectory,
-                                "openrdf")).getAbsolutePath());
-                System.setProperty("info.aduna.logging.dir",
-                        (new File(tomcatDirectory,
-                                "adunalogging")).getAbsolutePath());
-                tomcat = new Tomcat();
-                tomcat.setBaseDir(catalinaHome.getAbsolutePath());
-                tomcat.setPort(Integer.parseInt(ToolkitProperties.getProperty(
-                        TestPropertyConstants.TEST_TOMCAT_PORT)));
-                File war = new File(ToolkitProperties.getProperty(
-                        TestPropertyConstants.TEST_TOMCAT_SESAME_WAR));
-                tomcat.addWebapp("/" + ToolkitProperties.getProperty(
-                        TestPropertyConstants.TEST_TOMCAT_SESAME_CONTEXT),
-                        war.getAbsolutePath());
-                logger.info("Starting Tomcat for Sesame");
-                tomcat.start();
-            }
         } else {
             // Arquillian runs BeforeSuite/AfterSuite for each test,
             // which I think is not the normal TestNG behaviour!
@@ -167,19 +121,11 @@ public class AllArquillianTests extends ArquillianBaseTest {
     /** Shut down the suite.
      * Note: Arquillian invokes this method first on the server side, and
      * then on the client side after all tests are completed.
-     * @throws LifecycleException If unable to shut down the embedded Tomcat
-     *      running OpenRDF Sesame.
      */
     @AfterSuite(groups = "arquillian")
-    public final void shutdownSuite() throws LifecycleException {
+    public final void shutdownSuite() {
         if (ApplicationContextListener.getServletContext() == null) {
             logger.info("In AllArquillianTests.shutdownSuite() on client side");
-            // Stop Tomcat for Sesame here.
-            if (tomcat != null) {
-                logger.info("Stopping Tomcat for Sesame");
-                tomcat.stop();
-                tomcat.destroy();
-            }
         } else {
             logger.info("In AllArquillianTests.shutdownSuite() on server side");
         }

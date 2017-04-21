@@ -1,7 +1,10 @@
 The apache-tomcat-7.0.69 directory contains a unpacked copy of the
 Apache Tomcat 7.0.69 distribution.
 
-These are the modifications made to it, in order to make it
+Then, within the webapps directory, a copy of OpenRDF Sesame 2.8.3 has
+been inserted.
+
+These are the modifications made to the Tomcat distribution, in order to make it
 work with Arquillian testing:
 
 diff -r orig/apache-tomcat-7.0.69/conf/server.xml tomcatmanaged/apache-tomcat-7.0.69/conf/server.xml

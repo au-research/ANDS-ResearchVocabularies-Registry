@@ -9,6 +9,21 @@
        -DPROPS_FILE=conf/toolkit-h2-bamboo.properties
        -->
 
+  <!-- Separate test group used for initialization. Needed
+       to ensure that this work is done _before_ the container is
+       started by Arquillian. -->
+  <test name="Sesame setup" preserve-order="true">
+    <groups>
+      <run>
+        <include name="sesame" />
+      </run>
+    </groups>
+    <classes>
+      <class name="au.org.ands.vocabs.toolkit.test.arquillian.SesameTests" />
+   </classes>
+  </test>
+
+  <!-- These are the "real" tests. -->
   <test name="Toolkit Arquillian tests" preserve-order="true">
     <groups>
       <run>

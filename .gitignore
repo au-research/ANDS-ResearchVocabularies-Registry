@@ -17,6 +17,7 @@
 /src/db-gen/
 /src/jaxb-gen/
 /test-output/
+/tomcatmanaged/apache-tomcat-7.0.69/webapps/openrdf-sesame/
 /tomcattest/
 /tools/bin/xjc-private-fields-plugin.jar
 /vocabtoolkit.jar

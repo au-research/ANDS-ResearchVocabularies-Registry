@@ -126,6 +126,7 @@
     <delete>
       <fileset dir="${tomcat-managed}/logs" includes="*"/>
     </delete>
+    <delete dir="${tomcat-managed}/webapps/openrdf-sesame" />
   </target>
 
   <!-- xjc plugin to make generated fields private -->
