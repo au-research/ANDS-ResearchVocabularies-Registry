@@ -1,6 +1,7 @@
 package au.org.ands.vocabs.registry.api.auth;
 
 import org.apache.http.HttpStatus;
+import org.pac4j.core.context.HttpConstants;
 import org.pac4j.core.http.HttpActionAdapter;
 import org.pac4j.jax.rs.filters.JaxRsHttpActionAdapter;
 import org.pac4j.jax.rs.pac4j.JaxRsConfig;
@@ -26,8 +27,8 @@ public class AuthHttpActionAdapter
             context.getRequestContext().abortWith(
                     context.getAbortBuilder().
                     entity(new ErrorResult("Not authenticated")).
-//                    header(HttpConstants.AUTHENTICATE_HEADER,
-//                            "Basic realm=\"My realm2\"").
+                    header(HttpConstants.AUTHENTICATE_HEADER,
+                            "xBasic realm=\"ANDS\"").
                     build());
         } else
             if (code == HttpStatus.SC_FORBIDDEN) {
