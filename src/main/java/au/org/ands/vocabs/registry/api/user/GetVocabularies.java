@@ -23,6 +23,7 @@ import org.slf4j.LoggerFactory;
 
 import au.org.ands.vocabs.registry.api.auth.AuthConstants;
 import au.org.ands.vocabs.registry.api.context.ApiPaths;
+import au.org.ands.vocabs.registry.api.context.SwaggerInterface;
 import au.org.ands.vocabs.registry.db.converter.VersionDbSchemaMapper;
 import au.org.ands.vocabs.registry.db.converter.VocabularyDbSchemaMapper;
 import au.org.ands.vocabs.registry.db.dao.VersionDAO;
@@ -37,7 +38,7 @@ import io.swagger.annotations.ApiResponses;
 
 /** REST web services for getting vocabularies. */
 @Path(ApiPaths.API_RESOURCE)
-@Api
+@Api(value = SwaggerInterface.TAG_RESOURCES)
 public class GetVocabularies {
 
     // For my info: if adding a method with return type Response

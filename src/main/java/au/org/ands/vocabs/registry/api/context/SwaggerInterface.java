@@ -47,10 +47,10 @@ import io.swagger.annotations.Tag;
         schemes = {SwaggerDefinition.Scheme.HTTP,
                 SwaggerDefinition.Scheme.HTTPS},
         tags = {
-                @Tag(name = "Default",
-                     description = "Publicly-accessible methods"),
-                @Tag(name = "Private",
-                     description = "Tag used to denote operations as private")
+                @Tag(name = SwaggerInterface.TAG_RESOURCES,
+                     description = "Operations with resources"),
+                @Tag(name = SwaggerInterface.TAG_UTILITIES,
+                description = "Utility methods")
         },
         externalDocs = @ExternalDocs(
                 value = "Research Vocabularies Australia",
@@ -69,6 +69,16 @@ import io.swagger.annotations.Tag;
                 )
 )
 public interface SwaggerInterface {
+
+    /** The name of the tag used to group methods that work with
+     * resources. Use this within
+     * {@link io.swagger.annotations.Api} annotations. */
+    String TAG_RESOURCES = "resources";
+
+    /** The name of the tag used to group utility methods.
+     * Use this within
+     * {@link io.swagger.annotations.Api} annotations. */
+    String TAG_UTILITIES = "utilities";
 
     /** The name of the basic authentication security definition.
      * Use this within

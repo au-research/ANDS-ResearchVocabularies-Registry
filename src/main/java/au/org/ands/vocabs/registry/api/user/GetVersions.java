@@ -18,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import au.org.ands.vocabs.registry.api.context.ApiPaths;
+import au.org.ands.vocabs.registry.api.context.SwaggerInterface;
 import au.org.ands.vocabs.registry.db.converter.AccessPointDbSchemaMapper;
 import au.org.ands.vocabs.registry.db.converter.VersionDbSchemaMapper;
 import au.org.ands.vocabs.registry.db.dao.AccessPointDAO;
@@ -30,7 +31,7 @@ import io.swagger.annotations.ApiParam;
 
 /** REST web services for getting versions. */
 @Path(ApiPaths.API_RESOURCE)
-@Api
+@Api(value = SwaggerInterface.TAG_RESOURCES)
 public class GetVersions {
 
     /** Logger for this class. */

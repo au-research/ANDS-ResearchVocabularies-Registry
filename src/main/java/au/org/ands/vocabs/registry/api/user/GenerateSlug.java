@@ -10,6 +10,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
 import au.org.ands.vocabs.registry.api.context.ApiPaths;
+import au.org.ands.vocabs.registry.api.context.SwaggerInterface;
 import au.org.ands.vocabs.registry.utils.SlugGenerator;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -17,7 +18,7 @@ import io.swagger.annotations.ApiParam;
 
 /** REST web service for generating slugs. */
 @Path(ApiPaths.API_UTILITIES)
-@Api
+@Api(value = SwaggerInterface.TAG_UTILITIES)
 public class GenerateSlug {
 
     /** Generate a slug.
