@@ -26,6 +26,13 @@ import io.swagger.util.Json;
  */
 public class SwaggerBootstrapper extends HttpServlet {
 
+    /** Default setting for the host for the API. */
+    public static final String REGISTRY_SWAGGER_HOST_DEFAULT = "localhost:8080";
+
+    /** Default setting for the base path for the API. */
+    public static final String REGISTRY_SWAGGER_BASEPATH_DEFAULT =
+            "/ANDS-Vocabs-Toolkit";
+
     /** Generated UID for serialization. */
     private static final long serialVersionUID = -6508920960856827547L;
 
@@ -105,10 +112,11 @@ public class SwaggerBootstrapper extends HttpServlet {
         // Schemes are set in SwaggerInterface.
 //        beanConfig.setSchemes(new String[] {"https"});
         beanConfig.setHost(RegistryProperties.getProperty(
-                PropertyConstants.REGISTRY_SWAGGER_HOST, "localhost:8080"));
+                PropertyConstants.REGISTRY_SWAGGER_HOST,
+                REGISTRY_SWAGGER_HOST_DEFAULT));
         beanConfig.setBasePath(RegistryProperties.getProperty(
                 PropertyConstants.REGISTRY_SWAGGER_BASEPATH,
-                "/ANDS-Vocabs-Toolkit"));
+                REGISTRY_SWAGGER_BASEPATH_DEFAULT));
         beanConfig.setResourcePackage("au.org.ands.vocabs.registry.api");
         // Without scan=true, the top-level properties set in the previous
         // lines don't make their way into the generated swagger.json!

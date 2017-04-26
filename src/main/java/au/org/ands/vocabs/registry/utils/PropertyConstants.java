@@ -48,6 +48,9 @@ public final class PropertyConstants {
 
     /* Configure the swagger view of the API. */
 
+    /** Swagger scheme. */
+    public static final String REGISTRY_SWAGGER_DEFAULTSCHEME =
+            "Registry.swagger.defaultScheme";
     /** Swagger host. */
     public static final String REGISTRY_SWAGGER_HOST =
             "Registry.swagger.host";

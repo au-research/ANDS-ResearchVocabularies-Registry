@@ -62,7 +62,7 @@ public class ApiOriginFilter implements Filter {
                     + AuthConfig.RDA_COOKIE_NAME);
             hsResponse.addHeader("Access-Control-Expose-Headers",
 //                  "Content-Type, api_key, Authorization");
-                      "WWW-Authenticate");
+                    "WWW-Authenticate, Location");
         }
         chain.doFilter(request, response);
     }
