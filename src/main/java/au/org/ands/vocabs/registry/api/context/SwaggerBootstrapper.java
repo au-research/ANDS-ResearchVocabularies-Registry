@@ -80,18 +80,23 @@ public class SwaggerBootstrapper extends HttpServlet {
 
                 @SuppressWarnings("unchecked")
                 Class<Enum<?>> enumClass = (Class<Enum<?>>) propClass;
-                for (Enum<?> en : enumClass.getEnumConstants()) {
+                // The following was updated to work with Jackson 2.8.
+                Enum<?>[] enumConstants = enumClass.getEnumConstants();
+                String[] enumValues = new String[enumConstants.length];
+                enumValues = jaxbIntrospector.findEnumValues(
+                        enumClass, enumConstants, enumValues);
+                for (int i = 0; i < enumConstants.length; i++) {
                     String n;
                     if (useIndex) {
-                        n = String.valueOf(en.ordinal());
+                        n = String.valueOf(enumConstants[i].ordinal());
                     } else if (useToString) {
-                        n = en.toString();
+                        n = enumConstants[i].toString();
                     } else {
                         // This is the original code, which gets the "first"
                         // introspector, which is Swagger's, not ours.
 //                        n = _intr.findEnumValue(en);
                         // Instead, use the introspector we created above.
-                        n = jaxbIntrospector.findEnumValue(en);
+                        n = enumValues[i];
                     }
                     if (property instanceof StringProperty) {
                         StringProperty sp = (StringProperty) property;
