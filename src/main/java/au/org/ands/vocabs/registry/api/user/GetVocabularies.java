@@ -6,15 +6,18 @@ import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.UriInfo;
 
 import org.apache.http.HttpStatus;
 import org.pac4j.jax.rs.annotations.Pac4JSecurity;
@@ -30,6 +33,7 @@ import au.org.ands.vocabs.registry.db.dao.VersionDAO;
 import au.org.ands.vocabs.registry.db.dao.VocabularyDAO;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.Version;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.Vocabulary;
+import au.org.ands.vocabs.registry.utils.Logging;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -51,6 +55,8 @@ public class GetVocabularies {
 
     /** Get all the current vocabularies. This includes both
      * published and deprecated vocabularies.
+     * @param request The HTTP request.
+     * @param uriInfo The UriInfo of the request.
      * @param includeDraft If true, also include draft vocabularies.
      * @return The list of vocabularies, in either XML or JSON format. */
     @Path(ApiPaths.VOCABULARIES)
@@ -60,6 +66,8 @@ public class GetVocabularies {
     @ApiOperation(value = "Get all the current vocabularies. This includes "
             + "both published and deprecated vocabularies.")
     public final List<Vocabulary> getVocabularies(
+            @Context final HttpServletRequest request,
+            @Context final UriInfo uriInfo,
             @ApiParam(value = "If true, also include draft vocabulary records")
             @QueryParam("includeDraft")
             @DefaultValue("false") final boolean includeDraft) {
@@ -78,6 +86,7 @@ public class GetVocabularies {
             outputVocabularies.add(mapper.sourceToTarget(dbVocabulary));
         }
 
+        Logging.logRequest(request, uriInfo, null, "Get all vocabularies");
         return outputVocabularies;
     }
 
@@ -108,6 +117,8 @@ public class GetVocabularies {
     }
 
     /** Get the current instance of a vocabulary, by its vocabulary id.
+     * @param request The HTTP request.
+     * @param uriInfo The UriInfo of the request.
      * @param vocabularyId The VocabularyId of the vocabulary to be fetched.
      * @return The vocabulary, in either XML or JSON format,
      *      or an error result, if there is no such vocabulary. */
@@ -122,6 +133,8 @@ public class GetVocabularies {
                     response = ErrorResult.class)
             })
     public final Response getVocabularyById(
+            @Context final HttpServletRequest request,
+            @Context final UriInfo uriInfo,
             @ApiParam(value = "The ID of the vocabulary to get")
             @PathParam("vocabularyId") final Integer vocabularyId) {
         logger.debug("called getVocabularyById: " + vocabularyId);
@@ -137,6 +150,7 @@ public class GetVocabularies {
             return Response.status(Status.BAD_REQUEST).entity(
                     new ErrorResult("No vocabulary with that id")).build();
         }
+        Logging.logRequest(request, uriInfo, null, "Get a vocabulary");
         return Response.ok().entity(outputVocabulary).build();
     }
 

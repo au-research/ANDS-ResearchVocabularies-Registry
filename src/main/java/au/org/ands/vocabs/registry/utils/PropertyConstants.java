@@ -58,4 +58,10 @@ public final class PropertyConstants {
     public static final String REGISTRY_SWAGGER_BASEPATH =
             "Registry.swagger.basePath";
 
+    /* Logging of API operations. */
+
+    /** Location of a GeoIP2 database for looking up IP addresses. */
+    public static final String REGISTRY_LOGGING_GEOIPDB =
+            "Registry.logging.GeoIPDb";
+
 }
