@@ -156,7 +156,8 @@ public final class Logging {
                 and(append(PATH_FIELD, uriInfo.getPath()));
         String userAgent = request.getHeader("user-agent");
         if (userAgent != null) {
-            lm.and(append("user_agent", userAgent));
+            lm.and(append("user_agent", userAgent)).
+                and(append("is_bot", BotDetector.isBot(userAgent)));
         }
         if (profile != null) {
             lm.and(append("user", profile.getId()));

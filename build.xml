@@ -4,6 +4,8 @@
   basedir="."
   default="war"
   name="ANDS-Vocabs-Toolkit"
+  xmlns:if="ant:if"
+  xmlns:unless="ant:unless"
   xmlns:jacoco="antlib:org.jacoco.ant"
   xmlns:liquibase="antlib:liquibase.integration.ant"
   >
@@ -22,6 +24,9 @@
   <property name="conf-test" value="conf-test" />
   <!-- Generated source code -->
   <property name="src-db-gen" value="src/db-gen" />
+  <property name="src-bot-detection" value="src/CrawlerDetect" />
+  <property name="src-bot-detection-gen"
+            value="src/main/java/au/org/ands/vocabs/registry/utils/BotDetector.java" />
   <!-- mapstruct -->
   <property name="mapstruct-processor"
         value="libdev/mapstruct-1.1.0/mapstruct-processor-1.1.0.Final.jar" />
@@ -291,6 +296,32 @@
         <touch file="src/jaxb-gen/timestamp" />
   </target>
 
+  <!-- Generation of utility class for bot detection. -->
+  <!-- Check if generated bot detection source code is up-to-date. -->
+  <target name="check-bot-detection-source">
+    <uptodate property="bot-detection-source.uptodate"
+              targetfile="${src-bot-detection-gen}">
+      <srcfiles dir="${src-bot-detection}/orig">
+        <include name="*.php" />
+      </srcfiles>
+    </uptodate>
+  </target>
+  <!-- Generated bot detection Java source code. Note the
+       "unless" attribute. -->
+  <target name="generate-bot-detection-source"
+          depends="check-bot-detection-source"
+          unless="bot-detection-source.uptodate">
+    <exec executable="sh"
+          output="${src-bot-detection-gen}"
+          resultproperty="awk-status">
+      <arg value="${src-bot-detection}/generate-matcher.sh"/>
+    </exec>
+    <condition property="awk-succeeded">
+      <equals arg1="${awk-status}" arg2="0"/>
+    </condition>
+    <delete unless:set="awk-succeeded" file="${src-bot-detection-gen}" />
+  </target>
+
   <!-- Compilation of source code -->
 
   <path id="compile-main.classpath">
@@ -312,7 +343,7 @@
   </path>
 
   <target name="compile-main"
-          depends="generate-registry-db-entity-dao-source,generate-jaxb-source">
+          depends="generate-registry-db-entity-dao-source,generate-jaxb-source,generate-bot-detection-source">
     <mkdir dir="${build}" />
     <mkdir dir="${mapstruct-sources}" />
     <javac debug="true" debuglevel="${debuglevel}" destdir="${build}"

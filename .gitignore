@@ -16,6 +16,7 @@
 /log.txt
 /src/db-gen/
 /src/jaxb-gen/
+/src/main/java/au/org/ands/vocabs/registry/utils/BotDetector.java
 /test-output/
 /tomcatmanaged/apache-tomcat-7.0.69/webapps/openrdf-sesame/
 /tomcattest/
