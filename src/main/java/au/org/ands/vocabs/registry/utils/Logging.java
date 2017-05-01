@@ -50,14 +50,30 @@ public final class Logging {
     private static final Logger LOGGER = LoggerFactory.getLogger(
             LOGGER_NAME);
 
-    /** The name of the uuid field inserted into log entries. */
-    private static final String UUID_FIELD = "uuid";
+    // The following fields are defined in alphabetical order
+    // of field name.
+    /** The name of the city name field inserted into log entries. */
+    private static final String GEO_CITY_NAME_FIELD = "city_name";
+    /** The name of the country name field inserted into log entries. */
+    private static final String GEO_COUNTRY_NAME_FIELD = "country_name";
+    /** The name of the location field inserted into log entries. */
+    private static final String GEO_LOCATION_FIELD = "location";
+    /** The name of the region code field inserted into log entries. */
+    private static final String GEO_REGION_CODE_FIELD = "region_code";
     /** The name of the IP address field inserted into log entries. */
     private static final String IP_FIELD = "ip";
+    /** The name of the "is_bot" field inserted into log entries. */
+    private static final String IS_BOT_FIELD = "is_bot";
     /** The name of the HTTP method field inserted into log entries. */
     private static final String METHOD_FIELD = "method";
     /** The name of the URL path field inserted into log entries. */
     private static final String PATH_FIELD = "path";
+    /** The name of the user agent field inserted into log entries. */
+    private static final String USER_AGENT_FIELD = "user_agent";
+    /** The name of the username field inserted into log entries. */
+    private static final String USERNAME_FIELD = "username";
+    /** The name of the uuid field inserted into log entries. */
+    private static final String UUID_FIELD = "uuid";
 
     /** The GeoIP2 database reader used for geo lookups of IP addresses. */
     private static DatabaseReader geoDbReader;
@@ -126,10 +142,10 @@ public final class Logging {
 //        location.getLatitude()   = 44.9733
 //        location.getLongitude()) = -93.2323
 
-        lm.and(append("country_name", country.getName())).
-                and(append("city_name", city.getName())).
-                and(append("region_code", subdivision.getIsoCode())).
-                and(appendArray("location",
+        lm.and(append(GEO_COUNTRY_NAME_FIELD, country.getName())).
+                and(append(GEO_CITY_NAME_FIELD, city.getName())).
+                and(append(GEO_REGION_CODE_FIELD, subdivision.getIsoCode())).
+                and(appendArray(GEO_LOCATION_FIELD,
                 location.getLongitude(), location.getLatitude()));
     }
 
@@ -156,11 +172,11 @@ public final class Logging {
                 and(append(PATH_FIELD, uriInfo.getPath()));
         String userAgent = request.getHeader("user-agent");
         if (userAgent != null) {
-            lm.and(append("user_agent", userAgent)).
-                and(append("is_bot", BotDetector.isBot(userAgent)));
+            lm.and(append(USER_AGENT_FIELD, userAgent)).
+                and(append(IS_BOT_FIELD, BotDetector.isBot(userAgent)));
         }
         if (profile != null) {
-            lm.and(append("user", profile.getId()));
+            lm.and(append(USERNAME_FIELD, profile.getId()));
         }
         addGeoIPInfo(lm, request.getRemoteAddr());
         return lm;
