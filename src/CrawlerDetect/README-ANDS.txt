@@ -10,8 +10,8 @@ crawler/bot.
 The implementation (i.e., the way that crawlers and exclusions are
 used) matches the original PHP implementation.
 
-The generated class also contains unit tests that use the original
-test data (crawlers.txt and devices.txt).
+There is also a test class, TestBotDetector, which contains unit tests
+that use the original test data (crawlers.txt and devices.txt).
 
 If the upstream CrawlerDetect package is updated, replace the files in
 the orig directory with the updated versions, and run
