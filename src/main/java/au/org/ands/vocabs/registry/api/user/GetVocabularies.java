@@ -3,7 +3,6 @@
 package au.org.ands.vocabs.registry.api.user;
 
 import java.lang.invoke.MethodHandles;
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -20,11 +19,9 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 
 import org.apache.http.HttpStatus;
-import org.pac4j.jax.rs.annotations.Pac4JSecurity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import au.org.ands.vocabs.registry.api.auth.AuthConstants;
 import au.org.ands.vocabs.registry.api.context.ApiPaths;
 import au.org.ands.vocabs.registry.api.context.SwaggerInterface;
 import au.org.ands.vocabs.registry.db.converter.VersionDbSchemaMapper;
@@ -32,7 +29,9 @@ import au.org.ands.vocabs.registry.db.converter.VocabularyDbSchemaMapper;
 import au.org.ands.vocabs.registry.db.dao.VersionDAO;
 import au.org.ands.vocabs.registry.db.dao.VocabularyDAO;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.Version;
+import au.org.ands.vocabs.registry.schema.vocabulary201701.VersionList;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.Vocabulary;
+import au.org.ands.vocabs.registry.schema.vocabulary201701.VocabularyList;
 import au.org.ands.vocabs.registry.utils.Logging;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -62,10 +61,10 @@ public class GetVocabularies {
     @Path(ApiPaths.VOCABULARIES)
     @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     @GET
-    @Pac4JSecurity(authorizers = AuthConstants.IS_AUTHENTICATED)
+//    @Pac4JSecurity(authorizers = AuthConstants.IS_AUTHENTICATED)
     @ApiOperation(value = "Get all the current vocabularies. This includes "
             + "both published and deprecated vocabularies.")
-    public final List<Vocabulary> getVocabularies(
+    public final VocabularyList getVocabularies(
             @Context final HttpServletRequest request,
             @Context final UriInfo uriInfo,
             @ApiParam(value = "If true, also include draft vocabulary records")
@@ -77,7 +76,9 @@ public class GetVocabularies {
         logger.debug("called getVocabularies");
         List<au.org.ands.vocabs.registry.db.entity.Vocabulary>
             dbVocabularies = VocabularyDAO.getAllCurrentVocabulary();
-        List<Vocabulary> outputVocabularies = new ArrayList<>();
+        VocabularyList outputVocabularyList = new VocabularyList();
+        List<Vocabulary> outputVocabularies =
+                outputVocabularyList.getVocabulary();
 
         VocabularyDbSchemaMapper mapper =
                 VocabularyDbSchemaMapper.INSTANCE;
@@ -87,20 +88,22 @@ public class GetVocabularies {
         }
 
         Logging.logRequest(request, uriInfo, null, "Get all vocabularies");
-        return outputVocabularies;
+        return outputVocabularyList;
     }
 
     /** Get all the current vocabularies, of all status values,
      * including draft.
      * @return The list of vocabularies of all status values,
      *      including draft. */
-    public final List<Vocabulary> getVocabulariesIncludingDraft() {
+    public final VocabularyList getVocabulariesIncludingDraft() {
         logger.debug("called getVocabulariesIncludingDraft");
         List<au.org.ands.vocabs.registry.db.entity.Vocabulary>
             dbVocabularies = VocabularyDAO.getAllCurrentVocabulary();
         List<au.org.ands.vocabs.registry.db.entity.Vocabulary>
             dbDraftVocabularies = VocabularyDAO.getAllDraftVocabulary();
-        List<Vocabulary> outputVocabularies = new ArrayList<>();
+        VocabularyList outputVocabularyList = new VocabularyList();
+        List<Vocabulary> outputVocabularies =
+                outputVocabularyList.getVocabulary();
 
         VocabularyDbSchemaMapper mapper =
                 VocabularyDbSchemaMapper.INSTANCE;
@@ -113,7 +116,7 @@ public class GetVocabularies {
             outputVocabularies.add(mapper.sourceToTarget(dbVocabulary));
         }
 
-        return outputVocabularies;
+        return outputVocabularyList;
     }
 
     /** Get the current instance of a vocabulary, by its vocabulary id.
@@ -185,7 +188,7 @@ public class GetVocabularies {
     @GET
     @ApiOperation(value = "Get the current versions of a vocabulary, "
             + "by its vocabulary id.")
-    public final List<Version> getVersionsForVocabularyById(
+    public final VersionList getVersionsForVocabularyById(
             @ApiParam(value = "The ID of the vocabulary from which to get "
                     + "the current versions")
             @PathParam("vocabularyId") final Integer vocabularyId) {
@@ -194,7 +197,8 @@ public class GetVocabularies {
         List<au.org.ands.vocabs.registry.db.entity.Version>
             dbVersions = VersionDAO.getCurrentVersionListForVocabulary(
                     vocabularyId);
-        List<Version> outputVersions = new ArrayList<>();
+        VersionList outputVersionList = new VersionList();
+        List<Version> outputVersions = outputVersionList.getVersion();
 
         VersionDbSchemaMapper mapper =
                 VersionDbSchemaMapper.INSTANCE;
@@ -203,7 +207,7 @@ public class GetVocabularies {
             outputVersions.add(mapper.sourceToTarget(dbVersion));
         }
 
-        return outputVersions;
+        return outputVersionList;
     }
 
 }

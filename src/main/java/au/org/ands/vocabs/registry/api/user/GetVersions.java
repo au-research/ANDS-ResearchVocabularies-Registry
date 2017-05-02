@@ -3,7 +3,6 @@
 package au.org.ands.vocabs.registry.api.user;
 
 import java.lang.invoke.MethodHandles;
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.ws.rs.GET;
@@ -24,6 +23,7 @@ import au.org.ands.vocabs.registry.db.converter.VersionDbSchemaMapper;
 import au.org.ands.vocabs.registry.db.dao.AccessPointDAO;
 import au.org.ands.vocabs.registry.db.dao.VersionDAO;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.AccessPoint;
+import au.org.ands.vocabs.registry.schema.vocabulary201701.AccessPointList;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.Version;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -77,14 +77,13 @@ public class GetVersions {
             notes = "Returns true, if the version has a draft instance. "
             + "Returns false, if there is no draft instance with that "
             + "version id. The result is returned in the booleanValue "
-            + "property.",
-            response = SimpleResult.class)
-    public final Response hasDraftVersionById(
+            + "property.")
+    public final SimpleResult hasDraftVersionById(
             @ApiParam(value = "The ID of the version to check")
             @PathParam("versionId") final Integer versionId) {
         logger.debug("called hasDraftVersionById: " + versionId);
         boolean hasDraft = VersionDAO.hasDraftVersion(versionId);
-        return Response.ok().entity(new SimpleResult(hasDraft)).build();
+        return new SimpleResult(hasDraft);
     }
 
     /** Get the current access points of a version, by its version id.
@@ -97,7 +96,7 @@ public class GetVersions {
     @GET
     @ApiOperation(value = "Get the current access points of a version, "
             + "by its version id.")
-    public final List<AccessPoint> getAccessPointsForVersionById(
+    public final AccessPointList getAccessPointsForVersionById(
             @ApiParam(value = "The ID of the version from which to get "
                     + "the current access points")
             @PathParam("versionId") final Integer versionId) {
@@ -106,7 +105,8 @@ public class GetVersions {
         List<au.org.ands.vocabs.registry.db.entity.AccessPoint>
         dbAPs = AccessPointDAO.getCurrentAccessPointListForVersion(
                 versionId);
-        List<AccessPoint> outputAPs = new ArrayList<>();
+        AccessPointList outputAPList = new AccessPointList();
+        List<AccessPoint> outputAPs = outputAPList.getAccessPoint();
 
         AccessPointDbSchemaMapper mapper =
                 AccessPointDbSchemaMapper.INSTANCE;
@@ -115,7 +115,7 @@ public class GetVersions {
             outputAPs.add(mapper.sourceToTarget(dbAP));
         }
 
-        return outputAPs;
+        return outputAPList;
     }
 
 }

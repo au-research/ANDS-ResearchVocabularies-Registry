@@ -60,6 +60,13 @@
             <xs:attribute name="licence" type="xs:token"/>
         </xs:complexType>
     </xs:element>
+    <xs:element name="vocabulary-list">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element maxOccurs="unbounded" minOccurs="0" ref="vocabulary"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
     <xs:element name="version">
         <xs:complexType>
             <xs:attribute name="id" type="id-type" use="required"> </xs:attribute>
@@ -72,6 +79,13 @@
             <xs:attribute name="do-publish" type="xs:boolean"/>
         </xs:complexType>
     </xs:element>
+    <xs:element name="version-list">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element maxOccurs="unbounded" minOccurs="0" ref="version"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
     <xs:element name="access-point">
         <xs:complexType>
             <xs:choice>
@@ -82,6 +96,13 @@
                 <xs:element name="ap-web-page" type="ap-web-page"/>
             </xs:choice>
             <xs:attribute name="id" type="id-type" use="required"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="access-point-list">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element maxOccurs="unbounded" minOccurs="0" ref="access-point"/>
+            </xs:sequence>
         </xs:complexType>
     </xs:element>
     <xs:complexType name="ap-common"/>
