@@ -30,7 +30,7 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 
 /** REST web services for getting versions. */
-@Path(ApiPaths.API_RESOURCE)
+@Path(ApiPaths.API_RESOURCE + "/" + ApiPaths.VERSIONS)
 @Api(value = SwaggerInterface.TAG_RESOURCES)
 public class GetVersions {
 
@@ -42,7 +42,7 @@ public class GetVersions {
      * @param versionId The VersionId of the version to be fetched.
      * @return The version, in either XML or JSON format,
      *      or an error result, if there is no such version. */
-    @Path(ApiPaths.VERSIONS + "/" + ApiPaths.VERSION_ID)
+    @Path(ApiPaths.VERSION_ID)
     @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     @GET
     @ApiOperation(value = "Get a current version by its id.",
@@ -70,7 +70,7 @@ public class GetVersions {
      * @param versionId The VersionId of the vocabulary to be checked.
      * @return True, if the version has a draft instance. False,
      *      if there is no draft instance with that version id.*/
-    @Path(ApiPaths.VERSIONS + "/" + ApiPaths.VERSION_ID + "/hasDraft")
+    @Path(ApiPaths.VERSION_ID + "/hasDraft")
     @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     @GET
     @ApiOperation(value = "Determine if a version has a draft instance.",
@@ -90,8 +90,7 @@ public class GetVersions {
      * @param versionId The VersionId of the access points to be fetched.
      * @return The list of access points, in either XML or JSON format,
      *      or an error result, if there is no such version. */
-    @Path(ApiPaths.VERSIONS + "/" + ApiPaths.VERSION_ID
-            + "/" + ApiPaths.ACCESS_POINTS)
+    @Path(ApiPaths.VERSION_ID + "/" + ApiPaths.ACCESS_POINTS)
     @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     @GET
     @ApiOperation(value = "Get the current access points of a version, "

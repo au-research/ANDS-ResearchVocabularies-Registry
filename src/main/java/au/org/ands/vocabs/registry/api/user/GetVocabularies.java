@@ -40,7 +40,7 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 
 /** REST web services for getting vocabularies. */
-@Path(ApiPaths.API_RESOURCE)
+@Path(ApiPaths.API_RESOURCE + "/" + ApiPaths.VOCABULARIES)
 @Api(value = SwaggerInterface.TAG_RESOURCES)
 public class GetVocabularies {
 
@@ -58,7 +58,6 @@ public class GetVocabularies {
      * @param uriInfo The UriInfo of the request.
      * @param includeDraft If true, also include draft vocabularies.
      * @return The list of vocabularies, in either XML or JSON format. */
-    @Path(ApiPaths.VOCABULARIES)
     @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     @GET
 //    @Pac4JSecurity(authorizers = AuthConstants.IS_AUTHENTICATED)
@@ -125,7 +124,7 @@ public class GetVocabularies {
      * @param vocabularyId The VocabularyId of the vocabulary to be fetched.
      * @return The vocabulary, in either XML or JSON format,
      *      or an error result, if there is no such vocabulary. */
-    @Path(ApiPaths.VOCABULARIES + "/" + ApiPaths.VOCABULARY_ID)
+    @Path(ApiPaths.VOCABULARY_ID)
     @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     @GET
     @ApiOperation(value = "Get a current vocabulary by its id.",
@@ -161,7 +160,7 @@ public class GetVocabularies {
      * @param vocabularyId The VocabularyId of the vocabulary to be checked.
      * @return True, if the vocabulary has a draft instance. False,
      *      if there is no draft instance with that vocabulary id.*/
-    @Path(ApiPaths.VOCABULARIES + "/" + ApiPaths.VOCABULARY_ID + "/hasDraft")
+    @Path(ApiPaths.VOCABULARY_ID + "/hasDraft")
     @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     @GET
     @ApiOperation(value = "Determine if a vocabulary has a draft instance.",
@@ -182,8 +181,7 @@ public class GetVocabularies {
      * @param vocabularyId The VocabularyId of the versions to be fetched.
      * @return The list of versions, in either XML or JSON format,
      *      or an error result, if there is no such vocabulary. */
-    @Path(ApiPaths.VOCABULARIES + "/" + ApiPaths.VOCABULARY_ID
-            + "/" + ApiPaths.VERSIONS)
+    @Path(ApiPaths.VOCABULARY_ID + "/" + ApiPaths.VERSIONS)
     @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     @GET
     @ApiOperation(value = "Get the current versions of a vocabulary, "
