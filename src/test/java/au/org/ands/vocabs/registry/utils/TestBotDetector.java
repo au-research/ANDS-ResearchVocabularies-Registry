@@ -15,8 +15,8 @@ import org.testng.annotations.Test;
 /** Unit tests of the slug generator. */
 public class TestBotDetector {
 
-    /** Test if the {@link #isBot(String)} method identifies known crawlers
-     * as such.
+    /** Test if the {@link BotDetector#isBot(String)} method
+     * identifies known crawlers as such.
      * @throws IOException If an I/O error occurs.
      */
     @Test
@@ -33,8 +33,8 @@ public class TestBotDetector {
         }
     }
 
-    /** Test if the {@link #isBot(String)} method identifies things known not
-     * to be crawlers as such.
+    /** Test if the {@link BotDetector#isBot(String)} method
+     * identifies things known not to be crawlers as such.
      * @throws IOException If an I/O error occurs.
      */
     @Test
