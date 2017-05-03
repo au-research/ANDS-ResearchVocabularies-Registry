@@ -2,9 +2,12 @@
 
 package au.org.ands.vocabs.registry.db.converter;
 
+import java.lang.invoke.MethodHandles;
 import java.util.HashMap;
 
 import org.mapstruct.MappingTarget;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import au.org.ands.vocabs.registry.db.internal.ApApiSparql;
 import au.org.ands.vocabs.registry.db.internal.ApCommon;
@@ -12,12 +15,17 @@ import au.org.ands.vocabs.registry.db.internal.ApFile;
 import au.org.ands.vocabs.registry.db.internal.ApSesameDownload;
 import au.org.ands.vocabs.registry.db.internal.ApSissvoc;
 import au.org.ands.vocabs.registry.db.internal.ApWebPage;
+import au.org.ands.vocabs.registry.enums.AccessPointDiscriminator;
 import au.org.ands.vocabs.registry.enums.AccessPointType;
 
 /** MapStruct mapper from AccessPoint database to schema. */
 @SuppressWarnings("checkstyle:DesignForExtension")
 public abstract class AccessPointDbSchemaMapperDecorator
     implements AccessPointDbSchemaMapper {
+
+    /** Logger for this class. */
+    private Logger logger = LoggerFactory.getLogger(
+            MethodHandles.lookup().lookupClass());
 
     /** Map from AccessPointType to the corresponding subclass of the
      * database JSON ApCommon class that represents it. */
@@ -91,11 +99,10 @@ public abstract class AccessPointDbSchemaMapperDecorator
                 au.org.ands.vocabs.registry.schema.
                     vocabulary201701.ApCommon ap =
                     schemaTargetClass.newInstance();
-                target.setAP(ap);
-                jsonDataIntoTarget(data, ap);
+                jsonDataIntoTarget(data, ap, target);
             } catch (InstantiationException | IllegalAccessException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+                logger.error("Unable to instantiate a new instance of a "
+                        + "registry schema access point", e);
             }
         }
         return target;
@@ -111,6 +118,10 @@ public abstract class AccessPointDbSchemaMapperDecorator
      * implementation of this method.
      * @param data The AccessPoint JSON data from the database.
      * @param target The schema version of the access point to be updated.
+     * @param parent The parent AccessPoint object. The discriminator field
+     *      of this object is set to the appropriate value, and the
+     *      appropriate type-specific setter method is invoked to store the
+     *      target value.
      */
     // See https://github.com/checkstyle/checkstyle/issues/3850
     // for the defect report that means I need the Checkstyle suppression.
@@ -119,7 +130,9 @@ public abstract class AccessPointDbSchemaMapperDecorator
     void jsonDataIntoTarget(final ApCommon data,
               @MappingTarget final
               au.org.ands.vocabs.registry.schema.vocabulary201701.ApCommon
-              target) {
+              target,
+              final au.org.ands.vocabs.registry.schema.vocabulary201701.
+              AccessPoint parent) {
         if (target instanceof au.org.ands.vocabs.registry.schema.
                 vocabulary201701.ApApiSparql) {
             jsonDataIntoTarget((au.org.ands.vocabs.registry.db.internal.
@@ -127,6 +140,9 @@ public abstract class AccessPointDbSchemaMapperDecorator
                     data, (au.org.ands.vocabs.registry.schema.
                             vocabulary201701.ApApiSparql)
                     target);
+            parent.setDiscriminator(AccessPointDiscriminator.AP_API_SPARQL);
+            parent.setApApiSparql((au.org.ands.vocabs.registry.schema.
+                    vocabulary201701.ApApiSparql) target);
         } else if (target instanceof au.org.ands.vocabs.registry.schema.
                 vocabulary201701.ApFile) {
             jsonDataIntoTarget((au.org.ands.vocabs.registry.db.internal.
@@ -134,6 +150,9 @@ public abstract class AccessPointDbSchemaMapperDecorator
                     data, (au.org.ands.vocabs.registry.schema.
                             vocabulary201701.ApFile)
                     target);
+            parent.setDiscriminator(AccessPointDiscriminator.AP_FILE);
+            parent.setApFile((au.org.ands.vocabs.registry.schema.
+                    vocabulary201701.ApFile) target);
         } else if (target instanceof au.org.ands.vocabs.registry.schema.
                 vocabulary201701.ApSesameDownload) {
             jsonDataIntoTarget((au.org.ands.vocabs.registry.db.internal.
@@ -141,6 +160,10 @@ public abstract class AccessPointDbSchemaMapperDecorator
                     data, (au.org.ands.vocabs.registry.schema.
                             vocabulary201701.ApSesameDownload)
                     target);
+            parent.setDiscriminator(
+                    AccessPointDiscriminator.AP_SESAME_DOWNLOAD);
+            parent.setApSesameDownload((au.org.ands.vocabs.registry.schema.
+                    vocabulary201701.ApSesameDownload) target);
         } else if (target instanceof au.org.ands.vocabs.registry.schema.
                 vocabulary201701.ApSissvoc) {
             jsonDataIntoTarget((au.org.ands.vocabs.registry.db.internal.
@@ -148,6 +171,9 @@ public abstract class AccessPointDbSchemaMapperDecorator
                     data, (au.org.ands.vocabs.registry.schema.
                             vocabulary201701.ApSissvoc)
                     target);
+            parent.setDiscriminator(AccessPointDiscriminator.AP_SISSVOC);
+            parent.setApSissvoc((au.org.ands.vocabs.registry.schema.
+                    vocabulary201701.ApSissvoc) target);
         } else if (target instanceof au.org.ands.vocabs.registry.schema.
                 vocabulary201701.ApWebPage) {
             jsonDataIntoTarget((au.org.ands.vocabs.registry.db.internal.
@@ -155,6 +181,9 @@ public abstract class AccessPointDbSchemaMapperDecorator
                     data, (au.org.ands.vocabs.registry.schema.
                             vocabulary201701.ApWebPage)
                     target);
+            parent.setDiscriminator(AccessPointDiscriminator.AP_WEB_PAGE);
+            parent.setApWebPage((au.org.ands.vocabs.registry.schema.
+                    vocabulary201701.ApWebPage) target);
         }
     }
 

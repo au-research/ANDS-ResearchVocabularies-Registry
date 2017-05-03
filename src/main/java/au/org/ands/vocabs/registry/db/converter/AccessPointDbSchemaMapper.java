@@ -29,7 +29,12 @@ public interface AccessPointDbSchemaMapper {
      * @return The schema version of the access point.
      */
     @Mapping(source = "accessPointId", target = "id")
-    @Mapping(target = "AP", ignore = true)
+    @Mapping(target = "discriminator", ignore = true)
+    @Mapping(target = "apApiSparql", ignore = true)
+    @Mapping(target = "apFile", ignore = true)
+    @Mapping(target = "apSesameDownload", ignore = true)
+    @Mapping(target = "apSissvoc", ignore = true)
+    @Mapping(target = "apWebPage", ignore = true)
     // Ignore here the fields that are extracted from JSON data.
     au.org.ands.vocabs.registry.schema.vocabulary201701.AccessPoint
       sourceToTarget(au.org.ands.vocabs.registry.db.entity.AccessPoint source);

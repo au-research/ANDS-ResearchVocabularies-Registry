@@ -13,12 +13,6 @@
         name="au.org.ands.vocabs.registry.schema.vocabulary201701" />
     </jaxb:schemaBindings>
 
-    <!-- access point discriminator -->
-    <jaxb:bindings
-        node="//xs:element[@name='access-point']//xs:choice">
-      <jaxb:property name="AP" />
-    </jaxb:bindings>
-
   </jaxb:bindings>
 
 </jaxb:bindings>
