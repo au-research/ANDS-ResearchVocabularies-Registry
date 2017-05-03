@@ -39,10 +39,17 @@ public class BadRequestExceptionMapper
         }
         if (cause instanceof UnmarshalException) {
             Throwable secondCause = cause.getCause();
-            return Response.status(Response.Status.BAD_REQUEST).
-                    entity(new ErrorResult("Unmarshal exception: "
-                            + secondCause.toString())).
-                    build();
+            if (secondCause != null) {
+                return Response.status(Response.Status.BAD_REQUEST).
+                        entity(new ErrorResult("Unmarshal exception: "
+                                + secondCause.toString())).
+                        build();
+            } else {
+                return Response.status(Response.Status.BAD_REQUEST).
+                        entity(new ErrorResult("Unmarshal exception: "
+                                + cause.toString())).
+                        build();
+            }
         }
         StringWriter errorStackTrace = new StringWriter();
         bre.printStackTrace(new PrintWriter(errorStackTrace));
