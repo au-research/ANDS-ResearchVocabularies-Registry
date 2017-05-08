@@ -15,6 +15,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.container.ContainerResponseFilter;
 
 import au.org.ands.vocabs.registry.api.auth.AuthConfig;
+import au.org.ands.vocabs.registry.utils.Analytics;
 
 /** Servlet filter for the registry API that addresses CORS issues.
  * We could have done this as a {@link ContainerResponseFilter},
@@ -59,7 +60,9 @@ public class ApiOriginFilter implements Filter {
             hsResponse.addHeader("Access-Control-Allow-Headers",
 //                "Content-Type, api_key, Authorization");
                     "Content-Type, Authorization, "
-                    + AuthConfig.RDA_COOKIE_NAME);
+                    + AuthConfig.RDA_COOKIE_NAME
+                    + ", "
+                    + Analytics.PORTAL_ID);
             hsResponse.addHeader("Access-Control-Expose-Headers",
 //                  "Content-Type, api_key, Authorization");
                     "WWW-Authenticate, Location");
