@@ -19,8 +19,13 @@ import au.org.ands.vocabs.registry.db.dao.PoolPartyServerDAO;
 import au.org.ands.vocabs.registry.db.dao.RelatedEntityDAO;
 import au.org.ands.vocabs.registry.db.dao.VocabularyDAO;
 import au.org.ands.vocabs.registry.db.entity.RelatedEntity;
+import au.org.ands.vocabs.registry.enums.ApSource;
 import au.org.ands.vocabs.registry.enums.RelatedEntityRelation;
 import au.org.ands.vocabs.registry.enums.RelatedVocabularyRelation;
+import au.org.ands.vocabs.registry.schema.vocabulary201701.AccessPoint;
+import au.org.ands.vocabs.registry.schema.vocabulary201701.ApApiSparql;
+import au.org.ands.vocabs.registry.schema.vocabulary201701.ApSissvoc;
+import au.org.ands.vocabs.registry.schema.vocabulary201701.ApWebPage;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.Version;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.Vocabulary;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.Vocabulary.PoolpartyProject;
@@ -546,6 +551,7 @@ public class CheckNewVocabularyImpl
         // releaseDate
         // doImport
         // doPublish
+        // accessPoint
 
         // id: required _not_ to be provided
         if (newVersion.getId() != 0) {
@@ -619,6 +625,209 @@ public class CheckNewVocabularyImpl
 
         // doPublish: we can't distinguish between a missing value,
         // and the value specified as false.
+
+        // accessPoint
+        int accessPointIndex = 0;
+        for (Iterator<AccessPoint> it =
+                newVersion.getAccessPoint().iterator();
+                it.hasNext(); accessPointIndex++) {
+            AccessPoint ap = it.next();
+            if (!isValidAccessPoint(versionIndex, accessPointIndex,
+                    ap, constraintContext)) {
+                valid = false;
+            }
+        }
+
+        return valid;
+    }
+
+    /** Validate a proposed new access point.
+     * @param versionIndex The index of the version being created.
+     * @param accessPointIndex The index of the access point being created.
+     * @param newAccessPoint The new access point that is being created.
+     * @param constraintContext The constraint context, into which
+     *      validation errors are reported.
+     * @return true, if newAccessPoint represents a valid version.
+     */
+    @SuppressWarnings("checkstyle:MethodLength")
+    private boolean isValidAccessPoint(final int versionIndex,
+            final int accessPointIndex,
+            final AccessPoint newAccessPoint,
+            final ConstraintValidatorContext constraintContext) {
+        boolean valid = true;
+        logger.info("In CheckNewVocabularyImpl.isValidAccessPoint("
+                + accessPointIndex + ")");
+
+        // Table of contents of this method:
+        // id
+        // discriminator
+
+        // id: required _not_ to be provided
+        if (newAccessPoint.getId() != 0) {
+            /* User can't specify an id for a new access point.
+             * Note: _we_ can't distinguish omitting an id,
+             * from specifying an id of 0. */
+            valid = false;
+            constraintContext.buildConstraintViolationWithTemplate(
+                    "{" + CheckNewVocabulary.INTERFACE_NAME
+                    + ".accessPoint.id}").
+            addPropertyNode("version").
+            addPropertyNode("accessPoint").
+            inIterable().atIndex(versionIndex).
+            addPropertyNode("id").
+            inIterable().atIndex(accessPointIndex).
+            addConstraintViolation();
+        }
+
+        // discriminator
+        if (newAccessPoint.getDiscriminator() == null) {
+            valid = false;
+            constraintContext.buildConstraintViolationWithTemplate(
+                    "{" + CheckNewVocabulary.INTERFACE_NAME
+                    + ".accessPoint.discriminator}").
+                addPropertyNode("version").
+                addPropertyNode("accessPoint").
+                inIterable().atIndex(versionIndex).
+                addPropertyNode("discriminator").
+                inIterable().atIndex(accessPointIndex).
+                addConstraintViolation();
+            // In this case, we can't go any further.
+            return valid;
+        }
+
+        switch (newAccessPoint.getDiscriminator()) {
+        case AP_API_SPARQL:
+            ApApiSparql apApiSparql = newAccessPoint.getApApiSparql();
+            if (apApiSparql == null) {
+                valid = false;
+                constraintContext.buildConstraintViolationWithTemplate(
+                        "{" + CheckNewVocabulary.INTERFACE_NAME
+                        + ".accessPoint.apApiSparql}").
+                    addPropertyNode("version").
+                    addPropertyNode("accessPoint").
+                    inIterable().atIndex(versionIndex).
+                    addPropertyNode("apApiSparql").
+                    inIterable().atIndex(accessPointIndex).
+                    addConstraintViolation();
+                // In this case, we can't go any further.
+                break;
+            }
+            if (apApiSparql.getSource() != ApSource.USER) {
+                valid = false;
+                constraintContext.buildConstraintViolationWithTemplate(
+                        "{" + CheckNewVocabulary.INTERFACE_NAME
+                        + ".accessPoint.apApiSparql.source}").
+                    addPropertyNode("version").
+                    addPropertyNode("accessPoint").
+                    inIterable().atIndex(versionIndex).
+                    addPropertyNode("apApiSparql").
+                    inIterable().atIndex(accessPointIndex).
+                    addPropertyNode("source").
+                    addConstraintViolation();
+            }
+            valid = ValidationUtils.
+                    requireFieldNotEmptyStringAndSatisfiesPredicate(
+                    CheckNewVocabulary.INTERFACE_NAME,
+                    apApiSparql.getUrl(), "accessPoint.apApiSparql.url",
+                    ValidationUtils::isValidURL,
+                    constraintContext,
+                    cvb -> cvb.addPropertyNode("version").
+                    addPropertyNode("accessPoint").
+                    inIterable().atIndex(versionIndex).
+                    addPropertyNode("apApiSparql").
+                    inIterable().atIndex(accessPointIndex).
+                    addPropertyNode("url").
+                    addConstraintViolation(),
+                    valid);
+            break;
+        case AP_SISSVOC:
+            ApSissvoc apSissvoc = newAccessPoint.getApSissvoc();
+            if (apSissvoc == null) {
+                valid = false;
+                constraintContext.buildConstraintViolationWithTemplate(
+                        "{" + CheckNewVocabulary.INTERFACE_NAME
+                        + ".accessPoint.apSissvoc}").
+                    addPropertyNode("version").
+                    addPropertyNode("accessPoint").
+                    inIterable().atIndex(versionIndex).
+                    addPropertyNode("apSissvoc").
+                    inIterable().atIndex(accessPointIndex).
+                    addConstraintViolation();
+                // In this case, we can't go any further.
+                break;
+            }
+            if (apSissvoc.getSource() != ApSource.USER) {
+                valid = false;
+                constraintContext.buildConstraintViolationWithTemplate(
+                        "{" + CheckNewVocabulary.INTERFACE_NAME
+                        + ".accessPoint.apSissvoc.source}").
+                    addPropertyNode("version").
+                    addPropertyNode("accessPoint").
+                    inIterable().atIndex(versionIndex).
+                    addPropertyNode("apSissvoc").
+                    inIterable().atIndex(accessPointIndex).
+                    addPropertyNode("source").
+                    addConstraintViolation();
+            }
+            valid = ValidationUtils.
+                    requireFieldNotEmptyStringAndSatisfiesPredicate(
+                    CheckNewVocabulary.INTERFACE_NAME,
+                    apSissvoc.getUrlPrefix(), "accessPoint.apSissvoc.urlPrefix",
+                    ValidationUtils::isValidURL,
+                    constraintContext,
+                    cvb -> cvb.addPropertyNode("version").
+                    addPropertyNode("accessPoint").
+                    inIterable().atIndex(versionIndex).
+                    addPropertyNode("apSissvoc").
+                    inIterable().atIndex(accessPointIndex).
+                    addPropertyNode("url").
+                    addConstraintViolation(),
+                    valid);
+            break;
+        case AP_WEB_PAGE:
+            ApWebPage apWebPage = newAccessPoint.getApWebPage();
+            if (apWebPage == null) {
+                valid = false;
+                constraintContext.buildConstraintViolationWithTemplate(
+                        "{" + CheckNewVocabulary.INTERFACE_NAME
+                        + ".accessPoint.apWebPage}").
+                    addPropertyNode("version").
+                    addPropertyNode("accessPoint").
+                    inIterable().atIndex(versionIndex).
+                    addPropertyNode("apWebPage").
+                    inIterable().atIndex(accessPointIndex).
+                    addConstraintViolation();
+                // In this case, we can't go any further.
+                break;
+            }
+            valid = ValidationUtils.
+                    requireFieldNotEmptyStringAndSatisfiesPredicate(
+                    CheckNewVocabulary.INTERFACE_NAME,
+                    apWebPage.getUrl(), "accessPoint.apWebPage.url",
+                    ValidationUtils::isValidURL,
+                    constraintContext,
+                    cvb -> cvb.addPropertyNode("version").
+                    addPropertyNode("accessPoint").
+                    inIterable().atIndex(versionIndex).
+                    addPropertyNode("apWebPage").
+                    inIterable().atIndex(accessPointIndex).
+                    addPropertyNode("url").
+                    addConstraintViolation(),
+                    valid);
+            break;
+        default:
+            valid = false;
+            constraintContext.buildConstraintViolationWithTemplate(
+                    "{" + CheckNewVocabulary.INTERFACE_NAME
+                    + ".accessPoint.discriminator.allowed}").
+                addPropertyNode("version").
+                addPropertyNode("accessPoint").
+                inIterable().atIndex(versionIndex).
+                addPropertyNode("discriminator").
+                inIterable().atIndex(accessPointIndex).
+                addConstraintViolation();
+
+        }
 
         return valid;
     }
