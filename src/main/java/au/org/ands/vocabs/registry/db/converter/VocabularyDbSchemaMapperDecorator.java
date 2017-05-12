@@ -2,7 +2,15 @@
 
 package au.org.ands.vocabs.registry.db.converter;
 
+import java.util.List;
+
+import au.org.ands.vocabs.registry.db.dao.VocabularyRelatedEntityDAO;
+import au.org.ands.vocabs.registry.db.dao.VocabularyRelatedVocabularyDAO;
+import au.org.ands.vocabs.registry.db.entity.VocabularyRelatedEntity;
+import au.org.ands.vocabs.registry.db.entity.VocabularyRelatedVocabulary;
 import au.org.ands.vocabs.registry.db.internal.VocabularyJson;
+import au.org.ands.vocabs.registry.schema.vocabulary201701.Vocabulary.RelatedEntityRef;
+import au.org.ands.vocabs.registry.schema.vocabulary201701.Vocabulary.RelatedVocabularyRef;
 
 /** MapStruct mapper from Vocabulary database to schema. */
 public abstract class VocabularyDbSchemaMapperDecorator
@@ -32,8 +40,36 @@ public abstract class VocabularyDbSchemaMapperDecorator
         if (source == null) {
             return null;
         }
+
+        // Basic fields, handled for us by MapStruct.
         au.org.ands.vocabs.registry.schema.vocabulary201701.Vocabulary
             target = delegate.sourceToTarget(source);
+
+        // Related entity refs.
+        List<VocabularyRelatedEntity> vreList =
+                VocabularyRelatedEntityDAO.
+                getCurrentVocabularyRelatedEntitiesForVocabulary(
+                        source.getVocabularyId());
+        List<RelatedEntityRef> rerList = target.getRelatedEntityRef();
+        VocabularyRelatedEntityDbSchemaMapper vredbMapper =
+                VocabularyRelatedEntityDbSchemaMapper.INSTANCE;
+        for (VocabularyRelatedEntity vre : vreList) {
+            rerList.add(vredbMapper.sourceToTarget(vre));
+        }
+
+        // Related vocabulary refs.
+        List<VocabularyRelatedVocabulary> vrvList =
+                VocabularyRelatedVocabularyDAO.
+                getCurrentVocabularyRelatedVocabulariesForVocabulary(
+                        source.getVocabularyId());
+        List<RelatedVocabularyRef> rvrList = target.getRelatedVocabularyRef();
+        VocabularyRelatedVocabularyDbSchemaMapper vrvdbMapper =
+                VocabularyRelatedVocabularyDbSchemaMapper.INSTANCE;
+        for (VocabularyRelatedVocabulary vrv : vrvList) {
+            rvrList.add(vrvdbMapper.sourceToTarget(vrv));
+        }
+
+        // And last, the JSON.
         if (source.getData() != null) {
             VocabularyJson data =
                     JSONSerialization.deserializeStringAsJson(source.getData(),

@@ -34,12 +34,13 @@ public interface VocabularyDbSchemaMapper {
     @Mapping(target = "otherLanguage", ignore = true)
     @Mapping(target = "poolpartyProject", ignore = true)
     @Mapping(target = "primaryLanguage", ignore = true)
-//    @Mapping(target = "relatedEntity", ignore = true)
     @Mapping(target = "revisionCycle", ignore = true)
     @Mapping(target = "subject", ignore = true)
     @Mapping(target = "title", ignore = true)
     @Mapping(target = "topConcept", ignore = true)
-//    @Mapping(target = "version", ignore = true)
+    @Mapping(target = "version", ignore = true)
+    @Mapping(target = "relatedEntityRef", ignore = true)
+    @Mapping(target = "relatedVocabularyRef", ignore = true)
     au.org.ands.vocabs.registry.schema.vocabulary201701.Vocabulary
       sourceToTarget(au.org.ands.vocabs.registry.db.entity.Vocabulary source);
 
@@ -53,10 +54,11 @@ public interface VocabularyDbSchemaMapper {
     @Mapping(source = "topConcepts", target = "topConcept")
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "owner", ignore = true)
-//    @Mapping(target = "relatedEntity", ignore = true)
     @Mapping(target = "slug", ignore = true)
     @Mapping(target = "status", ignore = true)
-//    @Mapping(target = "version", ignore = true)
+    @Mapping(target = "version", ignore = true)
+    @Mapping(target = "relatedEntityRef", ignore = true)
+    @Mapping(target = "relatedVocabularyRef", ignore = true)
     void jsonDataIntoTarget(VocabularyJson data,
               @MappingTarget
               au.org.ands.vocabs.registry.schema.vocabulary201701.Vocabulary
