@@ -3,6 +3,8 @@
 package au.org.ands.vocabs.registry.api.validation;
 
 import java.lang.invoke.MethodHandles;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.HashSet;
@@ -561,6 +563,26 @@ public final class ValidationUtils {
         default:
             // Can't happen.
             logger.error("Unknown RelatedEntityType!");
+            return false;
+        }
+    }
+
+    /** Determine if a string is a valid URL, i.e., has the
+     * correct format.
+     * @param url The URL value to be tested.
+     * @return true, if the url value is valid.
+     */
+    public static boolean isValidURL(final String url) {
+        if (url == null || url.isEmpty()) {
+            return false;
+        }
+        try {
+            // Just try to parse it. If parsing succeeds ...
+            new URL(url);
+            // ... it is a valid URL.
+            return true;
+        } catch (MalformedURLException e) {
+            // Otherwise, parsing failed, and it is not a valid URL.
             return false;
         }
     }
