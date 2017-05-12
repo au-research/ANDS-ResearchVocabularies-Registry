@@ -24,10 +24,13 @@ import org.slf4j.LoggerFactory;
 
 import au.org.ands.vocabs.registry.api.context.ApiPaths;
 import au.org.ands.vocabs.registry.api.context.SwaggerInterface;
+import au.org.ands.vocabs.registry.db.converter.AccessPointDbSchemaMapper;
 import au.org.ands.vocabs.registry.db.converter.VersionDbSchemaMapper;
 import au.org.ands.vocabs.registry.db.converter.VocabularyDbSchemaMapper;
+import au.org.ands.vocabs.registry.db.dao.AccessPointDAO;
 import au.org.ands.vocabs.registry.db.dao.VersionDAO;
 import au.org.ands.vocabs.registry.db.dao.VocabularyDAO;
+import au.org.ands.vocabs.registry.schema.vocabulary201701.AccessPoint;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.Version;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.VersionList;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.Vocabulary;
@@ -122,6 +125,9 @@ public class GetVocabularies {
      * @param request The HTTP request.
      * @param uriInfo The UriInfo of the request.
      * @param vocabularyId The VocabularyId of the vocabulary to be fetched.
+     * @param includeVersions Whether or not to include version elements.
+     * @param includeAccessPoints Whether or not to include access point
+     *      elements.
      * @return The vocabulary, in either XML or JSON format,
      *      or an error result, if there is no such vocabulary. */
     @Path(ApiPaths.VOCABULARY_ID)
@@ -138,7 +144,17 @@ public class GetVocabularies {
             @Context final HttpServletRequest request,
             @Context final UriInfo uriInfo,
             @ApiParam(value = "The ID of the vocabulary to get")
-            @PathParam("vocabularyId") final Integer vocabularyId) {
+            @PathParam("vocabularyId") final Integer vocabularyId,
+            @ApiParam(value = "Whether or not to include version elements",
+                defaultValue = "false")
+            @QueryParam("includeVersions") @DefaultValue("false")
+            final boolean includeVersions,
+            @ApiParam(value = "Whether or not to include access points. "
+                + "Setting this to true forces includeVersions "
+                + "also to be true.",
+                defaultValue = "false")
+            @QueryParam("includeAccessPoints") @DefaultValue("false")
+            final boolean includeAccessPoints) {
         logger.debug("called getVocabularyById: " + vocabularyId);
         au.org.ands.vocabs.registry.db.entity.Vocabulary
             dbVocabulary = VocabularyDAO.getCurrentVocabularyByVocabularyId(
@@ -152,6 +168,38 @@ public class GetVocabularies {
             return Response.status(Status.BAD_REQUEST).entity(
                     new ErrorResult("No vocabulary with that id")).build();
         }
+
+        // If includeAccessPoints == true,
+        // override any "includeVersions=false" setting.
+        if (includeVersions || includeAccessPoints) {
+            List<au.org.ands.vocabs.registry.db.entity.Version>
+            dbVersions = VersionDAO.getCurrentVersionListForVocabulary(
+                    vocabularyId);
+            List<Version> outputVersions = outputVocabulary.getVersion();
+
+            VersionDbSchemaMapper versionMapper =
+                    VersionDbSchemaMapper.INSTANCE;
+            for (au.org.ands.vocabs.registry.db.entity.Version dbVersion
+                    : dbVersions) {
+                Version version = versionMapper.sourceToTarget(dbVersion);
+                outputVersions.add(version);
+                if (includeAccessPoints) {
+                    List<au.org.ands.vocabs.registry.db.entity.AccessPoint>
+                    dbAPs = AccessPointDAO.getCurrentAccessPointListForVersion(
+                            dbVersion.getVersionId());
+                    List<AccessPoint> outputAPs = version.getAccessPoint();
+
+                    AccessPointDbSchemaMapper accessPointMapper =
+                            AccessPointDbSchemaMapper.INSTANCE;
+                    for (au.org.ands.vocabs.registry.db.entity.AccessPoint dbAP
+                            : dbAPs) {
+                        outputAPs.add(accessPointMapper.sourceToTarget(dbAP));
+                    }
+
+                }
+            }
+        }
+
         Logging.logRequest(request, uriInfo, null, "Get a vocabulary");
         return Response.ok().entity(outputVocabulary).build();
     }
