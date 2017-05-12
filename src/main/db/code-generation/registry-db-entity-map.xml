@@ -193,6 +193,7 @@
        serialVersionUID="-2085702449839519639L"
        >
     <column db="element_type" enum="RegistryEventElementType" />
+    <column db="event_type" enum="RegistryEventEventType" />
   </map>
   <map tableName="resource_owner_hosts"
        entityName="ResourceOwnerHost"

@@ -200,4 +200,11 @@ http://viaf.org/</xs:documentation>
             <xs:enumeration value="versions"/>
         </xs:restriction>
     </xs:simpleType>
+    <xs:simpleType name="registry-event-event-type">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="created"/>
+            <xs:enumeration value="updated"/>
+            <xs:enumeration value="deleted"/>
+        </xs:restriction>
+    </xs:simpleType>
 </xs:schema>
