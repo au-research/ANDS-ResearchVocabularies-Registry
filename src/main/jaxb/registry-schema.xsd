@@ -69,6 +69,9 @@
     </xs:element>
     <xs:element name="version">
         <xs:complexType>
+            <xs:sequence>
+                <xs:element maxOccurs="unbounded" minOccurs="0" ref="access-point"/>
+            </xs:sequence>
             <xs:attribute name="id" type="id-type" use="required"> </xs:attribute>
             <xs:attribute name="status" use="required" type="common:version-status"> </xs:attribute>
             <xs:attribute name="title" use="required" type="xs:token"/>
