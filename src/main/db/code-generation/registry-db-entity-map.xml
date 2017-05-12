@@ -163,12 +163,82 @@
        serialVersionUID="-8491635774415411143L"
        >
     <column db="relation" enum="RelatedEntityRelation" />
+    <extraQueries>
+      <extraQuery name="GET_VOC_RELATED_ENTITY_LIST_FOR_VOC">
+        <extraQueryParameter name="vocabularyId" />
+        <queryText temporal="true">
+          SELECT entity FROM VocabularyRelatedEntity entity WHERE
+          vocabularyId = :vocabularyId
+          #AND_TEMPORAL_QUERY_VALID_SUFFIX
+        </queryText>
+        <method>    /** Get all current VocabularyRelatedEntity instances for
+     * a vocabulary.
+     * @param vocabularyId The vocabulary id for which vocabulary related
+     *     entities are to be looked up.
+     * @return An list of all VocabularyRelatedEntity instances for
+     *     the vocabulary.
+     */
+    public static List&lt;VocabularyRelatedEntity&gt;
+        getCurrentVocabularyRelatedEntitiesForVocabulary(
+                final int vocabularyId) {
+        EntityManager em = DBContext.getEntityManager();
+        TypedQuery&lt;VocabularyRelatedEntity&gt; q = em.createNamedQuery(
+                VocabularyRelatedEntity.
+                    GET_VOC_RELATED_ENTITY_LIST_FOR_VOC,
+                VocabularyRelatedEntity.class)
+                .setParameter(VocabularyRelatedEntity.
+                    GET_VOC_RELATED_ENTITY_LIST_FOR_VOC_VOCABULARYID,
+                    vocabularyId);
+        q = TemporalUtils.setDatetimeConstantParameters(q);
+        List&lt;VocabularyRelatedEntity&gt; entityList = q.getResultList();
+        em.close();
+        return entityList;
+    }
+
+</method>
+      </extraQuery>
+    </extraQueries>
   </map>
   <map tableName="vocabulary_related_vocabularies"
        entityName="VocabularyRelatedVocabulary"
        serialVersionUID="-9169766097390954402L"
        >
     <column db="relation" enum="RelatedVocabularyRelation" />
+    <extraQueries>
+      <extraQuery name="GET_VOC_RELATED_VOC_LIST_FOR_VOC">
+        <extraQueryParameter name="vocabularyId" />
+        <queryText temporal="true">
+          SELECT entity FROM VocabularyRelatedVocabulary entity WHERE
+          vocabularyId = :vocabularyId
+          #AND_TEMPORAL_QUERY_VALID_SUFFIX
+        </queryText>
+        <method>    /** Get all current VocabularyRelatedVocabulary
+     * instances for a vocabulary.
+     * @param vocabularyId The vocabulary id for which vocabulary related
+     *     vocabularies are to be looked up.
+     * @return An list of all VocabularyRelatedVocabulary instances for
+     *     the vocabulary.
+     */
+    public static List&lt;VocabularyRelatedVocabulary&gt;
+        getCurrentVocabularyRelatedVocabulariesForVocabulary(
+                final int vocabularyId) {
+        EntityManager em = DBContext.getEntityManager();
+        TypedQuery&lt;VocabularyRelatedVocabulary&gt; q = em.createNamedQuery(
+                VocabularyRelatedVocabulary.
+                    GET_VOC_RELATED_VOC_LIST_FOR_VOC,
+                VocabularyRelatedVocabulary.class)
+                .setParameter(VocabularyRelatedVocabulary.
+                    GET_VOC_RELATED_VOC_LIST_FOR_VOC_VOCABULARYID,
+                    vocabularyId);
+        q = TemporalUtils.setDatetimeConstantParameters(q);
+        List&lt;VocabularyRelatedVocabulary&gt; entityList = q.getResultList();
+        em.close();
+        return entityList;
+    }
+
+</method>
+      </extraQuery>
+    </extraQueries>
   </map>
   <map tableName="tasks"
        entityName="Task"
