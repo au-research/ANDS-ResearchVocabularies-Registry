@@ -231,7 +231,7 @@ import javax.persistence.Table;
             name = <xsl:value-of select="$entityName" />.
                 GET_ALL_DRAFT_<xsl:value-of select="upper-case($entityName)" />,
             query = <xsl:value-of select="$entityName" />.
-                GET_ALL_DRAFT_<xsl:value-of select="upper-case($entityName)" />_QUERY),<xsl:choose><xsl:when test="$idKey">
+                GET_ALL_DRAFT_<xsl:value-of select="upper-case($entityName)" />_QUERY)<xsl:choose><xsl:when test="$idKey">,
     @NamedQuery(
             name = <xsl:value-of select="$entityName" />.
                 HAS_DRAFT_<xsl:value-of select="upper-case($entityName)" />,
