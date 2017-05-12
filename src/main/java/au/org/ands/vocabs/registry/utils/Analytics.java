@@ -81,6 +81,8 @@ public final class Analytics {
     // of field name.
     /** The name of the owner field inserted into log entries. */
     public static final String OWNER_FIELD = "owner";
+    /** The name of the status field inserted into log entries. */
+    public static final String STATUS_FIELD = "status";
     /** The name of the title field inserted into log entries. */
     public static final String TITLE_FIELD = "title";
     /** The name of the vocabulary ID field inserted into log entries. */
