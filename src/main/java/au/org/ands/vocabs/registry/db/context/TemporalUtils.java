@@ -2,6 +2,7 @@
 
 package au.org.ands.vocabs.registry.db.context;
 
+import java.time.Clock;
 import java.time.LocalDateTime;
 
 import javax.persistence.Query;
@@ -132,14 +133,14 @@ public final class TemporalUtils {
 //            + " <= :" + DATETIME_PARAMETER + " AND :"
 //            + DATETIME_PARAMETER + " < " + E3 + "." + END_DATE;
 
-    // The following are commented out for now, as not yet needed.
+    /** Get the current time in UTC as a LocalDateTime.
+     * @return The current time in UTC as a LocalDateTime value.
+     */
+    public static LocalDateTime nowUTC() {
+        return LocalDateTime.now(Clock.systemUTC());
+    }
 
-//    /** Get the current time in UTC as a LocalDateTime.
-//     * @return The current time in UTC as a LocalDateTime value.
-//     */
-//    private static LocalDateTime nowUTC() {
-//        return LocalDateTime.now(Clock.systemUTC());
-//    }
+    // The following are commented out for now, as not yet needed.
 
 //    /** Set the datetime parameter of a query to the current
 //     * date/time.
