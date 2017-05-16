@@ -173,9 +173,11 @@
         <xs:attribute name="related-id" type="id-type" use="required"/>
         <xs:attribute name="relation" use="required" type="common:related-vocabulary-relation"/>
     </xs:complexType>
-    <xs:complexType name="version-artefact">
-        <xs:attribute name="id" type="id-type"/>
-        <xs:attribute name="status" type="common:version-artefact-status"/>
-        <xs:attribute name="type" type="common:version-artefact-type"/>
-    </xs:complexType>
+    <xs:element name="version-artefact">
+        <xs:complexType>
+            <xs:attribute name="id" type="id-type"/>
+            <xs:attribute name="status" type="common:version-artefact-status"/>
+            <xs:attribute name="type" type="common:version-artefact-type"/>
+        </xs:complexType>
+    </xs:element>
 </xs:schema>
