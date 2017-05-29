@@ -25,9 +25,9 @@ public final class TemporalUtils {
             "currently_valid_end_date";
 
     /** The name of a JPQL parameter to use for the constant
-     * {@link TemporalConstants#DRAFT_START_DATE}. */
-    private static final String DRAFT_START_DATE =
-            "draft_start_date";
+     * {@link TemporalConstants#DRAFT_ADDITION_MODIFICATION_START_DATE}. */
+    private static final String DRAFT_ADDITION_MODIFICATION_START_DATE =
+            "draft_addition_modification_start_date";
 
     /** Start date field name. Must match the property name in the entity
      * class. */
@@ -63,7 +63,7 @@ public final class TemporalUtils {
 
     /** Clause for JPQL queries to select only draft rows. */
     public static final String TEMPORAL_QUERY_ALL_DRAFT_CLAUSE =
-            " " + START_DATE + " = :" + DRAFT_START_DATE;
+            " " + START_DATE + " > :" + CURRENTLY_VALID_END_DATE;
 
     /** Suffix for JPQL queries to select only draft rows.
      * This version of the suffix is for queries that already
@@ -177,8 +177,8 @@ public final class TemporalUtils {
             // No problem.
         }
         try {
-            q.setParameter(DRAFT_START_DATE,
-                    TemporalConstants.DRAFT_START_DATE);
+            q.setParameter(DRAFT_ADDITION_MODIFICATION_START_DATE,
+                    TemporalConstants.DRAFT_ADDITION_MODIFICATION_START_DATE);
         } catch (IllegalArgumentException e) {
             // No problem.
         }

@@ -426,7 +426,8 @@ public final class MigrateToolkitToRegistry {
             // elements of draft records. The registryVocabulary's
             // startDate/endDate values are assigned the special values
             // to indicate a draft record.
-            registryVocabulary.setStartDate(TemporalConstants.DRAFT_START_DATE);
+            registryVocabulary.setStartDate(TemporalConstants.
+                    DRAFT_ADDITION_MODIFICATION_START_DATE);
             registryVocabulary.setEndDate(
                     TemporalConstants.DRAFT_ADDITION_MODIFICATION_END_DATE);
             if (publishedVocabulary == null) {

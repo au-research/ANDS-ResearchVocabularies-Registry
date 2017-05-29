@@ -17,8 +17,8 @@ public final class TemporalConstants {
             LocalDateTime.of(9999, 12, 1, 0, 0);
 
     /** The start date of entities that are draft data, representing
-     * either an addition, a modification, or a deletion. */
-    public static final LocalDateTime DRAFT_START_DATE =
+     * either an addition or a modification. */
+    public static final LocalDateTime DRAFT_ADDITION_MODIFICATION_START_DATE =
             LocalDateTime.of(9999, 12, 2, 0, 0);
 
     /** The end date of entities that are draft data, representing
@@ -26,9 +26,14 @@ public final class TemporalConstants {
     public static final LocalDateTime DRAFT_ADDITION_MODIFICATION_END_DATE =
             LocalDateTime.of(9999, 12, 3, 0, 0);
 
-    /** The end date of entities that are draft data, representing
-     * a deletion.. */
-    public static final LocalDateTime DRAFT_DELETION_END_DATE =
+    /** The start date of entities that are draft data, representing
+     * a deletion. */
+    public static final LocalDateTime DRAFT_DELETION_START_DATE =
             LocalDateTime.of(9999, 12, 4, 0, 0);
+
+    /** The end date of entities that are draft data, representing
+     * a deletion. */
+    public static final LocalDateTime DRAFT_DELETION_END_DATE =
+            LocalDateTime.of(9999, 12, 5, 0, 0);
 
 }
