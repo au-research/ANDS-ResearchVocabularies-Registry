@@ -33,6 +33,9 @@
                 <xs:element maxOccurs="unbounded" minOccurs="0" name="top-concept" type="xs:token"/>
                 <xs:element maxOccurs="unbounded" name="related-entity-ref">
                     <xs:complexType>
+                        <xs:sequence>
+                            <xs:element ref="related-entity"/>
+                        </xs:sequence>
                         <xs:attribute name="id" type="id-type" use="required"/>
                         <xs:attribute name="relation" type="common:related-entity-relation"
                             use="required"/>
@@ -149,6 +152,13 @@
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>
+    <xs:element name="related-entity-list">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element maxOccurs="unbounded" minOccurs="0" ref="related-entity"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
     <xs:element name="related-entity">
         <xs:complexType>
             <xs:sequence>

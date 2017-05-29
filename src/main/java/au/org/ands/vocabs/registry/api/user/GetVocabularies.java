@@ -4,6 +4,7 @@ package au.org.ands.vocabs.registry.api.user;
 
 import java.lang.invoke.MethodHandles;
 import java.util.List;
+import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.DefaultValue;
@@ -31,9 +32,11 @@ import au.org.ands.vocabs.registry.db.dao.AccessPointDAO;
 import au.org.ands.vocabs.registry.db.dao.VersionDAO;
 import au.org.ands.vocabs.registry.db.dao.VocabularyDAO;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.AccessPoint;
+import au.org.ands.vocabs.registry.schema.vocabulary201701.RelatedEntity;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.Version;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.VersionList;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.Vocabulary;
+import au.org.ands.vocabs.registry.schema.vocabulary201701.Vocabulary.RelatedEntityRef;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.VocabularyList;
 import au.org.ands.vocabs.registry.utils.Logging;
 import io.swagger.annotations.Api;
@@ -128,6 +131,8 @@ public class GetVocabularies {
      * @param includeVersions Whether or not to include version elements.
      * @param includeAccessPoints Whether or not to include access point
      *      elements.
+     * @param includeRelatedEntities Whether or not to include full
+     *      related entity elements.
      * @return The vocabulary, in either XML or JSON format,
      *      or an error result, if there is no such vocabulary. */
     @Path(ApiPaths.VOCABULARY_ID)
@@ -154,7 +159,13 @@ public class GetVocabularies {
                 + "also to be true.",
                 defaultValue = "false")
             @QueryParam("includeAccessPoints") @DefaultValue("false")
-            final boolean includeAccessPoints) {
+            final boolean includeAccessPoints,
+            @ApiParam(value = "Whether or not to include full details of "
+                    + "related entities. If false (the default), only "
+                    + "references will be included",
+            defaultValue = "false")
+            @QueryParam("includeRelatedEntities") @DefaultValue("false")
+            final boolean includeRelatedEntities) {
         logger.debug("called getVocabularyById: " + vocabularyId);
         au.org.ands.vocabs.registry.db.entity.Vocabulary
             dbVocabulary = VocabularyDAO.getCurrentVocabularyByVocabularyId(
@@ -195,7 +206,29 @@ public class GetVocabularies {
                             : dbAPs) {
                         outputAPs.add(accessPointMapper.sourceToTarget(dbAP));
                     }
+                }
+            }
+        }
 
+        // If includeRelatedEntities, get the full details of the
+        // related entities, and match them up with the refs
+        // we already fetched and included in outputVocabulary.
+        if (includeRelatedEntities) {
+            List<RelatedEntity> relatedEntities =
+                    GetRelatedEntities.
+                    getRelatedEntitiesForVocabularyByIdHelper(vocabularyId);
+            for (RelatedEntityRef rer
+                    : outputVocabulary.getRelatedEntityRef()) {
+                Optional<RelatedEntity> related = relatedEntities.stream().
+                        filter(re -> re.getId()
+                                == rer.getId()).findFirst();
+                if (related.isPresent()) {
+                    rer.setRelatedEntity(related.get());
+                } else {
+                    logger.error("Internal error: unable to match up "
+                            + "related entity. vocabulary_id = {}, "
+                            + "related entity ID = {}", vocabularyId,
+                            rer.getId());
                 }
             }
         }

@@ -20,6 +20,7 @@ public interface VocabularyRelatedEntityDbSchemaMapper {
      * @return The schema version of the related entity reference.
      */
     @Mapping(source = "relatedEntityId", target = "id")
+    @Mapping(target = "relatedEntity", ignore = true)
     au.org.ands.vocabs.registry.schema.vocabulary201701.
     Vocabulary.RelatedEntityRef
         sourceToTarget(
