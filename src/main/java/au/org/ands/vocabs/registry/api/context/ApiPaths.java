@@ -46,6 +46,9 @@ public final class ApiPaths {
     /** Path parameter name for a version resource. */
     public static final String VERSION_ID = "{versionId}";
 
+    /** Path parameter name for a related entity resource. */
+    public static final String RELATED_ENTITY_ID = "{relatedEntityId}";
+
 //    /** Path parameter name for a  resource. */
 //    public static final String _ID = "{Id}";
 

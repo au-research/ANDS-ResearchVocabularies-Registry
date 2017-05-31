@@ -3,15 +3,20 @@
 package au.org.ands.vocabs.registry.api.user;
 
 import java.lang.invoke.MethodHandles;
-import java.util.ArrayList;
 import java.util.List;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.UriInfo;
 
+import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,13 +28,15 @@ import au.org.ands.vocabs.registry.db.dao.RelatedEntityDAO;
 import au.org.ands.vocabs.registry.db.dao.RelatedEntityIdentifierDAO;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.RelatedEntity;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.RelatedEntityIdentifier;
-import au.org.ands.vocabs.registry.schema.vocabulary201701.RelatedEntityList;
+import au.org.ands.vocabs.registry.utils.Logging;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 
 /** REST web services for getting related entities. */
-@Path(ApiPaths.API_RESOURCE + "/" + ApiPaths.VOCABULARIES)
+@Path(ApiPaths.API_RESOURCE + "/" + ApiPaths.RELATED_ENTITIES)
 @Api(value = SwaggerInterface.TAG_RESOURCES)
 public class GetRelatedEntities {
 
@@ -44,69 +51,61 @@ public class GetRelatedEntities {
     /** Get the current related entities of a vocabulary, by its vocabulary id.
      * Delegates to {@link #getRelatedEntitiesForVocabularyByIdHelper(Integer)}
      * to do the work.
-     * @param vocabularyId The VocabularyId of the related entities
+     * @param request The HTTP request.
+     * @param uriInfo The UriInfo of the request.
+     * @param relatedEntityId The RelatedEntityId of the related entity
      *      to be fetched.
-     * @return The list of related entities, in either XML or JSON format,
-     *      or an error result, if there is no such vocabulary. */
-    @Path(ApiPaths.VOCABULARY_ID + "/" + ApiPaths.RELATED_ENTITIES)
+     * @return The related entity, in either XML or JSON format,
+     *      or an error result, if there is no such related entity. */
+    @Path(ApiPaths.RELATED_ENTITY_ID)
     @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     @GET
-    @ApiOperation(value = "Get the current related entities of a vocabulary, "
-            + "by its vocabulary id.")
-    public final RelatedEntityList getRelatedEntitiesForVocabularyById(
-            @ApiParam(value = "The ID of the vocabulary from which to get "
-                    + "the current related entities")
-            @PathParam("vocabularyId") final Integer vocabularyId) {
-        logger.debug("called getRelatedEntitiesForVocabularyById: "
-            + vocabularyId);
+    @ApiOperation(value = "Get a current related entity by its id.",
+            response = RelatedEntity.class)
+    @ApiResponses(value = {
+            @ApiResponse(code = HttpStatus.SC_BAD_REQUEST,
+                    message = "No related entity with that id",
+                    response = ErrorResult.class)
+            })
+    public final Response getRelatedEntityById(
+            @Context final HttpServletRequest request,
+            @Context final UriInfo uriInfo,
+            @ApiParam(value = "The ID of the related entity to get ")
+            @PathParam("relatedEntityId") final Integer relatedEntityId) {
+        logger.debug("called getRelatedEntityById: "
+            + relatedEntityId);
 
-        RelatedEntityList outputRelatedEntityList = new RelatedEntityList();
-
-        List<RelatedEntity> outputRelatedEntities =
-                getRelatedEntitiesForVocabularyByIdHelper(vocabularyId);
-
-        outputRelatedEntityList.getRelatedEntity().
-                addAll(outputRelatedEntities);
-        return outputRelatedEntityList;
-    }
-
-    /** Helper method to do the work of getting the current related
-     * entities of a vocabulary, by its vocabulary id.
-     * @param vocabularyId The VocabularyId of the related entities
-     *      to be fetched.
-     * @return The list of related entities.
-     */
-    public static List<RelatedEntity> getRelatedEntitiesForVocabularyByIdHelper(
-            final Integer vocabularyId) {
-        List<au.org.ands.vocabs.registry.db.entity.RelatedEntity>
-            dbRelatedEntities =
-                RelatedEntityDAO.getCurrentRelatedEntitiesForVocabulary(
-                    vocabularyId);
-        ArrayList<RelatedEntity> outputRelatedEntities = new ArrayList<>();
+        au.org.ands.vocabs.registry.db.entity.RelatedEntity
+        dbRE = RelatedEntityDAO.getCurrentRelatedEntityByRelatedEntityId(
+                relatedEntityId);
+        RelatedEntity outputRE;
 
         RelatedEntityDbSchemaMapper reMapper =
                 RelatedEntityDbSchemaMapper.INSTANCE;
         RelatedEntityIdentifierDbSchemaMapper reiMapper =
                 RelatedEntityIdentifierDbSchemaMapper.INSTANCE;
-        for (au.org.ands.vocabs.registry.db.entity.RelatedEntity dbRE
-                : dbRelatedEntities) {
-            RelatedEntity targetRelatedEntity = reMapper.sourceToTarget(dbRE);
-            outputRelatedEntities.add(targetRelatedEntity);
-            // Get the related entity identifiers.
-            List<RelatedEntityIdentifier> targetRelatedEntityIdentifiers =
-                    targetRelatedEntity.getRelatedEntityIdentifier();
-            List<au.org.ands.vocabs.registry.db.entity.RelatedEntityIdentifier>
-                dbRelatedEntityIdentifiers =
-                    RelatedEntityIdentifierDAO.
-                    getCurrentRelatedEntityIdentifierListForRelatedEntity(
-                            dbRE.getRelatedEntityId());
-            for (au.org.ands.vocabs.registry.db.entity.RelatedEntityIdentifier
-                    dbREI : dbRelatedEntityIdentifiers) {
-                targetRelatedEntityIdentifiers.add(
-                        reiMapper.sourceToTarget(dbREI));
-            }
+
+        outputRE = reMapper.sourceToTarget(dbRE);
+        if (outputRE == null) {
+            return Response.status(Status.BAD_REQUEST).entity(
+                new ErrorResult("No related entity with that id")).build();
         }
-        return outputRelatedEntities;
+
+        List<RelatedEntityIdentifier> outputRelatedEntityIdentifiers =
+                outputRE.getRelatedEntityIdentifier();
+        List<au.org.ands.vocabs.registry.db.entity.RelatedEntityIdentifier>
+            dbRelatedEntityIdentifiers =
+                RelatedEntityIdentifierDAO.
+                getCurrentRelatedEntityIdentifierListForRelatedEntity(
+                        dbRE.getRelatedEntityId());
+        for (au.org.ands.vocabs.registry.db.entity.RelatedEntityIdentifier
+                dbREI : dbRelatedEntityIdentifiers) {
+            outputRelatedEntityIdentifiers.add(
+                    reiMapper.sourceToTarget(dbREI));
+        }
+
+        Logging.logRequest(request, uriInfo, null, "Get a vocabulary");
+        return Response.ok().entity(outputRE).build();
     }
 
 }
