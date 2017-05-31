@@ -167,6 +167,7 @@
             </xs:sequence>
             <xs:attribute name="id" type="id-type" use="required"/>
             <xs:attribute name="type" use="required" type="common:related-entity-type"/>
+            <xs:attribute name="owner" type="xs:token"/>
             <xs:attribute name="title" type="xs:token"/>
             <xs:attribute name="email" type="xs:token"/>
             <xs:attribute name="phone" type="xs:token"/>

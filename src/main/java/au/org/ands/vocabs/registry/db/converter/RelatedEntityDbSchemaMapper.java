@@ -42,6 +42,7 @@ public interface RelatedEntityDbSchemaMapper {
      * @param target The schema version of the related entity to be updated.
      */
     @Mapping(target = "id", ignore = true)
+    @Mapping(target = "owner", ignore = true)
     @Mapping(target = "title", ignore = true)
     @Mapping(target = "type", ignore = true)
     @Mapping(target = "relatedEntityIdentifier", ignore = true)
@@ -56,6 +57,7 @@ public interface RelatedEntityDbSchemaMapper {
      * @param target The schema version of the related entity to be updated.
      */
     @Mapping(target = "id", ignore = true)
+    @Mapping(target = "owner", ignore = true)
     @Mapping(target = "email", ignore = true)
     @Mapping(target = "phone", ignore = true)
     @Mapping(target = "title", ignore = true)
@@ -72,6 +74,7 @@ public interface RelatedEntityDbSchemaMapper {
      * @param target The schema version of the related entity to be updated.
      */
     @Mapping(target = "id", ignore = true)
+    @Mapping(target = "owner", ignore = true)
     @Mapping(target = "email", ignore = true)
     @Mapping(target = "phone", ignore = true)
     @Mapping(target = "title", ignore = true)
