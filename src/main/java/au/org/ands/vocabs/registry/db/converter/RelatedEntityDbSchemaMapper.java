@@ -30,7 +30,7 @@ public interface RelatedEntityDbSchemaMapper {
     // Ignore here the fields that are extracted from JSON data.
     @Mapping(target = "email", ignore = true)
     @Mapping(target = "phone", ignore = true)
-    @Mapping(target = "uri", ignore = true)
+    @Mapping(target = "url", ignore = true)
     @Mapping(target = "relatedEntityIdentifier", ignore = true)
     au.org.ands.vocabs.registry.schema.vocabulary201701.RelatedEntity
         sourceToTarget(au.org.ands.vocabs.registry.db.entity.RelatedEntity

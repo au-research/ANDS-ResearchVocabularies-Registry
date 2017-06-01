@@ -106,7 +106,7 @@
     </xs:complexType>
     <xs:complexType name="related-entity-common">
         <xs:sequence>
-            <xs:element maxOccurs="unbounded" minOccurs="0" name="uri" type="xs:anyURI"/>
+            <xs:element maxOccurs="unbounded" minOccurs="0" name="url" type="xs:anyURI"/>
         </xs:sequence>
     </xs:complexType>
     <xs:complexType name="related-party-json">

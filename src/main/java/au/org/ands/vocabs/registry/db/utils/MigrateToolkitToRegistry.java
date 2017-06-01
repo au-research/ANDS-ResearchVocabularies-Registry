@@ -1138,7 +1138,7 @@ public final class MigrateToolkitToRegistry {
                     logger.error("related entity[urls] has an element "
                             + "that has no url");
                 } else {
-                    relatedEntityJson.getUri().add(
+                    relatedEntityJson.getUrl().add(
                             urlJson.get("url").asText());
                 }
             }
