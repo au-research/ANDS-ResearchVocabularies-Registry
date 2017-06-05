@@ -139,7 +139,7 @@ public final class MigrateToolkitToRegistry {
      * Note that the prefix to remove may or may correspond with the
      * prefix used for identification in {@link #reiPrefixes}.
      * In fact, we don't really need the prefix to remove,
-     * just its <i>length</i>. But with the full prefix value, its
+     * just its <i>length</i>. But with the full prefix value, it's
      * easier to see that the value is correct.
      * The contents are initialized in a static initialization block.
      */
@@ -160,8 +160,9 @@ public final class MigrateToolkitToRegistry {
                 "http://isni.org/isni/");
         reiPrefixesToRemove.put(RelatedEntityIdentifierType.ORCID,
                 "http://orcid.org/");
-        reiPrefixesToRemove.put(RelatedEntityIdentifierType.PURL,
-                "http://purl.org/");
+        // PURL: not removed.
+//        reiPrefixesToRemove.put(RelatedEntityIdentifierType.PURL,
+//                "http://purl.org/");
         reiPrefixesToRemove.put(RelatedEntityIdentifierType.RESEARCHER_ID,
                 "http://www.researcherid.com/rid/");
         reiPrefixesToRemove.put(RelatedEntityIdentifierType.VIAF,
