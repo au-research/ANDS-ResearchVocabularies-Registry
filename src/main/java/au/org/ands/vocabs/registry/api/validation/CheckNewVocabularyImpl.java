@@ -2,6 +2,8 @@
 
 package au.org.ands.vocabs.registry.api.validation;
 
+import static au.org.ands.vocabs.registry.api.validation.CheckNewVocabulary.INTERFACE_NAME;
+
 import java.lang.invoke.MethodHandles;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -83,27 +85,24 @@ public class CheckNewVocabularyImpl
         // version
 
         // id: required _not_ to be provided
-        if (newVocabulary.getId() != 0) {
-            /* User can't specify an id for a new vocab.
-             * Note: _we_ can't distinguish omitting an id,
-             * from specifying an id of 0. */
+        if (newVocabulary.getId() != null) {
             valid = false;
             constraintContext.buildConstraintViolationWithTemplate(
-                    "{" + CheckNewVocabulary.INTERFACE_NAME + ".id}").
+                    "{" + INTERFACE_NAME + ".id}").
             addPropertyNode("id").
             addConstraintViolation();
         }
 
         // status: required
         valid = ValidationUtils.requireFieldNotNull(
-                CheckNewVocabulary.INTERFACE_NAME,
+                INTERFACE_NAME,
                 newVocabulary.getStatus(), "status",
                 constraintContext, valid);
 
         // owner: required
         // NB: we can't do authorization checks here.
         valid = ValidationUtils.requireFieldNotEmptyString(
-                CheckNewVocabulary.INTERFACE_NAME,
+                INTERFACE_NAME,
                 newVocabulary.getOwner(), "owner",
                 constraintContext, valid);
 
@@ -113,13 +112,13 @@ public class CheckNewVocabularyImpl
             if (!ValidationUtils.isValidSlug(slug)) {
                 valid = false;
                 constraintContext.buildConstraintViolationWithTemplate(
-                    "{" + CheckNewVocabulary.INTERFACE_NAME + ".slug}").
+                    "{" + INTERFACE_NAME + ".slug}").
                 addPropertyNode("slug").
                 addConstraintViolation();
             } else if (VocabularyDAO.isSlugInUse(slug)) {
                 valid = false;
                 constraintContext.buildConstraintViolationWithTemplate(
-                    "{" + CheckNewVocabulary.INTERFACE_NAME + ".slug.inUse}").
+                    "{" + INTERFACE_NAME + ".slug.inUse}").
                 addPropertyNode("slug").
                 addConstraintViolation();
             }
@@ -127,7 +126,7 @@ public class CheckNewVocabularyImpl
 
         // title: required
         valid = ValidationUtils.requireFieldNotEmptyString(
-                CheckNewVocabulary.INTERFACE_NAME,
+                INTERFACE_NAME,
                 newVocabulary.getTitle(), "title",
                 constraintContext, valid);
 
@@ -139,7 +138,7 @@ public class CheckNewVocabularyImpl
             if (VocabularyDAO.isSlugInUse(slugFromTitle)) {
                 valid = false;
                 constraintContext.buildConstraintViolationWithTemplate(
-                    "{" + CheckNewVocabulary.INTERFACE_NAME
+                    "{" + INTERFACE_NAME
                     + ".title.slugInUse}").
                 addPropertyNode("title").
                 addConstraintViolation();
@@ -150,17 +149,17 @@ public class CheckNewVocabularyImpl
 
         // description: required, and must be valid HTML
         valid = ValidationUtils.requireFieldNotEmptyString(
-                CheckNewVocabulary.INTERFACE_NAME,
+                INTERFACE_NAME,
                 newVocabulary.getDescription(), "description",
                 constraintContext, valid);
         valid = ValidationUtils.requireFieldValidHTML(
-                CheckNewVocabulary.INTERFACE_NAME,
+                INTERFACE_NAME,
                 newVocabulary.getDescription(), "description",
                 constraintContext, valid);
 
         // note: optional, but, if specified, must be valid HTML
         valid = ValidationUtils.requireFieldValidHTML(
-                CheckNewVocabulary.INTERFACE_NAME,
+                INTERFACE_NAME,
                 newVocabulary.getNote(), "note",
                 constraintContext, valid);
 
@@ -189,7 +188,7 @@ public class CheckNewVocabularyImpl
             final int index = subjectIndex;
             valid = ValidationUtils.
                     requireFieldNotEmptyStringAndSatisfiesPredicate(
-                            CheckNewVocabulary.INTERFACE_NAME,
+                            INTERFACE_NAME,
                             subject.getSource(), "subject.source",
                             SubjectSources::isValidSubjectSource,
                             constraintContext,
@@ -199,7 +198,7 @@ public class CheckNewVocabularyImpl
                                 valid);
             valid = ValidationUtils.
                     requireFieldNotEmptyString(
-                            CheckNewVocabulary.INTERFACE_NAME,
+                            INTERFACE_NAME,
                             subject.getLabel(), "subject.label",
                             constraintContext,
                             cvb -> cvb.addPropertyNode("subject").
@@ -210,7 +209,7 @@ public class CheckNewVocabularyImpl
                     && !SubjectSources.subjectHasValidIRI(subject)) {
                 valid = false;
                 constraintContext.buildConstraintViolationWithTemplate(
-                    "{" + CheckNewVocabulary.INTERFACE_NAME
+                    "{" + INTERFACE_NAME
                     + ".subject.unknown}").
                 addPropertyNode("subject").addBeanNode().inIterable().
                 atIndex(index).
@@ -223,7 +222,7 @@ public class CheckNewVocabularyImpl
         if (!validSubjects) {
             valid = false;
             constraintContext.buildConstraintViolationWithTemplate(
-                "{" + CheckNewVocabulary.INTERFACE_NAME
+                "{" + INTERFACE_NAME
                 + ".subject.noAnzsrcFor}").
             addPropertyNode("subject").
             addConstraintViolation();
@@ -231,7 +230,7 @@ public class CheckNewVocabularyImpl
         if (numLocalSubjectsSpecified != localSubjectsSpecified.size()) {
             valid = false;
             constraintContext.buildConstraintViolationWithTemplate(
-                "{" + CheckNewVocabulary.INTERFACE_NAME
+                "{" + INTERFACE_NAME
                 + ".subject.duplicateLocal}").
             addPropertyNode("subject").
             addConstraintViolation();
@@ -239,7 +238,7 @@ public class CheckNewVocabularyImpl
         if (numNonLocalSubjectsSpecified != nonLocalSubjectsSpecified.size()) {
             valid = false;
             constraintContext.buildConstraintViolationWithTemplate(
-                "{" + CheckNewVocabulary.INTERFACE_NAME
+                "{" + INTERFACE_NAME
                 + ".subject.duplicateNonLocal}").
             addPropertyNode("subject").
             addConstraintViolation();
@@ -249,7 +248,7 @@ public class CheckNewVocabularyImpl
         String primaryLanguage = newVocabulary.getPrimaryLanguage();
         valid = ValidationUtils.
                 requireFieldNotEmptyStringAndSatisfiesPredicate(
-                        CheckNewVocabulary.INTERFACE_NAME,
+                        INTERFACE_NAME,
                         primaryLanguage,
                         "primaryLanguage",
                         Languages::isValidLanguage,
@@ -274,7 +273,7 @@ public class CheckNewVocabularyImpl
             // instead of newVocab.topConcept[1].
             valid = ValidationUtils.
                     requireFieldNotEmptyStringAndSatisfiesPredicate(
-                            CheckNewVocabulary.INTERFACE_NAME,
+                            INTERFACE_NAME,
                             tc, "otherLanguage",
                             lang -> Languages.isValidLanguageNotPrimary(
                                     primaryLanguage, lang),
@@ -293,8 +292,7 @@ public class CheckNewVocabularyImpl
             // There is at least one duplicate in the list!
             valid = false;
             constraintContext.buildConstraintViolationWithTemplate(
-                    "{au.org.ands.vocabs.registry.api.validation."
-                    + "CheckNewVocabulary.otherLanguage.duplicate}").
+                    "{" + INTERFACE_NAME + ".otherLanguage.duplicate}").
             addPropertyNode("otherLanguage").
             addConstraintViolation();
         }
@@ -310,8 +308,7 @@ public class CheckNewVocabularyImpl
             if (PoolPartyServerDAO.getPoolPartyServerById(serverId) == null) {
                 valid = false;
                 constraintContext.buildConstraintViolationWithTemplate(
-                        "{au.org.ands.vocabs.registry.api.validation."
-                        + "CheckNewVocabulary.poolpartyProject.serverId}").
+                        "{" + INTERFACE_NAME + ".poolpartyProject.serverId}").
                 addPropertyNode("poolpartyProject").
                 addPropertyNode("serverId").
                 addConstraintViolation();
@@ -330,7 +327,7 @@ public class CheckNewVocabularyImpl
             // Without it, we get, e.g., newVocab[1].topConcept
             // instead of newVocab.topConcept[1].
             valid = ValidationUtils.requireFieldNotEmptyString(
-                    CheckNewVocabulary.INTERFACE_NAME,
+                    INTERFACE_NAME,
                     tc, "topConcept",
                     constraintContext,
                     cvb -> cvb.addPropertyNode("topConcept").
@@ -346,8 +343,7 @@ public class CheckNewVocabularyImpl
             // There is at least one duplicate in the list!
             valid = false;
             constraintContext.buildConstraintViolationWithTemplate(
-                    "{au.org.ands.vocabs.registry.api.validation."
-                    + "CheckNewVocabulary.topConcept.duplicate}").
+                    "{" + INTERFACE_NAME + ".topConcept.duplicate}").
             addPropertyNode("topConcept").
             addConstraintViolation();
         }
@@ -355,7 +351,7 @@ public class CheckNewVocabularyImpl
         // creationDate: required
         // Must match a regular expression: YYYY, or YYYY-MM, or YYYY-MM-DD.
         valid = ValidationUtils.requireFieldValidDate(
-                CheckNewVocabulary.INTERFACE_NAME,
+                INTERFACE_NAME,
                 newVocabulary.getCreationDate(), "creationDate", false,
                 constraintContext, valid);
 
@@ -382,7 +378,7 @@ public class CheckNewVocabularyImpl
             if (re == null) {
                 valid = false;
                 constraintContext.buildConstraintViolationWithTemplate(
-                    "{" + CheckNewVocabulary.INTERFACE_NAME
+                    "{" + INTERFACE_NAME
                     + ".relatedEntityRef.unknown}").
                 addPropertyNode("relatedEntityRef").addBeanNode().inIterable().
                 atIndex(reIndex).
@@ -397,7 +393,7 @@ public class CheckNewVocabularyImpl
                     reRef.getRelation())) {
                 valid = false;
                 constraintContext.buildConstraintViolationWithTemplate(
-                        "{" + CheckNewVocabulary.INTERFACE_NAME
+                        "{" + INTERFACE_NAME
                         + ".relatedEntityRef.badRelation}").
                 addPropertyNode("relatedEntityRef").addBeanNode().inIterable().
                 atIndex(reIndex).
@@ -411,7 +407,7 @@ public class CheckNewVocabularyImpl
         if (!validRelatedEntities) {
             valid = false;
             constraintContext.buildConstraintViolationWithTemplate(
-                "{" + CheckNewVocabulary.INTERFACE_NAME
+                "{" + INTERFACE_NAME
                 + ".relatedEntityRef.noPublisher}").
             addPropertyNode("relatedEntityRef").
             addConstraintViolation();
@@ -423,7 +419,7 @@ public class CheckNewVocabularyImpl
             // There's a duplicate instance of a relation to a related entity.
             valid = false;
             constraintContext.buildConstraintViolationWithTemplate(
-                "{" + CheckNewVocabulary.INTERFACE_NAME
+                "{" + INTERFACE_NAME
                 + ".relatedEntityRef.duplicate}").
             addPropertyNode("relatedEntityRef").
             addConstraintViolation();
@@ -450,7 +446,7 @@ public class CheckNewVocabularyImpl
             if (vocab == null) {
                 valid = false;
                 constraintContext.buildConstraintViolationWithTemplate(
-                    "{" + CheckNewVocabulary.INTERFACE_NAME
+                    "{" + INTERFACE_NAME
                     + ".relatedVocabularyRef.unknown}").
                 addPropertyNode("relatedVocabularyRef").addBeanNode().
                 inIterable().atIndex(rvIndex).
@@ -464,7 +460,7 @@ public class CheckNewVocabularyImpl
             if (rvRef.getRelation() == null) {
                 valid = false;
                 constraintContext.buildConstraintViolationWithTemplate(
-                        "{" + CheckNewVocabulary.INTERFACE_NAME
+                        "{" + INTERFACE_NAME
                         + ".relatedVocabularyRef.badRelation}").
                 addPropertyNode("relatedVocabularyRef").addBeanNode().
                 inIterable().atIndex(reIndex).
@@ -479,7 +475,7 @@ public class CheckNewVocabularyImpl
             // There's a duplicate instance of a relation to a related entity.
             valid = false;
             constraintContext.buildConstraintViolationWithTemplate(
-                "{" + CheckNewVocabulary.INTERFACE_NAME
+                "{" + INTERFACE_NAME
                 + ".relatedVocabularyRef.duplicate}").
             addPropertyNode("relatedVocabularyRef").
             addConstraintViolation();
@@ -509,7 +505,7 @@ public class CheckNewVocabularyImpl
             if (versionSlugs.contains(versionSlug)) {
                 valid = false;
                 constraintContext.buildConstraintViolationWithTemplate(
-                        "{" + CheckNewVocabulary.INTERFACE_NAME
+                        "{" + INTERFACE_NAME
                         + ".version.slug.duplicate}").
                     addPropertyNode("version").addBeanNode().
                     inIterable().atIndex(versionIndex).
@@ -560,7 +556,7 @@ public class CheckNewVocabularyImpl
              * from specifying an id of 0. */
             valid = false;
             constraintContext.buildConstraintViolationWithTemplate(
-                    "{" + CheckNewVocabulary.INTERFACE_NAME + ".version.id}").
+                    "{" + INTERFACE_NAME + ".version.id}").
             addPropertyNode("version").
             addPropertyNode("id").inIterable().atIndex(versionIndex).
             addConstraintViolation();
@@ -568,7 +564,7 @@ public class CheckNewVocabularyImpl
 
         // status: required
         valid = ValidationUtils.requireFieldNotNull(
-                CheckNewVocabulary.INTERFACE_NAME,
+                INTERFACE_NAME,
                 newVersion.getStatus(), "version.status",
                 constraintContext,
                 cvb -> cvb.addPropertyNode("version").
@@ -578,7 +574,7 @@ public class CheckNewVocabularyImpl
 
         // title
         valid = ValidationUtils.requireFieldNotEmptyString(
-                CheckNewVocabulary.INTERFACE_NAME,
+                INTERFACE_NAME,
                 newVersion.getTitle(), "version.title",
                 constraintContext,
                 cvb -> cvb.addPropertyNode("version").
@@ -592,7 +588,7 @@ public class CheckNewVocabularyImpl
             if (!ValidationUtils.isValidSlug(slug)) {
                 valid = false;
                 constraintContext.buildConstraintViolationWithTemplate(
-                    "{" + CheckNewVocabulary.INTERFACE_NAME + ".version.slug}").
+                    "{" + INTERFACE_NAME + ".version.slug}").
                 addPropertyNode("version").
                 addPropertyNode("slug").inIterable().atIndex(versionIndex).
                 addConstraintViolation();
@@ -601,7 +597,7 @@ public class CheckNewVocabularyImpl
 
         // note: optional, but, if specified, must be valid HTML
         valid = ValidationUtils.requireFieldValidHTML(
-                CheckNewVocabulary.INTERFACE_NAME,
+                INTERFACE_NAME,
                 newVersion.getNote(), "version.note",
                 constraintContext,
                 cvb -> cvb.addPropertyNode("version").
@@ -612,7 +608,7 @@ public class CheckNewVocabularyImpl
         // releaseDate: required
         // Must match a regular expression: YYYY, or YYYY-MM, or YYYY-MM-DD.
         valid = ValidationUtils.requireFieldValidDate(
-                CheckNewVocabulary.INTERFACE_NAME,
+                INTERFACE_NAME,
                 newVersion.getReleaseDate(), "version.creationDate", false,
                 constraintContext,
                 cvb -> cvb.addPropertyNode("version").
@@ -669,7 +665,7 @@ public class CheckNewVocabularyImpl
              * from specifying an id of 0. */
             valid = false;
             constraintContext.buildConstraintViolationWithTemplate(
-                    "{" + CheckNewVocabulary.INTERFACE_NAME
+                    "{" + INTERFACE_NAME
                     + ".accessPoint.id}").
             addPropertyNode("version").
             addPropertyNode("accessPoint").
@@ -683,7 +679,7 @@ public class CheckNewVocabularyImpl
         if (newAccessPoint.getDiscriminator() == null) {
             valid = false;
             constraintContext.buildConstraintViolationWithTemplate(
-                    "{" + CheckNewVocabulary.INTERFACE_NAME
+                    "{" + INTERFACE_NAME
                     + ".accessPoint.discriminator}").
                 addPropertyNode("version").
                 addPropertyNode("accessPoint").
@@ -701,7 +697,7 @@ public class CheckNewVocabularyImpl
             if (apApiSparql == null) {
                 valid = false;
                 constraintContext.buildConstraintViolationWithTemplate(
-                        "{" + CheckNewVocabulary.INTERFACE_NAME
+                        "{" + INTERFACE_NAME
                         + ".accessPoint.apApiSparql}").
                     addPropertyNode("version").
                     addPropertyNode("accessPoint").
@@ -715,7 +711,7 @@ public class CheckNewVocabularyImpl
             if (apApiSparql.getSource() != ApSource.USER) {
                 valid = false;
                 constraintContext.buildConstraintViolationWithTemplate(
-                        "{" + CheckNewVocabulary.INTERFACE_NAME
+                        "{" + INTERFACE_NAME
                         + ".accessPoint.apApiSparql.source}").
                     addPropertyNode("version").
                     addPropertyNode("accessPoint").
@@ -727,7 +723,7 @@ public class CheckNewVocabularyImpl
             }
             valid = ValidationUtils.
                     requireFieldNotEmptyStringAndSatisfiesPredicate(
-                    CheckNewVocabulary.INTERFACE_NAME,
+                    INTERFACE_NAME,
                     apApiSparql.getUrl(), "accessPoint.apApiSparql.url",
                     ValidationUtils::isValidURL,
                     constraintContext,
@@ -745,7 +741,7 @@ public class CheckNewVocabularyImpl
             if (apSissvoc == null) {
                 valid = false;
                 constraintContext.buildConstraintViolationWithTemplate(
-                        "{" + CheckNewVocabulary.INTERFACE_NAME
+                        "{" + INTERFACE_NAME
                         + ".accessPoint.apSissvoc}").
                     addPropertyNode("version").
                     addPropertyNode("accessPoint").
@@ -759,7 +755,7 @@ public class CheckNewVocabularyImpl
             if (apSissvoc.getSource() != ApSource.USER) {
                 valid = false;
                 constraintContext.buildConstraintViolationWithTemplate(
-                        "{" + CheckNewVocabulary.INTERFACE_NAME
+                        "{" + INTERFACE_NAME
                         + ".accessPoint.apSissvoc.source}").
                     addPropertyNode("version").
                     addPropertyNode("accessPoint").
@@ -771,7 +767,7 @@ public class CheckNewVocabularyImpl
             }
             valid = ValidationUtils.
                     requireFieldNotEmptyStringAndSatisfiesPredicate(
-                    CheckNewVocabulary.INTERFACE_NAME,
+                    INTERFACE_NAME,
                     apSissvoc.getUrlPrefix(), "accessPoint.apSissvoc.urlPrefix",
                     ValidationUtils::isValidURL,
                     constraintContext,
@@ -789,7 +785,7 @@ public class CheckNewVocabularyImpl
             if (apWebPage == null) {
                 valid = false;
                 constraintContext.buildConstraintViolationWithTemplate(
-                        "{" + CheckNewVocabulary.INTERFACE_NAME
+                        "{" + INTERFACE_NAME
                         + ".accessPoint.apWebPage}").
                     addPropertyNode("version").
                     addPropertyNode("accessPoint").
@@ -802,7 +798,7 @@ public class CheckNewVocabularyImpl
             }
             valid = ValidationUtils.
                     requireFieldNotEmptyStringAndSatisfiesPredicate(
-                    CheckNewVocabulary.INTERFACE_NAME,
+                    INTERFACE_NAME,
                     apWebPage.getUrl(), "accessPoint.apWebPage.url",
                     ValidationUtils::isValidURL,
                     constraintContext,
@@ -818,7 +814,7 @@ public class CheckNewVocabularyImpl
         default:
             valid = false;
             constraintContext.buildConstraintViolationWithTemplate(
-                    "{" + CheckNewVocabulary.INTERFACE_NAME
+                    "{" + INTERFACE_NAME
                     + ".accessPoint.discriminator.allowed}").
                 addPropertyNode("version").
                 addPropertyNode("accessPoint").
