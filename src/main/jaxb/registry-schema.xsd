@@ -165,7 +165,7 @@
                 <xs:element ref="related-entity-identifier" maxOccurs="unbounded" minOccurs="0"/>
                 <xs:element maxOccurs="unbounded" minOccurs="0" name="url" type="xs:anyURI"/>
             </xs:sequence>
-            <xs:attribute name="id" type="id-type" use="required"/>
+            <xs:attribute name="id" type="id-type"/>
             <xs:attribute name="type" use="required" type="common:related-entity-type"/>
             <xs:attribute name="owner" type="xs:token"/>
             <xs:attribute name="title" type="xs:token"/>
