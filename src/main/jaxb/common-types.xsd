@@ -125,9 +125,7 @@ http://orcid.org/</xs:documentation>
             <xs:enumeration value="purl">
                 <xs:annotation>
                     <xs:documentation>Persistent Uniform Resource Locator.
-Not a URL.
-Identifier made resolvable be prefixing the given identifier
-with 'http://purl.org/'.
+A valid URL that begins with 'http://purl.org/'.
 http://purl.org/</xs:documentation>
                 </xs:annotation>
             </xs:enumeration>
