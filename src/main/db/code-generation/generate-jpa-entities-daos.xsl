@@ -523,6 +523,7 @@ public final class <xsl:value-of select="$entityName" />DAO {
 </xsl:apply-templates>
 <xsl:apply-templates select="$extraQueries" mode="method">
 </xsl:apply-templates>    /** Save a new <xsl:value-of select="$entityName" /> to the database.
+     * This version of the method creates and uses its own EntityManager.
      * @param entity The <xsl:value-of select="$entityName" /> to be saved.
      */
     public static void save<xsl:value-of select="$entityName" />(
@@ -532,6 +533,19 @@ public final class <xsl:value-of select="$entityName" />DAO {
         em.persist(entity);
         em.getTransaction().commit();
         em.close();
+    }
+
+    /** Save a new <xsl:value-of select="$entityName" /> to the database.
+     * This version of the method uses an existing EntityManager
+     * provided as a parameter; transaction begin/end must be
+     * managed by the caller.
+     * @param em The EntityManager to be used.
+     * @param entity The <xsl:value-of select="$entityName" /> to be saved.
+     */
+    public static void save<xsl:value-of select="$entityName" />(
+        final EntityManager em,
+        final <xsl:value-of select="$entityName" /> entity) {
+        em.persist(entity);
     }
 
 <xsl:choose>
@@ -575,6 +589,7 @@ public final class <xsl:value-of select="$entityName" />DAO {
 </xsl:when>
   <xsl:otherwise />
 </xsl:choose>    /** Update an existing <xsl:value-of select="$entityName" /> in the database.
+     * This version of the method creates and uses its own EntityManager.
      * @param entity The <xsl:value-of select="$entityName" /> to be updated.
      */
     public static void update<xsl:value-of select="$entityName" />(
@@ -584,6 +599,19 @@ public final class <xsl:value-of select="$entityName" />DAO {
         em.merge(entity);
         em.getTransaction().commit();
         em.close();
+    }
+
+    /** Update an existing <xsl:value-of select="$entityName" /> in the database.
+     * This version of the method uses an existing EntityManager
+     * provided as a parameter; transaction begin/end must be
+     * managed by the caller.
+     * @param em The EntityManager to be used.
+     * @param entity The <xsl:value-of select="$entityName" /> to be updated.
+     */
+    public static void update<xsl:value-of select="$entityName" />(
+        final EntityManager em,
+        final <xsl:value-of select="$entityName" /> entity) {
+        em.merge(entity);
     }
 
 <xsl:text>}
