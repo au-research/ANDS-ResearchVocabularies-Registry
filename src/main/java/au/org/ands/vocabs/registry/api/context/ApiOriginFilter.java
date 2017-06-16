@@ -31,8 +31,8 @@ public class ApiOriginFilter implements Filter {
     public void init(final FilterConfig filterConfig) throws ServletException {
     }
 
-    /** Filter that adds this header: <pre>Access-Control-Allow-Origin: *</pre>
-     * to responses.
+    /** Filter that adds the CORS headers needed to allow API use in
+     * browsers, e.g., by Swagger UI.
      */
     @SuppressWarnings("checkstyle:DesignForExtension")
     @Override
@@ -44,7 +44,6 @@ public class ApiOriginFilter implements Filter {
         // If no Origin header was provided, no CORS applies.
         if (origin != null) {
             HttpServletResponse hsResponse = (HttpServletResponse) response;
-//            hsResponse.addHeader("Access-Control-Allow-Origin", "*");
             // Send back the origin we got ...
             hsResponse.addHeader("Access-Control-Allow-Origin", origin);
             // ... because we allow credentials.
@@ -53,10 +52,10 @@ public class ApiOriginFilter implements Filter {
             // https://www.w3.org/TR/cors/#resource-implementation
             // to add a header "Vary: Origin" in this case.
             hsResponse.addHeader("Vary", "Origin");
-        // Future work, if needed: add additional headers to
-        // control methods and other headers:
-//        hsr.addHeader("Access-Control-Allow-Methods",
-//                      "GET, POST, DELETE, PUT");
+            // PUT and DELETE are not allowed by default, so add them.
+            // (GET, HEAD, and POST do not need to be mentioned.)
+            hsResponse.addHeader("Access-Control-Allow-Methods",
+                    "PUT, DELETE");
             hsResponse.addHeader("Access-Control-Allow-Headers",
 //                "Content-Type, api_key, Authorization");
                     "Content-Type, Authorization, "
