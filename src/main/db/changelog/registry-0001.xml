@@ -625,6 +625,10 @@
       <column name="event_type" type="VARCHAR(45)">
         <constraints nullable="false"/>
       </column>
+      <column name="event_user" type="VARCHAR(255)"
+              remarks="Role ID responsible for this row.">
+        <constraints nullable="false"/>
+      </column>
       <column name="event_details" type="TEXT"
               remarks="JSON object.">
         <constraints nullable="false"/>
