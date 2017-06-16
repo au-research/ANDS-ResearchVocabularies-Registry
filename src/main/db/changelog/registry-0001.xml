@@ -104,7 +104,7 @@
                      references="vocabulary_ids(id)"
                      foreignKeyName="fk_vocabularies_vocabulary_id"/>
       </column>
-      <column name="modified_by" type="VARCHAR(45)"
+      <column name="modified_by" type="VARCHAR(255)"
               remarks="Role ID responsible for this row.">
         <constraints nullable="false"/>
       </column>
@@ -152,7 +152,7 @@
                      references="vocabulary_ids(id)"
                      foreignKeyName="fk_versions_vocabulary_id"/>
       </column>
-      <column name="modified_by" type="VARCHAR(45)"
+      <column name="modified_by" type="VARCHAR(255)"
               remarks="Role ID responsible for this row.">
         <constraints nullable="false"/>
       </column>
@@ -290,7 +290,7 @@
                      references="version_ids(id)"
                      foreignKeyName="fk_version_artefacts_version_id"/>
       </column>
-      <column name="modified_by" type="VARCHAR(45)"
+      <column name="modified_by" type="VARCHAR(255)"
               remarks="Role ID responsible for this row.">
         <constraints nullable="false"/>
       </column>
@@ -335,7 +335,7 @@
                      references="version_ids(id)"
                      foreignKeyName="fk_access_points_version_id"/>
       </column>
-      <column name="modified_by" type="VARCHAR(45)"
+      <column name="modified_by" type="VARCHAR(255)"
               remarks="Role ID responsible for this row.">
         <constraints nullable="false"/>
       </column>
@@ -371,7 +371,7 @@
                      references="related_entity_ids(id)"
                      foreignKeyName="fk_related_entities_related_entity_id"/>
       </column>
-      <column name="modified_by" type="VARCHAR(45)"
+      <column name="modified_by" type="VARCHAR(255)"
               remarks="Role ID responsible for this row.">
         <constraints nullable="false"/>
       </column>
@@ -421,7 +421,7 @@
                      foreignKeyName=
               "fk_related_entity_identifiers_related_entity_id"/>
       </column>
-      <column name="modified_by" type="VARCHAR(45)"
+      <column name="modified_by" type="VARCHAR(255)"
               remarks="Role ID responsible for this row.">
         <constraints nullable="false"/>
       </column>
@@ -470,7 +470,7 @@
                      foreignKeyName=
               "fk_vocabulary_related_entities_related_entity_id"/>
       </column>
-      <column name="modified_by" type="VARCHAR(45)"
+      <column name="modified_by" type="VARCHAR(255)"
               remarks="Role ID responsible for this row.">
         <constraints nullable="false"/>
       </column>
@@ -509,7 +509,7 @@
                      foreignKeyName=
               "fk_vocabulary_related_vocabualaries_related_vocabulary_id"/>
       </column>
-      <column name="modified_by" type="VARCHAR(45)"
+      <column name="modified_by" type="VARCHAR(255)"
               remarks="Role ID responsible for this row.">
         <constraints nullable="false"/>
       </column>
