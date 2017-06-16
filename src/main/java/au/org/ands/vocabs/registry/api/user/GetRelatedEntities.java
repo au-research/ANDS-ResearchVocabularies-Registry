@@ -48,9 +48,7 @@ public class GetRelatedEntities {
     private Logger logger = LoggerFactory.getLogger(
             MethodHandles.lookup().lookupClass());
 
-    /** Get the current related entities of a vocabulary, by its vocabulary id.
-     * Delegates to {@link #getRelatedEntitiesForVocabularyByIdHelper(Integer)}
-     * to do the work.
+    /** Get a current related entity, by its related entity id.
      * @param request The HTTP request.
      * @param uriInfo The UriInfo of the request.
      * @param relatedEntityId The RelatedEntityId of the related entity
