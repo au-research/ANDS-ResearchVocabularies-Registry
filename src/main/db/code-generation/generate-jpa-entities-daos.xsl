@@ -461,6 +461,7 @@ public final class <xsl:value-of select="$entityName" />DAO {
 
 </xsl:when></xsl:choose><xsl:choose><xsl:when test="$idKey">    /** Get current <xsl:value-of select="$entityName" /> instance by id.
      * If there is no such instance, returns null.
+     * This version of the method creates and uses its own EntityManager.
      * @param id The <xsl:value-of select="$entityName" />Id of the instance
      *     to be fetched.
      * @return The current <xsl:value-of select="$entityName" /> instance
@@ -479,6 +480,35 @@ public final class <xsl:value-of select="$entityName" />DAO {
         q = TemporalUtils.setDatetimeConstantParameters(q);
         List&lt;<xsl:value-of select="$entityName" />&gt; entityList = q.getResultList();
         em.close();
+        if (entityList.isEmpty()) {
+            return null;
+        }
+        return entityList.get(0);
+    }
+
+    /** Get current <xsl:value-of select="$entityName" /> instance by id.
+     * If there is no such instance, returns null.
+     * This version of the method uses an existing EntityManager
+     * provided as a parameter; transaction begin/end must be
+     * managed by the caller.
+     * @param em The EntityManager to be used.
+     * @param id The <xsl:value-of select="$entityName" />Id of the instance
+     *     to be fetched.
+     * @return The current <xsl:value-of select="$entityName" /> instance
+     *     with that <xsl:value-of select="$entityName" />Id,
+     *     or null, if there is no such instance.
+     */
+    public static <xsl:value-of select="$entityName" />
+        getCurrent<xsl:value-of select="$entityName" />By<xsl:value-of select="$entityName" />Id(
+        final EntityManager em,
+        final Integer id) {
+        TypedQuery&lt;<xsl:value-of select="$entityName" />&gt; q = em.createNamedQuery(
+                <xsl:value-of select="$entityName" />.
+                    GET_CURRENT_<xsl:value-of select="upper-case($entityName)" />_BY_ID,
+                <xsl:value-of select="$entityName" />.class)
+                .setParameter("id", id);
+        q = TemporalUtils.setDatetimeConstantParameters(q);
+        List&lt;<xsl:value-of select="$entityName" />&gt; entityList = q.getResultList();
         if (entityList.isEmpty()) {
             return null;
         }
@@ -687,8 +717,9 @@ public final class <xsl:value-of select="$entityName" />DAO {
     }
 
 <xsl:choose>
-<!-- Add a temporal version of the query, if this is a temporal table. -->
+<!-- Add temporal versions of the query, if this is a temporal table. -->
 <xsl:when test="$addTemporalVersion">    /** Get all current <xsl:value-of select="$entityName" /> instances for a <xsl:value-of select="@entityName" />.
+     * This version of the method creates and uses its own EntityManager.
      * @param id The <xsl:value-of select="@entityName" />.
      * @return The list of current <xsl:value-of select="$entityName" />
      *     instances for this <xsl:value-of select="@entityName" />.
@@ -709,6 +740,33 @@ public final class <xsl:value-of select="$entityName" />DAO {
         q = TemporalUtils.setDatetimeConstantParameters(q);
         List&lt;<xsl:value-of select="$entityName" />&gt; entityList = q.getResultList();
         em.close();
+        return entityList;
+    }
+
+    /** Get all current <xsl:value-of select="$entityName" /> instances for a <xsl:value-of select="@entityName" />.
+     * This version of the method uses an existing EntityManager
+     * provided as a parameter; transaction begin/end must be
+     * managed by the caller.
+     * @param em The EntityManager to be used.
+     * @param id The <xsl:value-of select="@entityName" />.
+     * @return The list of current <xsl:value-of select="$entityName" />
+     *     instances for this <xsl:value-of select="@entityName" />.
+     */
+    @SuppressWarnings("checkstyle:LineLength")
+    public static List&lt;<xsl:value-of select="$entityName" />&gt;
+    getCurrent<xsl:value-of select="$entityName" />ListFor<xsl:value-of select="@entityName" />(
+            final EntityManager em,
+            final Integer id) {
+        TypedQuery&lt;<xsl:value-of select="$entityName" />&gt; q = em.createNamedQuery(
+                <xsl:value-of select="$entityName" />.
+                    GET_CURRENT_<xsl:value-of select="upper-case($entityName)" />_LIST_FOR_<xsl:value-of select="upper-case(@entityName)" />,
+                <xsl:value-of select="$entityName" />.class).
+                setParameter(
+                        <xsl:value-of select="$entityName" />.
+                            GET_<xsl:value-of select="upper-case($entityName)" />_LIST_FOR_<xsl:value-of select="upper-case(@entityName)" />_<xsl:value-of select="upper-case(@keyColumn)" />,
+                        id);
+        q = TemporalUtils.setDatetimeConstantParameters(q);
+        List&lt;<xsl:value-of select="$entityName" />&gt; entityList = q.getResultList();
         return entityList;
     }
 
