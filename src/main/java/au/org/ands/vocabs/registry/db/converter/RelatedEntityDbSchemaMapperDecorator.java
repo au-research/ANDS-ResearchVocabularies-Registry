@@ -78,6 +78,8 @@ public abstract class RelatedEntityDbSchemaMapperDecorator
               @MappingTarget final
               au.org.ands.vocabs.registry.schema.vocabulary201701.RelatedEntity
               target) {
+        // There should be a better way than this "switch" statement.
+        // See also RelatedEntityRegistrySchemaMapperDecorator.sourceToTarget().
         if (data instanceof RelatedPartyJson) {
             jsonDataIntoTarget((RelatedPartyJson) data, target);
         } else if (data instanceof RelatedServiceJson) {

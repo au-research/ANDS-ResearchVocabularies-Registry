@@ -87,6 +87,8 @@ public final class Analytics {
     public static final String TITLE_FIELD = "title";
     /** The name of the vocabulary ID field inserted into log entries. */
     public static final String VOCABULARY_ID_FIELD = "vocabulary_id";
+    /** The name of the related entity ID field inserted into log entries. */
+    public static final String RELATED_ENTITY_ID_FIELD = "relatedEntity_id";
 
 
     // Names of registry events. These go into the "message" field of the log
@@ -103,6 +105,18 @@ public final class Analytics {
      * for getting a vocabulary. */
     public static final String EVENT_GET_VOCABULARY =
             "read_vocabulary";
+    /** The value of the "message" field to use for log entries
+     * for creating a related entity. */
+    public static final String EVENT_CREATE_RELATED_ENTITY =
+            "create_relatedEntity";
+    /** The value of the "message" field to use for log entries
+     * for updating a related entity. */
+    public static final String EVENT_UPDATE_RELATED_ENTITY =
+            "update_relatedEntity";
+    /** The value of the "message" field to use for log entries
+     * for deleting a related entity. */
+    public static final String EVENT_DELETE_RELATED_ENTITY =
+            "delete_relatedEntity";
 
 
     /** The GeoIP2 database reader used for geo lookups of IP addresses. */

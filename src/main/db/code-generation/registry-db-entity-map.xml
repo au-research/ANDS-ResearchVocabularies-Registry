@@ -145,6 +145,166 @@
 
 </method>
       </extraQuery>
+      <extraQuery name="GET_MATCHING_RELATED_ENTITIES">
+        <extraQueryParameter name="owner" />
+        <extraQueryParameter name="type" />
+        <extraQueryParameter name="title" />
+        <queryText temporal="true">
+          SELECT entity FROM RelatedEntity entity WHERE
+          owner = :owner AND type = :type AND title = :title
+          #AND_TEMPORAL_QUERY_VALID_SUFFIX
+        </queryText>
+        <method>    /** Get all current RelatedEntity instances that match
+     * the owner, type, and title of the given instance.
+     * This version of the method creates and uses its own EntityManager.
+     * @param relatedEntityToMatch The related entity to be matched.
+     * @return An list of all RelatedEntity instances that match the
+     *     values of the fields of relatedEntityToMatch.
+     */
+    public static List&lt;RelatedEntity&gt;
+        getMatchingRelatedEntities(final RelatedEntity relatedEntityToMatch) {
+        EntityManager em = DBContext.getEntityManager();
+        TypedQuery&lt;RelatedEntity&gt; q = em.createNamedQuery(
+                RelatedEntity.
+                    GET_MATCHING_RELATED_ENTITIES,
+                RelatedEntity.class)
+                .setParameter(RelatedEntity.
+                    GET_MATCHING_RELATED_ENTITIES_OWNER,
+                    relatedEntityToMatch.getOwner())
+                .setParameter(RelatedEntity.
+                    GET_MATCHING_RELATED_ENTITIES_TYPE,
+                    relatedEntityToMatch.getType())
+                .setParameter(RelatedEntity.
+                    GET_MATCHING_RELATED_ENTITIES_TITLE,
+                    relatedEntityToMatch.getTitle());
+        q = TemporalUtils.setDatetimeConstantParameters(q);
+        List&lt;RelatedEntity&gt; entityList = q.getResultList();
+        em.close();
+        return entityList;
+    }
+
+    /** Get all current RelatedEntity instances that match
+     * the owner, type, and title of the given instance.
+     * This version of the method uses an existing EntityManager
+     * provided as a parameter; transaction begin/end must be
+     * managed by the caller.
+     * @param em The EntityManager to be used.
+     * @param relatedEntityToMatch The related entity to be matched.
+     * @return An list of all RelatedEntity instances that match the
+     *     values of the fields of relatedEntityToMatch.
+     */
+    public static List&lt;RelatedEntity&gt;
+        getMatchingRelatedEntities(final EntityManager em,
+            final RelatedEntity relatedEntityToMatch) {
+        TypedQuery&lt;RelatedEntity&gt; q = em.createNamedQuery(
+                RelatedEntity.
+                    GET_MATCHING_RELATED_ENTITIES,
+                RelatedEntity.class)
+                .setParameter(RelatedEntity.
+                    GET_MATCHING_RELATED_ENTITIES_OWNER,
+                    relatedEntityToMatch.getOwner())
+                .setParameter(RelatedEntity.
+                    GET_MATCHING_RELATED_ENTITIES_TYPE,
+                    relatedEntityToMatch.getType())
+                .setParameter(RelatedEntity.
+                    GET_MATCHING_RELATED_ENTITIES_TITLE,
+                    relatedEntityToMatch.getTitle());
+        q = TemporalUtils.setDatetimeConstantParameters(q);
+        List&lt;RelatedEntity&gt; entityList = q.getResultList();
+        return entityList;
+    }
+
+        </method>
+      </extraQuery>
+      <extraQuery name="GET_RELATED_ENTITIES_MATCHING_IDENT">
+        <extraQueryParameter name="owner" />
+        <extraQueryParameter name="identifierType" />
+        <extraQueryParameter name="identifierValue" />
+        <queryText temporal="true">
+          SELECT e1 FROM RelatedEntity e1,
+            RelatedEntityIdentifier e2 WHERE
+          e1.relatedEntityId = e2.relatedEntityId
+          AND e1.owner = :owner
+          AND e2.identifierType = :identifierType
+          AND e2.identifierValue = :identifierValue
+          #AND_TEMPORAL_QUERY_VALID_SUFFIX_E1
+          #AND_TEMPORAL_QUERY_VALID_SUFFIX_E2
+        </queryText>
+        <method>    /** Get all current RelatedEntity instances that have
+     * the given owner, and have an identifier with the given type and
+     * value.
+     * This version of the method creates and uses its own EntityManager.
+     * @param owner The owner to be matched.
+     * @param identifierType The type of identfier to be matched.
+     * @param identifierValue The value of identifier to be matched.
+     * @return An list of all RelatedEntity instances that have the
+     *     given owner, and that have an identifier with the given
+     *     type and value.
+     */
+    public static List&lt;RelatedEntity&gt;
+        getRelatedEntitiesWithMatchingIdentifier(final String owner,
+            final au.org.ands.vocabs.registry.enums.
+            RelatedEntityIdentifierType identifierType,
+            final String identifierValue) {
+        EntityManager em = DBContext.getEntityManager();
+        TypedQuery&lt;RelatedEntity&gt; q = em.createNamedQuery(
+                RelatedEntity.
+                    GET_RELATED_ENTITIES_MATCHING_IDENT,
+                RelatedEntity.class)
+                .setParameter(RelatedEntity.
+                    GET_RELATED_ENTITIES_MATCHING_IDENT_OWNER, owner)
+                .setParameter(RelatedEntity.
+                    GET_RELATED_ENTITIES_MATCHING_IDENT_IDENTIFIERTYPE,
+                    identifierType)
+                .setParameter(RelatedEntity.
+                    GET_RELATED_ENTITIES_MATCHING_IDENT_IDENTIFIERVALUE,
+                    identifierValue);
+        q = TemporalUtils.setDatetimeConstantParameters(q);
+        List&lt;RelatedEntity&gt; entityList = q.getResultList();
+        em.close();
+        return entityList;
+    }
+
+    /** Get all current RelatedEntity instances that have
+     * the given owner, and have an identifier with the given type and
+     * value.
+     * This version of the method uses an existing EntityManager
+     * provided as a parameter; transaction begin/end must be
+     * managed by the caller.
+     * @param em The EntityManager to be used.
+     * @param owner The owner to be matched.
+     * @param identifierType The type of identfier to be matched.
+     * @param identifierValue The value of identifier to be matched.
+     * @return An list of all RelatedEntity instances that have the
+     *     given owner, and that have an identifier with the given
+     *     type and value.
+     */
+    public static List&lt;RelatedEntity&gt;
+        getRelatedEntitiesWithMatchingIdentifier(
+            final EntityManager em,
+            final String owner,
+            final au.org.ands.vocabs.registry.enums.
+            RelatedEntityIdentifierType identifierType,
+            final String identifierValue) {
+        TypedQuery&lt;RelatedEntity&gt; q = em.createNamedQuery(
+                RelatedEntity.
+                    GET_RELATED_ENTITIES_MATCHING_IDENT,
+                RelatedEntity.class)
+                .setParameter(RelatedEntity.
+                    GET_RELATED_ENTITIES_MATCHING_IDENT_OWNER, owner)
+                .setParameter(RelatedEntity.
+                    GET_RELATED_ENTITIES_MATCHING_IDENT_IDENTIFIERTYPE,
+                    identifierType)
+                .setParameter(RelatedEntity.
+                    GET_RELATED_ENTITIES_MATCHING_IDENT_IDENTIFIERVALUE,
+                    identifierValue);
+        q = TemporalUtils.setDatetimeConstantParameters(q);
+        List&lt;RelatedEntity&gt; entityList = q.getResultList();
+        return entityList;
+    }
+
+        </method>
+      </extraQuery>
     </extraQueries>
   </map>
   <map tableName="related_entity_identifiers"
@@ -191,6 +351,36 @@
                     vocabularyId);
         q = TemporalUtils.setDatetimeConstantParameters(q);
         List&lt;VocabularyRelatedEntity&gt; entityList = q.getResultList();
+        em.close();
+        return entityList;
+    }
+
+</method>
+      </extraQuery>
+      <extraQuery name="GET_VOCABULARY_IDS_WITH_RELATED_ENTITY">
+        <extraQueryParameter name="relatedEntityId" />
+        <queryText temporal="true">
+          SELECT entity.vocabularyId FROM VocabularyRelatedEntity
+          entity WHERE relatedEntityId = :relatedEntityId
+          #AND_TEMPORAL_QUERY_VALID_SUFFIX
+        </queryText>
+        <method>    /** Get the vocabulary ids of all vocabularies currently
+     * related to the given related entity.
+     * @param relatedEntityId The related entity to be looked up.
+     * @return a list of vocabulary ids of vocabularies related to the
+     *   related entity.
+     */
+    public static List&lt;Integer&gt; getVocabularyIdsWithRelatedEntity(
+                final int relatedEntityId) {
+        EntityManager em = DBContext.getEntityManager();
+        TypedQuery&lt;Integer&gt; q = em.createNamedQuery(
+                VocabularyRelatedEntity.GET_VOCABULARY_IDS_WITH_RELATED_ENTITY,
+                Integer.class)
+                .setParameter(VocabularyRelatedEntity.
+                GET_VOCABULARY_IDS_WITH_RELATED_ENTITY_RELATEDENTITYID,
+                relatedEntityId);
+        q = TemporalUtils.setDatetimeConstantParameters(q);
+        List&lt;Integer&gt; entityList = q.getResultList();
         em.close();
         return entityList;
     }

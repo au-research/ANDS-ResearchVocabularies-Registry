@@ -1,5 +1,16 @@
 # Code generation of database entity and DAO classes
 
+## What to do when changes are made
+
+* If you add a new entity class, you need to follow the steps in the
+section "Generation of serialVersionUID values" below to generate and
+specify a serialVersionUID value.
+* If you add or delete a column, or change the interpretation of a
+column, you need to review ComparisonUtils.java (in the directory
+src/main/java/au/org/ands/vocabs/registry/db/entity) to see if there
+is a comparison method for the entity, and, if so, if the method needs
+to be updated.
+
 ## Generation of serialVersionUID values
 
 Each entity class must be serializable, which means it must have a

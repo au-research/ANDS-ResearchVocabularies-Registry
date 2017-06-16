@@ -4,6 +4,8 @@ package au.org.ands.vocabs.registry.api.validation;
 
 import java.lang.invoke.MethodHandles;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -16,6 +18,9 @@ import java.util.stream.Collectors;
 import javax.validation.ConstraintValidatorContext;
 import javax.validation.ConstraintValidatorContext.ConstraintViolationBuilder;
 import javax.validation.ConstraintViolationException;
+import javax.validation.Validation;
+import javax.validation.Validator;
+import javax.validation.ValidatorFactory;
 
 import org.jsoup.Jsoup;
 import org.jsoup.safety.Whitelist;
@@ -25,6 +30,7 @@ import org.slf4j.LoggerFactory;
 import au.org.ands.vocabs.registry.api.user.ValidationError;
 import au.org.ands.vocabs.registry.enums.RelatedEntityRelation;
 import au.org.ands.vocabs.registry.enums.RelatedEntityType;
+import au.org.ands.vocabs.registry.schema.vocabulary201701.RelatedEntityIdentifier;
 import au.org.ands.vocabs.registry.utils.SlugGenerator;
 
 /** Utility methods to support validation. */
@@ -37,6 +43,23 @@ public final class ValidationUtils {
     /** Private constructor for a utility class. */
     private ValidationUtils() {
     }
+
+    /** A validator that can be used within our own custom validators.
+     * Initialized within a static block. */
+    private static Validator validator;
+
+    static {
+        ValidatorFactory factory =
+                Validation.buildDefaultValidatorFactory();
+        validator = factory.getValidator();
+    }
+
+    /** Get the utility validator instance.
+     * @return The Validator instance. */
+    public static Validator getValidator() {
+        return validator;
+    }
+
 
     /** The length of a String that is a date in "YYYY" format. */
     private static final int YYYY_LENGTH = 4;
@@ -562,7 +585,7 @@ public final class ValidationUtils {
             return ALLOWED_RELATIONS_FOR_VOCABULARY.contains(relation);
         default:
             // Can't happen.
-            logger.error("Unknown RelatedEntityType!");
+            logger.error("isAllowedRelation: Unknown RelatedEntityType!");
             return false;
         }
     }
@@ -585,6 +608,84 @@ public final class ValidationUtils {
             // Otherwise, parsing failed, and it is not a valid URL.
             return false;
         }
+    }
+
+    /** Determine if a related entity identifier is valid, according
+     * to the rules for each identifier type.
+     * Prerequisite: the type is not null, and value is non-empty.
+     * @param rei The identifier to be validated.
+     * @return true, if the identifier is valid.
+     */
+    public static boolean isValidRelatedEntityIdentifier(
+            final RelatedEntityIdentifier rei) {
+        String value = rei.getIdentifierValue();
+        Class<FieldValidationHelper> fvhClass = FieldValidationHelper.class;
+        switch (rei.getIdentifierType()) {
+        case AU_ANL_PEAU:
+            return validator.validateValue(fvhClass,
+                    FieldValidationHelper.AU_ANL_PEAU_FIELDNAME,
+                    value).isEmpty();
+        case DOI:
+            return validator.validateValue(fvhClass,
+                    FieldValidationHelper.DOI_FIELDNAME, value).isEmpty();
+        case HANDLE:
+            return validator.validateValue(fvhClass,
+                    FieldValidationHelper.HANDLE_FIELDNAME,
+                    value).isEmpty();
+        case INFOURI:
+            // First: must be a valid URI.
+            // For now, use Java's provided way. May need to be modified
+            // if users provide values that are erroneously rejected.
+            try {
+                new URI(value);
+            } catch (URISyntaxException | NullPointerException e) {
+                return false;
+            }
+            // Second: must also begin with "info:".
+            return validator.validateValue(fvhClass,
+                    FieldValidationHelper.INFOURI_FIELDNAME,
+                    value).isEmpty();
+        case ISIL:
+            return validator.validateValue(fvhClass,
+                    FieldValidationHelper.ISIL_FIELDNAME, value).isEmpty();
+        case ISNI:
+            return validator.validateValue(fvhClass,
+                    FieldValidationHelper.ISNI_FIELDNAME, value).isEmpty();
+        case LOCAL:
+            // Anything goes;
+            return true;
+        case ORCID:
+            return validator.validateValue(fvhClass,
+                    FieldValidationHelper.ORCID_FIELDNAME, value).isEmpty();
+        case PURL:
+            return validator.validateValue(fvhClass,
+                    FieldValidationHelper.PURL_FIELDNAME,
+                    value).isEmpty() && isValidURL(value);
+        case RESEARCHER_ID:
+            return validator.validateValue(fvhClass,
+                    FieldValidationHelper.RESEARCHER_ID_FIELDNAME,
+                    value).isEmpty();
+        case URI:
+            // For now, use Java's provided way. May need to be modified
+            // if users provide values that are erroneously rejected.
+            try {
+                new URI(value);
+            } catch (URISyntaxException | NullPointerException e) {
+                return false;
+            }
+            return true;
+        case VIAF:
+            return validator.validateValue(fvhClass,
+                    FieldValidationHelper.VIAF_FIELDNAME, value).isEmpty();
+        default:
+            // Can't happen! (Unless we added a new identifier type, but
+            // failed to update this method.)
+            logger.error("isValidRelatedEntityIdentifier: Attempted to "
+                    + "validate an identifier of a type "
+                    + "we don't know about: update this method!");
+            break;
+        }
+        return true;
     }
 
     /**
