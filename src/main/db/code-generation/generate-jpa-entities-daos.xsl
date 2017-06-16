@@ -506,7 +506,8 @@ public final class <xsl:value-of select="$entityName" />DAO {
 
 <xsl:choose>
 <xsl:when test="$idKey">    /** Save a new <xsl:value-of select="$entityName" /> to the database,
-     * creating an id in the related ID table.
+     * creating an id in the related ID table. This version of the method
+     * creates and uses its own EntityManager.
      * @param entity The <xsl:value-of select="$entityName" /> to be saved.
      */
     public static void save<xsl:value-of select="$entityName" />WithId(
@@ -521,6 +522,24 @@ public final class <xsl:value-of select="$entityName" />DAO {
         em.persist(entity);
         em.getTransaction().commit();
         em.close();
+    }
+
+    /** Save a new <xsl:value-of select="$entityName" /> to the database,
+     * creating an id in the related ID table. This version of the method
+     * uses an existing EntityManager provided as a parameter;
+     * transaction begin/end must be managed by the caller.
+     * @param em The EntityManager to be used.
+     * @param entity The <xsl:value-of select="$entityName" /> to be saved.
+     */
+    public static void save<xsl:value-of select="$entityName" />WithId(
+        final EntityManager em,
+        final <xsl:value-of select="$entityName" /> entity) {
+        <xsl:value-of select="$idKey/@entityName" /> idEntity = new <xsl:value-of select="$idKey/@entityName" />();
+        em.persist(idEntity);
+        entity.set<xsl:call-template name="CamelCase">
+          <xsl:with-param name="text" select="$idKey/@keyColumn" />
+        </xsl:call-template>(idEntity.getId());
+        em.persist(entity);
     }
 
 </xsl:when>
