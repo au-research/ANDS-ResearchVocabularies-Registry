@@ -19,6 +19,15 @@ public final class TemporalUtils {
     /** The name of the date/time parameter to use in queries. */
     private static final String DATETIME_PARAMETER = "datetime";
 
+    /** Entity name E1, for use in JPQL queries. */
+    public static final String E1 = "e1";
+
+    /** Entity name E2, for use in JPQL queries. */
+    public static final String E2 = "e2";
+
+    /** Entity name E3, for use in JPQL queries. */
+    public static final String E3 = "e3";
+
     /** The name of a JPQL parameter to use for the constant
      * {@link TemporalConstants#CURRENTLY_VALID_END_DATE}. */
     private static final String CURRENTLY_VALID_END_DATE =
@@ -41,11 +50,36 @@ public final class TemporalUtils {
     public static final String TEMPORAL_QUERY_VALID_CLAUSE =
             " " + END_DATE + " = :" + CURRENTLY_VALID_END_DATE;
 
+    /** Clause for JPQL queries to select only currently-valid rows
+     * of entity e1. */
+    public static final String TEMPORAL_QUERY_VALID_CLAUSE_E1 =
+            " " + E1 + "." + END_DATE + " = :" + CURRENTLY_VALID_END_DATE;
+
+    /** Clause for JPQL queries to select only currently-valid rows
+     * of entity e2. */
+    public static final String TEMPORAL_QUERY_VALID_CLAUSE_E2 =
+            " " + E2 + "." + END_DATE + " = :" + CURRENTLY_VALID_END_DATE;
+
     /** Suffix for JPQL queries to select only currently-valid rows.
      * This version of the suffix is for queries that already
      * have a WHERE clause. */
     public static final String AND_TEMPORAL_QUERY_VALID_SUFFIX =
             " AND " + TEMPORAL_QUERY_VALID_CLAUSE;
+
+    /** Suffix for JPQL queries to select only currently-valid rows
+     * of entity e1.
+     * This version of the suffix is for queries that already
+     * have a WHERE clause. */
+    public static final String AND_TEMPORAL_QUERY_VALID_SUFFIX_E1 =
+            " AND " + TEMPORAL_QUERY_VALID_CLAUSE_E1;
+
+    /** Suffix for JPQL queries to select only currently-valid rows
+     * of entity e2.
+     * This version of the suffix is for queries that already
+     * have a WHERE clause. */
+    public static final String AND_TEMPORAL_QUERY_VALID_SUFFIX_E2 =
+            " AND " + TEMPORAL_QUERY_VALID_CLAUSE_E2;
+
     // Original version follows. Less efficient than the previous.
 //    public static final String AND_TEMPORAL_QUERY_VALID_SUFFIX =
 //            " AND start_date <= :" + DATETIME_PARAMETER
@@ -76,15 +110,6 @@ public final class TemporalUtils {
      * have a WHERE clause. */
     public static final String WHERE_TEMPORAL_QUERY_ALL_DRAFT_SUFFIX =
             " WHERE " + TEMPORAL_QUERY_ALL_DRAFT_CLAUSE;
-
-    /** Entity name E1, for use in JPQL queries. */
-    public static final String E1 = "e1";
-
-    /** Entity name E2, for use in JPQL queries. */
-    public static final String E2 = "e2";
-
-    /** Entity name E3, for use in JPQL queries. */
-    public static final String E3 = "e3";
 
     /** Suffix template for JPQL queries to select only currently-valid rows
      * of entity {@link #E1}. */
