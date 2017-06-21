@@ -44,7 +44,6 @@ import org.testng.FileAssert;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import au.org.ands.vocabs.toolkit.db.DBContext;
 import au.org.ands.vocabs.toolkit.test.utils.NetClientUtils;
 import au.org.ands.vocabs.toolkit.utils.ApplicationContextListener;
 
@@ -108,10 +107,36 @@ public final class ArquillianTestUtils {
         dataset.addReplacementSubstring("{CLASSES}", classesPath);
     }
 
-    /* Methods for the Toolkit database. */
+    /* Methods for the database(s). */
 
-    /** Clear the database. Tables are truncated, and sequence values
+    /** Get an EntityManager for the selected database.
+     * @param dbs The database for which an EntityManager is to be created.
+     * @return The created EntityManager.
+     */
+    private static EntityManager getEntityManagerForDb(
+            final DatabaseSelector dbs) {
+        if (dbs == null) {
+            // Booboo in the test method!
+            return null;
+        }
+        switch (dbs) {
+        case ROLES:
+            return au.org.ands.vocabs.roles.db.context.DBContext.
+                    getEntityManager();
+        case TOOLKIT:
+            return au.org.ands.vocabs.toolkit.db.DBContext.
+                    getEntityManager();
+        case REGISTRY:
+            return au.org.ands.vocabs.registry.db.context.DBContext.
+                    getEntityManager();
+        default:
+            return null;
+        }
+    }
+
+    /** Clear a database. Tables are truncated, and sequence values
      * for auto-incrementing columns are reset.
+     * @param dbs The database which is to be cleared.
      * @throws DatabaseUnitException If a problem with DbUnit.
      * @throws HibernateException If a problem getting the underlying
      *          JDBC connection.
@@ -119,9 +144,9 @@ public final class ArquillianTestUtils {
      * @throws SQLException If DbUnit has a problem performing
      *           performing JDBC operations.
      */
-    public static void clearDatabase() throws
+    public static void clearDatabase(final DatabaseSelector dbs) throws
         DatabaseUnitException, HibernateException, IOException, SQLException {
-        EntityManager em = DBContext.getEntityManager();
+        EntityManager em = getEntityManagerForDb(dbs);
         try (Connection conn = em.unwrap(SessionImpl.class).connection()) {
 
             IDatabaseConnection connection = new H2Connection(conn, null);
@@ -129,8 +154,9 @@ public final class ArquillianTestUtils {
             logger.info("doing clean_insert");
             FlatXmlDataSet dataset = new FlatXmlDataSetBuilder()
                     .setMetaDataSetFromDtd(getResourceAsInputStream(
-                            "test/dbunit-toolkit-export-choice.dtd"))
-                    .build(getResourceAsInputStream("test/blank-dbunit.xml"));
+                            dbs.getDTDFilename()))
+                    .build(getResourceAsInputStream(
+                            dbs.getBlankDataFilename()));
 
             // Delete the contents of the tables referred to in
             // the dataset.
@@ -176,12 +202,13 @@ public final class ArquillianTestUtils {
         em.close();
     }
 
-    /** Load a DbUnit test file into the database.
+    /** Load a DbUnit test file into a database.
      * The file is loaded as a {@code FlatXmlDataSet}.
      * To make it more convenient to enter JSON data, the dataset is
      * wrapped as a {@code ReplacementDataSet}, and all instances
      * of '' (two contiguous apostrophes) are replaced with "
      * (one double quote).
+     * @param dbs The database into which the test file is to be loaded.
      * @param testName The name of the test method. Used to generate
      *      the filename of the file to load.
      * @throws DatabaseUnitException If a problem with DbUnit.
@@ -191,21 +218,23 @@ public final class ArquillianTestUtils {
      * @throws SQLException If DbUnit has a problem performing
      *           performing JDBC operations.
      */
-    public static void loadDbUnitTestFile(final String testName) throws
+    public static void loadDbUnitTestFile(final DatabaseSelector dbs,
+            final String testName) throws
         DatabaseUnitException, HibernateException, IOException, SQLException {
-        EntityManager em = DBContext.getEntityManager();
+        EntityManager em = getEntityManagerForDb(dbs);
         try (Connection conn = em.unwrap(SessionImpl.class).connection()) {
 
             IDatabaseConnection connection = new H2Connection(conn, null);
 
             FlatXmlDataSet xmlDataset = new FlatXmlDataSetBuilder()
                     .setMetaDataSetFromDtd(getResourceAsInputStream(
-                            "test/dbunit-toolkit-export-choice.dtd"))
+                            dbs.getDTDFilename()))
                     .build(getResourceAsInputStream(
                             "test/tests/au.org.ands.vocabs.toolkit."
                             + "test.arquillian.AllArquillianTests."
                             + testName
-                            + "/input-dbunit.xml"));
+                            + "/input-" + dbs.getNameLowerCase()
+                            + "-dbunit.xml"));
             ReplacementDataSet dataset = new ReplacementDataSet(xmlDataset);
             addReplacementSubstringsToDataset(dataset);
             logger.info("doing clean_insert");
@@ -217,13 +246,14 @@ public final class ArquillianTestUtils {
         em.close();
     }
 
-    /** Load a DbUnit test file into the database as an update.
+    /** Load a DbUnit test file into a database as an update.
      * The file is loaded as a {@code FlatXmlDataSet}.
      * To make it more convenient to enter JSON data, the dataset is
      * wrapped as a {@code ReplacementDataSet}, and all instances
      * of '' (two contiguous apostrophes) are replaced with "
      * (one double quote).
      * The data is loaded in as an update.
+     * @param dbs The database into which the test file is to be loaded.
      * @param testName The name of the test method. Used to generate
      *      the path to the file to load.
      * @param filename The name of the file to be loaded.
@@ -234,18 +264,19 @@ public final class ArquillianTestUtils {
      * @throws SQLException If DbUnit has a problem performing
      *           performing JDBC operations.
      */
-    public static void loadDbUnitTestFileAsUpdate(final String testName,
+    public static void loadDbUnitTestFileAsUpdate(final DatabaseSelector dbs,
+            final String testName,
             final String filename) throws
         DatabaseUnitException, HibernateException, IOException, SQLException {
 
-        EntityManager em = DBContext.getEntityManager();
+        EntityManager em = getEntityManagerForDb(dbs);
         try (Connection conn = em.unwrap(SessionImpl.class).connection()) {
 
             IDatabaseConnection connection = new H2Connection(conn, null);
 
             FlatXmlDataSet xmlDataset = new FlatXmlDataSetBuilder()
                     .setMetaDataSetFromDtd(getResourceAsInputStream(
-                            "test/dbunit-toolkit-export-choice.dtd"))
+                            dbs.getDTDFilename()))
                     .build(getResourceAsInputStream(
                             "test/tests/au.org.ands.vocabs.toolkit."
                             + "test.arquillian.AllArquillianTests."
@@ -262,7 +293,8 @@ public final class ArquillianTestUtils {
         em.close();
     }
 
-    /** Export the DbUnit database schema as a DTD.
+    /** Export the DbUnit database schema of a database as a DTD.
+     * @param dbs The database for which the DTD is to be exported.
      * @param dtdExportFilename The name of the file into which the
      *      DTD export is to go.
      * @throws DatabaseUnitException If a problem with DbUnit.
@@ -270,9 +302,10 @@ public final class ArquillianTestUtils {
      *           performing JDBC operations.
      * @throws IOException If a problem opening or closing the output file.
      */
-    public static void exportDbUnitDTD(final String dtdExportFilename) throws
+    public static void exportDbUnitDTD(final DatabaseSelector dbs,
+            final String dtdExportFilename) throws
         DatabaseUnitException, SQLException, IOException {
-        EntityManager em = DBContext.getEntityManager();
+        EntityManager em = getEntityManagerForDb(dbs);
         try (Connection conn = em.unwrap(SessionImpl.class).connection()) {
 
             IDatabaseConnection connection = new H2Connection(conn, null);
@@ -290,7 +323,8 @@ public final class ArquillianTestUtils {
         em.close();
     }
 
-    /** Do a full export of the database in DbUnit format.
+    /** Do a full export of a database in DbUnit format.
+     * @param dbs The database which is to be exported.
      * @param exportFilename The name of the file into which the
      *      export is to go.
      * @throws DatabaseUnitException If a problem with DbUnit.
@@ -300,9 +334,10 @@ public final class ArquillianTestUtils {
      * @throws SQLException If DbUnit has a problem performing
      *           performing JDBC operations.
      */
-    public static void exportFullDbUnitData(final String exportFilename) throws
+    public static void exportFullDbUnitData(final DatabaseSelector dbs,
+            final String exportFilename) throws
         DatabaseUnitException, HibernateException, IOException, SQLException {
-        EntityManager em = DBContext.getEntityManager();
+        EntityManager em = getEntityManagerForDb(dbs);
         try (Connection conn = em.unwrap(SessionImpl.class).connection()) {
             IDatabaseConnection connection = new H2Connection(conn, null);
             IDataSet fullDataSet = connection.createDataSet();
@@ -312,13 +347,16 @@ public final class ArquillianTestUtils {
         em.close();
     }
 
-    /** Client-side clearing of the database.
+    /** Client-side clearing of a database.
+     * @param dbs The database to be cleared.
      * @param baseURL The base URL to use to connect to the Toolkit.
      */
-    public static void clientClearDatabase(final URL baseURL) {
+    public static void clientClearDatabase(final DatabaseSelector dbs,
+            final URL baseURL) {
         logger.info("In clientClearDatabase()");
-        Response response = NetClientUtils.doGet(baseURL,
-                "testing/clearDB");
+        Response response = NetClientUtils.doGetWithAdditionalComponents(
+                baseURL, "testing/clearDB",
+                webTarget -> webTarget.queryParam("db", dbs));
 
         Assert.assertEquals(response.getStatusInfo().getFamily(),
                 Family.SUCCESSFUL,
@@ -326,17 +364,20 @@ public final class ArquillianTestUtils {
         response.close();
     }
 
-    /** Client-side loading of the database.
+    /** Client-side loading of a database.
+     * @param dbs The database into which data is to be loaded.
      * @param baseURL The base URL to use to connect to the Toolkit.
      * @param testName The name of the test method. Used to generate
      *      the filename of the file to load.
      */
-    public static void clientLoadDbUnitTestFile(final URL baseURL,
+    public static void clientLoadDbUnitTestFile(final DatabaseSelector dbs,
+            final URL baseURL,
             final String testName) {
         logger.info("In clientLoadDbUnitTestFile()");
         Response response = NetClientUtils.doGetWithAdditionalComponents(
                 baseURL, "testing/loadDB",
-                webTarget -> webTarget.queryParam("testName", testName));
+                webTarget -> webTarget.queryParam("db", dbs)
+                    .queryParam("testName", testName));
 
         Assert.assertEquals(response.getStatusInfo().getFamily(),
                 Family.SUCCESSFUL,
@@ -344,19 +385,22 @@ public final class ArquillianTestUtils {
         response.close();
     }
 
-    /** Client-side loading of the database as an update.
+    /** Client-side loading of a database as an update.
+     * @param dbs The database into which data is to be loaded.
      * @param baseURL The base URL to use to connect to the Toolkit.
      * @param testName The name of the test method. Used to generate
      *      the path to the file to load.
      * @param filename The name of the file to be loaded.
      */
-    public static void clientLoadDbUnitTestFileAsUpdate(final URL baseURL,
-            final String testName, final String filename) {
+    public static void clientLoadDbUnitTestFileAsUpdate(
+            final DatabaseSelector dbs,
+            final URL baseURL, final String testName, final String filename) {
         logger.info("In clientLoadDbUnitTestFileAsUpdate()");
         Response response = NetClientUtils.doGetWithAdditionalComponents(
                 baseURL, "testing/loadDBAsUpdate",
                 webTarget ->
-                    webTarget.queryParam("testName", testName)
+                    webTarget.queryParam("db", dbs)
+                    .queryParam("testName", testName)
                     .queryParam("filename", filename));
 
         Assert.assertEquals(response.getStatusInfo().getFamily(),
@@ -367,6 +411,7 @@ public final class ArquillianTestUtils {
 
 
     /** Get the current contents of a database table.
+     * @param dbs The database from which the data is to be fetched.
      * @param tableName The name of the database table to be fetched.
      * @return The current contents of the database table.
      * @throws DatabaseUnitException If a problem with DbUnit.
@@ -376,9 +421,10 @@ public final class ArquillianTestUtils {
      *           performing JDBC operations.
      */
     public static ITable getDatabaseTableCurrentContents(
+            final DatabaseSelector dbs,
             final String tableName) throws
             DatabaseUnitException, HibernateException, SQLException {
-        EntityManager em = DBContext.getEntityManager();
+        EntityManager em = getEntityManagerForDb(dbs);
         ITable currentTable;
         try (Connection conn = em.unwrap(SessionImpl.class).connection()) {
             IDatabaseConnection connection = new H2Connection(conn, null);
@@ -391,6 +437,7 @@ public final class ArquillianTestUtils {
 
     /** Get the contents of a dataset in a file containing expected
      * database contents.
+     * @param dbs The database into which the test file is to be loaded.
      * @param filename The filename of the file containing the expected
      *      database contents.
      * @return The contents of the database table.
@@ -398,11 +445,12 @@ public final class ArquillianTestUtils {
      * @throws IOException If reading the DTD fails.
      */
     public static IDataSet getDatabaseTableExpectedContents(
+            final DatabaseSelector dbs,
             final String filename) throws
             DatabaseUnitException, IOException {
         FlatXmlDataSet xmlDataset = new FlatXmlDataSetBuilder()
                 .setMetaDataSetFromDtd(getResourceAsInputStream(
-                        "test/dbunit-toolkit-export-choice.dtd"))
+                        dbs.getDTDFilename()))
                 .build(getResourceAsInputStream(
                         filename));
         ReplacementDataSet dataset = new ReplacementDataSet(xmlDataset);
@@ -437,81 +485,6 @@ public final class ArquillianTestUtils {
         // correctJson.equals(testJson). The TestNG one seems to give
         // the same end result, but gives better diagnostics in case
         // a difference is found.
-    }
-
-    /* Methods for the Roles database. */
-
-    /** Clear the roles database.
-     * @throws DatabaseUnitException If a problem with DbUnit.
-     * @throws HibernateException If a problem getting the underlying
-     *          JDBC connection.
-     * @throws IOException If a problem getting test data for DbUnit.
-     * @throws SQLException If DBUnit has a problem performing
-     *           performing JDBC operations.
-     */
-    public static void clearRolesDatabase() throws
-        DatabaseUnitException, HibernateException, IOException, SQLException {
-        EntityManager em =
-            au.org.ands.vocabs.roles.db.context.DBContext.getEntityManager();
-        try (Connection conn = em.unwrap(SessionImpl.class).connection()) {
-
-            IDatabaseConnection connection = new H2Connection(conn, null);
-
-            logger.info("doing clean_insert");
-            FlatXmlDataSet dataset = new FlatXmlDataSetBuilder()
-                    .setMetaDataSetFromDtd(getResourceAsInputStream(
-                            "test/dbunit-roles-export-choice.dtd"))
-                    .build(getResourceAsInputStream(
-                            "test/blank-roles-dbunit.xml"));
-
-            DatabaseOperation.DELETE_ALL.execute(connection, dataset);
-            // Force commit at the JDBC level, as closing the EntityManager
-            // does a rollback!
-            conn.commit();
-        }
-        em.close();
-    }
-
-    /** Load a DbUnit test file into the roles database.
-     * The file is loaded as a {@code FlatXmlDataSet}.
-     * To make it more convenient to enter JSON data, the dataset is
-     * wrapped as a {@code ReplacementDataSet}, and all instances
-     * of '' (two contiguous apostrophes) are replaced with "
-     * (one double quote).
-     * @param testName The name of the test method. Used to generate
-     *      the filename of the file to load.
-     * @throws DatabaseUnitException If a problem with DbUnit.
-     * @throws HibernateException If a problem getting the underlying
-     *          JDBC connection.
-     * @throws IOException If a problem getting test data for DbUnit.
-     * @throws SQLException If DbUnit has a problem performing
-     *           performing JDBC operations.
-     */
-    public static void loadDbUnitRolesTestFile(final String testName) throws
-        DatabaseUnitException, HibernateException, IOException, SQLException {
-        EntityManager em =
-            au.org.ands.vocabs.roles.db.context.DBContext.getEntityManager();
-        try (Connection conn = em.unwrap(SessionImpl.class).connection()) {
-
-            IDatabaseConnection connection = new H2Connection(conn, null);
-
-            FlatXmlDataSet xmlDataset = new FlatXmlDataSetBuilder()
-                    .setMetaDataSetFromDtd(getResourceAsInputStream(
-                            "test/dbunit-toolkit-export-choice.dtd"))
-                    .build(getResourceAsInputStream(
-                            "test/tests/au.org.ands.vocabs.toolkit."
-                            + "test.arquillian.AllArquillianTests."
-                            + testName
-                            + "/input-roles-dbunit.xml"));
-            ReplacementDataSet dataset = new ReplacementDataSet(xmlDataset);
-            addReplacementSubstringsToDataset(dataset);
-            logger.info("doing clean_insert");
-            DatabaseOperation.CLEAN_INSERT.execute(connection, dataset);
-            // Force commit at the JDBC level, as closing the EntityManager
-            // does a rollback!
-            conn.commit();
-        }
-        em.close();
     }
 
 }

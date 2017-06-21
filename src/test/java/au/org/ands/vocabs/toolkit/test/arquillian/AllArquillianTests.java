@@ -2,6 +2,8 @@
 
 package au.org.ands.vocabs.toolkit.test.arquillian;
 
+import static au.org.ands.vocabs.toolkit.test.arquillian.DatabaseSelector.TOOLKIT;
+
 import java.io.File;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
@@ -228,8 +230,8 @@ public class AllArquillianTests extends ArquillianBaseTest {
         logger.info("In testJsonTreeTransformProvider1()");
         String testsPath = ArquillianTestUtils.getClassesPath()
                 + "/test/tests/";
-        ArquillianTestUtils.clearDatabase();
-        ArquillianTestUtils.loadDbUnitTestFile(
+        ArquillianTestUtils.clearDatabase(TOOLKIT);
+        ArquillianTestUtils.loadDbUnitTestFile(TOOLKIT,
                 "testJsonTreeTransformProvider1");
         List<Task> taskList = TaskUtils.getAllTasks();
         logger.info("testJsonTreeTransformProvider1: task list length = "
@@ -339,8 +341,8 @@ public class AllArquillianTests extends ArquillianBaseTest {
     public final void testResourceMapTransformProvider1() throws
         DatabaseUnitException, HibernateException, IOException, SQLException {
         logger.info("In testResourceMapTransformProvider1()");
-        ArquillianTestUtils.clearDatabase();
-        ArquillianTestUtils.loadDbUnitTestFile(
+        ArquillianTestUtils.clearDatabase(TOOLKIT);
+        ArquillianTestUtils.loadDbUnitTestFile(TOOLKIT,
                 "testResourceMapTransformProvider1");
         List<Task> taskList = TaskUtils.getAllTasks();
         logger.info("testResourceMapTransformProvider1: task list length = "
@@ -358,7 +360,7 @@ public class AllArquillianTests extends ArquillianBaseTest {
 
         // Get current contents of resource_map table.
         ITable actualTable = ArquillianTestUtils.
-                getDatabaseTableCurrentContents(
+                getDatabaseTableCurrentContents(TOOLKIT,
                         DbUnitConstants.RESOURCEMAPENTRY_TABLE_NAME);
         // And take out the id and access_point_id columns before
         // doing a comparison.
@@ -366,7 +368,7 @@ public class AllArquillianTests extends ArquillianBaseTest {
                 actualTable, new String[]{"ID", "ACCESS_POINT_ID"});
 
         IDataSet expectedDataSet = ArquillianTestUtils.
-                getDatabaseTableExpectedContents(
+                getDatabaseTableExpectedContents(TOOLKIT,
                         "test/tests/au.org.ands.vocabs.toolkit."
                         + "test.arquillian.AllArquillianTests."
                         + "testResourceMapTransformProvider1/"
@@ -390,7 +392,7 @@ public class AllArquillianTests extends ArquillianBaseTest {
                 "ResourceMapTransformProvider failed on task 2");
         // Get current contents of resource_map table again.
         actualTable = ArquillianTestUtils.
-                getDatabaseTableCurrentContents(
+                getDatabaseTableCurrentContents(TOOLKIT,
                         DbUnitConstants.RESOURCEMAPENTRY_TABLE_NAME);
         Assert.assertEquals(actualTable.getRowCount(), 0,
                 "Empty resource_map table after UNTRANSFORM");
@@ -409,8 +411,8 @@ public class AllArquillianTests extends ArquillianBaseTest {
     public final void testResourceMapTransformProvider2() throws
         DatabaseUnitException, HibernateException, IOException, SQLException {
         logger.info("In testResourceMapTransformProvider2()");
-        ArquillianTestUtils.clearDatabase();
-        ArquillianTestUtils.loadDbUnitTestFile(
+        ArquillianTestUtils.clearDatabase(TOOLKIT);
+        ArquillianTestUtils.loadDbUnitTestFile(TOOLKIT,
                 "testResourceMapTransformProvider2");
         List<Task> taskList = TaskUtils.getAllTasks();
         logger.info("testResourceMapTransformProvider2: task list length = "
@@ -428,7 +430,7 @@ public class AllArquillianTests extends ArquillianBaseTest {
 
         // Get current contents of resource_map table.
         ITable actualTable = ArquillianTestUtils.
-                getDatabaseTableCurrentContents(
+                getDatabaseTableCurrentContents(TOOLKIT,
                         DbUnitConstants.RESOURCEMAPENTRY_TABLE_NAME);
         // And take out the id and access_point_id columns before
         // doing a comparison.
@@ -436,7 +438,7 @@ public class AllArquillianTests extends ArquillianBaseTest {
                 actualTable, new String[]{"ID", "ACCESS_POINT_ID"});
 
         IDataSet expectedDataSet = ArquillianTestUtils.
-                getDatabaseTableExpectedContents(
+                getDatabaseTableExpectedContents(TOOLKIT,
                         "test/tests/au.org.ands.vocabs.toolkit."
                         + "test.arquillian.AllArquillianTests."
                         + "testResourceMapTransformProvider2/"
@@ -468,8 +470,8 @@ public class AllArquillianTests extends ArquillianBaseTest {
     public final void testResourceMapTransformProvider3() throws
         DatabaseUnitException, HibernateException, IOException, SQLException {
         logger.info("In testResourceMapTransformProvider3()");
-        ArquillianTestUtils.clearDatabase();
-        ArquillianTestUtils.loadDbUnitTestFile(
+        ArquillianTestUtils.clearDatabase(TOOLKIT);
+        ArquillianTestUtils.loadDbUnitTestFile(TOOLKIT,
                 "testResourceMapTransformProvider3");
         List<Task> taskList = TaskUtils.getAllTasks();
         logger.info("testResourceMapTransformProvider3: task list length = "
@@ -496,7 +498,7 @@ public class AllArquillianTests extends ArquillianBaseTest {
 
         // Get current contents of resource_map table.
         ITable actualTable = ArquillianTestUtils.
-                getDatabaseTableCurrentContents(
+                getDatabaseTableCurrentContents(TOOLKIT,
                         DbUnitConstants.RESOURCEMAPENTRY_TABLE_NAME);
         // And take out the id column before
         // doing a comparison. Cf. the other tests, in which we also
@@ -508,7 +510,7 @@ public class AllArquillianTests extends ArquillianBaseTest {
                 actualTable, new String[]{"ID"});
 
         IDataSet expectedDataSet = ArquillianTestUtils.
-                getDatabaseTableExpectedContents(
+                getDatabaseTableExpectedContents(TOOLKIT,
                         "test/tests/au.org.ands.vocabs.toolkit."
                         + "test.arquillian.AllArquillianTests."
                         + "testResourceMapTransformProvider3/"
@@ -543,7 +545,7 @@ public class AllArquillianTests extends ArquillianBaseTest {
     @RunAsClient
     public final void testSystemHealthCheck() {
         logger.info("In testSystemHealthCheck()");
-        ArquillianTestUtils.clientClearDatabase(baseURL);
+        ArquillianTestUtils.clientClearDatabase(TOOLKIT, baseURL);
         Response response = NetClientUtils.doGet(baseURL,
                 "getInfo/systemHealthCheck", MediaType.APPLICATION_JSON_TYPE);
 
@@ -570,8 +572,8 @@ public class AllArquillianTests extends ArquillianBaseTest {
     @RunAsClient
     public final void testResolveIRILookupIRI1() {
         logger.info("In testResolveIRILookupIRI1()");
-        ArquillianTestUtils.clientClearDatabase(baseURL);
-        ArquillianTestUtils.clientLoadDbUnitTestFile(baseURL,
+        ArquillianTestUtils.clientClearDatabase(TOOLKIT, baseURL);
+        ArquillianTestUtils.clientLoadDbUnitTestFile(TOOLKIT, baseURL,
                 "testResolveIRILookupIRI1");
 
         String service = "resolve/lookupIRI";
@@ -654,8 +656,8 @@ public class AllArquillianTests extends ArquillianBaseTest {
     @RunAsClient
     public final void testResolveIRILookupIRI2() {
         logger.info("In testResolveIRILookupIRI2()");
-        ArquillianTestUtils.clientClearDatabase(baseURL);
-        ArquillianTestUtils.clientLoadDbUnitTestFile(baseURL,
+        ArquillianTestUtils.clientClearDatabase(TOOLKIT, baseURL);
+        ArquillianTestUtils.clientLoadDbUnitTestFile(TOOLKIT, baseURL,
                 "testResolveIRILookupIRI2");
 
         String service = "resolve/lookupIRI";
@@ -711,8 +713,8 @@ public class AllArquillianTests extends ArquillianBaseTest {
     @RunAsClient
     public final void testResolveIRILookupIRI3() {
         logger.info("In testResolveIRILookupIRI3()");
-        ArquillianTestUtils.clientClearDatabase(baseURL);
-        ArquillianTestUtils.clientLoadDbUnitTestFile(baseURL,
+        ArquillianTestUtils.clientClearDatabase(TOOLKIT, baseURL);
+        ArquillianTestUtils.clientLoadDbUnitTestFile(TOOLKIT, baseURL,
                 "testResolveIRILookupIRI3");
 
         String service = "resolve/lookupIRI";
@@ -780,7 +782,7 @@ public class AllArquillianTests extends ArquillianBaseTest {
 
         // Now make one of the versions superseded, and observe how this
         // affects resolution.
-        ArquillianTestUtils.clientLoadDbUnitTestFileAsUpdate(baseURL,
+        ArquillianTestUtils.clientLoadDbUnitTestFileAsUpdate(TOOLKIT, baseURL,
                 "testResolveIRILookupIRI3", "input-dbunit2.xml");
 
         // Tests: valid IRI specified.
@@ -890,7 +892,7 @@ public class AllArquillianTests extends ArquillianBaseTest {
             throws HibernateException, DatabaseUnitException,
             IOException, SQLException {
         logger.info("In testResourceOwnerHostDateTimeConversion()");
-        ArquillianTestUtils.clearDatabase();
+        ArquillianTestUtils.clearDatabase(TOOLKIT);
         ResourceOwnerHost roh = new ResourceOwnerHost();
         // Doesn't matter what these are; we're testing start and end dates.
         roh.setHost("http://www");
