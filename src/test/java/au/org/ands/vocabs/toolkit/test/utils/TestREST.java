@@ -15,7 +15,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import au.org.ands.vocabs.toolkit.test.arquillian.ArquillianTestUtils;
-import au.org.ands.vocabs.toolkit.test.arquillian.DatabaseSelector;
 
 /** REST web services that support testing. */
 @Path("testing")

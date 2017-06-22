@@ -44,6 +44,7 @@ import org.testng.FileAssert;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import au.org.ands.vocabs.toolkit.test.utils.DatabaseSelector;
 import au.org.ands.vocabs.toolkit.test.utils.NetClientUtils;
 import au.org.ands.vocabs.toolkit.utils.ApplicationContextListener;
 

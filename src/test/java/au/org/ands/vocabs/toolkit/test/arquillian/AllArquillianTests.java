@@ -2,7 +2,7 @@
 
 package au.org.ands.vocabs.toolkit.test.arquillian;
 
-import static au.org.ands.vocabs.toolkit.test.arquillian.DatabaseSelector.TOOLKIT;
+import static au.org.ands.vocabs.toolkit.test.utils.DatabaseSelector.TOOLKIT;
 
 import java.io.File;
 import java.io.IOException;
