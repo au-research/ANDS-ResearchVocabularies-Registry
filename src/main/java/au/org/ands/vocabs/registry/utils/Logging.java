@@ -54,22 +54,30 @@ public final class Logging {
     }
 
     /** Log an event.
+     * @param success Whether or not the operation was completed successfully.
+     *      If false, the caller should add details
+     *      of the failure as part of <code>otherParameters</code>.
      * @param request The HTTP request.
      * @param uriInfo The UriInfo of the request.
      * @param profile The caller's security profile, or null, if there is none.
      * @param message The message to be logged.
      * @see org.slf4j.Logger#info(java.lang.String)
      */
-    public static void logRequest(final HttpServletRequest request,
+    public static void logRequest(
+            final boolean success,
+            final HttpServletRequest request,
             final UriInfo uriInfo,
             final CommonProfile profile,
             final String message) {
         LogstashMarker lm = Analytics.createBasicMarker(
-                request, uriInfo, profile);
+                success, request, uriInfo, profile);
         LOGGER.info(lm, message);
     }
 
     /** Log an event.
+     * @param success Whether or not the operation was completed successfully.
+     *      If false, the caller should add details
+     *      of the failure as part of <code>otherParameters</code>.
      * @param request The HTTP request.
      * @param uriInfo The UriInfo of the request.
      * @param profile The caller's security profile, or null, if there is none.
@@ -78,13 +86,15 @@ public final class Logging {
      *      of pairs of keys and values, of which the keys must be Strings.
      * @see org.slf4j.Logger#info(java.lang.String)
      */
-    public static void logRequest(final HttpServletRequest request,
+    public static void logRequest(
+            final boolean success,
+            final HttpServletRequest request,
             final UriInfo uriInfo,
             final CommonProfile profile,
             final String message,
             final Object... otherParameters) {
         LogstashMarker lm = Analytics.createBasicMarker(
-                request, uriInfo, profile);
+                success, request, uriInfo, profile);
         int otherParametersLength = otherParameters.length;
         if (otherParametersLength % 2 != 0) {
             internalLogger.error("Logging otherParameters was not a list "

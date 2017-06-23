@@ -99,7 +99,8 @@ public class GetVocabularies {
             outputVocabularies.add(mapper.sourceToTarget(dbVocabulary));
         }
 
-        Logging.logRequest(request, uriInfo, null, "Get all vocabularies");
+        Logging.logRequest(true, request, uriInfo, null,
+                "Get all vocabularies");
         return outputVocabularyList;
     }
 
@@ -239,7 +240,7 @@ public class GetVocabularies {
             }
         }
 
-        Logging.logRequest(request, uriInfo, null, "Get a vocabulary");
+        Logging.logRequest(true, request, uriInfo, null, "Get a vocabulary");
         return Response.ok().entity(outputVocabulary).build();
     }
 

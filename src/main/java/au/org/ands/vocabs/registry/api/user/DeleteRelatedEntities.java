@@ -172,15 +172,14 @@ public class DeleteRelatedEntities {
         re.setEventDate(now);
         re.setEventType(RegistryEventEventType.DELETED);
         re.setEventUser(profile.getUsername());
-        // TODO: put something sensible in the details.
+        // To be done: put something sensible in the details.
         re.setEventDetails("");
         RegistryEventDAO.saveRegistryEvent(re);
 
         // Analytics logging.
-        Logging.logRequest(request, uriInfo, profile,
+        Logging.logRequest(true, request, uriInfo, profile,
                 Analytics.EVENT_DELETE_RELATED_ENTITY,
-                Analytics.RELATED_ENTITY_ID_FIELD,
-                    relatedEntityId,
+                Analytics.RELATED_ENTITY_ID_FIELD, relatedEntityId,
                 Analytics.TITLE_FIELD, relatedEntity.getTitle(),
                 Analytics.OWNER_FIELD, relatedEntity.getOwner());
 

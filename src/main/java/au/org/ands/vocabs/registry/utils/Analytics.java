@@ -79,10 +79,16 @@ public final class Analytics {
     // These are public fields.
     // The following fields are defined in alphabetical order
     // of field name.
+    /** The name of the success field inserted into log entries. */
+    public static final String SUCCESS_FIELD = "success";
+    /** The name of the failure reason field inserted into log entries. */
+    public static final String FAILURE_REASON = "failure_reason";
     /** The name of the owner field inserted into log entries. */
     public static final String OWNER_FIELD = "owner";
-    /** The name of the status field inserted into log entries. */
-    public static final String STATUS_FIELD = "status";
+    /** The name of the entity status field inserted into log entries.
+     * This is used to represent a <i>registry entity's</i> status, e.g.,
+     * that a vocabulary has "deprecated" status. */
+    public static final String ENTITY_STATUS_FIELD = "entity_status";
     /** The name of the title field inserted into log entries. */
     public static final String TITLE_FIELD = "title";
     /** The name of the vocabulary ID field inserted into log entries. */
@@ -201,16 +207,21 @@ public final class Analytics {
      * and the path from the uriInfo. If there is a user profile,
      * the username is extracted.
      * Geolocation data is added, based on the IP address.
+     * @param success Whether or not the operation was completed successfully.
+     *      If false, the caller should then add more details
+     *      of the failure to the returned LogstashMarker.
      * @param request The HTTP request.
      * @param uriInfo The UriInfo of the request.
      * @param profile The caller's security profile, or null, if there is none.
      * @return The new LogstashMarker, for use in a log entry.
      */
     public static LogstashMarker createBasicMarker(
+            final boolean success,
             final HttpServletRequest request,
             final UriInfo uriInfo,
             final CommonProfile profile) {
         LogstashMarker lm = append(UUID_FIELD, UUID.randomUUID()).
+                and(append(SUCCESS_FIELD, success)).
                 and(append(IP_FIELD, request.getRemoteAddr())).
                 and(append(METHOD_FIELD, request.getMethod())).
                 and(append(PATH_FIELD, uriInfo.getPath()));

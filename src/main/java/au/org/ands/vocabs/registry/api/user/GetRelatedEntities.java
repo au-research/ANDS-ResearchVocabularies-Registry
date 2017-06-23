@@ -102,7 +102,7 @@ public class GetRelatedEntities {
                     reiMapper.sourceToTarget(dbREI));
         }
 
-        Logging.logRequest(request, uriInfo, null, "Get a vocabulary");
+        Logging.logRequest(true, request, uriInfo, null, "Get a vocabulary");
         return Response.ok().entity(outputRE).build();
     }
 

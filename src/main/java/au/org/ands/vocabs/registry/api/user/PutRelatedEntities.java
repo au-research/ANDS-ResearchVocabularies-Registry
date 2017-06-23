@@ -129,6 +129,14 @@ public class PutRelatedEntities {
 
         if (!AuthUtils.ownerIsAuthorizedByOrganisationOrUsername(profile,
                 newRelatedEntity.getOwner())) {
+            Logging.logRequest(false, request, uriInfo, profile,
+                    Analytics.EVENT_CREATE_RELATED_ENTITY,
+                    Analytics.FAILURE_REASON,
+                        "authorization",
+                    Analytics.TITLE_FIELD,
+                        newRelatedEntity.getTitle(),
+                    Analytics.OWNER_FIELD,
+                        newRelatedEntity.getOwner());
             return ResponseUtils.generateForbiddenResponseForOwner();
         }
         String username = profile.getUsername();
@@ -180,7 +188,14 @@ public class PutRelatedEntities {
         if (!validationErrors.isEmpty()) {
             logger.info("Attempt to create a new related entity or identifier "
                     + "that would be a duplicate of an existing one");
-            // TODO analytics logging?
+            Logging.logRequest(false, request, uriInfo, profile,
+                    Analytics.EVENT_CREATE_RELATED_ENTITY,
+                    Analytics.FAILURE_REASON,
+                        "duplicate",
+                    Analytics.TITLE_FIELD,
+                        newRelatedEntity.getTitle(),
+                    Analytics.OWNER_FIELD,
+                        newRelatedEntity.getOwner());
             ErrorResult errorResult =
                     new ErrorResult("Duplicate related entity or identifier");
             errorResult.setConstraintViolation(validationErrors);
@@ -228,12 +243,12 @@ public class PutRelatedEntities {
         re.setEventDate(now);
         re.setEventType(RegistryEventEventType.CREATED);
         re.setEventUser(profile.getUsername());
-        // TODO: put something sensible in the details.
+        // To be done: put something sensible in the details.
         re.setEventDetails("");
         RegistryEventDAO.saveRegistryEvent(re);
 
         // Analytics logging.
-        Logging.logRequest(request, uriInfo, profile,
+        Logging.logRequest(true, request, uriInfo, profile,
                 Analytics.EVENT_CREATE_RELATED_ENTITY,
                 Analytics.RELATED_ENTITY_ID_FIELD,
                     newDbRelatedEntity.getRelatedEntityId(),
@@ -321,6 +336,15 @@ public class PutRelatedEntities {
                 // Possible future work: distinguish between:
                 // (a) never existed: HTTP status code 404
                 // (b) there is historical data: HTTP status code 410
+                Logging.logRequest(false, request, uriInfo, profile,
+                        Analytics.EVENT_UPDATE_RELATED_ENTITY,
+                        Analytics.FAILURE_REASON,
+                            "No related entity with that id",
+                        Analytics.RELATED_ENTITY_ID_FIELD, relatedEntityId,
+                        Analytics.TITLE_FIELD,
+                            updatedRelatedEntity.getTitle(),
+                        Analytics.OWNER_FIELD,
+                            updatedRelatedEntity.getOwner());
                 return Response.status(Status.NOT_FOUND).entity(
                         new ErrorResult("No related entity with that id")).
                         build();
@@ -328,6 +352,15 @@ public class PutRelatedEntities {
 
             if (!AuthUtils.ownerIsAuthorizedByOrganisationOrUsername(profile,
                     existingDbRelatedEntity.getOwner())) {
+                Logging.logRequest(false, request, uriInfo, profile,
+                        Analytics.EVENT_UPDATE_RELATED_ENTITY,
+                        Analytics.FAILURE_REASON,
+                            "authorization",
+                        Analytics.RELATED_ENTITY_ID_FIELD, relatedEntityId,
+                        Analytics.TITLE_FIELD,
+                            updatedRelatedEntity.getTitle(),
+                        Analytics.OWNER_FIELD,
+                            updatedRelatedEntity.getOwner());
                 return ResponseUtils.generateForbiddenResponseForOwner();
             }
 
@@ -348,6 +381,15 @@ public class PutRelatedEntities {
                 // permission to be the owner.
                 if (!AuthUtils.ownerIsAuthorizedByOrganisationOrUsername(
                         profile, updatedRelatedEntity.getOwner())) {
+                    Logging.logRequest(false, request, uriInfo, profile,
+                            Analytics.EVENT_UPDATE_RELATED_ENTITY,
+                            Analytics.FAILURE_REASON,
+                                "authorization",
+                            Analytics.RELATED_ENTITY_ID_FIELD, relatedEntityId,
+                            Analytics.TITLE_FIELD,
+                                updatedRelatedEntity.getTitle(),
+                            Analytics.OWNER_FIELD,
+                                updatedRelatedEntity.getOwner());
                     return ResponseUtils.generateForbiddenResponseForOwner();
                 }
             }
@@ -482,7 +524,14 @@ public class PutRelatedEntities {
             }
 
             if (!validationErrors.isEmpty()) {
-                // TODO: analytics logging
+                Logging.logRequest(false, request, uriInfo, profile,
+                        Analytics.EVENT_UPDATE_RELATED_ENTITY,
+                        Analytics.FAILURE_REASON, "validation",
+                        Analytics.RELATED_ENTITY_ID_FIELD, relatedEntityId,
+                        Analytics.TITLE_FIELD,
+                            updatedDbRelatedEntity.getTitle(),
+                        Analytics.OWNER_FIELD,
+                            updatedDbRelatedEntity.getOwner());
                 ErrorResult errorResult =
                         new ErrorResult("Because of validation errors, won't "
                                 + "update related entity");
@@ -590,7 +639,7 @@ public class PutRelatedEntities {
             re.setEventDate(now);
             re.setEventType(RegistryEventEventType.UPDATED);
             re.setEventUser(profile.getUsername());
-            // TODO: put something sensible in the details.
+            // To be done: put something sensible in the details.
             re.setEventDetails("");
             RegistryEventDAO.saveRegistryEvent(em, re);
 
@@ -598,7 +647,7 @@ public class PutRelatedEntities {
             txn.commit();
             // If we have reached this point, we have success.
             // Analytics logging.
-            Logging.logRequest(request, uriInfo, profile,
+            Logging.logRequest(true, request, uriInfo, profile,
                     Analytics.EVENT_UPDATE_RELATED_ENTITY,
                     Analytics.RELATED_ENTITY_ID_FIELD, relatedEntityId,
                     Analytics.TITLE_FIELD, updatedDbRelatedEntity.getTitle(),
@@ -625,7 +674,14 @@ public class PutRelatedEntities {
         }
 
         // If we fell through to here: ouch.
-        // TODO: Analytics logging?
+        Logging.logRequest(false, request, uriInfo, profile,
+                Analytics.EVENT_UPDATE_RELATED_ENTITY,
+                Analytics.FAILURE_REASON, "internal error",
+                Analytics.RELATED_ENTITY_ID_FIELD, relatedEntityId,
+                Analytics.TITLE_FIELD,
+                    updatedRelatedEntity.getTitle(),
+                Analytics.OWNER_FIELD,
+                    updatedRelatedEntity.getOwner());
         return ErrorResultUtils.internalServerError();
     }
 
