@@ -114,8 +114,12 @@
     <delete dir="${mapstruct-sources}" />
     <delete dir="${build-xjc-private-fields-plugin}" />
     <delete file="${xjc-private-fields-plugin-jar}" />
-    <!-- Delete tools-bin iff it is empty. -->
-    <delete includeemptydirs="true">
+    <!-- Delete tools-bin iff it is empty.
+         Need failonerror="false", otherwise "ant clean"
+         would not be an idempotent operation: if you run it twice
+         in succession, it would fail the second time at this point.
+    -->
+    <delete includeemptydirs="true" failonerror="false">
       <fileset dir="${tools-bin}" excludes="**/*" />
     </delete>
     <delete file="${jar}" />
