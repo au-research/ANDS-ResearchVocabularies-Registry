@@ -27,6 +27,10 @@
   <property name="src-bot-detection" value="src/CrawlerDetect" />
   <property name="src-bot-detection-gen"
             value="src/main/java/au/org/ands/vocabs/registry/utils/BotDetector.java" />
+  <!-- Generated test code/data -->
+  <property name="src-test-dbunit-registry-dtd"
+            value="src/test/resources/deploy/test/dbunit-registry-export-choice.dtd" />
+
   <!-- mapstruct -->
   <property name="mapstruct-processor"
         value="libdev/mapstruct-1.1.0/mapstruct-processor-1.1.0.Final.jar" />
@@ -121,6 +125,8 @@
     <delete dir="${test-output}" />
     <delete file="${jacoco-output}" />
     <delete dir="${jacoco-report}" />
+    <!-- Files created for testing -->
+    <delete file="${src-test-dbunit-registry-dtd}" />
     <!-- Files created by testng-bamboo target -->
     <delete file="conf/toolkit-h2-bamboo.properties" />
     <delete file="conf/registry-h2-bamboo.properties" />
@@ -202,7 +208,7 @@
     </uptodate>
   </target>
 
-  <!-- Generated Registry DB Java source code. Note the
+  <!-- Generate Registry DB Java source code. Note the
        "unless" attribute. -->
   <target name="generate-registry-db-entity-dao-source"
           depends="check-registry-db-entity-dao-source"
@@ -692,7 +698,93 @@
     </forbiddenapis>
   </target>
 
-  <!-- Automated testing, test coverage -->
+  <!-- Support for automated testing: generate DbUnit DTD files. -->
+  <path id="generate-DTD.classpath">
+    <pathelement path="${build}" />
+    <pathelement path="${build-test}" />
+    <fileset dir="lib">
+      <include name="**/*.jar" />
+      <exclude name="javamelody*/*.jar" />
+      <exclude name="mysql*/*.jar" />
+      <exclude name="**/*javadoc*.jar" />
+      <exclude name="**/*sources*.jar" />
+    </fileset>
+    <fileset dir="libtest">
+      <include name="**/*.jar" />
+      <exclude name="**/*javadoc*.jar" />
+      <exclude name="**/*sources*.jar" />
+    </fileset>
+    <fileset dir="libdev">
+      <include name="**/*.jar" />
+      <exclude name="**/*javadoc*.jar" />
+      <exclude name="**/*sources*.jar" />
+      <exclude name="arquillian-notyet/**/*.jar" />
+    </fileset>
+    <fileset dir="tomcatlib" includes="**/*.jar" />
+    <!-- This is the main difference from testng.classpath:
+         for a standalone app, we need the database model JARs. -->
+    <pathelement location="${toolkit-db-model-jar}" />
+    <pathelement location="${registry-db-model-jar}" />
+    <pathelement location="${roles-db-model-jar}" />
+  </path>
+
+  <!-- Generate the DbUnit DTD for one database.
+       Note that this used as part of test builds, to generate
+       the DTD for the registry database, but you have to
+       call it manually for the roles and toolkit databases,
+       and commit the results.
+       Specify two required parameters:
+       database parameter, with, e.g., -Ddbs=TOOLKIT
+       output file, with, e.g.,
+         -Ddtd-output=src/test/resources/deploy/test/dbunit-toolkit-export-choice.dtd
+  -->
+  <target name="generate-DTD"
+          depends="compile-test,toolkit-db-model-jar,registry-db-model-jar,roles-db-model-jar">
+    <fail unless="dbs" message="No dbs specified" />
+    <fail unless="dtd-output" message="No dtd-output specified" />
+    <java
+        fork="true"
+        failonerror="true"
+        output="${dtd-output}"
+        logError="true"
+        classname="au.org.ands.vocabs.toolkit.test.arquillian.GenerateDbUnitDTD"
+        classpathref="generate-DTD.classpath"
+      >
+      <jvmarg
+          value="-DPROPS_FILE=conf/toolkit-h2.properties" />
+      <jvmarg
+          value="-DREGISTRY_PROPS_FILE=conf/registry-h2.properties" />
+      <jvmarg
+          value="-DROLES_PROPS_FILE=conf/roles-h2.properties" />
+      <jvmarg
+          value="-DVERSION_PROPS_FILE=conf/version.properties" />
+      <arg value="${dbs}" />
+    </java>
+  </target>
+
+  <!-- Check if generated registry DbUnit DTD is up-to-date. -->
+  <target name="check-registry-dbunit-DTD">
+    <uptodate property="registry-dbunit-dtd.uptodate"
+              targetfile="${src-test-dbunit-registry-dtd}">
+      <srcfiles dir="src/main/db">
+        <include name="*/*.xml" />
+        <include name="*/*.xsl" />
+      </srcfiles>
+    </uptodate>
+  </target>
+
+  <!-- Generate Registry DbUnit DTD. Note the
+       "unless" attribute. -->
+  <target name="generate-registry-dbunit-dtd"
+          depends="check-registry-dbunit-DTD"
+          unless="registry-dbunit-dtd.uptodate">
+    <antcall target="generate-DTD">
+      <param name="dbs" value="REGISTRY" />
+      <param name="dtd-output" value="${src-test-dbunit-registry-dtd}" />
+    </antcall>
+  </target>
+
+  <!-- Automated testing, with test coverage -->
 
   <property name="resources-test-input" value="src/test/resources/deploy" />
 
@@ -728,8 +820,9 @@
     <pathelement path="${resources-test-input}" />
   </path>
 
+  <!-- Run the Arquillian TestNG test suite. -->
   <target name="testng"
-          depends="compile-test,toolkit-db-model-jar,registry-db-model-jar,roles-db-model-jar">
+          depends="compile-test,toolkit-db-model-jar,registry-db-model-jar,roles-db-model-jar,generate-registry-dbunit-dtd">
     <jacoco:coverage
       destfile="${jacoco-output}">
       <testng
@@ -791,7 +884,7 @@
       testng-bamboo
   -->
   <target name="testng-bamboo"
-          depends="compile-test,toolkit-db-model-jar,registry-db-model-jar,roles-db-model-jar">
+          depends="compile-test,toolkit-db-model-jar,registry-db-model-jar,roles-db-model-jar,generate-registry-dbunit-dtd">
     <copy
       file="conf/toolkit-h2-bamboo-template.properties"
       tofile="conf/toolkit-h2-bamboo.properties">

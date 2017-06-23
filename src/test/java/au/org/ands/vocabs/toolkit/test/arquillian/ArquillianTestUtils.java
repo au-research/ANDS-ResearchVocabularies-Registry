@@ -114,7 +114,7 @@ public final class ArquillianTestUtils {
      * @param dbs The database for which an EntityManager is to be created.
      * @return The created EntityManager.
      */
-    private static EntityManager getEntityManagerForDb(
+    public static EntityManager getEntityManagerForDb(
             final DatabaseSelector dbs) {
         if (dbs == null) {
             // Booboo in the test method!
