@@ -71,6 +71,9 @@ public final class ResourceMapEntryUtils {
     }
 
     /** Create a resource map entry for an IRI and an access point.
+     * The entry is persisted using a transaction created for this purpose.
+     * For good performance for bulk operations, use the alternate version
+     * of this method that accepts an EntityManager parameter.
      * @param iri The IRI to be mapped.
      * @param accessPointId The ID of the access point which defines the
      *      resource.
@@ -90,6 +93,36 @@ public final class ResourceMapEntryUtils {
         rme.setResourceType(resourceType);
         rme.setDeprecated(deprecated);
         saveResourceMapEntry(rme);
+    }
+
+    /** Create a resource map entry for an IRI and an access point.
+     * This version of the method accepts an EntityManager, on which
+     * a transaction should already have been started, and on which
+     * the transaction should be subsequently be committed.
+     * Use this method for bulk addition of entries, as it seems to provide
+     * better performance by more than two orders of magnitude.
+     * @param em An existing EntityManager to use for persisting the
+     * @param iri The IRI to be mapped.
+     * @param accessPointId The ID of the access point which defines the
+     *      resource.
+     * @param owned Whether the resource is owned by the owner of the vocabulary
+     * @param resourceType The URL of the resource type
+     * @param deprecated Whether the resource is deprecated
+     */
+    public static void addResourceMapEntry(
+            final EntityManager em,
+            final String iri,
+            final Integer accessPointId,
+            final Boolean owned,
+            final String resourceType,
+            final Boolean deprecated) {
+        ResourceMapEntry rme = new ResourceMapEntry();
+        rme.setIri(iri);
+        rme.setAccessPointId(accessPointId);
+        rme.setOwned(owned);
+        rme.setResourceType(resourceType);
+        rme.setDeprecated(deprecated);
+        em.persist(rme);
     }
 
     /** Delete all resource map entries for an access point.
