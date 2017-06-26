@@ -138,7 +138,9 @@
     <!-- Work files and log files within managed Tomcat -->
     <delete dir="${tomcat-managed}/conf/Catalina" />
     <delete dir="${tomcat-managed}/work/Catalina" />
-    <delete>
+    <!-- Need failonerror="false", otherwise "ant clean"
+         fails on a fresh checkout. -->
+    <delete failonerror="false">
       <fileset dir="${tomcat-managed}/logs" includes="*"/>
     </delete>
     <delete dir="${tomcat-managed}/webapps/openrdf-sesame" />
