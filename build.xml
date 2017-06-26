@@ -634,7 +634,8 @@
   <!-- Coding conventions, style, static analysis -->
 
   <target name="checkstyle"
-          description="Generates a report of code convention violations.">
+          description="Generates a report of code convention violations."
+          depends="generate-registry-db-entity-dao-source,generate-jaxb-source,generate-bot-detection-source">
 
     <!-- Be very picky: fail even on a single warning. -->
     <checkstyle config="ands-checkstyle.xml"
