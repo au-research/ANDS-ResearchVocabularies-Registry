@@ -7,6 +7,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import javax.persistence.EntityManager;
+
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.impl.LiteralImpl;
@@ -29,6 +31,7 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import au.org.ands.vocabs.toolkit.db.AccessPointUtils;
+import au.org.ands.vocabs.toolkit.db.DBContext;
 import au.org.ands.vocabs.toolkit.db.ResourceMapEntryUtils;
 import au.org.ands.vocabs.toolkit.db.ResourceOwnerHostUtils;
 import au.org.ands.vocabs.toolkit.db.TaskUtils;
@@ -183,6 +186,7 @@ public class ResourceMapTransformProvider extends TransformProvider {
     }
 
     @Override
+    @SuppressWarnings("checkstyle:MethodLength")
     public final boolean transform(final TaskInfo taskInfo,
             final JsonNode subtask,
             final HashMap<String, String> results) {
@@ -280,6 +284,12 @@ public class ResourceMapTransformProvider extends TransformProvider {
                     // go missing from query results.
                     query.setIncludeInferred(false);
                     queryResult = query.evaluate();
+                    // CC-2014 Do database processing in bulk, using our own
+                    // transaction. This makes a very big difference
+                    // to performance, over doing a separate transaction
+                    // to insert each new entry.
+                    EntityManager em = DBContext.getEntityManager();
+                    em.getTransaction().begin();
                     while (queryResult.hasNext()) {
                         BindingSet aBinding = queryResult.next();
                         Value iri = aBinding.getBinding(BINDING_NAME_IRI)
@@ -292,12 +302,14 @@ public class ResourceMapTransformProvider extends TransformProvider {
                         LiteralImpl deprecated = (LiteralImpl)
                                 (aBinding.getBinding(BINDING_NAME_DEPRECATED)
                                         .getValue());
-                        ResourceMapEntryUtils.addResourceMapEntry(
+                        ResourceMapEntryUtils.addResourceMapEntry(em,
                                 iri.stringValue(), accessPointId,
                                 owned.booleanValue(),
                                 resourceType.stringValue(),
                                 deprecated.booleanValue());
                     }
+                    em.getTransaction().commit();
+                    em.close();
                     queryResult.close();
                 } catch (MalformedQueryException | QueryEvaluationException e) {
                     logger.error("Bad query constructed in "
