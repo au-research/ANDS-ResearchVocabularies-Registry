@@ -112,19 +112,6 @@ public class Download {
      * @param downloadFormat The download format. This may be
      * ignored, depending (for example) on the access point type.
      * Allowed values are the keys of {@link #SESAME_FORMAT_TO_MIMETYPE_MAP}.
-     * @paramsAllowableValues
-     *      downloadFormat rdf
-     *      downloadFormat nt
-     *      downloadFormat ttl
-     *      downloadFormat n3
-     *      downloadFormat nq
-     *      downloadFormat json
-     *      downloadFormat trix
-     *      downloadFormat trig
-     *      downloadFormat bin
-     * @responseType java.lang.String
-     * @responseMessage 404 Not found: no such access point ID,
-     *      no such format, or the access point is of the wrong type
      */
     @Path("{access_point_id}")
     @GET
