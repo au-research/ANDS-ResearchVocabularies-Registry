@@ -556,5 +556,11 @@
       </extraQuery>
     </extraQueries>
   </map>
+  <map tableName="uploads"
+       entityName="Uploads"
+       serialVersionUID="-7712278075684748720L"
+       >
+  </map>
+
 
 </db-entity-map>

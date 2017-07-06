@@ -35,6 +35,9 @@ public final class ApiPaths {
     /** Subpath for related entity resources. */
     public static final String RELATED_ENTITIES = "relatedEntities";
 
+    /** Subpath for file uploads. */
+    public static final String UPLOADS = "uploads";
+
 //  /** Subpath for  resources. */
 //  public static final String  = "";
 

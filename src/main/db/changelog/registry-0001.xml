@@ -772,6 +772,33 @@
     </createTable>
   </changeSet>
 
+  <changeSet id="0001-uploads-createTable"
+             author="Richard.Walker@ands.org.au">
+    <comment>Create uploads table</comment>
+    <createTable tableName="uploads">
+      <column name="id" type="INTEGER"
+              autoIncrement="true">
+        <constraints primaryKey="true"/>
+      </column>
+      <column name="modified_by" type="VARCHAR(255)"
+              remarks="Role ID responsible for this row.">
+        <constraints nullable="false"/>
+      </column>
+      <column name="owner" type="VARCHAR(255)"
+              remarks="Role ID.">
+        <constraints nullable="false"/>
+      </column>
+      <column name="format" type="VARCHAR(45)"
+              remarks="File format.">
+        <constraints nullable="false"/>
+      </column>
+      <column name="filename" type="VARCHAR(255)"
+              remarks="Filename.">
+        <constraints nullable="false"/>
+      </column>
+    </createTable>
+  </changeSet>
+
 
 
 

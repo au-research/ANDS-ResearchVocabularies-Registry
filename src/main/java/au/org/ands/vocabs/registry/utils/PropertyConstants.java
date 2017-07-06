@@ -38,6 +38,10 @@ public final class PropertyConstants {
     public static final String REGISTRY_TEMPPATH =
             "Registry.tempPath";
 
+    /** Registry uploads path. */
+    public static final String REGISTRY_UPLOADSPATH =
+            "Registry.uploadsPath";
+
     /** Registry download prefix. */
     public static final String REGISTRY_DOWNLOADPREFIX =
             "Registry.downloadPrefix";

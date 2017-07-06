@@ -8,6 +8,7 @@ import javax.ws.rs.client.Client;
 import javax.ws.rs.client.WebTarget;
 
 import au.org.ands.vocabs.registry.db.entity.RelatedEntity;
+import au.org.ands.vocabs.registry.db.entity.Uploads;
 import au.org.ands.vocabs.registry.db.entity.Version;
 import au.org.ands.vocabs.registry.db.entity.Vocabulary;
 import au.org.ands.vocabs.registry.utils.PropertyConstants;
@@ -92,6 +93,15 @@ public final class EntityPaths {
     public static URI getURIOfEntity(final RelatedEntity entity) {
         return resourceTarget.path(ApiPaths.RELATED_ENTITIES).
                 path(entity.getRelatedEntityId().toString()).getUri();
+    }
+
+    /** Get the URI which an API user can use to retrieve this registry entity.
+     * @param entity A registry entity.
+     * @return The URI that an API user can use to retrieve the entity.
+     */
+    public static URI getURIOfEntity(final Uploads entity) {
+        return resourceTarget.path(ApiPaths.UPLOADS).
+                path(entity.getId().toString()).getUri();
     }
 
 }
