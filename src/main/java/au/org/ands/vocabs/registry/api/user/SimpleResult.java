@@ -50,7 +50,7 @@ public class SimpleResult {
         booleanValue = aResult;
     }
 
-    /** Set the text of error message.
+    /** Set the result as a Boolean message.
      * @param aBooleanValue The result as a Boolean value.
      */
     public void setBooleanValue(final Boolean aBooleanValue) {
@@ -62,6 +62,30 @@ public class SimpleResult {
      */
     public Boolean getBooleanValue() {
         return booleanValue;
+    }
+
+    /** The Integer value result. */
+    private Integer integerValue;
+
+    /** Constructor that takes an Integer value as a parameter.
+     * @param aResult The result as an Integer value.
+     */
+    public SimpleResult(final Integer aResult) {
+        integerValue = aResult;
+    }
+
+    /** Set the result as an Integer value.
+     * @param anIntegerValue The result as an Integer value.
+     */
+    public void setIntegerValue(final Integer anIntegerValue) {
+        integerValue = anIntegerValue;
+    }
+
+    /** Get the Integer value.
+     * @return The text of the Integer value.
+     */
+    public Integer getIntegerValue() {
+        return integerValue;
     }
 
 }
