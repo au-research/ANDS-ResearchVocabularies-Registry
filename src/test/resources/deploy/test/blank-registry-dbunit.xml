@@ -1,0 +1,43 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE dataset SYSTEM "dbunit-toolkit-export-choice.dtd" >
+<!-- Used to blank out the Registry database. -->
+<dataset>
+  <POOLPARTY_SERVERS />
+
+  <UPLOADS />
+
+  <RELATED_ENTITY_IDENTIFIER_IDS />
+  <RELATED_ENTITY_IDENTIFIERS />
+
+  <RELATED_ENTITY_IDS />
+  <RELATED_ENTITIES />
+
+  <SUBJECT_RESOLVER_SOURCES />
+  <SUBJECT_RESOLVER />
+
+  <VOCABULARY_IDS />
+  <VOCABULARIES />
+
+  <VOCABULARY_RELATED_ENTITIES />
+  <VOCABULARY_RELATED_VOCABULARIES />
+
+  <VERSION_IDS />
+  <VERSIONS />
+
+  <VERSION_ARTEFACT_IDS />
+  <VERSION_ARTEFACTS />
+
+  <ACCESS_POINT_IDS />
+  <ACCESS_POINTS />
+
+  <REGISTRY_EVENTS />
+
+  <RESOURCE_MAP />
+  <RESOURCE_OWNER_HOSTS />
+
+  <TASKS />
+
+  <VOCABULARY_EVENTS />
+
+</dataset>
+

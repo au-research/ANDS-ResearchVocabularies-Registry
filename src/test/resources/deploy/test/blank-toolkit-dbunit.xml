@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!DOCTYPE dataset SYSTEM "dbunit-toolkit-export-choice.dtd" >
-<!-- Used to blank out the database. -->
+<!-- Used to blank out the Toolkit database. -->
 <dataset>
   <VOCABULARIES/>
   <VERSIONS/>
