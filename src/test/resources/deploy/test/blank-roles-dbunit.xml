@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<!DOCTYPE dataset SYSTEM "dbunit-toolkit-export-choice.dtd" >
+<!DOCTYPE dataset SYSTEM "dbunit-roles-export-choice.dtd" >
 <!-- Used to blank out the roles database. -->
 <dataset>
   <ROLES />
