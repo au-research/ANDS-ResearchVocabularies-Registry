@@ -8,7 +8,7 @@ import javax.ws.rs.client.Client;
 import javax.ws.rs.client.WebTarget;
 
 import au.org.ands.vocabs.registry.db.entity.RelatedEntity;
-import au.org.ands.vocabs.registry.db.entity.Uploads;
+import au.org.ands.vocabs.registry.db.entity.Upload;
 import au.org.ands.vocabs.registry.db.entity.Version;
 import au.org.ands.vocabs.registry.db.entity.Vocabulary;
 import au.org.ands.vocabs.registry.utils.PropertyConstants;
@@ -76,7 +76,7 @@ public final class EntityPaths {
                 path(entity.getVocabularyId().toString()).getUri();
     }
 
-    /** Get the URI which an API user can use to retrieve this registry entity.
+    /** Get the URI which an API user can use to retrieve a Version.
      * @param entity A registry entity.
      * @return The URI that an API user can use to retrieve the entity.
      */
@@ -85,8 +85,7 @@ public final class EntityPaths {
                 path(entity.getVersionId().toString()).getUri();
     }
 
-    /** Get the URI which an API user can use to retrieve this registry
-     * related entity entity.
+    /** Get the URI which an API user can use to retrieve a RelatedEntity.
      * @param entity A registry entity.
      * @return The URI that an API user can use to retrieve the entity.
      */
@@ -95,11 +94,11 @@ public final class EntityPaths {
                 path(entity.getRelatedEntityId().toString()).getUri();
     }
 
-    /** Get the URI which an API user can use to retrieve this registry entity.
+    /** Get the URI which an API user can use to retrieve an Upload.
      * @param entity A registry entity.
      * @return The URI that an API user can use to retrieve the entity.
      */
-    public static URI getURIOfEntity(final Uploads entity) {
+    public static URI getURIOfEntity(final Upload entity) {
         return resourceTarget.path(ApiPaths.UPLOADS).
                 path(entity.getId().toString()).getUri();
     }
