@@ -27,6 +27,10 @@
   <test name="Toolkit Arquillian tests" preserve-order="true">
     <groups>
       <run>
+        <!-- Need to include the special "arquillian" group
+             in order to make Arquillian "kick in"!
+             See https://issues.jboss.org/browse/ARQ-127
+        -->
         <include name="arquillian" />
       </run>
     </groups>
