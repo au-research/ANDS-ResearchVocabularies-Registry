@@ -142,6 +142,7 @@
       <fileset dir="${tomcat-managed}/logs" includes="*"/>
     </delete>
     <delete dir="${tomcat-managed}/webapps/openrdf-sesame" />
+    <delete file="swagger.json" />
   </target>
 
   <!-- xjc plugin to make generated fields private -->
@@ -763,6 +764,63 @@
       <param name="dbs" value="REGISTRY" />
       <param name="dtd-output" value="${src-test-dbunit-registry-dtd}" />
     </antcall>
+  </target>
+
+  <!-- Generation of swagger.json.
+       We reuse the core of the testng-bamboo task for this purpose. -->
+  <target name="swagger-json"
+          depends="compile-test,toolkit-db-model-jar,registry-db-model-jar,roles-db-model-jar,generate-registry-dbunit-dtd">
+    <copy
+      file="conf/toolkit-h2-bamboo-template.properties"
+      tofile="conf/toolkit-h2-bamboo.properties">
+      <filterset>
+        <filter
+          token="bambooBuildWorkingDirectory"
+          value="${user.dir}" />
+        <filter
+          token="bambooPoolPartyHarvesterRemoteUrl"
+          value="http://pp.url/" />
+        <filter
+          token="bambooPoolPartyHarvesterUsername"
+          value="username-splat" />
+        <filter
+          token="bambooPoolPartyHarvesterPassword"
+          value="password-splat" />
+      </filterset>
+    </copy>
+    <copy
+      file="conf/registry-h2-bamboo-template.properties"
+      tofile="conf/registry-h2-bamboo.properties">
+      <filterset>
+        <filter
+          token="bambooBuildWorkingDirectory"
+          value="${bambooBuildWorkingDirectory}" />
+      </filterset>
+    </copy>
+    <copy
+      file="conf/roles-h2-bamboo-template.properties"
+      tofile="conf/roles-h2-bamboo.properties">
+      <filterset>
+        <filter
+          token="bambooBuildWorkingDirectory"
+          value="${bambooBuildWorkingDirectory}" />
+      </filterset>
+    </copy>
+    <testng
+        classpathref="testng.classpath"
+        >
+      <jvmarg value=
+              "-DPROPS_FILE=WEB-INF/classes/toolkit-h2-bamboo.properties" />
+      <jvmarg
+          value="-DPROPS_FILE_CLIENT_MODE=conf/toolkit-h2-bamboo.properties" />
+      <jvmarg
+          value="-DREGISTRY_PROPS_FILE=WEB-INF/classes/registry-h2-bamboo.properties" />
+      <jvmarg
+          value="-DROLES_PROPS_FILE=WEB-INF/classes/roles-h2-bamboo.properties" />
+      <jvmarg
+          value="-DVERSION_PROPS_FILE=conf/version.properties" />
+      <xmlfileset dir="src/test/resources" includes="arquillian-generate-swagger.xml"/>
+    </testng>
   </target>
 
   <!-- Automated testing, with test coverage -->

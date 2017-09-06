@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
+
+<suite name="Vocab Registry swagger.json generation">
+
+  <!-- To run this suite, you must pass in a Java command line option
+       that specifies the location of a properties file.
+       E.g.,
+       -DPROPS_FILE=conf/toolkit-h2-bamboo.properties
+       -->
+
+  <!-- Separate test group used for initialization. Needed
+       to ensure that this work is done _before_ the container is
+       started by Arquillian. -->
+  <test name="Sesame setup" preserve-order="true">
+    <groups>
+      <run>
+        <include name="sesame" />
+      </run>
+    </groups>
+    <classes>
+      <class name="au.org.ands.vocabs.toolkit.test.arquillian.SesameTests" />
+   </classes>
+  </test>
+
+  <!-- Generate swagger.json. -->
+  <test name="Generate swagger.json" preserve-order="true">
+    <groups>
+      <run>
+        <!-- Need to include the special "arquillian" group
+             in order to make Arquillian "kick in"!
+             See https://issues.jboss.org/browse/ARQ-127
+        -->
+        <include name="arquillian" />
+        <include name="swagger" />
+      </run>
+    </groups>
+    <classes>
+      <class name="au.org.ands.vocabs.registry.api.context.GenerateSwaggerJson" />
+   </classes>
+  </test>
+
+</suite>
