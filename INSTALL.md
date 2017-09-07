@@ -91,7 +91,9 @@ GRANT ALL PRIVILEGES ON `vocabs_registry`.* TO 'registry-user'@'localhost';
 
 ## Create Registry database tables
 
-~/tools/dist/liquibase-3.5.3/liquibase --defaultsFile=conf/registry-liquibase.properties dropAll; ant -Dregistrydb-properties=conf/registry-liquibase.properties registry-database-update
+```
+tools/dist/liquibase-3.5.3/liquibase --defaultsFile=conf/registry-liquibase.properties dropAll; ant -Dregistrydb-properties=conf/registry-liquibase.properties registry-database-update
+```
 
 # Build the Toolkit/Registry web application
 
@@ -117,9 +119,11 @@ To proceed, the web application must have been successfully deployed.
 Migrate the content from the "old-style" database into the new, blank
 Registry database:
 
+```
 wget -O - http://localhost:8080/registry-context/registry/internal/migrateToolkitToRegistry
+```
 
-# Define PoolParty server
+# Define PoolParty server for the Registry
 
 Connect to the MySQL Registry database as the `registry-user` user.
 
