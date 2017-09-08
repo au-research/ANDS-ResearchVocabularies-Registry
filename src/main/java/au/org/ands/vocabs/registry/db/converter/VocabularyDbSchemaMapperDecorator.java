@@ -3,6 +3,9 @@
 package au.org.ands.vocabs.registry.db.converter;
 
 import java.util.List;
+import java.util.Map;
+
+import javax.ws.rs.core.MultivaluedMap;
 
 import au.org.ands.vocabs.registry.db.dao.VocabularyRelatedEntityDAO;
 import au.org.ands.vocabs.registry.db.dao.VocabularyRelatedVocabularyDAO;
@@ -46,15 +49,23 @@ public abstract class VocabularyDbSchemaMapperDecorator
             target = delegate.sourceToTarget(source);
 
         // Related entity refs.
-        List<VocabularyRelatedEntity> vreList =
+        MultivaluedMap<Integer, VocabularyRelatedEntity> vreMap =
                 VocabularyRelatedEntityDAO.
                 getCurrentVocabularyRelatedEntitiesForVocabulary(
                         source.getVocabularyId());
         List<RelatedEntityRef> rerList = target.getRelatedEntityRef();
         VocabularyRelatedEntityDbSchemaMapper vredbMapper =
                 VocabularyRelatedEntityDbSchemaMapper.INSTANCE;
-        for (VocabularyRelatedEntity vre : vreList) {
-            rerList.add(vredbMapper.sourceToTarget(vre));
+        for (Map.Entry<Integer, List<VocabularyRelatedEntity>>
+            vreMapElement : vreMap.entrySet()) {
+            RelatedEntityRef reRef = null;
+            for (VocabularyRelatedEntity vre : vreMapElement.getValue()) {
+                if (reRef == null) {
+                    reRef = vredbMapper.sourceToTarget(vre);
+                }
+                reRef.getRelation().add(vre.getRelation());
+            }
+            rerList.add(reRef);
         }
 
         // Related vocabulary refs.

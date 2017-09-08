@@ -5,10 +5,8 @@ package au.org.ands.vocabs.registry.api.validation;
 import static au.org.ands.vocabs.registry.api.validation.CheckNewVocabulary.INTERFACE_NAME;
 
 import java.lang.invoke.MethodHandles;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Set;
 
 import javax.validation.ConstraintValidator;
@@ -23,7 +21,6 @@ import au.org.ands.vocabs.registry.db.dao.VocabularyDAO;
 import au.org.ands.vocabs.registry.db.entity.RelatedEntity;
 import au.org.ands.vocabs.registry.enums.ApSource;
 import au.org.ands.vocabs.registry.enums.RelatedEntityRelation;
-import au.org.ands.vocabs.registry.enums.RelatedVocabularyRelation;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.AccessPoint;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.ApApiSparql;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.ApSissvoc;
@@ -32,7 +29,6 @@ import au.org.ands.vocabs.registry.schema.vocabulary201701.Version;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.Vocabulary;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.Vocabulary.PoolpartyProject;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.Vocabulary.RelatedEntityRef;
-import au.org.ands.vocabs.registry.schema.vocabulary201701.Vocabulary.RelatedVocabularyRef;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.Vocabulary.Subject;
 import au.org.ands.vocabs.registry.utils.SlugGenerator;
 
@@ -358,20 +354,31 @@ public class CheckNewVocabularyImpl
         // revisionCycle: optional
 
         // relatedEntityRef
-        boolean validRelatedEntities = false;
-        // We keep track of the related entity relations we've seen
-        // for each related entity. At the end, we will check that
-        // there were no duplicate pairs (related entity, relation).
-        Map<Integer, Set<RelatedEntityRelation>> allRERefs = new HashMap<>();
+        // Boolean to keep track of when we have seen a publisher.
+        boolean publisherSeen = false;
+        // We keep track of the related entity relations we've seen.
+        // As we go, we check that there are no dupliate related entity ids.
+        // For each related entity, we check that there are no duplicate
+        // relations.
+        // Set of RE IDs we have seen.
+        Set<Integer> reIDs = new HashSet<>();
         int reIndex = 0;
         for (Iterator<RelatedEntityRef> it =
                 newVocabulary.getRelatedEntityRef().iterator();
                 it.hasNext(); reIndex++) {
             RelatedEntityRef reRef = it.next();
-            if (!allRERefs.containsKey(reRef.getId())) {
-                allRERefs.put(reRef.getId(), new HashSet<>());
+            // Check not a previously-seen ID.
+            if (reIDs.contains(reRef.getId())) {
+                valid = false;
+                constraintContext.buildConstraintViolationWithTemplate(
+                    "{" + INTERFACE_NAME
+                    + ".relatedEntityRef.duplicateID}").
+                addPropertyNode("relatedEntityRef").addBeanNode().inIterable().
+                atIndex(reIndex).
+                addConstraintViolation();
             }
-            allRERefs.get(reRef.getId()).add(reRef.getRelation());
+            reIDs.add(reRef.getId());
+            // Check for an existing RE.
             RelatedEntity re =
                     RelatedEntityDAO.getCurrentRelatedEntityByRelatedEntityId(
                             reRef.getId());
@@ -385,99 +392,49 @@ public class CheckNewVocabularyImpl
                 addConstraintViolation();
                 continue;
             }
-            // NB: If the relation type specified in the input is not even
-            // in the enumerated type (e.g., it is misspelled), then
-            // reRef.getRelation() returns null ... and you correctly
-            // get an error generated for this.
-            if (!ValidationUtils.isAllowedRelation(re.getType(),
-                    reRef.getRelation())) {
-                valid = false;
-                constraintContext.buildConstraintViolationWithTemplate(
+
+            // Check no duplicate relations, and that each is allowed.
+            // Set of relations we have seen for this RE.
+            Set<RelatedEntityRelation> reRelations = new HashSet<>();
+            for (RelatedEntityRelation relation : reRef.getRelation()) {
+                if (reRelations.contains(relation)) {
+                    valid = false;
+                    constraintContext.buildConstraintViolationWithTemplate(
                         "{" + INTERFACE_NAME
-                        + ".relatedEntityRef.badRelation}").
-                addPropertyNode("relatedEntityRef").addBeanNode().inIterable().
-                atIndex(reIndex).
-                addConstraintViolation();
-                continue;
-            }
-            if (reRef.getRelation() == RelatedEntityRelation.PUBLISHED_BY) {
-                validRelatedEntities = true;
+                        + ".relatedEntityRef.duplicateRelation}").
+                    addPropertyNode("relatedEntityRef").
+                    addBeanNode().inIterable().atIndex(reIndex).
+                    addConstraintViolation();
+                }
+                reRelations.add(relation);
+                // NB: If the relation type specified in the input is not even
+                // in the enumerated type (e.g., it is misspelled), then
+                // reRef.getRelation() returns null ... and you correctly
+                // get an error generated for this.
+                if (!ValidationUtils.isAllowedRelation(re.getType(),
+                        relation)) {
+                    valid = false;
+                    constraintContext.buildConstraintViolationWithTemplate(
+                            "{" + INTERFACE_NAME
+                            + ".relatedEntityRef.badRelation}").
+                    addPropertyNode("relatedEntityRef").addBeanNode().
+                    inIterable().atIndex(reIndex).
+                    addConstraintViolation();
+                    continue;
+                }
+                if (relation == RelatedEntityRelation.PUBLISHED_BY) {
+                    publisherSeen = true;
+                }
             }
         }
-        if (!validRelatedEntities) {
+
+        // Ensure at least one publisher has been specified.
+        if (!publisherSeen) {
             valid = false;
             constraintContext.buildConstraintViolationWithTemplate(
                 "{" + INTERFACE_NAME
                 + ".relatedEntityRef.noPublisher}").
             addPropertyNode("relatedEntityRef").
-            addConstraintViolation();
-        }
-        // Add up the sizes of all the Sets within allRERefs.
-        int totalRefs = allRERefs.values().stream().
-                map(s -> s.size()).reduce(0, (a, b) -> a + b);
-        if (totalRefs != newVocabulary.getRelatedEntityRef().size()) {
-            // There's a duplicate instance of a relation to a related entity.
-            valid = false;
-            constraintContext.buildConstraintViolationWithTemplate(
-                "{" + INTERFACE_NAME
-                + ".relatedEntityRef.duplicate}").
-            addPropertyNode("relatedEntityRef").
-            addConstraintViolation();
-        }
-
-        // relatedVocabularyRef
-        // We keep track of the related vocabulary relations we've seen
-        // for each related vocabulary. At the end, we will check that
-        // there were no duplicate pairs (related vocabulary, relation).
-        Map<Integer, Set<RelatedVocabularyRelation>> allRVRefs =
-                new HashMap<>();
-        int rvIndex = 0;
-        for (Iterator<RelatedVocabularyRef> it =
-                newVocabulary.getRelatedVocabularyRef().iterator();
-                it.hasNext(); reIndex++) {
-            RelatedVocabularyRef rvRef = it.next();
-            if (!allRVRefs.containsKey(rvRef.getId())) {
-                allRVRefs.put(rvRef.getId(), new HashSet<>());
-            }
-            allRVRefs.get(rvRef.getId()).add(rvRef.getRelation());
-            au.org.ands.vocabs.registry.db.entity.Vocabulary vocab =
-                    VocabularyDAO.getCurrentVocabularyByVocabularyId(
-                            rvRef.getId());
-            if (vocab == null) {
-                valid = false;
-                constraintContext.buildConstraintViolationWithTemplate(
-                    "{" + INTERFACE_NAME
-                    + ".relatedVocabularyRef.unknown}").
-                addPropertyNode("relatedVocabularyRef").addBeanNode().
-                inIterable().atIndex(rvIndex).
-                addConstraintViolation();
-                continue;
-            }
-            // NB: If the relation type specified in the input is not even
-            // in the enumerated type (e.g., it is misspelled), then
-            // reRef.getRelation() returns null ... and you correctly
-            // get an error generated for this.
-            if (rvRef.getRelation() == null) {
-                valid = false;
-                constraintContext.buildConstraintViolationWithTemplate(
-                        "{" + INTERFACE_NAME
-                        + ".relatedVocabularyRef.badRelation}").
-                addPropertyNode("relatedVocabularyRef").addBeanNode().
-                inIterable().atIndex(reIndex).
-                addConstraintViolation();
-                continue;
-            }
-        }
-        // Add up the sizes of all the Sets within allRVRefs.
-        totalRefs = allRVRefs.values().stream().
-                map(s -> s.size()).reduce(0, (a, b) -> a + b);
-        if (totalRefs != newVocabulary.getRelatedVocabularyRef().size()) {
-            // There's a duplicate instance of a relation to a related entity.
-            valid = false;
-            constraintContext.buildConstraintViolationWithTemplate(
-                "{" + INTERFACE_NAME
-                + ".relatedVocabularyRef.duplicate}").
-            addPropertyNode("relatedVocabularyRef").
             addConstraintViolation();
         }
 

@@ -332,13 +332,14 @@
           #AND_TEMPORAL_QUERY_VALID_SUFFIX
         </queryText>
         <method>    /** Get all current VocabularyRelatedEntity instances for
-     * a vocabulary.
+     * a vocabulary. The results are grouped by relatedEntityId.
      * @param vocabularyId The vocabulary id for which vocabulary related
      *     entities are to be looked up.
      * @return An list of all VocabularyRelatedEntity instances for
      *     the vocabulary.
      */
-    public static List&lt;VocabularyRelatedEntity&gt;
+    public static javax.ws.rs.core.MultivaluedMap&lt;
+            Integer, VocabularyRelatedEntity&gt;
         getCurrentVocabularyRelatedEntitiesForVocabulary(
                 final int vocabularyId) {
         EntityManager em = DBContext.getEntityManager();
@@ -352,7 +353,12 @@
         q = TemporalUtils.setDatetimeConstantParameters(q);
         List&lt;VocabularyRelatedEntity&gt; entityList = q.getResultList();
         em.close();
-        return entityList;
+        javax.ws.rs.core.MultivaluedMap&lt;Integer, VocabularyRelatedEntity&gt;
+        result = new javax.ws.rs.core.MultivaluedHashMap&lt;&gt;();
+        for (VocabularyRelatedEntity vre : entityList) {
+            result.add(vre.getRelatedEntityId(), vre);
+        }
+        return result;
     }
 
 </method>
