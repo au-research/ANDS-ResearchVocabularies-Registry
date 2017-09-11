@@ -27,4 +27,16 @@ public final class ResponseUtils {
         return Response.status(Response.Status.FORBIDDEN).
                 entity(new ErrorResult(NOT_AUTHORIZED_FOR_OWNER)).build();
     }
+
+    /** Generate a response with status code
+     * {@link Response.Status#INTERNAL_SERVER_ERROR}
+     * and body that explains something about the error.
+     * @param message The error message.
+     * @return The generated Response.
+     */
+    public static Response generateInternalServerError(final String message) {
+        return Response.serverError().
+                entity(new ErrorResult(message)).build();
+    }
+
 }

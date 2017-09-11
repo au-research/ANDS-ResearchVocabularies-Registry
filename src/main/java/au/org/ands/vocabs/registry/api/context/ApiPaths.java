@@ -35,6 +35,12 @@ public final class ApiPaths {
     /** Subpath for related entity resources. */
     public static final String RELATED_ENTITIES = "relatedEntities";
 
+    /** Subpath for version artefact resources. */
+    public static final String VERSION_ARTEFACTS = "versionArtefacts";
+
+    /** Subpath for version artefact resources that are concept trees. */
+    public static final String VERSION_ARTEFACTS_CONCEPT_TREE = "conceptTree";
+
     /** Subpath for file uploads. */
     public static final String UPLOADS = "uploads";
 

@@ -94,6 +94,53 @@
     <idKey keyColumn="version_artefact_id" entityName="VersionArtefactId" />
     <column db="status" enum="VersionArtefactStatus" />
     <column db="type" enum="VersionArtefactType" />
+    <foreignKeyQueries>
+      <foreignKeyQuery keyColumn="versionId" entityName="Version" />
+    </foreignKeyQueries>
+    <extraQueries>
+      <extraQuery name="GET_CURR_VA_LIST_FOR_VERSION_BY_TYPE">
+        <extraQueryParameter name="versionId" />
+        <extraQueryParameter name="vaType" />
+        <queryText temporal="true">
+          SELECT entity FROM VersionArtefact entity
+          WHERE entity.versionId = :versionId
+          AND entity.type = :vaType
+          #AND_TEMPORAL_QUERY_VALID_SUFFIX
+        </queryText>
+        <method>    /** Get all current VersionArtefact instances for a Version,
+         that are of a specified VersionArtefactType.
+     * @param id The Version.
+     * @param vaType The VersionArtefactType.
+     * @return The list of current VersionArtefact
+     *     instances for this Version, that are of type vaType.
+     */
+    public static List&lt;VersionArtefact&gt;
+    getCurrentVersionArtefactListForVersionByType(
+            final Integer id,
+            final au.org.ands.vocabs.registry.enums.VersionArtefactType
+                vaType) {
+        EntityManager em = DBContext.getEntityManager();
+        TypedQuery&lt;VersionArtefact&gt; q = em.createNamedQuery(
+                VersionArtefact.
+                    GET_CURR_VA_LIST_FOR_VERSION_BY_TYPE,
+                VersionArtefact.class).
+                setParameter(
+                        VersionArtefact.
+                            GET_CURR_VA_LIST_FOR_VERSION_BY_TYPE_VERSIONID,
+                        id).
+                setParameter(
+                        VersionArtefact.
+                            GET_CURR_VA_LIST_FOR_VERSION_BY_TYPE_VATYPE,
+                        vaType);
+        q = TemporalUtils.setDatetimeConstantParameters(q);
+        List&lt;VersionArtefact&gt; entityList = q.getResultList();
+        em.close();
+        return entityList;
+    }
+
+</method>
+      </extraQuery>
+    </extraQueries>
   </map>
   <map tableName="access_points"
        entityName="AccessPoint"

@@ -130,7 +130,8 @@
     <xs:element name="version-artefact-json">
         <xs:complexType>
             <xs:choice>
-                <xs:element name="va-concepts-list" type="va-concept-list"/>
+                <xs:element name="va-concept-list" type="va-concept-list"/>
+                <xs:element name="va-concept-tree" type="va-concept-tree"/>
             </xs:choice>
         </xs:complexType>
     </xs:element>
