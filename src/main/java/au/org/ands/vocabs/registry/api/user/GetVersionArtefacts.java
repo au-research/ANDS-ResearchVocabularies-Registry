@@ -115,10 +115,11 @@ public class GetVersionArtefacts {
      * @return The concept tree, in JSON format. */
     @Path(ApiPaths.VERSION_ID + "/" + ApiPaths.VERSION_ARTEFACTS
             + "/" + ApiPaths.VERSION_ARTEFACTS_CONCEPT_TREE)
-    @Produces({MediaType.APPLICATION_JSON})
+    @Produces({MediaType.TEXT_PLAIN})
     @GET
     @ApiOperation(value = "Get the current concept tree of a version, "
-            + "by its version id.")
+            + "by its version id.",
+            response = String.class)
     @ApiResponses(value = {
             @ApiResponse(code = HttpStatus.SC_BAD_REQUEST,
                     message = "No current concept tree for that version",
