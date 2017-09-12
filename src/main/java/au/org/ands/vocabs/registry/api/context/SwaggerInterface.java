@@ -75,6 +75,11 @@ public interface SwaggerInterface {
      * {@link io.swagger.annotations.Api} annotations. */
     String TAG_RESOURCES = "resources";
 
+    /** The name of the tag used to group service methods.
+     * Use this within
+     * {@link io.swagger.annotations.Api} annotations. */
+    String TAG_SERVICES = "services";
+
     /** The name of the tag used to group utility methods.
      * Use this within
      * {@link io.swagger.annotations.Api} annotations. */
