@@ -73,7 +73,6 @@ public class GetVocabularies {
      * @return The list of vocabularies, in either XML or JSON format. */
     @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     @GET
-//    @Pac4JSecurity(authorizers = AuthConstants.IS_AUTHENTICATED)
     @ApiOperation(value = "Get all the current vocabularies. This includes "
             + "both published and deprecated vocabularies.")
     public final VocabularyList getVocabularies(
