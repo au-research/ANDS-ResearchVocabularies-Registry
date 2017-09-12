@@ -25,7 +25,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import au.org.ands.vocabs.registry.api.context.ApiPaths;
-import au.org.ands.vocabs.registry.api.context.ResponseUtils;
 import au.org.ands.vocabs.registry.api.context.SwaggerInterface;
 import au.org.ands.vocabs.registry.db.converter.JSONSerialization;
 import au.org.ands.vocabs.registry.db.converter.VersionArtefactDbSchemaMapper;
@@ -122,8 +121,8 @@ public class GetVersionArtefacts {
             response = String.class)
     @ApiResponses(value = {
             @ApiResponse(code = HttpStatus.SC_BAD_REQUEST,
-                    message = "No current concept tree for that version",
-                    response = ErrorResult.class)
+                    message = "No current concept tree for that version.",
+                    response = String.class)
             })
     public final Response getVersionArtefactConceptTree(
             @Context final HttpServletRequest request,
@@ -143,7 +142,7 @@ public class GetVersionArtefacts {
 
         if (dbVAs == null || dbVAs.isEmpty()) {
             return Response.status(Status.BAD_REQUEST).entity(
-                    new ErrorResult("No concept tree for that version")).
+                    "No current concept tree for that version.").
                     build();
         }
 
@@ -161,7 +160,8 @@ public class GetVersionArtefacts {
         if (!conceptTreeFile.exists()) {
             logger.info("getVersionArtefactConceptTree: file not found: "
                     + conceptTree.getPath());
-            return ResponseUtils.generateInternalServerError("File not found");
+            return Response.serverError().entity("Internal error: "
+                    + "file not found.").build();
         }
 
         Logging.logRequest(true, request, uriInfo, null,
