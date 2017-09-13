@@ -70,6 +70,14 @@ in subsequent steps as `registry-url`, `registry-user`, and
 Create `conf/registry-liquibase.properties`. You may base it on
 `registry-liquibase.properties.sample`.
 
+In order to create the tables in the registry database, the database
+user must have the "CREATE" privilege. If the database user used by
+the Registry web app does not have that privilege, create another
+`registry-liquibase-superuser.properties` configuration file that
+specifies the username and password of a database user that has the
+necessary privileges. Then, specify that configuration file in the
+Liquibase command line.
+
 ## Create Roles configuration
 
 Create `conf/roles.properties`. You may base it on
@@ -93,6 +101,13 @@ GRANT ALL PRIVILEGES ON `vocabs_registry`.* TO 'registry-user'@'localhost';
 
 ```
 tools/dist/liquibase-3.5.3/liquibase --defaultsFile=conf/registry-liquibase.properties dropAll; ant -Dregistrydb-properties=conf/registry-liquibase.properties registry-database-update
+```
+
+Or, if you have created a `registry-liquibase-superuser.properties`
+configuration file as mentioned above, use it as follows:
+
+```
+tools/dist/liquibase-3.5.3/liquibase --defaultsFile=registry-liquibase-superuser.properties dropAll; ant -Dregistrydb-properties=registry-liquibase-superuser.properties registry-database-update
 ```
 
 # Build the Toolkit/Registry web application
