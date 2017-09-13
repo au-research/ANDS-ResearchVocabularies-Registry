@@ -48,9 +48,11 @@ import io.swagger.annotations.Tag;
                 SwaggerDefinition.Scheme.HTTPS},
         tags = {
                 @Tag(name = SwaggerInterface.TAG_RESOURCES,
-                     description = "Operations with resources"),
+                        description = "Operations with resources"),
+                @Tag(name = SwaggerInterface.TAG_SERVICES,
+                        description = "Service methods"),
                 @Tag(name = SwaggerInterface.TAG_UTILITIES,
-                description = "Utility methods")
+                        description = "Utility methods")
         },
         externalDocs = @ExternalDocs(
                 value = "Research Vocabularies Australia",
