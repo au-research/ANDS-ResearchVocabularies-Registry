@@ -21,9 +21,13 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 
 import org.apache.http.HttpStatus;
+import org.pac4j.core.profile.CommonProfile;
+import org.pac4j.jax.rs.annotations.Pac4JProfile;
+import org.pac4j.jax.rs.annotations.Pac4JSecurity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import au.org.ands.vocabs.registry.api.auth.AuthUtils;
 import au.org.ands.vocabs.registry.api.context.ApiPaths;
 import au.org.ands.vocabs.registry.api.context.SwaggerInterface;
 import au.org.ands.vocabs.registry.db.converter.AccessPointDbSchemaMapper;
@@ -51,6 +55,7 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import io.swagger.annotations.ResponseHeader;
 
 /** REST web services for getting vocabularies. */
 @Path(ApiPaths.API_RESOURCE + "/" + ApiPaths.VOCABULARIES)
@@ -241,6 +246,54 @@ public class GetVocabularies {
 
         Logging.logRequest(true, request, uriInfo, null, "Get a vocabulary");
         return Response.ok().entity(outputVocabulary).build();
+    }
+
+    /** Query if the user profile is authorized to modify the
+     * current instance of a vocabulary, by its vocabulary id.
+     * @param request The HTTP request.
+     * @param uriInfo The UriInfo of the request.
+     * @param profile The caller's security profile.
+     * @param vocabularyId The VocabularyId of the vocabulary to be fetched.
+     *      related entity elements.
+     * @return A SimpleResult containing a Boolean result indicating if
+     *      the user is authorized. */
+    @Path(ApiPaths.VOCABULARY_ID + "/owns")
+    @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+    @Pac4JSecurity
+    @GET
+    @ApiOperation(value = "Query if the user has authorization to modify "
+            + "the current vocabulary. A Boolean result will be returned.",
+            response = SimpleResult.class)
+    @ApiResponses(value = {
+            @ApiResponse(code = HttpStatus.SC_BAD_REQUEST,
+                    message = "No vocabulary with that id",
+                    response = ErrorResult.class),
+            @ApiResponse(code = HttpStatus.SC_UNAUTHORIZED,
+                    message = "Not authenticated",
+                    response = ErrorResult.class,
+                    responseHeaders = {
+                            @ResponseHeader(name = "WWW-Authenticate",
+                                    response = String.class)
+                    })
+            })
+    public final Response ownsVocabularyById(
+            @Context final HttpServletRequest request,
+            @Context final UriInfo uriInfo,
+            @ApiParam(hidden = true) @Pac4JProfile final CommonProfile profile,
+            @ApiParam(value = "The ID of the vocabulary to check ownership")
+            @PathParam("vocabularyId") final Integer vocabularyId) {
+        logger.debug("called ownsVocabularyById: " + vocabularyId);
+        au.org.ands.vocabs.registry.db.entity.Vocabulary
+            dbVocabulary = VocabularyDAO.getCurrentVocabularyByVocabularyId(
+                    vocabularyId);
+        if (dbVocabulary == null) {
+            return Response.status(Status.BAD_REQUEST).entity(
+                    new ErrorResult("No vocabulary with that id")).build();
+        }
+
+        return Response.ok().entity(new SimpleResult(
+                AuthUtils.ownerIsAuthorizedByOrganisationOrUsername(profile,
+                dbVocabulary.getOwner()))).build();
     }
 
     /** Determine if a vocabulary has a draft instance.
