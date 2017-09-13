@@ -21,6 +21,7 @@ import au.org.ands.vocabs.registry.db.dao.VocabularyDAO;
 import au.org.ands.vocabs.registry.db.entity.RelatedEntity;
 import au.org.ands.vocabs.registry.enums.ApSource;
 import au.org.ands.vocabs.registry.enums.RelatedEntityRelation;
+import au.org.ands.vocabs.registry.enums.RelatedVocabularyRelation;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.AccessPoint;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.ApApiSparql;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.ApSissvoc;
@@ -29,6 +30,7 @@ import au.org.ands.vocabs.registry.schema.vocabulary201701.Version;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.Vocabulary;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.Vocabulary.PoolpartyProject;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.Vocabulary.RelatedEntityRef;
+import au.org.ands.vocabs.registry.schema.vocabulary201701.Vocabulary.RelatedVocabularyRef;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.Vocabulary.Subject;
 import au.org.ands.vocabs.registry.utils.SlugGenerator;
 
@@ -357,7 +359,7 @@ public class CheckNewVocabularyImpl
         // Boolean to keep track of when we have seen a publisher.
         boolean publisherSeen = false;
         // We keep track of the related entity relations we've seen.
-        // As we go, we check that there are no dupliate related entity ids.
+        // As we go, we check that there are no duplicate related entity ids.
         // For each related entity, we check that there are no duplicate
         // relations.
         // Set of RE IDs we have seen.
@@ -394,7 +396,7 @@ public class CheckNewVocabularyImpl
             }
 
             // Check no duplicate relations, and that each is allowed.
-            // Set of relations we have seen for this RE.
+            // Set of _valid_ relations we have seen for this RE.
             Set<RelatedEntityRelation> reRelations = new HashSet<>();
             for (RelatedEntityRelation relation : reRef.getRelation()) {
                 if (reRelations.contains(relation)) {
@@ -406,13 +408,14 @@ public class CheckNewVocabularyImpl
                     addBeanNode().inIterable().atIndex(reIndex).
                     addConstraintViolation();
                 }
-                reRelations.add(relation);
                 // NB: If the relation type specified in the input is not even
                 // in the enumerated type (e.g., it is misspelled), then
                 // reRef.getRelation() returns null ... and you correctly
                 // get an error generated for this.
-                if (!ValidationUtils.isAllowedRelation(re.getType(),
+                if (ValidationUtils.isAllowedRelation(re.getType(),
                         relation)) {
+                    reRelations.add(relation);
+                } else {
                     valid = false;
                     constraintContext.buildConstraintViolationWithTemplate(
                             "{" + INTERFACE_NAME
@@ -426,6 +429,15 @@ public class CheckNewVocabularyImpl
                     publisherSeen = true;
                 }
             }
+            if (reRelations.isEmpty()) {
+                valid = false;
+                constraintContext.buildConstraintViolationWithTemplate(
+                    "{" + INTERFACE_NAME
+                    + ".relatedEntityRef.noRelation}").
+                addPropertyNode("relatedEntityRef").
+                addBeanNode().inIterable().atIndex(reIndex).
+                addConstraintViolation();
+            }
         }
 
         // Ensure at least one publisher has been specified.
@@ -436,6 +448,85 @@ public class CheckNewVocabularyImpl
                 + ".relatedEntityRef.noPublisher}").
             addPropertyNode("relatedEntityRef").
             addConstraintViolation();
+        }
+
+        // relatedVocabularyRef
+        // We keep track of the related vocabulary relations we've seen.
+        // As we go, we check that there are no duplicate vocabulary ids.
+        // For each related vocabulary, we check that there are no duplicate
+        // relations.
+        // Set of vocabulary IDs we have seen.
+        Set<Integer> rvIDs = new HashSet<>();
+        int rvIndex = 0;
+        for (Iterator<RelatedVocabularyRef> it =
+                newVocabulary.getRelatedVocabularyRef().iterator();
+                it.hasNext(); rvIndex++) {
+            RelatedVocabularyRef rvRef = it.next();
+            // Check not a previously-seen ID.
+            if (rvIDs.contains(rvRef.getId())) {
+                valid = false;
+                constraintContext.buildConstraintViolationWithTemplate(
+                    "{" + INTERFACE_NAME
+                    + ".relatedVocabularyRef.duplicateID}").
+                addPropertyNode("relatedVocabularyRef").addBeanNode().
+                inIterable().atIndex(rvIndex).
+                addConstraintViolation();
+            }
+            rvIDs.add(rvRef.getId());
+            // Check for an existing vocabulary.
+            au.org.ands.vocabs.registry.db.entity.Vocabulary rv =
+                    VocabularyDAO.getCurrentVocabularyByVocabularyId(
+                            rvRef.getId());
+            if (rv == null) {
+                valid = false;
+                constraintContext.buildConstraintViolationWithTemplate(
+                    "{" + INTERFACE_NAME
+                    + ".relatedVocabularyRef.unknown}").
+                addPropertyNode("relatedVocabularyRef").addBeanNode().
+                inIterable().atIndex(rvIndex).
+                addConstraintViolation();
+                continue;
+            }
+
+            // Check no duplicate relations, and that each is allowed.
+            // Set of _valid_ relations we have seen for this vocabulary.
+            Set<RelatedVocabularyRelation> rvRelations = new HashSet<>();
+            for (RelatedVocabularyRelation relation : rvRef.getRelation()) {
+                if (rvRelations.contains(relation)) {
+                    valid = false;
+                    constraintContext.buildConstraintViolationWithTemplate(
+                        "{" + INTERFACE_NAME
+                        + ".relatedVocabularyRef.duplicateRelation}").
+                    addPropertyNode("relatedVocabularyRef").
+                    addBeanNode().inIterable().atIndex(rvIndex).
+                    addConstraintViolation();
+                }
+                // NB: If the relation type specified in the input is not even
+                // in the enumerated type (e.g., it is misspelled), then
+                // reRef.getRelation() returns null ... and you correctly
+                // get an error generated for this.
+                if (ValidationUtils.isAllowedRelation(relation)) {
+                    rvRelations.add(relation);
+                } else {
+                    valid = false;
+                    constraintContext.buildConstraintViolationWithTemplate(
+                            "{" + INTERFACE_NAME
+                            + ".relatedVocabularyRef.badRelation}").
+                    addPropertyNode("relatedVocabularyRef").addBeanNode().
+                    inIterable().atIndex(rvIndex).
+                    addConstraintViolation();
+                    continue;
+                }
+            }
+            if (rvRelations.isEmpty()) {
+                valid = false;
+                constraintContext.buildConstraintViolationWithTemplate(
+                    "{" + INTERFACE_NAME
+                    + ".relatedVocabularyRef.noRelation}").
+                addPropertyNode("relatedVocabularyRef").
+                addBeanNode().inIterable().atIndex(rvIndex).
+                addConstraintViolation();
+            }
         }
 
         // version

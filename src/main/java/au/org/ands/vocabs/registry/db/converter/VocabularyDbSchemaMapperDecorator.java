@@ -69,15 +69,23 @@ public abstract class VocabularyDbSchemaMapperDecorator
         }
 
         // Related vocabulary refs.
-        List<VocabularyRelatedVocabulary> vrvList =
+        MultivaluedMap<Integer, VocabularyRelatedVocabulary> vrvMap =
                 VocabularyRelatedVocabularyDAO.
                 getCurrentVocabularyRelatedVocabulariesForVocabulary(
                         source.getVocabularyId());
         List<RelatedVocabularyRef> rvrList = target.getRelatedVocabularyRef();
         VocabularyRelatedVocabularyDbSchemaMapper vrvdbMapper =
                 VocabularyRelatedVocabularyDbSchemaMapper.INSTANCE;
-        for (VocabularyRelatedVocabulary vrv : vrvList) {
-            rvrList.add(vrvdbMapper.sourceToTarget(vrv));
+        for (Map.Entry<Integer, List<VocabularyRelatedVocabulary>>
+            vrvMapElement : vrvMap.entrySet()) {
+            RelatedVocabularyRef rvRef = null;
+            for (VocabularyRelatedVocabulary vrv : vrvMapElement.getValue()) {
+                if (rvRef == null) {
+                    rvRef = vrvdbMapper.sourceToTarget(vrv);
+                }
+                rvRef.getRelation().add(vrv.getRelation());
+            }
+            rvrList.add(rvRef);
         }
 
         // And last, the JSON.

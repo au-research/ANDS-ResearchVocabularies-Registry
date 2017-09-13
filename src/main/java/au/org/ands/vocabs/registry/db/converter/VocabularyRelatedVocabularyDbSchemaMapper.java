@@ -15,11 +15,13 @@ public interface VocabularyRelatedVocabularyDbSchemaMapper {
             Mappers.getMapper(VocabularyRelatedVocabularyDbSchemaMapper.class);
 
     /** MapStruct-generated Mapper from VocabularyRelatedVocabulary
-     * database to schema.
+     * database to schema. Note especially that relations are <i>not</i>
+     * mapped here!
      * @param source The VocabularyRelatedVocabulary entity from the database.
      * @return The schema version of the related vocabulary reference.
      */
     @Mapping(source = "relatedVocabularyId", target = "id")
+    @Mapping(target = "relation", ignore = true)
     au.org.ands.vocabs.registry.schema.vocabulary201701.
     Vocabulary.RelatedVocabularyRef
         sourceToTarget(

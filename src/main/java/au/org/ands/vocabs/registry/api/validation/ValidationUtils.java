@@ -30,6 +30,7 @@ import org.slf4j.LoggerFactory;
 import au.org.ands.vocabs.registry.api.user.ValidationError;
 import au.org.ands.vocabs.registry.enums.RelatedEntityRelation;
 import au.org.ands.vocabs.registry.enums.RelatedEntityType;
+import au.org.ands.vocabs.registry.enums.RelatedVocabularyRelation;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.RelatedEntityIdentifier;
 import au.org.ands.vocabs.registry.utils.SlugGenerator;
 
@@ -537,9 +538,14 @@ public final class ValidationUtils {
         ALLOWED_RELATIONS_FOR_SERVICE = new HashSet<>();
 
     /** The set of allowed relations for related entities that are
-     * vocabularies. Initialized in a static block. */
+     * external vocabularies. Initialized in a static block. */
     private static final HashSet<RelatedEntityRelation>
-        ALLOWED_RELATIONS_FOR_VOCABULARY = new HashSet<>();
+        ALLOWED_RELATIONS_FOR_EXTERNAL_VOCABULARY = new HashSet<>();
+
+    /** The set of allowed relations for related entities that are
+     * internal vocabularies. Initialized in a static block. */
+    private static final HashSet<RelatedVocabularyRelation>
+        ALLOWED_RELATIONS_FOR_INTERNAL_VOCABULARY = new HashSet<>();
 
     static {
         // Business rules as specified in:
@@ -558,12 +564,23 @@ public final class ValidationUtils {
         ALLOWED_RELATIONS_FOR_SERVICE.add(
                 RelatedEntityRelation.IS_PRESENTED_BY);
 
-        ALLOWED_RELATIONS_FOR_VOCABULARY.add(RelatedEntityRelation.ENRICHES);
-        ALLOWED_RELATIONS_FOR_VOCABULARY.add(
+        ALLOWED_RELATIONS_FOR_EXTERNAL_VOCABULARY.add(
+                RelatedEntityRelation.ENRICHES);
+        ALLOWED_RELATIONS_FOR_EXTERNAL_VOCABULARY.add(
                 RelatedEntityRelation.HAS_ASSOCIATION_WITH);
-        ALLOWED_RELATIONS_FOR_VOCABULARY.add(
+        ALLOWED_RELATIONS_FOR_EXTERNAL_VOCABULARY.add(
                 RelatedEntityRelation.IS_DERIVED_FROM);
-        ALLOWED_RELATIONS_FOR_VOCABULARY.add(RelatedEntityRelation.IS_PART_OF);
+        ALLOWED_RELATIONS_FOR_EXTERNAL_VOCABULARY.add(
+                RelatedEntityRelation.IS_PART_OF);
+
+        ALLOWED_RELATIONS_FOR_INTERNAL_VOCABULARY.add(
+                RelatedVocabularyRelation.ENRICHES);
+        ALLOWED_RELATIONS_FOR_INTERNAL_VOCABULARY.add(
+                RelatedVocabularyRelation.HAS_ASSOCIATION_WITH);
+        ALLOWED_RELATIONS_FOR_INTERNAL_VOCABULARY.add(
+                RelatedVocabularyRelation.IS_DERIVED_FROM);
+        ALLOWED_RELATIONS_FOR_INTERNAL_VOCABULARY.add(
+                RelatedVocabularyRelation.IS_PART_OF);
     }
 
     /** Decide whether a vocabulary may have a particular relation with
@@ -582,12 +599,24 @@ public final class ValidationUtils {
         case SERVICE:
             return ALLOWED_RELATIONS_FOR_SERVICE.contains(relation);
         case VOCABULARY:
-            return ALLOWED_RELATIONS_FOR_VOCABULARY.contains(relation);
+            return ALLOWED_RELATIONS_FOR_EXTERNAL_VOCABULARY.contains(relation);
         default:
             // Can't happen.
             logger.error("isAllowedRelation: Unknown RelatedEntityType!");
             return false;
         }
+    }
+
+    /** Decide whether a vocabulary may have a particular relation with
+     * a related internal vocabulary, according to the business
+     * rules about relations.
+     * @param relation The relation being tested.
+     * @return true, if the vocabulary is allowed to have the relation
+     *      to the related vocabulary.
+     */
+    public static boolean isAllowedRelation(
+            final RelatedVocabularyRelation relation) {
+        return ALLOWED_RELATIONS_FOR_INTERNAL_VOCABULARY.contains(relation);
     }
 
     /** Determine if a string is a valid URL, i.e., has the

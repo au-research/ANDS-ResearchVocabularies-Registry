@@ -382,7 +382,7 @@
      * a vocabulary. The results are grouped by relatedEntityId.
      * @param vocabularyId The vocabulary id for which vocabulary related
      *     entities are to be looked up.
-     * @return An list of all VocabularyRelatedEntity instances for
+     * @return A multi-valued map of all VocabularyRelatedEntity instances for
      *     the vocabulary.
      */
     public static javax.ws.rs.core.MultivaluedMap&lt;
@@ -456,13 +456,14 @@
           #AND_TEMPORAL_QUERY_VALID_SUFFIX
         </queryText>
         <method>    /** Get all current VocabularyRelatedVocabulary
-     * instances for a vocabulary.
+     * instances for a vocabulary. The results are grouped by vocabularyId.
      * @param vocabularyId The vocabulary id for which vocabulary related
      *     vocabularies are to be looked up.
-     * @return An list of all VocabularyRelatedVocabulary instances for
-     *     the vocabulary.
+     * @return An multi-valued map of all VocabularyRelatedVocabulary
+     *     instances for the vocabulary.
      */
-    public static List&lt;VocabularyRelatedVocabulary&gt;
+    public static javax.ws.rs.core.MultivaluedMap&lt;
+            Integer, VocabularyRelatedVocabulary&gt;
         getCurrentVocabularyRelatedVocabulariesForVocabulary(
                 final int vocabularyId) {
         EntityManager em = DBContext.getEntityManager();
@@ -476,7 +477,13 @@
         q = TemporalUtils.setDatetimeConstantParameters(q);
         List&lt;VocabularyRelatedVocabulary&gt; entityList = q.getResultList();
         em.close();
-        return entityList;
+        javax.ws.rs.core.MultivaluedMap&lt;Integer,
+            VocabularyRelatedVocabulary&gt;
+        result = new javax.ws.rs.core.MultivaluedHashMap&lt;&gt;();
+        for (VocabularyRelatedVocabulary vrv : entityList) {
+            result.add(vrv.getVocabularyId(), vrv);
+        }
+        return result;
     }
 
 </method>
