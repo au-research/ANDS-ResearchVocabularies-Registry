@@ -76,6 +76,7 @@ public class AuthConfig implements ContextResolver<Config> {
 
         // For a successful login, fetch the user's roles.
         userpassClient.addAuthorizationGenerator(new AuthorizationFetcher());
+        rdaHeaderClient.addAuthorizationGenerator(new AuthorizationFetcher());
         rdaCookieClient.addAuthorizationGenerator(new AuthorizationFetcher());
 
         // The list of clients should match the value of
