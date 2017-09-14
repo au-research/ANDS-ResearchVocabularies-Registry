@@ -55,11 +55,14 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import io.swagger.annotations.Authorization;
 import io.swagger.annotations.ResponseHeader;
 
 /** REST web services for getting vocabularies. */
 @Path(ApiPaths.API_RESOURCE + "/" + ApiPaths.VOCABULARIES)
-@Api(value = SwaggerInterface.TAG_RESOURCES)
+@Api(value = SwaggerInterface.TAG_RESOURCES,
+        authorizations = {@Authorization(value = SwaggerInterface.BASIC_AUTH),
+        @Authorization(value = SwaggerInterface.API_KEY_AUTH)})
 public class GetVocabularies {
 
     // For my info: if adding a method with return type Response
