@@ -60,9 +60,7 @@ import io.swagger.annotations.ResponseHeader;
 
 /** REST web services for getting vocabularies. */
 @Path(ApiPaths.API_RESOURCE + "/" + ApiPaths.VOCABULARIES)
-@Api(value = SwaggerInterface.TAG_RESOURCES,
-        authorizations = {@Authorization(value = SwaggerInterface.BASIC_AUTH),
-        @Authorization(value = SwaggerInterface.API_KEY_AUTH)})
+@Api(value = SwaggerInterface.TAG_RESOURCES)
 public class GetVocabularies {
 
     // For my info: if adding a method with return type Response
@@ -266,7 +264,10 @@ public class GetVocabularies {
     @GET
     @ApiOperation(value = "Query if the user has authorization to modify "
             + "the current vocabulary. A Boolean result will be returned.",
-            response = SimpleResult.class)
+            response = SimpleResult.class,
+            authorizations = {@Authorization(
+                    value = SwaggerInterface.BASIC_AUTH),
+                    @Authorization(value = SwaggerInterface.API_KEY_AUTH)})
     @ApiResponses(value = {
             @ApiResponse(code = HttpStatus.SC_BAD_REQUEST,
                     message = "No vocabulary with that id",
