@@ -32,6 +32,8 @@
             value="src/test/resources/deploy/test/dbunit-registry-export-choice.dtd" />
   <!-- Generated PHP Client API -->
   <property name="php-client-dir" value="php-client" />
+  <!-- Generated JavaScript Client API -->
+  <property name="js-client-dir" value="js-client" />
 
   <!-- mapstruct -->
   <property name="mapstruct-processor"
@@ -146,6 +148,7 @@
     <delete dir="${tomcat-managed}/webapps/openrdf-sesame" />
     <delete file="swagger.json" />
     <delete dir="${php-client-dir}" />
+    <delete dir="${js-client-dir}" />
   </target>
 
   <!-- xjc plugin to make generated fields private -->
@@ -769,10 +772,32 @@
     </antcall>
   </target>
 
+  <!-- Check if generated swagger.json is up-to-date. -->
+  <target name="check-swagger-json">
+    <uptodate property="swagger-json.uptodate"
+              targetfile="swagger.json">
+      <srcfiles dir="src">
+        <include name="*/*.java" />
+        <include name="*/*.xml" />
+        <include name="*/*.xsl" />
+      </srcfiles>
+      <srcfiles dir="build">
+        <include name="*/*" />
+      </srcfiles>
+      <srcfiles dir="build-test">
+        <include name="*/*" />
+      </srcfiles>
+      <srcfiles dir="build-jar">
+        <include name="*/*.jar" />
+      </srcfiles>
+    </uptodate>
+  </target>
+
   <!-- Generation of swagger.json.
        We reuse the core of the testng-bamboo task for this purpose. -->
   <target name="swagger-json"
-          depends="compile-test,toolkit-db-model-jar,registry-db-model-jar,roles-db-model-jar,generate-registry-dbunit-dtd">
+          depends="check-swagger-json,compile-test,toolkit-db-model-jar,registry-db-model-jar,roles-db-model-jar"
+          unless="swagger-json.uptodate">
     <copy
       file="conf/toolkit-h2-bamboo-template.properties"
       tofile="conf/toolkit-h2-bamboo.properties">
@@ -827,8 +852,15 @@
   </target>
 
   <!-- Generation of PHP Client API based on swagger.json. -->
+  <target name="check-php-client">
+    <uptodate property="php-client.uptodate"
+              targetfile="${php-client-dir}/.swagger-codegen/VERSION"
+              srcfile="swagger.json" />
+  </target>
+
   <target name="php-client"
-          depends="swagger-json">
+          depends="check-php-client,swagger-json"
+          unless="php-client.uptodate">
     <java
         fork="true"
         failonerror="true"
@@ -843,6 +875,33 @@
       <arg value="${php-client-dir}" />
       <arg value="-DpackagePath=vocabs-registry-client" />
       <arg value="-DinvokerPackage=ANDS\VocabsRegistry" />
+    </java>
+  </target>
+
+  <!-- Generation of JavaScript Client API based on swagger.json. -->
+  <target name="check-js-client">
+    <uptodate property="js-client.uptodate"
+              targetfile="${js-client-dir}/.swagger-codegen/VERSION"
+              srcfile="swagger.json" />
+  </target>
+
+  <target name="js-client"
+          depends="check-js-client,swagger-json"
+          unless="js-client.uptodate">
+    <java
+        fork="true"
+        failonerror="true"
+        jar="libdev/swagger-codegen-2.2.3/swagger-codegen-cli.jar"
+      >
+      <arg value="generate" />
+      <arg value="-i" />
+      <arg value="swagger.json" />
+      <arg value="-l" />
+      <arg value="javascript" />
+      <arg value="-o" />
+      <arg value="${js-client-dir}" />
+      <arg value="-DusePromises=true" />
+      <arg value="-DemitModelMethods=true" />
     </java>
 
   </target>
