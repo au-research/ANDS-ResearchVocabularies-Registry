@@ -352,6 +352,39 @@
 
         </method>
       </extraQuery>
+      <extraQuery name="GET_CURRENT_RELATED_ENTITY_BY_TYPE">
+        <extraQueryParameter name="type" />
+        <queryText temporal="true">
+          SELECT entity FROM RelatedEntity entity WHERE
+          type = :type
+          #AND_TEMPORAL_QUERY_VALID_SUFFIX
+        </queryText>
+        <method>    /** Get all current RelatedEntity instances of a
+     * specified related entity type.
+     * @param relatedEntityType The related entity type to filter against.
+     * @return An list of all current RelatedEntity instances
+     *     of the specified related entity type.
+     */
+    public static List&lt;RelatedEntity&gt;
+        getAllCurrentRelatedEntityByType(
+            final au.org.ands.vocabs.registry.enums.RelatedEntityType
+            relatedEntityType) {
+        EntityManager em = DBContext.getEntityManager();
+        TypedQuery&lt;RelatedEntity&gt; q = em.createNamedQuery(
+                RelatedEntity.
+                    GET_CURRENT_RELATED_ENTITY_BY_TYPE,
+                RelatedEntity.class)
+                .setParameter(RelatedEntity.
+                    GET_CURRENT_RELATED_ENTITY_BY_TYPE_TYPE,
+                    relatedEntityType);
+        q = TemporalUtils.setDatetimeConstantParameters(q);
+        List&lt;RelatedEntity&gt; entityList = q.getResultList();
+        em.close();
+        return entityList;
+    }
+
+        </method>
+      </extraQuery>
     </extraQueries>
   </map>
   <map tableName="related_entity_identifiers"

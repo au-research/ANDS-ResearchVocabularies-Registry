@@ -10,6 +10,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -26,8 +27,10 @@ import au.org.ands.vocabs.registry.db.converter.RelatedEntityDbSchemaMapper;
 import au.org.ands.vocabs.registry.db.converter.RelatedEntityIdentifierDbSchemaMapper;
 import au.org.ands.vocabs.registry.db.dao.RelatedEntityDAO;
 import au.org.ands.vocabs.registry.db.dao.RelatedEntityIdentifierDAO;
+import au.org.ands.vocabs.registry.enums.RelatedEntityType;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.RelatedEntity;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.RelatedEntityIdentifier;
+import au.org.ands.vocabs.registry.schema.vocabulary201701.RelatedEntityList;
 import au.org.ands.vocabs.registry.utils.Logging;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -105,6 +108,58 @@ public class GetRelatedEntities {
         Logging.logRequest(true, request, uriInfo, null,
                 "Get a current related entity by its ID");
         return Response.ok().entity(outputRE).build();
+    }
+
+    /** Get all current related entities, optionally, filtering by type.
+     * Results do not include related entity identifiers.
+     * @param request The HTTP request.
+     * @param uriInfo The UriInfo of the request.
+     * @param relatedEntityType The RelatedEntityType used to filter the
+     *      list of related entities to be fetched.
+     * @return The list of related entities, in either XML or JSON format. */
+    @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+    @GET
+    @ApiOperation(value = "Get all current related entities, optionally, "
+            + "filtered by related entity type. Results do not include "
+            + "related entity identifiers.")
+    @ApiResponses(value = {
+            @ApiResponse(code = HttpStatus.SC_BAD_REQUEST,
+                    message = "No related entity with that id",
+                    response = ErrorResult.class)
+            })
+    public final RelatedEntityList getRelatedEntities(
+            @Context final HttpServletRequest request,
+            @Context final UriInfo uriInfo,
+            @ApiParam(value = "The ID of the related entity to get ")
+            @QueryParam("relatedEntityType") final RelatedEntityType
+                relatedEntityType) {
+        logger.debug("called getRelatedEntities: relatedEntityType = "
+            + relatedEntityType);
+
+        List<au.org.ands.vocabs.registry.db.entity.RelatedEntity>
+            dbREs;
+        if (relatedEntityType == null) {
+            dbREs = RelatedEntityDAO.getAllCurrentRelatedEntity();
+        } else {
+            dbREs = RelatedEntityDAO.getAllCurrentRelatedEntityByType(
+                    relatedEntityType);
+        }
+        RelatedEntityList outputREList = new RelatedEntityList();
+        List<RelatedEntity> outputREs =
+                outputREList.getRelatedEntity();
+
+        RelatedEntityDbSchemaMapper mapper =
+                RelatedEntityDbSchemaMapper.INSTANCE;
+
+        for (au.org.ands.vocabs.registry.db.entity.RelatedEntity dbRE
+                : dbREs) {
+            outputREs.add(mapper.sourceToTarget(dbRE));
+        }
+
+        Logging.logRequest(true, request, uriInfo, null,
+                "Get all current related entities; type = "
+                        + relatedEntityType);
+        return outputREList;
     }
 
 }
