@@ -31,7 +31,7 @@
         </xs:restriction>
     </xs:simpleType>
     <xs:simpleType name="access-point-discriminator">
-        <xs:restriction base="xs:string">
+        <xs:restriction base="xs:token">
             <xs:enumeration value="ApApiSparql"/>
             <xs:enumeration value="ApFile"/>
             <xs:enumeration value="ApSesameDownload"/>
