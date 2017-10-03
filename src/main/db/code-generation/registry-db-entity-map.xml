@@ -75,7 +75,7 @@
 
 </method>
       </extraQuery>
-      <extraQuery name="GET_RELATED_VOCABULARY_LIST_FOR_VOCABULARY">
+      <extraQuery name="GET_RELATED_VOC_LIST_FOR_VOCABULARY">
         <extraQueryParameter name="vocabularyId" />
         <queryText temporal="true">
           SELECT entity FROM Vocabulary entity WHERE
@@ -96,10 +96,10 @@
         EntityManager em = DBContext.getEntityManager();
         TypedQuery&lt;Vocabulary&gt; q = em.createNamedQuery(
                 Vocabulary.
-                    GET_RELATED_VOCABULARY_LIST_FOR_VOCABULARY,
+                    GET_RELATED_VOC_LIST_FOR_VOCABULARY,
                 Vocabulary.class)
                 .setParameter(Vocabulary.
-                    GET_RELATED_VOCABULARY_LIST_FOR_VOCABULARY_VOCABULARYID,
+                    GET_RELATED_VOC_LIST_FOR_VOCABULARY_VOCABULARYID,
                     vocabularyId);
         q = TemporalUtils.setDatetimeConstantParameters(q);
         List&lt;Vocabulary&gt; entityList = q.getResultList();
