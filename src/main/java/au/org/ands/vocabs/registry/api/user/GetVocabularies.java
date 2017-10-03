@@ -34,6 +34,7 @@ import au.org.ands.vocabs.registry.db.converter.AccessPointDbSchemaMapper;
 import au.org.ands.vocabs.registry.db.converter.RelatedEntityDbSchemaMapper;
 import au.org.ands.vocabs.registry.db.converter.RelatedEntityIdentifierDbSchemaMapper;
 import au.org.ands.vocabs.registry.db.converter.VersionDbSchemaMapper;
+import au.org.ands.vocabs.registry.db.converter.VocabularyDbRelatedVocabularySchemaMapper;
 import au.org.ands.vocabs.registry.db.converter.VocabularyDbSchemaMapper;
 import au.org.ands.vocabs.registry.db.dao.AccessPointDAO;
 import au.org.ands.vocabs.registry.db.dao.RelatedEntityDAO;
@@ -44,6 +45,7 @@ import au.org.ands.vocabs.registry.schema.vocabulary201701.AccessPoint;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.RelatedEntity;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.RelatedEntityIdentifier;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.RelatedEntityList;
+import au.org.ands.vocabs.registry.schema.vocabulary201701.RelatedVocabulary;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.Version;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.VersionList;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.Vocabulary;
@@ -102,8 +104,7 @@ public class GetVocabularies {
                 VocabularyDbSchemaMapper.INSTANCE;
         for (au.org.ands.vocabs.registry.db.entity.Vocabulary dbVocabulary
                 : dbVocabularies) {
-            outputVocabularies.add(mapper.sourceToTargetWithoutRelated(
-                    dbVocabulary));
+            outputVocabularies.add(mapper.sourceToTarget(dbVocabulary));
         }
 
         Logging.logRequest(true, request, uriInfo, null,
@@ -129,13 +130,11 @@ public class GetVocabularies {
                 VocabularyDbSchemaMapper.INSTANCE;
         for (au.org.ands.vocabs.registry.db.entity.Vocabulary dbVocabulary
                 : dbVocabularies) {
-            outputVocabularies.add(mapper.sourceToTargetWithoutRelated(
-                    dbVocabulary));
+            outputVocabularies.add(mapper.sourceToTarget(dbVocabulary));
         }
         for (au.org.ands.vocabs.registry.db.entity.Vocabulary dbVocabulary
                 : dbDraftVocabularies) {
-            outputVocabularies.add(mapper.sourceToTargetWithoutRelated(
-                    dbVocabulary));
+            outputVocabularies.add(mapper.sourceToTarget(dbVocabulary));
         }
 
         return outputVocabularyList;
@@ -249,14 +248,14 @@ public class GetVocabularies {
                             rer.getId());
                 }
             }
-            Map<Integer, Vocabulary> relatedVocabularies =
-                    getRelatedVocabulariesForVocabularyByIdHelper(vocabularyId,
-                            mapper);
+            Map<Integer, RelatedVocabulary> relatedVocabularies =
+                    getRelatedVocabulariesForVocabularyByIdHelper(vocabularyId);
             for (RelatedVocabularyRef rvr
                     : outputVocabulary.getRelatedVocabularyRef()) {
-                Vocabulary related = relatedVocabularies.get(rvr.getId());
+                RelatedVocabulary related = relatedVocabularies.get(
+                        rvr.getId());
                 if (related != null) {
-                    rvr.setVocabulary(related);
+                    rvr.setRelatedVocabulary(related);
                 } else {
                     logger.error("Internal error: unable to match up "
                             + "related vocabulary. vocabulary_id = {}, "
@@ -448,24 +447,25 @@ public class GetVocabularies {
      * vocabularies of a vocabulary, by its vocabulary id.
      * @param vocabularyId The VocabularyId of the related vocabularies
      *      to be fetched.
-     * @param mapper The Vocabulary database-to-schema mapper to use.
      * @return The map of related vocabularies, from vocabulary id
      *      to the related vocabulary.
      */
-    private Map<Integer, Vocabulary>
+    private Map<Integer, RelatedVocabulary>
     getRelatedVocabulariesForVocabularyByIdHelper(
-            final Integer vocabularyId,
-            final VocabularyDbSchemaMapper mapper) {
+            final Integer vocabularyId) {
         List<au.org.ands.vocabs.registry.db.entity.Vocabulary>
             dbRelatedVocabularies =
                 VocabularyDAO.getCurrentRelatedVocabulariesForVocabulary(
                     vocabularyId);
-        Map<Integer, Vocabulary> outputRelatedVocabularies = new HashMap<>();
+        Map<Integer, RelatedVocabulary> outputRelatedVocabularies =
+                new HashMap<>();
+        VocabularyDbRelatedVocabularySchemaMapper mapper =
+                VocabularyDbRelatedVocabularySchemaMapper.INSTANCE;
 
         for (au.org.ands.vocabs.registry.db.entity.Vocabulary dbVocabulary
                 : dbRelatedVocabularies) {
-            Vocabulary targetRelatedVocabulary =
-                    mapper.sourceToTargetWithoutRelated(dbVocabulary);
+            RelatedVocabulary targetRelatedVocabulary =
+                    mapper.sourceToTarget(dbVocabulary);
             outputRelatedVocabularies.put(dbVocabulary.getVocabularyId(),
                     targetRelatedVocabulary);
         }

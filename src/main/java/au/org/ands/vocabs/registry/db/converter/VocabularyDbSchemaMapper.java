@@ -21,12 +21,6 @@ public interface VocabularyDbSchemaMapper {
     VocabularyDbSchemaMapper INSTANCE =
             Mappers.getMapper(VocabularyDbSchemaMapper.class);
 
-    /* NB: MapStruct 1.2 adds support for "Pass-through" context parameters,
-     * which are parameters annotated with @Context, that are passed
-     * down through the calls, including to the decorator methods.
-     * When we switch to MapStruct 1.2, join the following two methods
-     * back into one, that takes such an extra (Boolean) parameter. */
-
     /** MapStruct-generated Mapper from Vocabulary database to schema.
      * This mapper looks up related entities and related
      * vocabularies.
@@ -51,33 +45,6 @@ public interface VocabularyDbSchemaMapper {
     @Mapping(target = "relatedVocabularyRef", ignore = true)
     au.org.ands.vocabs.registry.schema.vocabulary201701.Vocabulary
       sourceToTarget(au.org.ands.vocabs.registry.db.entity.Vocabulary source);
-
-    /** MapStruct-generated Mapper from Vocabulary database to schema.
-     * This mapper does not look up related entities and related vocabularies.
-     * @param source The Vocabulary entity from the database.
-     * @return The schema version of the vocabulary.
-     */
-    @Mapping(source = "vocabularyId", target = "id")
-    @Mapping(target = "acronym", ignore = true)
-    @Mapping(target = "creationDate", ignore = true)
-    @Mapping(target = "description", ignore = true)
-    @Mapping(target = "licence", ignore = true)
-    @Mapping(target = "note", ignore = true)
-    @Mapping(target = "otherLanguage", ignore = true)
-    @Mapping(target = "poolpartyProject", ignore = true)
-    @Mapping(target = "primaryLanguage", ignore = true)
-    @Mapping(target = "revisionCycle", ignore = true)
-    @Mapping(target = "subject", ignore = true)
-    @Mapping(target = "title", ignore = true)
-    @Mapping(target = "topConcept", ignore = true)
-    @Mapping(target = "version", ignore = true)
-    @Mapping(target = "relatedEntityRef", ignore = true)
-    @Mapping(target = "relatedVocabularyRef", ignore = true)
-    au.org.ands.vocabs.registry.schema.vocabulary201701.Vocabulary
-      sourceToTargetWithoutRelated(
-              au.org.ands.vocabs.registry.db.entity.Vocabulary source);
-
-
 
     /** MapStruct-generated Mapper from VocabularyJson into an existing
      * schema object.

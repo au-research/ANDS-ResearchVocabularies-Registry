@@ -46,7 +46,7 @@
                         <xs:sequence>
                             <xs:element maxOccurs="unbounded" name="relation"
                                 type="common:related-vocabulary-relation"/>
-                            <xs:element minOccurs="0" ref="vocabulary"/>
+                            <xs:element ref="related-vocabulary"/>
                         </xs:sequence>
                         <xs:attribute name="id" type="id-type" use="required"/>
                     </xs:complexType>
@@ -183,10 +183,6 @@
             <xs:attribute name="identifier-value" type="xs:token"/>
         </xs:complexType>
     </xs:element>
-    <xs:complexType name="related-vocabulary">
-        <xs:attribute name="related-id" type="id-type" use="required"/>
-        <xs:attribute name="relation" use="required" type="common:related-vocabulary-relation"/>
-    </xs:complexType>
     <xs:element name="version-artefact">
         <xs:complexType>
             <xs:attribute name="id" type="id-type"/>
@@ -199,6 +195,18 @@
             <xs:sequence>
                 <xs:element maxOccurs="unbounded" minOccurs="0" ref="version-artefact"/>
             </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="related-vocabulary">
+        <xs:complexType>
+            <xs:sequence> </xs:sequence>
+            <xs:attribute name="id" type="id-type"> </xs:attribute>
+            <xs:attribute name="status" use="required" type="common:vocabulary-status"> </xs:attribute>
+            <xs:attribute name="owner" use="required" type="xs:token"/>
+            <xs:attribute name="slug" type="xs:token"/>
+            <xs:attribute name="title" use="required" type="xs:token"/>
+            <xs:attribute name="acronym" type="xs:token"/>
+            <xs:attribute name="description" type="xs:token"/>
         </xs:complexType>
     </xs:element>
 </xs:schema>
