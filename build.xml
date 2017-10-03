@@ -796,7 +796,7 @@
   <!-- Generation of swagger.json.
        We reuse the core of the testng-bamboo task for this purpose. -->
   <target name="swagger-json"
-          depends="check-swagger-json,compile-test,toolkit-db-model-jar,registry-db-model-jar,roles-db-model-jar"
+          depends="compile-test,toolkit-db-model-jar,registry-db-model-jar,roles-db-model-jar,check-swagger-json"
           unless="swagger-json.uptodate">
     <copy
       file="conf/toolkit-h2-bamboo-template.properties"
@@ -859,7 +859,7 @@
   </target>
 
   <target name="php-client"
-          depends="check-php-client,swagger-json"
+          depends="swagger-json,check-php-client"
           unless="php-client.uptodate">
     <java
         fork="true"
@@ -886,7 +886,7 @@
   </target>
 
   <target name="js-client"
-          depends="check-js-client,swagger-json"
+          depends="swagger-json,check-js-client"
           unless="js-client.uptodate">
     <java
         fork="true"
