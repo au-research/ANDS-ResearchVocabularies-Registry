@@ -36,7 +36,7 @@
                         <xs:sequence>
                             <xs:element maxOccurs="unbounded" name="relation"
                                 type="common:related-entity-relation"/>
-                            <xs:element ref="related-entity"/>
+                            <xs:element ref="related-entity" minOccurs="0"/>
                         </xs:sequence>
                         <xs:attribute name="id" type="id-type" use="required"/>
                     </xs:complexType>
@@ -46,6 +46,7 @@
                         <xs:sequence>
                             <xs:element maxOccurs="unbounded" name="relation"
                                 type="common:related-vocabulary-relation"/>
+                            <xs:element minOccurs="0" ref="vocabulary"/>
                         </xs:sequence>
                         <xs:attribute name="id" type="id-type" use="required"/>
                     </xs:complexType>

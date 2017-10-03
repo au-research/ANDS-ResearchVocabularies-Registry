@@ -3,9 +3,9 @@
 package au.org.ands.vocabs.registry.api.user;
 
 import java.lang.invoke.MethodHandles;
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Optional;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.DefaultValue;
@@ -48,6 +48,7 @@ import au.org.ands.vocabs.registry.schema.vocabulary201701.Version;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.VersionList;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.Vocabulary;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.Vocabulary.RelatedEntityRef;
+import au.org.ands.vocabs.registry.schema.vocabulary201701.Vocabulary.RelatedVocabularyRef;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.VocabularyList;
 import au.org.ands.vocabs.registry.utils.Logging;
 import io.swagger.annotations.Api;
@@ -101,7 +102,8 @@ public class GetVocabularies {
                 VocabularyDbSchemaMapper.INSTANCE;
         for (au.org.ands.vocabs.registry.db.entity.Vocabulary dbVocabulary
                 : dbVocabularies) {
-            outputVocabularies.add(mapper.sourceToTarget(dbVocabulary));
+            outputVocabularies.add(mapper.sourceToTargetWithoutRelated(
+                    dbVocabulary));
         }
 
         Logging.logRequest(true, request, uriInfo, null,
@@ -127,11 +129,13 @@ public class GetVocabularies {
                 VocabularyDbSchemaMapper.INSTANCE;
         for (au.org.ands.vocabs.registry.db.entity.Vocabulary dbVocabulary
                 : dbVocabularies) {
-            outputVocabularies.add(mapper.sourceToTarget(dbVocabulary));
+            outputVocabularies.add(mapper.sourceToTargetWithoutRelated(
+                    dbVocabulary));
         }
         for (au.org.ands.vocabs.registry.db.entity.Vocabulary dbVocabulary
                 : dbDraftVocabularies) {
-            outputVocabularies.add(mapper.sourceToTarget(dbVocabulary));
+            outputVocabularies.add(mapper.sourceToTargetWithoutRelated(
+                    dbVocabulary));
         }
 
         return outputVocabularyList;
@@ -144,8 +148,9 @@ public class GetVocabularies {
      * @param includeVersions Whether or not to include version elements.
      * @param includeAccessPoints Whether or not to include access point
      *      elements.
-     * @param includeRelatedEntities Whether or not to include full
-     *      related entity elements.
+     * @param includeRelatedEntitiesAndVocabularies Whether or not to include
+     *      full related entity elements, and top-level details of
+     *      related vocabularies.
      * @return The vocabulary, in either XML or JSON format,
      *      or an error result, if there is no such vocabulary. */
     @Path(ApiPaths.VOCABULARY_ID)
@@ -174,11 +179,13 @@ public class GetVocabularies {
             @QueryParam("includeAccessPoints") @DefaultValue("false")
             final boolean includeAccessPoints,
             @ApiParam(value = "Whether or not to include full details of "
-                    + "related entities. If false (the default), only "
-                    + "references will be included",
+                    + "related entities, and top-level details of "
+                    + "related vocabularies. If false (the default), only "
+                    + "references will be included.",
             defaultValue = "false")
-            @QueryParam("includeRelatedEntities") @DefaultValue("false")
-            final boolean includeRelatedEntities) {
+            @QueryParam("includeRelatedEntitiesAndVocabularies")
+            @DefaultValue("false")
+            final boolean includeRelatedEntitiesAndVocabularies) {
         logger.debug("called getVocabularyById: " + vocabularyId);
         au.org.ands.vocabs.registry.db.entity.Vocabulary
             dbVocabulary = VocabularyDAO.getCurrentVocabularyByVocabularyId(
@@ -223,24 +230,38 @@ public class GetVocabularies {
             }
         }
 
-        // If includeRelatedEntities, get the full details of the
+        // If includeRelatedEntitiesAndVocabularies, get the full details of the
         // related entities, and match them up with the refs
         // we already fetched and included in outputVocabulary.
-        if (includeRelatedEntities) {
-            List<RelatedEntity> relatedEntities =
+        // And do similarly for related vocabularies.
+        if (includeRelatedEntitiesAndVocabularies) {
+            Map<Integer, RelatedEntity> relatedEntities =
                     getRelatedEntitiesForVocabularyByIdHelper(vocabularyId);
             for (RelatedEntityRef rer
                     : outputVocabulary.getRelatedEntityRef()) {
-                Optional<RelatedEntity> related = relatedEntities.stream().
-                        filter(re -> re.getId()
-                                == rer.getId()).findFirst();
-                if (related.isPresent()) {
-                    rer.setRelatedEntity(related.get());
+                RelatedEntity related = relatedEntities.get(rer.getId());
+                if (related != null) {
+                    rer.setRelatedEntity(related);
                 } else {
                     logger.error("Internal error: unable to match up "
                             + "related entity. vocabulary_id = {}, "
                             + "related entity ID = {}", vocabularyId,
                             rer.getId());
+                }
+            }
+            Map<Integer, Vocabulary> relatedVocabularies =
+                    getRelatedVocabulariesForVocabularyByIdHelper(vocabularyId,
+                            mapper);
+            for (RelatedVocabularyRef rvr
+                    : outputVocabulary.getRelatedVocabularyRef()) {
+                Vocabulary related = relatedVocabularies.get(rvr.getId());
+                if (related != null) {
+                    rvr.setVocabulary(related);
+                } else {
+                    logger.error("Internal error: unable to match up "
+                            + "related vocabulary. vocabulary_id = {}, "
+                            + "related vocabulary ID = {}", vocabularyId,
+                            rvr.getId());
                 }
             }
         }
@@ -373,11 +394,11 @@ public class GetVocabularies {
 
         RelatedEntityList outputRelatedEntityList = new RelatedEntityList();
 
-        List<RelatedEntity> outputRelatedEntities =
+        Map<Integer, RelatedEntity> outputRelatedEntities =
                 getRelatedEntitiesForVocabularyByIdHelper(vocabularyId);
 
         outputRelatedEntityList.getRelatedEntity().
-                addAll(outputRelatedEntities);
+                addAll(outputRelatedEntities.values());
         return outputRelatedEntityList;
     }
 
@@ -385,15 +406,17 @@ public class GetVocabularies {
      * entities of a vocabulary, by its vocabulary id.
      * @param vocabularyId The VocabularyId of the related entities
      *      to be fetched.
-     * @return The list of related entities.
+     * @return The map of related entities, from related entity id
+     *      to the related entity.
      */
-    private List<RelatedEntity> getRelatedEntitiesForVocabularyByIdHelper(
+    private Map<Integer, RelatedEntity>
+    getRelatedEntitiesForVocabularyByIdHelper(
             final Integer vocabularyId) {
         List<au.org.ands.vocabs.registry.db.entity.RelatedEntity>
             dbRelatedEntities =
                 RelatedEntityDAO.getCurrentRelatedEntitiesForVocabulary(
                     vocabularyId);
-        ArrayList<RelatedEntity> outputRelatedEntities = new ArrayList<>();
+        Map<Integer, RelatedEntity> outputRelatedEntities = new HashMap<>();
 
         RelatedEntityDbSchemaMapper reMapper =
                 RelatedEntityDbSchemaMapper.INSTANCE;
@@ -402,7 +425,8 @@ public class GetVocabularies {
         for (au.org.ands.vocabs.registry.db.entity.RelatedEntity dbRE
                 : dbRelatedEntities) {
             RelatedEntity targetRelatedEntity = reMapper.sourceToTarget(dbRE);
-            outputRelatedEntities.add(targetRelatedEntity);
+            outputRelatedEntities.put(dbRE.getRelatedEntityId(),
+                    targetRelatedEntity);
             // Get the related entity identifiers.
             List<RelatedEntityIdentifier> targetRelatedEntityIdentifiers =
                     targetRelatedEntity.getRelatedEntityIdentifier();
@@ -418,6 +442,34 @@ public class GetVocabularies {
             }
         }
         return outputRelatedEntities;
+    }
+
+    /** Helper method to do the work of getting the current related
+     * vocabularies of a vocabulary, by its vocabulary id.
+     * @param vocabularyId The VocabularyId of the related vocabularies
+     *      to be fetched.
+     * @param mapper The Vocabulary database-to-schema mapper to use.
+     * @return The map of related vocabularies, from vocabulary id
+     *      to the related vocabulary.
+     */
+    private Map<Integer, Vocabulary>
+    getRelatedVocabulariesForVocabularyByIdHelper(
+            final Integer vocabularyId,
+            final VocabularyDbSchemaMapper mapper) {
+        List<au.org.ands.vocabs.registry.db.entity.Vocabulary>
+            dbRelatedVocabularies =
+                VocabularyDAO.getCurrentRelatedVocabulariesForVocabulary(
+                    vocabularyId);
+        Map<Integer, Vocabulary> outputRelatedVocabularies = new HashMap<>();
+
+        for (au.org.ands.vocabs.registry.db.entity.Vocabulary dbVocabulary
+                : dbRelatedVocabularies) {
+            Vocabulary targetRelatedVocabulary =
+                    mapper.sourceToTargetWithoutRelated(dbVocabulary);
+            outputRelatedVocabularies.put(dbVocabulary.getVocabularyId(),
+                    targetRelatedVocabulary);
+        }
+        return outputRelatedVocabularies;
     }
 
 }

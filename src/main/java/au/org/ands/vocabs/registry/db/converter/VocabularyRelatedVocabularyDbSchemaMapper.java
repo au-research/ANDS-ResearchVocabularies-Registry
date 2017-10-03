@@ -22,6 +22,7 @@ public interface VocabularyRelatedVocabularyDbSchemaMapper {
      */
     @Mapping(source = "relatedVocabularyId", target = "id")
     @Mapping(target = "relation", ignore = true)
+    @Mapping(target = "vocabulary", ignore = true)
     au.org.ands.vocabs.registry.schema.vocabulary201701.
     Vocabulary.RelatedVocabularyRef
         sourceToTarget(

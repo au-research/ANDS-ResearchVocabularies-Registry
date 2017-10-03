@@ -75,6 +75,40 @@
 
 </method>
       </extraQuery>
+      <extraQuery name="GET_RELATED_VOCABULARY_LIST_FOR_VOCABULARY">
+        <extraQueryParameter name="vocabularyId" />
+        <queryText temporal="true">
+          SELECT entity FROM Vocabulary entity WHERE
+          vocabularyId IN (SELECT relatedVocabularyId FROM
+          VocabularyRelatedVocabulary WHERE vocabularyId = :vocabularyId
+          #AND_TEMPORAL_QUERY_VALID_SUFFIX
+          )
+          #AND_TEMPORAL_QUERY_VALID_SUFFIX
+        </queryText>
+        <method>    /** Get all current related Vocabulary instances for
+     * a vocabulary.
+     * @param vocabularyId The vocabulary id for which related
+     *     vocabularies are to be looked up.
+     * @return A list of all related Vocabulary instances for the vocabulary.
+     */
+    public static List&lt;Vocabulary&gt;
+        getCurrentRelatedVocabulariesForVocabulary(final int vocabularyId) {
+        EntityManager em = DBContext.getEntityManager();
+        TypedQuery&lt;Vocabulary&gt; q = em.createNamedQuery(
+                Vocabulary.
+                    GET_RELATED_VOCABULARY_LIST_FOR_VOCABULARY,
+                Vocabulary.class)
+                .setParameter(Vocabulary.
+                    GET_RELATED_VOCABULARY_LIST_FOR_VOCABULARY_VOCABULARYID,
+                    vocabularyId);
+        q = TemporalUtils.setDatetimeConstantParameters(q);
+        List&lt;Vocabulary&gt; entityList = q.getResultList();
+        em.close();
+        return entityList;
+    }
+
+</method>
+      </extraQuery>
     </extraQueries>
   </map>
   <map tableName="versions"
