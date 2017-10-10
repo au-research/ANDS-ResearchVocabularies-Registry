@@ -210,6 +210,28 @@ public final class TemporalUtils {
         return q;
     }
 
+    /** Set any datetime constant parameters of a query to the
+     * correct values.
+     * @param q The query to be modified.
+     * @return The modified query.
+     */
+    public static Query setDatetimeConstantParameters(
+            final Query q) {
+        try {
+            q.setParameter(CURRENTLY_VALID_END_DATE,
+                    TemporalConstants.CURRENTLY_VALID_END_DATE);
+        } catch (IllegalArgumentException e) {
+            // No problem.
+        }
+        try {
+            q.setParameter(DRAFT_ADDITION_MODIFICATION_START_DATE,
+                    TemporalConstants.DRAFT_ADDITION_MODIFICATION_START_DATE);
+        } catch (IllegalArgumentException e) {
+            // No problem.
+        }
+        return q;
+    }
+
     /** Set the datetime parameter of a query to a specified
      * date/time.
      * @param q The query to be modified.

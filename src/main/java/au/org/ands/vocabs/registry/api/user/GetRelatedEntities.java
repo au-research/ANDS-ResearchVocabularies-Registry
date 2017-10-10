@@ -4,6 +4,7 @@ package au.org.ands.vocabs.registry.api.user;
 
 import java.lang.invoke.MethodHandles;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
@@ -13,6 +14,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
@@ -25,12 +27,17 @@ import au.org.ands.vocabs.registry.api.context.ApiPaths;
 import au.org.ands.vocabs.registry.api.context.SwaggerInterface;
 import au.org.ands.vocabs.registry.db.converter.RelatedEntityDbSchemaMapper;
 import au.org.ands.vocabs.registry.db.converter.RelatedEntityIdentifierDbSchemaMapper;
+import au.org.ands.vocabs.registry.db.converter.VocabularyDbRelatedVocabularySchemaMapper;
 import au.org.ands.vocabs.registry.db.dao.RelatedEntityDAO;
 import au.org.ands.vocabs.registry.db.dao.RelatedEntityIdentifierDAO;
+import au.org.ands.vocabs.registry.db.dao.VocabularyDAO;
+import au.org.ands.vocabs.registry.enums.RelatedEntityRelation;
 import au.org.ands.vocabs.registry.enums.RelatedEntityType;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.RelatedEntity;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.RelatedEntityIdentifier;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.RelatedEntityList;
+import au.org.ands.vocabs.registry.schema.vocabulary201701.ReverseRelatedVocabulary;
+import au.org.ands.vocabs.registry.schema.vocabulary201701.ReverseRelatedVocabularyList;
 import au.org.ands.vocabs.registry.utils.Logging;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -71,7 +78,7 @@ public class GetRelatedEntities {
     public final Response getRelatedEntityById(
             @Context final HttpServletRequest request,
             @Context final UriInfo uriInfo,
-            @ApiParam(value = "The ID of the related entity to get ")
+            @ApiParam(value = "The ID of the related entity to get.")
             @PathParam("relatedEntityId") final Integer relatedEntityId) {
         logger.debug("called getRelatedEntityById: "
             + relatedEntityId);
@@ -160,6 +167,59 @@ public class GetRelatedEntities {
                 "Get all current related entities; type = "
                         + relatedEntityType);
         return outputREList;
+    }
+
+    /** Get all vocabularies that are related to a related entity.
+     * @param request The HTTP request.
+     * @param uriInfo The UriInfo of the request.
+     * @param relatedEntityId The RelatedEntityId of the related entity
+     *      for which the vocabularies related to it are to be fetched.
+     * @return The related entity, in either XML or JSON format,
+     *      or an error result, if there is no such related entity. */
+    @Path(ApiPaths.RELATED_ENTITY_ID + "/"
+            + ApiPaths.REVERSE_RELATED_VOCABULARIES)
+    @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+    @GET
+    @ApiOperation(value = "Get all current vocabularies related to a "
+            + "related entity, by the related entity's id.")
+    public final ReverseRelatedVocabularyList
+    getVocabulariesRelatedToRelatedEntityById(
+            @Context final HttpServletRequest request,
+            @Context final UriInfo uriInfo,
+            @ApiParam(value = "The ID of the related entity for which "
+                    + "to get the vocabularies related to it.")
+            @PathParam("relatedEntityId") final Integer relatedEntityId) {
+        logger.debug("called getVocabulariesRelatedToRelatedEntityById: "
+            + relatedEntityId);
+
+        MultivaluedMap<au.org.ands.vocabs.registry.db.entity.Vocabulary,
+            RelatedEntityRelation> dbRVs =
+            VocabularyDAO.getCurrentVocabulariesForRelatedEntity(
+                    relatedEntityId);
+
+        ReverseRelatedVocabularyList outputRVList =
+                new ReverseRelatedVocabularyList();
+        List<ReverseRelatedVocabulary> outputRVs =
+                outputRVList.getReverseRelatedVocabulary();
+
+        VocabularyDbRelatedVocabularySchemaMapper mapper =
+                VocabularyDbRelatedVocabularySchemaMapper.INSTANCE;
+
+        for (Map.Entry<au.org.ands.vocabs.registry.db.entity.Vocabulary,
+                List<RelatedEntityRelation>> mapElement : dbRVs.entrySet()) {
+            ReverseRelatedVocabulary revRV = new ReverseRelatedVocabulary();
+            revRV.setRelatedVocabulary(mapper.sourceToTarget(
+                    mapElement.getKey()));
+            List<RelatedEntityRelation> rvRelationList =
+                    revRV.getRelatedEntityRelation();
+            rvRelationList.addAll(mapElement.getValue());
+            outputRVs.add(revRV);
+        }
+
+        Logging.logRequest(true, request, uriInfo, null,
+                "Get current vocabularies related to a related entity "
+                + "by its ID");
+        return outputRVList;
     }
 
 }

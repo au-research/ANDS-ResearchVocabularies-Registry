@@ -109,6 +109,103 @@
 
 </method>
       </extraQuery>
+      <extraQuery name="GET_RELATED_VOC_LIST_FOR_RE">
+        <extraQueryParameter name="relatedEntityId" />
+        <queryText temporal="true">
+          SELECT e2, e1.relation FROM VocabularyRelatedEntity e1,
+          Vocabulary e2 WHERE
+          e1.relatedEntityId = :relatedEntityId
+          AND e1.vocabularyId = e2.vocabularyId
+          #AND_TEMPORAL_QUERY_VALID_SUFFIX_E1
+          #AND_TEMPORAL_QUERY_VALID_SUFFIX_E2
+        </queryText>
+        <method>    /** Get all current related Vocabulary instances
+     * that are related to a related entity.
+     * @param relatedEntityId The related entity id for which
+     *     vocabularies are to be looked up.
+     * @return A multi-valued map of all Vocabulary instances that are
+     *     related to the related entity, with their relations.
+     */
+    public static javax.ws.rs.core.MultivaluedMap&lt;
+            Vocabulary,
+            au.org.ands.vocabs.registry.enums.RelatedEntityRelation&gt;
+        getCurrentVocabulariesForRelatedEntity(final int relatedEntityId) {
+        EntityManager em = DBContext.getEntityManager();
+        javax.persistence.Query q = em.createNamedQuery(
+                Vocabulary.
+                    GET_RELATED_VOC_LIST_FOR_RE)
+                .setParameter(Vocabulary.
+                    GET_RELATED_VOC_LIST_FOR_RE_RELATEDENTITYID,
+                    relatedEntityId);
+        q = TemporalUtils.setDatetimeConstantParameters(q);
+        // We do casts of the elements of the lists later on.
+        @SuppressWarnings("unchecked")
+        List&lt;Object[]&gt; entityList = q.getResultList();
+        em.close();
+        javax.ws.rs.core.MultivaluedMap&lt;Vocabulary,
+            au.org.ands.vocabs.registry.enums.RelatedEntityRelation&gt;
+        result = new javax.ws.rs.core.MultivaluedHashMap&lt;&gt;();
+        for (Object[] objectList : entityList) {
+            // Unpack the results. Each is a pair
+            // (vocabulary,relation).
+            result.add((Vocabulary) objectList[0],
+                (au.org.ands.vocabs.registry.enums.RelatedEntityRelation)
+                    objectList[1]);
+        }
+        return result;
+    }
+
+</method>
+      </extraQuery>
+      <extraQuery name="GET_RELATED_VOC_LIST_FOR_VOC">
+        <extraQueryParameter name="relatedVocabularyId" />
+        <queryText temporal="true">
+          SELECT e2, e1.relation FROM VocabularyRelatedVocabulary e1,
+          Vocabulary e2 WHERE
+          e1.relatedVocabularyId = :relatedVocabularyId
+          AND e1.vocabularyId = e2.vocabularyId
+          #AND_TEMPORAL_QUERY_VALID_SUFFIX_E1
+          #AND_TEMPORAL_QUERY_VALID_SUFFIX_E2
+        </queryText>
+        <method>    /** Get all current related Vocabulary instances
+     * that are related to a vocabulary.
+     * @param relatedVocabularyId The id of the Vocabulary for which
+     *     vocabularies related to it are to be looked up.
+     * @return A multi-valued map of all Vocabulary instances that are
+     *     related to the vocabulary, with their relations.
+     */
+    public static javax.ws.rs.core.MultivaluedMap&lt;
+            Vocabulary,
+            au.org.ands.vocabs.registry.enums.RelatedVocabularyRelation&gt;
+        getCurrentVocabulariesForRelatedVocabulary(
+                final int relatedVocabularyId) {
+        EntityManager em = DBContext.getEntityManager();
+        javax.persistence.Query q = em.createNamedQuery(
+                Vocabulary.
+                    GET_RELATED_VOC_LIST_FOR_VOC)
+                .setParameter(Vocabulary.
+                    GET_RELATED_VOC_LIST_FOR_VOC_RELATEDVOCABULARYID,
+                    relatedVocabularyId);
+        q = TemporalUtils.setDatetimeConstantParameters(q);
+        // We do casts of the elements of the lists later on.
+        @SuppressWarnings("unchecked")
+        List&lt;Object[]&gt; entityList = q.getResultList();
+        em.close();
+        javax.ws.rs.core.MultivaluedMap&lt;Vocabulary,
+            au.org.ands.vocabs.registry.enums.RelatedVocabularyRelation&gt;
+        result = new javax.ws.rs.core.MultivaluedHashMap&lt;&gt;();
+        for (Object[] objectList : entityList) {
+            // Unpack the results. Each is a pair
+            // (vocabulary,relation).
+            result.add((Vocabulary) objectList[0],
+                (au.org.ands.vocabs.registry.enums.RelatedVocabularyRelation)
+                    objectList[1]);
+        }
+        return result;
+    }
+
+</method>
+      </extraQuery>
     </extraQueries>
   </map>
   <map tableName="versions"

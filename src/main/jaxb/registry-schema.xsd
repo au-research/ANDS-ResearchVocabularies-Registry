@@ -209,4 +209,22 @@
             <xs:attribute name="description" type="xs:token"/>
         </xs:complexType>
     </xs:element>
+    <xs:element name="reverse-related-vocabulary-list">
+        <xs:complexType>
+            <xs:sequence maxOccurs="unbounded" minOccurs="0">
+                <xs:element ref="reverse-related-vocabulary"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="reverse-related-vocabulary">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element maxOccurs="unbounded" minOccurs="0" name="related-entity-relation"
+                    type="common:related-entity-relation"/>
+                <xs:element maxOccurs="unbounded" minOccurs="0" name="related-vocabulary-relation"
+                    type="common:related-vocabulary-relation"/>
+                <xs:element ref="related-vocabulary"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
 </xs:schema>

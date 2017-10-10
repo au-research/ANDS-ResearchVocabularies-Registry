@@ -29,6 +29,10 @@ public final class ApiPaths {
     /** Subpath for vocabulary resources. */
     public static final String VOCABULARIES = "vocabularies";
 
+    /** Subpath for reverse-related vocabulary resources. */
+    public static final String REVERSE_RELATED_VOCABULARIES =
+            "reverseRelatedVocabularies";
+
     /** Subpath for version resources. */
     public static final String VERSIONS = "versions";
 

@@ -16,6 +16,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
@@ -41,11 +42,14 @@ import au.org.ands.vocabs.registry.db.dao.RelatedEntityDAO;
 import au.org.ands.vocabs.registry.db.dao.RelatedEntityIdentifierDAO;
 import au.org.ands.vocabs.registry.db.dao.VersionDAO;
 import au.org.ands.vocabs.registry.db.dao.VocabularyDAO;
+import au.org.ands.vocabs.registry.enums.RelatedVocabularyRelation;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.AccessPoint;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.RelatedEntity;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.RelatedEntityIdentifier;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.RelatedEntityList;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.RelatedVocabulary;
+import au.org.ands.vocabs.registry.schema.vocabulary201701.ReverseRelatedVocabulary;
+import au.org.ands.vocabs.registry.schema.vocabulary201701.ReverseRelatedVocabularyList;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.Version;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.VersionList;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.Vocabulary;
@@ -470,6 +474,61 @@ public class GetVocabularies {
                     targetRelatedVocabulary);
         }
         return outputRelatedVocabularies;
+    }
+
+    /** Get all vocabularies that are related to a vocabulary.
+     * @param request The HTTP request.
+     * @param uriInfo The UriInfo of the request.
+     * @param vocabularyId The Id of the vocabulary
+     *      for which the vocabularies related to it are to be fetched.
+     * @return The related entity, in either XML or JSON format,
+     *      or an error result, if there is no such related entity. */
+    @Path(ApiPaths.VOCABULARY_ID + "/"
+            + ApiPaths.REVERSE_RELATED_VOCABULARIES)
+    @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+    @GET
+    @ApiOperation(value = "Get all current vocabularies related to a "
+            + "related entity, by the related entity's id.")
+    public final ReverseRelatedVocabularyList
+    getVocabulariesRelatedToVocabularyById(
+            @Context final HttpServletRequest request,
+            @Context final UriInfo uriInfo,
+            @ApiParam(value = "The ID of the vocabulary for which "
+                    + "to get the vocabularies related to it.")
+            @PathParam("vocabularyId") final Integer
+                vocabularyId) {
+        logger.debug("called getVocabulariesRelatedToVocabularyById: "
+            + vocabularyId);
+
+        MultivaluedMap<au.org.ands.vocabs.registry.db.entity.Vocabulary,
+            RelatedVocabularyRelation> dbRVs =
+            VocabularyDAO.getCurrentVocabulariesForRelatedVocabulary(
+                    vocabularyId);
+
+        ReverseRelatedVocabularyList outputRVList =
+                new ReverseRelatedVocabularyList();
+        List<ReverseRelatedVocabulary> outputRVs =
+                outputRVList.getReverseRelatedVocabulary();
+
+        VocabularyDbRelatedVocabularySchemaMapper mapper =
+                VocabularyDbRelatedVocabularySchemaMapper.INSTANCE;
+
+        for (Map.Entry<au.org.ands.vocabs.registry.db.entity.Vocabulary,
+                List<RelatedVocabularyRelation>> mapElement
+                : dbRVs.entrySet()) {
+            ReverseRelatedVocabulary revRV = new ReverseRelatedVocabulary();
+            revRV.setRelatedVocabulary(mapper.sourceToTarget(
+                    mapElement.getKey()));
+            List<RelatedVocabularyRelation> rvRelationList =
+                    revRV.getRelatedVocabularyRelation();
+            rvRelationList.addAll(mapElement.getValue());
+            outputRVs.add(revRV);
+        }
+
+        Logging.logRequest(true, request, uriInfo, null,
+                "Get current vocabularies related to a vocabulary "
+                + "by its ID");
+        return outputRVList;
     }
 
 }
