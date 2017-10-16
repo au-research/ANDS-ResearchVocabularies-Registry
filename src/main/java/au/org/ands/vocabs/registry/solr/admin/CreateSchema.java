@@ -321,7 +321,7 @@ public final class CreateSchema {
             addAlphaOnlySortFieldType(client);
             addField(client, SLUG, STRING, true, true, false);
             addField(client, TITLE, STRING, true, true, false);
-            addField(client, TITLE_SORT, ALPHA_ONLY_SORT, true, true, false);
+            addField(client, TITLE_SORT, ALPHA_ONLY_SORT, false, true, false);
             addField(client, DESCRIPTION, TEXT_EN_SPLITTING,
                     true, true, false);
             addField(client, LICENCE, STRING, true, true, false);
