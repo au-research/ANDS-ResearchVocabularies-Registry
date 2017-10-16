@@ -9,8 +9,9 @@ public final class ApiPaths {
     private ApiPaths() {
     }
 
-    /** The top level of the user API. */
-    public static final String API_USER = "/api/user";
+    /** Admin methods of the API. For now, doesn't begin with "/api",
+     * so that these can be "hidden" to outside users. */
+    public static final String API_ADMIN = "/admin";
 
     /** The top level of the resource API. */
     public static final String API_RESOURCE = "/api/resource";
@@ -20,6 +21,9 @@ public final class ApiPaths {
 
     /** Service methods of the API. */
     public static final String API_SERVICES = "/api/services";
+
+    /** The top level of the user API. */
+    public static final String API_USER = "/api/user";
 
     /** Utility methods of the API. */
     public static final String API_UTILITIES = "/api/utilities";

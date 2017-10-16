@@ -68,4 +68,21 @@ public final class PropertyConstants {
     public static final String REGISTRY_LOGGING_GEOIPDB =
             "Registry.logging.GeoIPDb";
 
+    /* Solr. */
+
+    /** Solr base URL. Used for CoreAdmin requests, e.g.,
+     * creating/deleting a collection. */
+    public static final String REGISTRY_SOLR_BASE_URL =
+            "Registry.Solr.baseURL";
+
+    /** Solr collection. The name of the Solr collection used for
+     * indexing registry entities. */
+    public static final String REGISTRY_SOLR_COLLECTION =
+            "Registry.Solr.collection";
+
+    /** Solr collection URL. Full path to the Solr collection,
+     * to be used when creating a SolrClient. */
+    public static final String REGISTRY_SOLR_COLLECTION_URL =
+            "Registry.Solr.collectionURL";
+
 }

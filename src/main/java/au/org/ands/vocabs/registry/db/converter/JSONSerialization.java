@@ -2,6 +2,7 @@
 
 package au.org.ands.vocabs.registry.db.converter;
 
+import java.io.File;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 
@@ -9,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationModule;
@@ -57,11 +59,11 @@ public final class JSONSerialization {
                 true);
     }
 
-    /** Deserialize a String in JSON format into one of our custom
-     * JSON storage objects.
-     * @param jsonString The String to be deSerialized. It should be
+    /** Deserialize a String in JSON format.
+     * @param jsonString The String to be deSerialized. It should normally be
      *      an instance of one of our custom JSON storage objects,
      *      such as {@link VocabularyJson} or {@link VersionJson}.
+     *      However, generic collections such as Map are supported.
      * @param <T> Type parameter of the target JSON storage object class.
      * @param jsonClass The target JSON storage object class.
      * @return The deserialization as a JSON storage object of jsonString.
@@ -70,6 +72,50 @@ public final class JSONSerialization {
             final Class<T> jsonClass) {
         try {
             return jsonMapper.readValue(jsonString, jsonClass);
+        } catch (IOException e) {
+            LOGGER.error("Unable to deserialize JSON", e);
+            return null;
+        }
+    }
+
+    /** Deserialize a file containing data in JSON format.
+     * @param jsonFile A File containing the JSON data to be deSerialized.
+     *      The contents should normally be
+     *      an instance of one of our custom JSON storage objects,
+     *      such as {@link VocabularyJson} or {@link VersionJson}.
+     *      For a generic collection type, use the variant method that
+     *      accepts a TypeReference parameter.
+     * @param <T> Type parameter of the target JSON storage object class.
+     * @param jsonClass The target JSON storage object class.
+     * @return The deserialization as a JSON storage object of the
+     *      contents of jsonFile.
+     */
+    public static <T> T deserializeStringAsJson(final File jsonFile,
+            final Class<T> jsonClass) {
+        try {
+            return jsonMapper.readValue(jsonFile, jsonClass);
+        } catch (IOException e) {
+            LOGGER.error("Unable to deserialize JSON", e);
+            return null;
+        }
+    }
+
+    /** Deserialize a file containint data in JSON format.
+     * @param jsonFile A File containing the JSON data to be deSerialized.
+     *      The contents should normally be
+     *      an instance of one of our custom JSON storage objects,
+     *      such as {@link VocabularyJson} or {@link VersionJson}.
+     *      However, generic collections such as Map are supported.
+     * @param <T> Type parameter of the target JSON storage object class.
+     * @param typeReference A type reference for the target JSON storage
+     *      object class.
+     * @return The deserialization as a JSON storage object of the
+     *      contents of jsonFile.
+     */
+    public static <T> T deserializeStringAsJson(final File jsonFile,
+            final TypeReference<T> typeReference) {
+        try {
+            return jsonMapper.readValue(jsonFile, typeReference);
         } catch (IOException e) {
             LOGGER.error("Unable to deserialize JSON", e);
             return null;

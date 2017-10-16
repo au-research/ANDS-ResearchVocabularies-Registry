@@ -42,6 +42,9 @@ public class JsonListTransformProvider extends TransformProvider {
     private final Logger logger = LoggerFactory.getLogger(
             MethodHandles.lookup().lookupClass());
 
+    /** Key used for storing a SKOS prefLabel. */
+    public static final String PREF_LABEL = "prefLabel";
+
     @Override
     public final String getInfo() {
         // Return null for now.
@@ -117,7 +120,8 @@ public class JsonListTransformProvider extends TransformProvider {
             HashMap<String, Object> concept =
                     conceptMap.get(st.getSubject().stringValue());
             if (st.getPredicate().equals(SKOS.PREF_LABEL)) {
-                concept.put("prefLabel", st.getObject().stringValue());
+                concept.put(JsonListTransformProvider.PREF_LABEL,
+                        st.getObject().stringValue());
             }
             if (st.getPredicate().equals(SKOS.NOTATION)) {
                 concept.put("notation", st.getObject().stringValue());
