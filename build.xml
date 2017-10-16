@@ -614,6 +614,31 @@
     </javadoc>
   </target>
 
+  <!-- Install the Solr schema. The Collection must already have been
+       created! -->
+  <path id="create-solr-schema.classpath">
+    <pathelement path="${build}" />
+    <fileset dir="lib">
+      <include name="**/*.jar" />
+      <exclude name="javamelody*/*.jar" />
+      <exclude name="mysql*/*.jar" />
+      <exclude name="**/*javadoc*.jar" />
+      <exclude name="**/*sources*.jar" />
+    </fileset>
+  </path>
+  <target name="create-solr-schema"
+          depends="compile-main">
+    <property file="conf/registry.properties" />
+    <java
+        fork="true"
+        failonerror="true"
+        classname="au.org.ands.vocabs.registry.solr.admin.CreateSchema"
+        classpathref="create-solr-schema.classpath"
+      >
+      <arg value="${Registry.Solr.collectionURL}" />
+    </java>
+  </target>
+
   <!-- Coding conventions, style, static analysis -->
 
   <target name="checkstyle"

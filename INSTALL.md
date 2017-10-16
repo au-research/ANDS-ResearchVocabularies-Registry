@@ -78,6 +78,11 @@ specifies the username and password of a database user that has the
 necessary privileges. Then, specify that configuration file in the
 Liquibase command line.
 
+### Solr configuration
+
+Set Registry.Solr.collection to your choice of name for the Solr
+collection. In the following, we have chosen `vocabs-registry`.
+
 ## Create Roles configuration
 
 Create `conf/roles.properties`. You may base it on
@@ -169,9 +174,22 @@ Now run:
 wget -O - http://localhost:8080/registry-context/registry/internal/populateSubjectResolver
 ```
 
-# Create Solr collection
+# Create Solr collection and install schema
 
-TBD
+## Create the collection
+
+Create the Solr collection. Here, `vocabs-registry` matches the name
+chosen for the collection and assigned in `registry.properties` above.
+
+```
+/path-to-Solr-installation/bin/solr create -c vocabs-registry
+```
+
+## Install the schema
+
+```
+ant create-solr-schema
+```
 
 # Create PHP Client API
 
