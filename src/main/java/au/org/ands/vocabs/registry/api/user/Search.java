@@ -43,13 +43,13 @@ public class Search {
      * @param uriInfo The UriInfo of the request.
      * @param filtersJson Search filters to be passed on to Solr,
      *      in JSON format.
-     * @return The search results, in JSON format.
+     * @return The search results, as a JSON object.
      */
     @Path("search")
     @Consumes({MediaType.APPLICATION_FORM_URLENCODED})
     @Produces({MediaType.APPLICATION_JSON})
     @POST
-    @ApiOperation(value = "Perform a search.", response = String.class)
+    @ApiOperation(value = "Perform a search.", response = Object.class)
     public final Response search(
             @Context final HttpServletRequest request,
             @Context final UriInfo uriInfo,
