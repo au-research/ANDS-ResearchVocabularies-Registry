@@ -17,6 +17,7 @@ import static au.org.ands.vocabs.registry.solr.FieldConstants.OWNER;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.POOLPARTY_ID;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.PUBLISHER;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.PUBLISHER_SEARCH;
+import static au.org.ands.vocabs.registry.solr.FieldConstants.SCHEMA_VERSION;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.SISSVOC_ENDPOINT;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.SLUG;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.STATUS;
@@ -34,6 +35,7 @@ import static au.org.ands.vocabs.registry.solr.FieldConstants.TOP_CONCEPT;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.WIDGETABLE;
 
 import java.io.IOException;
+import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -53,9 +55,14 @@ import org.apache.solr.client.solrj.request.GenericSolrRequest;
 import org.apache.solr.client.solrj.request.schema.AnalyzerDefinition;
 import org.apache.solr.client.solrj.request.schema.FieldTypeDefinition;
 import org.apache.solr.client.solrj.request.schema.SchemaRequest;
+import org.apache.solr.client.solrj.response.SimpleSolrResponse;
+import org.apache.solr.client.solrj.response.SolrResponseBase;
 import org.apache.solr.client.solrj.response.schema.SchemaResponse.UpdateResponse;
 import org.apache.solr.common.util.ContentStream;
 import org.apache.solr.common.util.ContentStreamBase;
+import org.apache.solr.common.util.NamedList;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import au.org.ands.vocabs.registry.solr.FieldConstants;
 
@@ -66,9 +73,73 @@ import au.org.ands.vocabs.registry.solr.FieldConstants;
  */
 public final class CreateSchema {
 
-    /** Private constructor for a utility class. */
-    private CreateSchema() {
+    /** Logger for this class. */
+    private Logger logger = LoggerFactory.getLogger(
+            MethodHandles.lookup().lookupClass());
+
+    /** Check that a SolrJ action completed successfully.
+     * Throws a RuntimeException if there was an error.
+     * @param response The response from SolrJ to be checked.
+     */
+    private void checkResponse(final SolrResponseBase response) {
+        NamedList<Object> responseList = response.getResponse();
+        Object errors = responseList.get("errors");
+        if (errors != null) {
+            logger.info("Got errors: " + errors.toString());
+            throw new RuntimeException("Error from SolrJ");
+        }
+
     }
+
+    /** Get the installed schema version.
+     * This is represented as the default value of the special
+     * field SCHEMA_VERSION.
+     * @param solrClient The SolrClient used to access Solr.
+     * @return The installed schema version. 0, if the schema
+     *      version field has not yet been installed. -1, if there
+     *      was an error getting the value.
+     */
+    private int getInstalledSchemaVersion(final SolrClient solrClient) {
+        if (!(solrClient instanceof HttpSolrClient)) {
+            // Embedded Solr doesn't support getting properties the way
+            // we do. So just return 0;
+            return 0;
+        }
+        try {
+            String schemaVersion = getUserProperty(solrClient, SCHEMA_VERSION);
+            if (schemaVersion == null) {
+                // No such property. OK, return 0.
+                return 0;
+            }
+            return Integer.parseInt((schemaVersion));
+        } catch (SolrServerException e) {
+            logger.error("Exception:", e);
+            return -1;
+        } catch (IOException e) {
+            logger.error("Exception:", e);
+            return -1;
+        }
+    }
+
+    /** Set the installed schema version.
+     * @param solrClient The SolrClient used to access Solr.
+     * @param schemaVersion The schema version value to be set.
+     * @throws IOException If there is an error communicating with
+     *      the Solr server.
+     * @throws SolrServerException If the Solr server returns an error.
+     */
+    private void setInstalledSchemaVersion(final SolrClient solrClient,
+            final int schemaVersion)
+                    throws SolrServerException, IOException {
+        if (!(solrClient instanceof HttpSolrClient)) {
+            // Embedded Solr doesn't support getting properties the way
+            // we do. So just return.
+            return;
+        }
+        setUserProperty(solrClient, SCHEMA_VERSION,
+                Integer.toString(schemaVersion));
+    }
+
 
     /** Submit a request to the Solr API to create a field type
      * "alphaOnlySort" as per the definition given in the sample
@@ -78,9 +149,9 @@ public final class CreateSchema {
      *      the Solr server.
      * @throws SolrServerException If the Solr server returns an error.
      */
-    private static void addAlphaOnlySortFieldType(final SolrClient solrClient)
+    private void addAlphaOnlySortFieldType(final SolrClient solrClient)
             throws SolrServerException, IOException {
-        System.out.print("Adding field type " + ALPHA_ONLY_SORT + " ... ");
+        logger.info("Adding field type " + ALPHA_ONLY_SORT + " ... ");
 
         /*
         <!-- This is an example of using the KeywordTokenizer along
@@ -160,9 +231,8 @@ public final class CreateSchema {
                 new SchemaRequest.AddFieldType(fieldTypeDefinition);
         UpdateResponse updateResponse =
                 addFieldTypeRequest.process(solrClient);
-        System.out.print("status = " + updateResponse.getStatus());
-        System.out.print(updateResponse.getResponse().toString());
-        System.out.println(" ... done");
+        checkResponse(updateResponse);
+        logger.info(" ... done");
     }
 
     /** Submit a request to the Solr API to create a field.
@@ -176,13 +246,13 @@ public final class CreateSchema {
      *      the Solr server.
      * @throws SolrServerException If the Solr server returns an error.
      */
-    private static void addField(final SolrClient solrClient,
+    private void addField(final SolrClient solrClient,
             final String fieldName,
             final String type,
             final boolean stored,
             final boolean indexed,
             final boolean multivalued) throws SolrServerException, IOException {
-        System.out.print("Adding field: " + fieldName + " ... ");
+        logger.info("Adding field: " + fieldName + " ... ");
         Map<String, Object> fieldAttributes = new LinkedHashMap<>();
         fieldAttributes.put("name", fieldName);
         fieldAttributes.put("type", type);
@@ -196,9 +266,8 @@ public final class CreateSchema {
                 new SchemaRequest.AddField(fieldAttributes);
         UpdateResponse updateResponse =
                 addFieldRequest.process(solrClient);
-        System.out.print("status = " + updateResponse.getStatus());
-        System.out.print(updateResponse.getResponse().toString());
-        System.out.println(" ... done");
+        checkResponse(updateResponse);
+        logger.info(" ... done");
       }
 
     /** Add a copy field to a collection.
@@ -211,19 +280,18 @@ public final class CreateSchema {
      *      the Solr server.
      * @throws SolrServerException If the Solr server returns an error.
      */
-    private static void addCopyField(final SolrClient solrClient,
+    private void addCopyField(final SolrClient solrClient,
             final String source,
             final List<String> targets)
                     throws SolrServerException, IOException {
-        System.out.print("Adding copy field with source: " + source
+        logger.info("Adding copy field with source: " + source
                 + " ... ");
         SchemaRequest.AddCopyField addCopyFieldRequest =
                 new SchemaRequest.AddCopyField(source, targets);
         UpdateResponse updateResponse =
                 addCopyFieldRequest.process(solrClient);
-        System.out.print("status = " + updateResponse.getStatus());
-        System.out.print(updateResponse.getResponse().toString());
-        System.out.println(" ... done");
+        checkResponse(updateResponse);
+        logger.info(" ... done");
       }
 
     /** Delete a dynamic field of a collection.
@@ -233,14 +301,16 @@ public final class CreateSchema {
      *      the Solr server.
      * @throws SolrServerException If the Solr server returns an error.
      */
-    private static void deleteDynamicField(final SolrClient solrClient,
+    private void deleteDynamicField(final SolrClient solrClient,
             final String field)
                     throws SolrServerException, IOException {
-        System.out.print("Deleting dynamic field: " + field + " ... ");
-        SchemaRequest.DeleteDynamicField addCopyFieldRequest =
+        logger.info("Deleting dynamic field: " + field + " ... ");
+        SchemaRequest.DeleteDynamicField deleteCopyFieldRequest =
                 new SchemaRequest.DeleteDynamicField(field);
-        addCopyFieldRequest.process(solrClient);
-        System.out.println(" ... done");
+        UpdateResponse updateResponse =
+                deleteCopyFieldRequest.process(solrClient);
+        checkResponse(updateResponse);
+        logger.info(" ... done");
       }
 
     /** Set a property of a collection.
@@ -251,10 +321,10 @@ public final class CreateSchema {
      *      the Solr server.
      * @throws SolrServerException If the Solr server returns an error.
      */
-    private static void setProperty(final SolrClient solrClient,
+    private void setProperty(final SolrClient solrClient,
             final String name,
             final String value) throws SolrServerException, IOException {
-        System.out.print("Setting config property: " + name + " ... ");
+        logger.info("Setting config property: " + name + " ... ");
         JsonObjectBuilder job1 = Json.createObjectBuilder();
         job1.add(name, value);
         JsonObjectBuilder job2 = Json.createObjectBuilder();
@@ -269,9 +339,61 @@ public final class CreateSchema {
                 SolrRequest.METHOD.POST, "/config", null);
         request.setContentStreams(contentStreams);
         request.process(solrClient);
-        System.out.println(" ... done");
+        logger.info(" ... done");
     }
 
+    /** Get the value of a user property of a collection.
+     * @param solrClient The SolrClient used to access Solr.
+     * @param name The name of the property to be set.
+     * @return The value of the user property.
+     * @throws IOException If there is an error communicating with
+     *      the Solr server.
+     * @throws SolrServerException If the Solr server returns an error.
+     */
+    private String getUserProperty(final SolrClient solrClient,
+            final String name) throws SolrServerException, IOException {
+        GenericSolrRequest request = new GenericSolrRequest(
+                SolrRequest.METHOD.GET, "/config/overlay", null);
+        SimpleSolrResponse response = request.process(solrClient);
+        // Unfortunately, SolrJ doesn't help here, so we need to do a cast.
+        @SuppressWarnings("unchecked")
+        Map<String, Map<String, String>> map =
+                (Map<String, Map<String, String>>)
+                response.getResponse().get("overlay");
+        if (map == null || !map.containsKey("userProps")) {
+            return null;
+        }
+        return map.get("userProps").get(name);
+    }
+
+    /** Set a user property of a collection.
+     * @param solrClient The SolrClient used to access Solr.
+     * @param name The name of the property to be set.
+     * @param value The value of the property to be set.
+     * @throws IOException If there is an error communicating with
+     *      the Solr server.
+     * @throws SolrServerException If the Solr server returns an error.
+     */
+    private void setUserProperty(final SolrClient solrClient,
+            final String name,
+            final String value) throws SolrServerException, IOException {
+        logger.info("Setting config property: " + name + " ... ");
+        JsonObjectBuilder job1 = Json.createObjectBuilder();
+        job1.add(name, value);
+        JsonObjectBuilder job2 = Json.createObjectBuilder();
+        job2.add("set-user-property", job1);
+
+        ContentStreamBase.StringStream stringStream = new
+                ContentStreamBase.StringStream(job2.build().toString());
+        Collection<ContentStream> contentStreams = Collections.<ContentStream>
+            singletonList(stringStream);
+
+        GenericSolrRequest request = new GenericSolrRequest(
+                SolrRequest.METHOD.POST, "/config", null);
+        request.setContentStreams(contentStreams);
+        request.process(solrClient);
+        logger.info(" ... done");
+    }
 
     /*
     private static void createField(final SolrClient solrClient,
@@ -305,19 +427,16 @@ public final class CreateSchema {
       }
     */
 
-    /** Create the schema.
-     *
-     * @param args The command-line parameters.
+    /** Install schema version 1.
+     * @param client The SolrClient into which to install the schema.
+     * @throws SolrServerException If a SolrServerException was generated
+     *      by the SolrJ API.
+     * @throws IOException If an IOException was generated by the SolrJ API.
      */
-    public static void main(final String[] args) {
-        String apiURL;
-        if (args.length != 1) {
-            System.out.println("Must provide one command-line parameter");
-            return;
-        }
-        apiURL = args[0];
-
-        try (SolrClient client = new HttpSolrClient.Builder(apiURL).build()) {
+    public void installSchema1(final SolrClient client)
+            throws SolrServerException, IOException {
+        try {
+            setInstalledSchemaVersion(client, 1);
             addAlphaOnlySortFieldType(client);
             addField(client, SLUG, STRING, true, true, false);
             addField(client, TITLE, STRING, true, true, false);
@@ -332,11 +451,7 @@ public final class CreateSchema {
             addField(client, SISSVOC_ENDPOINT, STRING,
                     true, true, false);
             addField(client, WIDGETABLE, BOOLEAN, true, true, false);
-//            createField(client, "", STRING, true, true, false);
 
-
-            // This one is subsequently undone.
-//            createField(client, "subjects", STRING, true, true, true);
             addField(client, TOP_CONCEPT, TEXT_EN_SPLITTING,
                     true, true, true);
             addField(client, LANGUAGE, STRING, true, true, true);
@@ -344,7 +459,6 @@ public final class CreateSchema {
             addField(client, PUBLISHER, STRING, true, true, true);
             addField(client, ACCESS, STRING, true, true, true);
             addField(client, FORMAT, STRING, true, true, true);
-//            createField(client, "", STRING, true, true, true);
             addField(client, SUBJECT_SOURCES, STRING, true, true, true);
             addField(client, SUBJECT_LABELS, STRING, true, true, true);
             addField(client, SUBJECT_NOTATIONS, STRING, true, true, true);
@@ -360,31 +474,90 @@ public final class CreateSchema {
                     false, true, true);
             addField(client, FULLTEXT, TEXT_EN_SPLITTING,
                     false, true, true);
-//            createField(client, "", TEXT_EN_SPLITTING, false, true, true);
 
             addCopyField(client, "*", Arrays.asList(FULLTEXT));
             addCopyField(client, FieldConstants.TITLE,
                     Arrays.asList(TITLE_SEARCH, TITLE_SORT));
-            // This one is subsequently undone.
-//            addCopyField(client, "subjects", Arrays.asList("subject_search"));
             addCopyField(client, CONCEPT, Arrays.asList(CONCEPT_SEARCH));
             addCopyField(client, TOP_CONCEPT,
                     Arrays.asList(SUBJECT_SEARCH));
-//            addCopyField(client, "", Arrays.asList(""));
             addCopyField(client, SUBJECT_LABELS,
                     Arrays.asList(SUBJECT_SEARCH));
             addCopyField(client, SUBJECT_NOTATIONS,
                     Arrays.asList(SUBJECT_SEARCH));
 
+            /** Part of the data-driven schema, but we don't use it. */
             deleteDynamicField(client, "*_point");
 
-            setProperty(client, "updateHandler.autoSoftCommit.maxTime",
-                    "10000");
+            if (client instanceof HttpSolrClient) {
+                // Do this for production. It doesn't seem to work well
+                // when done with the embedded Solr used for automated
+                // testing.
+                setProperty(client, "updateHandler.autoSoftCommit.maxTime",
+                        "10000");
+            }
         } catch (SolrServerException sse) {
-            System.out.println("Got a SolrServerException:");
+            logger.error("Got a SolrServerException:", sse);
+            throw sse;
+        } catch (IOException ioe) {
+            logger.error("Got an IOException:", ioe);
+            throw ioe;
+        } catch (RuntimeException re) {
+            logger.error("Got an error from SolrJ, so not proceeding. "
+                    + "Most likely cause: schema already installed.");
+            throw re;
+        }
+    }
+
+    /** Install the schema.
+     * @param client The SolrClient into which to install the schema.
+     * @throws SolrServerException If a SolrServerException was generated
+     *      by the SolrJ API.
+     * @throws IOException If an IOException was generated by the SolrJ API.
+     */
+    public void installSchema(final SolrClient client)
+            throws SolrServerException, IOException {
+        // Of course, this will become more sophisticated, once there
+        // is a revision of the schema.
+        try {
+            int installedSchemaVersion = getInstalledSchemaVersion(client);
+            if (installedSchemaVersion < 0) {
+                logger.error("Got an error getting the schema version. "
+                        + "Not proceeding.");
+                return;
+            }
+            logger.info("Installed schema version is: "
+                    + installedSchemaVersion);
+            if (installedSchemaVersion < 1) {
+                installSchema1(client);
+            }
+        } catch (RuntimeException re) {
+            // Most likely, already installed.
+            logger.error("Runtime exception: ", re);
+        }
+    }
+
+    /** Create the schema.
+     *
+     * @param args The command-line parameters.
+     */
+    public static void main(final String[] args) {
+        String apiURL;
+        CreateSchema createSchema = new CreateSchema();
+        if (args.length != 1) {
+            createSchema.logger.error("Must provide one command-line "
+                    + "parameter");
+            return;
+        }
+        apiURL = args[0];
+
+        try (SolrClient client = new HttpSolrClient.Builder(apiURL).build()) {
+            createSchema.installSchema(client);
+        } catch (SolrServerException sse) {
+            createSchema.logger.info("Got a SolrServerException:");
             sse.printStackTrace();
         } catch (IOException ioe) {
-            System.out.println("Got an IOException:");
+            createSchema.logger.info("Got an IOException:");
             ioe.printStackTrace();
         }
     }

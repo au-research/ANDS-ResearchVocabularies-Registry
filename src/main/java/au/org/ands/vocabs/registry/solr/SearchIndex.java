@@ -3,24 +3,48 @@
 package au.org.ands.vocabs.registry.solr;
 
 import static au.org.ands.vocabs.registry.solr.FieldConstants.ACCESS;
+import static au.org.ands.vocabs.registry.solr.FieldConstants.ACRONYM;
+import static au.org.ands.vocabs.registry.solr.FieldConstants.CONCEPT_SEARCH;
+import static au.org.ands.vocabs.registry.solr.FieldConstants.DESCRIPTION;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.FORMAT;
+import static au.org.ands.vocabs.registry.solr.FieldConstants.FULLTEXT;
+import static au.org.ands.vocabs.registry.solr.FieldConstants.ID;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.LANGUAGE;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.LICENCE;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.PUBLISHER;
+import static au.org.ands.vocabs.registry.solr.FieldConstants.PUBLISHER_SEARCH;
+import static au.org.ands.vocabs.registry.solr.FieldConstants.SISSVOC_ENDPOINT;
+import static au.org.ands.vocabs.registry.solr.FieldConstants.SLUG;
+import static au.org.ands.vocabs.registry.solr.FieldConstants.STATUS;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.SUBJECT_LABELS;
+import static au.org.ands.vocabs.registry.solr.FieldConstants.SUBJECT_SEARCH;
+import static au.org.ands.vocabs.registry.solr.FieldConstants.TITLE;
+import static au.org.ands.vocabs.registry.solr.FieldConstants.TITLE_SEARCH;
+import static au.org.ands.vocabs.registry.solr.FieldConstants.TITLE_SORT;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.WIDGETABLE;
 
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
+import java.util.Map;
+import java.util.Map.Entry;
 
-import javax.ws.rs.core.MultivaluedMap;
-
+import org.apache.commons.lang.StringUtils;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
+import org.apache.solr.client.solrj.SolrQuery.ORDER;
 import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.client.solrj.response.QueryResponse;
+import org.apache.solr.client.solrj.impl.NoOpResponseParser;
+import org.apache.solr.client.solrj.request.QueryRequest;
+import org.apache.solr.common.params.CommonParams;
+import org.apache.solr.common.params.DisMaxParams;
+import org.apache.solr.common.params.FacetParams;
+import org.apache.solr.common.util.NamedList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+
+import au.org.ands.vocabs.registry.db.converter.JSONSerialization;
 
 /** Methods for Solr searching. */
 public final class SearchIndex {
@@ -36,20 +60,39 @@ public final class SearchIndex {
     private static final Logger LOGGER = LoggerFactory.getLogger(
             MethodHandles.lookup().lookupClass());
 
+    /** Default number of rows to be returned. */
+    private static final int DEFAULT_ROWS = 10;
+
+    /** Number of rows to use, if the filters include a negative
+     * value for rows. The name "ridiculously large value" comes
+     * from the Solr documentation for the rows parameter at
+     * <a
+     *  href="https://wiki.apache.org/solr/CommonQueryParameters">https://wiki.apache.org/solr/CommonQueryParameters</a>.
+     */
+    private static final int RIDICULOUSLY_LARGE_VALUE = 10000000;
+
     /** Perform a Solr search.
-     *
-     * This method is not finished. Not yet usable!
-     *
-     * @param queryParams The query parameters.
-     * @return The response from Solr.
+     * @param filtersJson The query parameters, specified as a String
+     *      in JSON format.
+     * @return The response from Solr, in the raw JSON form that came back.
      * @throws IOException If the Solr query generated an IOException.
      * @throws SolrServerException If the Solr query generated a
      *      SolrServerException.
      */
-    public static QueryResponse query(
-            final MultivaluedMap<String, String> queryParams)
+    public static String query(
+            final String filtersJson)
             throws IOException, SolrServerException {
         SolrQuery solrQuery = new SolrQuery();
+        // Specify that we want the raw JSON that Solr produces.
+        // See one of the non-accepted answers at:
+        // https://stackoverflow.com/questions/28374428/
+        //             return-solr-response-in-json-format
+        QueryRequest request = new QueryRequest(solrQuery);
+        NoOpResponseParser rawJsonResponseParser = new NoOpResponseParser();
+        rawJsonResponseParser.setWriterType(CommonParams.JSON);
+        request.setResponseParser(rawJsonResponseParser);
+
+        // Always add these facet fields.
         solrQuery.addFacetField(
                 SUBJECT_LABELS,
                 PUBLISHER,
@@ -58,20 +101,119 @@ public final class SearchIndex {
                 FORMAT,
                 LICENCE,
                 WIDGETABLE);
-        solrQuery.setFacetSort("index asc");
+        solrQuery.setFacetSort(FacetParams.FACET_SORT_INDEX);
         solrQuery.setFacetMinCount(1);
 
-        queryParams.forEach((key, values) -> {
-            switch (key) {
-            case "q":
-                break;
-            default:
-                break;
+        // Keep track if we have seen a query term.
+        boolean queryIsSet = false;
+        // Keep track of the rows we will ask for.
+        // Set 10 rows as default. This can be overridden by passing
+        // in a "pp" filter.
+        int rows = DEFAULT_ROWS;
+
+        // See if there are filters; if so, apply them.
+        if (filtersJson != null) {
+            Map<String, String> filters =
+                    JSONSerialization.deserializeStringAsJson(filtersJson,
+                            new TypeReference<Map<String, String>>() { });
+
+            // Since there are filters, always apply highlighting.
+            // addHighlightField() does solrQuery.setHighlight(true) for us.
+            solrQuery.addHighlightField("*");
+            solrQuery.setHighlightSimplePre("&lt;b&gt;");
+            solrQuery.setHighlightSimplePost("&lt;/b&gt;");
+            solrQuery.setHighlightSnippets(2);
+            solrQuery.set("defType", "edismax");
+            // Check for a "pp" setting, now, as we might need it later
+            // if we find a "p" filter.
+            if (filters.containsKey("pp")) {
+                rows = Integer.valueOf(filters.get("pp"));
+                if (rows < 0) {
+                    /* If a negative value specified, the caller really
+                     * wants "all" rows. Unfortunately, Solr does not
+                     * directly support that. See the Solr doc. */
+                    rows = RIDICULOUSLY_LARGE_VALUE;
+                }
             }
-        });
+
+            solrQuery.set(DisMaxParams.ALTQ, "*:*");
+
+            // see (1) views/includes/search-view.blade.php
+            // for the fields that must be returned for the
+            // "main" search function,
+            // (2) assets/templates/widgetDirective.html and
+            // assets/js/vocabDisplayDirective.js for the
+            // fields needed for the Widget Explorer.
+            // The Widget Explorer needs "sissvoc_endpoint" added
+            // to the list required by the "main" search.
+            // NB: highlighting can/does also return snippets
+            // from other fields not listed in fl (which is good!).
+            solrQuery.setFields(
+                    ID,
+                    SLUG,
+                    STATUS,
+                    TITLE,
+                    ACRONYM,
+                    PUBLISHER,
+                    DESCRIPTION,
+                    WIDGETABLE,
+                    SISSVOC_ENDPOINT);
+            solrQuery.set(DisMaxParams.QF,
+                    TITLE_SEARCH + "^1 "
+                            + SUBJECT_SEARCH + "^0.5 "
+                            + DESCRIPTION + "^0.01 "
+                            + FULLTEXT + "^0.001 "
+                            + CONCEPT_SEARCH + "^0.02 "
+                            + PUBLISHER_SEARCH + "^0.5");
+
+            for (Entry<String, String> filterEntry : filters.entrySet()) {
+                String value = filterEntry.getValue();
+                switch (filterEntry.getKey()) {
+                case "q":
+                    if (StringUtils.isNotBlank(value)) {
+                        solrQuery.setQuery(value);
+                        queryIsSet = true;
+                    }
+                    break;
+                case "p":
+                    int page = Integer.valueOf(filterEntry.getValue());
+                    if (page > 1) {
+                        int start = rows * (page - 1);
+                        solrQuery.setStart(start);
+                    }
+                    break;
+                case "pp":
+                    // We've already seen this, above.
+                    break;
+                case ACCESS:
+                case FORMAT:
+                case LANGUAGE:
+                case LICENCE:
+                case PUBLISHER:
+                case SUBJECT_LABELS:
+                case WIDGETABLE:
+                    solrQuery.addFilterQuery(filterEntry.getKey()
+                            + ":(" + value + ")");
+                    break;
+                default:
+                    // For now, ignore it.
+                    break;
+                }
+            }
+        }
+
+        // We can now set rows.
+        solrQuery.setRows(rows);
+        // If there was no query specified, get all documents,
+        // and sort by title_sort.
+        if (!queryIsSet) {
+            solrQuery.setQuery("*:*");
+            solrQuery.setSort(TITLE_SORT, ORDER.asc);
+        }
 
         try {
-            return SOLR_CLIENT.query(solrQuery);
+            NamedList<Object> response = SOLR_CLIENT.request(request);
+            return (String) (response.get("response"));
         } catch (IOException | SolrServerException e) {
             LOGGER.error("Exception while performing Solr query", e);
             throw e;

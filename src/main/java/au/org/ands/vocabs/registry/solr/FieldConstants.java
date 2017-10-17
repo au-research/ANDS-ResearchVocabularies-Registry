@@ -39,6 +39,8 @@ public final class FieldConstants {
     public static final String PUBLISHER = "publisher";
     /** The name of the "publisher_search" Solr field. */
     public static final String PUBLISHER_SEARCH = "publisher_search";
+    /** The name of the "schema_version" Solr user property. */
+    public static final String SCHEMA_VERSION = "schema_version";
     /** The name of the "sissvoc_endpoint" Solr field. */
     public static final String SISSVOC_ENDPOINT = "sissvoc_endpoint";
     /** The name of the "slug" Solr field. */

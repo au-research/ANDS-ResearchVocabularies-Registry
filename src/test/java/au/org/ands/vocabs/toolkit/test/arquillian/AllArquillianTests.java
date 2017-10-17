@@ -20,6 +20,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status.Family;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.solr.client.solrj.SolrClient;
 import org.dbunit.Assertion;
 import org.dbunit.DatabaseUnitException;
 import org.dbunit.dataset.IDataSet;
@@ -40,6 +41,7 @@ import org.testng.annotations.BeforeSuite;
 import org.testng.annotations.Test;
 
 import au.org.ands.vocabs.registry.db.dao.VocabularyDAO;
+import au.org.ands.vocabs.registry.solr.SolrUtils;
 import au.org.ands.vocabs.toolkit.db.ResourceOwnerHostUtils;
 import au.org.ands.vocabs.toolkit.db.TaskUtils;
 import au.org.ands.vocabs.toolkit.db.model.AccessPoint;
@@ -930,6 +932,18 @@ public class AllArquillianTests extends ArquillianBaseTest {
             vocabularyList = VocabularyDAO.getAllVocabulary();
         Assert.assertNotNull(vocabularyList);
         Assert.assertEquals(vocabularyList.size(), 0, "Empty list");
+    }
+
+    /* Solr. */
+
+    /** Test of {@link VocabularyDAO#getAllVocabulary()}.
+     * This is just a sanity test to make sure that the registry
+     * code is included correctly. */
+    @Test
+    public final void testSolrOK() {
+        logger.info("In testSolrOK()");
+        SolrClient solrClient = SolrUtils.getSolrClient();
+        Assert.assertNotNull(solrClient);
     }
 
 }
