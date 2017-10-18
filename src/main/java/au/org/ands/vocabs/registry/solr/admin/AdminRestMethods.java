@@ -40,6 +40,7 @@ public class AdminRestMethods {
     @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     @GET
     public final Response indexAll() {
+        logger.info("Called indexAll");
         try {
             EntityIndexer.unindexAllVocabularies();
             EntityIndexer.indexAllVocabularies();
@@ -61,6 +62,7 @@ public class AdminRestMethods {
     @GET
     public final Response indexOne(@PathParam("vocabularyId") final Integer
             vocabularyId) {
+        logger.info("Called index: " + vocabularyId);
         try {
             EntityIndexer.unindexVocabulary(vocabularyId);
             EntityIndexer.indexVocabulary(vocabularyId);
