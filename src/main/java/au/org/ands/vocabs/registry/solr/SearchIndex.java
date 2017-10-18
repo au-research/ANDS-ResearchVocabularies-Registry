@@ -25,10 +25,13 @@ import static au.org.ands.vocabs.registry.solr.FieldConstants.WIDGETABLE;
 
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrQuery.ORDER;
@@ -113,9 +116,9 @@ public final class SearchIndex {
 
         // See if there are filters; if so, apply them.
         if (filtersJson != null) {
-            Map<String, String> filters =
+            Map<String, Object> filters =
                     JSONSerialization.deserializeStringAsJson(filtersJson,
-                            new TypeReference<Map<String, String>>() { });
+                            new TypeReference<Map<String, Object>>() { });
 
             // Since there are filters, always apply highlighting.
             // addHighlightField() does solrQuery.setHighlight(true) for us.
@@ -127,7 +130,7 @@ public final class SearchIndex {
             // Check for a "pp" setting, now, as we might need it later
             // if we find a "p" filter.
             if (filters.containsKey("pp")) {
-                rows = Integer.valueOf(filters.get("pp"));
+                rows = (Integer) filters.get("pp");
                 if (rows < 0) {
                     /* If a negative value specified, the caller really
                      * wants "all" rows. Unfortunately, Solr does not
@@ -138,25 +141,17 @@ public final class SearchIndex {
 
             solrQuery.set(DisMaxParams.ALTQ, "*:*");
 
-            // see (1) views/includes/search-view.blade.php
-            // for the fields that must be returned for the
-            // "main" search function,
+            // see Portal (1) views/includes/search-view.blade.php for the
+            // fields that must be returned for the "main" search function,
             // (2) assets/templates/widgetDirective.html and
-            // assets/js/vocabDisplayDirective.js for the
-            // fields needed for the Widget Explorer.
-            // The Widget Explorer needs "sissvoc_endpoint" added
-            // to the list required by the "main" search.
-            // NB: highlighting can/does also return snippets
+            // assets/js/vocabDisplayDirective.js for the fields needed
+            // for the Widget Explorer. The Widget Explorer needs
+            // "sissvoc_endpoint" added to the list required by the "main"
+            // search. NB: highlighting can/does also return snippets
             // from other fields not listed in fl (which is good!).
             solrQuery.setFields(
-                    ID,
-                    SLUG,
-                    STATUS,
-                    TITLE,
-                    ACRONYM,
-                    PUBLISHER,
-                    DESCRIPTION,
-                    WIDGETABLE,
+                    ID, SLUG, STATUS, TITLE, ACRONYM,
+                    PUBLISHER, DESCRIPTION, WIDGETABLE,
                     SISSVOC_ENDPOINT);
             solrQuery.set(DisMaxParams.QF,
                     TITLE_SEARCH + "^1 "
@@ -166,17 +161,18 @@ public final class SearchIndex {
                             + CONCEPT_SEARCH + "^0.02 "
                             + PUBLISHER_SEARCH + "^0.5");
 
-            for (Entry<String, String> filterEntry : filters.entrySet()) {
-                String value = filterEntry.getValue();
+            for (Entry<String, Object> filterEntry : filters.entrySet()) {
+                Object value = filterEntry.getValue();
                 switch (filterEntry.getKey()) {
                 case "q":
-                    if (StringUtils.isNotBlank(value)) {
-                        solrQuery.setQuery(value);
+                    String stringValue = (String) value;
+                    if (StringUtils.isNotBlank(stringValue)) {
+                        solrQuery.setQuery(stringValue);
                         queryIsSet = true;
                     }
                     break;
                 case "p":
-                    int page = Integer.valueOf(filterEntry.getValue());
+                    int page = (Integer) (filterEntry.getValue());
                     if (page > 1) {
                         int start = rows * (page - 1);
                         solrQuery.setStart(start);
@@ -192,8 +188,25 @@ public final class SearchIndex {
                 case PUBLISHER:
                 case SUBJECT_LABELS:
                 case WIDGETABLE:
+                    // In the following, support values that are _either_
+                    // just a string, or an _array_ of strings.
+                    String filterStringValue;
+                    if (value instanceof ArrayList) {
+                        @SuppressWarnings("unchecked")
+                        String filterStringValues = ((ArrayList<String>) value).
+                                stream().
+                                map(v -> "+\""
+                                        + StringEscapeUtils.escapeEcmaScript(
+                                                v.toString()) + "\"").
+                                collect(Collectors.joining(" "));
+                        filterStringValue = filterStringValues;
+                    } else {
+                        filterStringValue = "+\""
+                                + StringEscapeUtils.escapeEcmaScript(
+                                        value.toString()) + "\"";
+                    }
                     solrQuery.addFilterQuery(filterEntry.getKey()
-                            + ":(" + value + ")");
+                            + ":(" + filterStringValue + ")");
                     break;
                 default:
                     // For now, ignore it.
