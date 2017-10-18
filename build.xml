@@ -24,6 +24,7 @@
   <property name="conf-test" value="conf-test" />
   <!-- Generated source code -->
   <property name="src-db-gen" value="src/db-gen" />
+  <property name="src-jaxb-gen" value="src/jaxb-gen" />
   <property name="src-bot-detection" value="src/CrawlerDetect" />
   <property name="src-bot-detection-gen"
             value="src/main/java/au/org/ands/vocabs/registry/utils/BotDetector.java" />
@@ -109,9 +110,12 @@
   <!-- Cleanup -->
 
   <target name="clean">
+    <delete dir="${src-db-gen}" />
+    <delete dir="${src-jaxb-gen}" />
+    <delete file="${src-bot-detection-gen}" />
     <delete dir="${build}" />
     <delete dir="${build-jar}" />
-    <delete dir="${build-jar}" />
+    <delete dir="${build-test}" />
     <delete dir="${build-liquibase}" />
     <delete dir="${build-tools}" />
     <delete dir="${mapstruct-sources}" />
