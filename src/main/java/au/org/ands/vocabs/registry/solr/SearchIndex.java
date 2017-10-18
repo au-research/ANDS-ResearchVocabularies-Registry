@@ -97,13 +97,8 @@ public final class SearchIndex {
 
         // Always add these facet fields.
         solrQuery.addFacetField(
-                SUBJECT_LABELS,
-                PUBLISHER,
-                LANGUAGE,
-                ACCESS,
-                FORMAT,
-                LICENCE,
-                WIDGETABLE);
+                SUBJECT_LABELS, PUBLISHER, LANGUAGE, ACCESS,
+                FORMAT, LICENCE, WIDGETABLE);
         solrQuery.setFacetSort(FacetParams.FACET_SORT_INDEX);
         solrQuery.setFacetMinCount(1);
 
@@ -192,6 +187,11 @@ public final class SearchIndex {
                     // just a string, or an _array_ of strings.
                     String filterStringValue;
                     if (value instanceof ArrayList) {
+                        if (((ArrayList<?>) value).isEmpty()) {
+                            // The portal does send empty lists. In this case,
+                            // don't add anything to the query.
+                            break;
+                        }
                         @SuppressWarnings("unchecked")
                         String filterStringValues = ((ArrayList<String>) value).
                                 stream().
