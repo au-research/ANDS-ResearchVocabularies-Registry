@@ -34,7 +34,8 @@ public class AdminRestMethods {
     private Logger logger = LoggerFactory.getLogger(
             MethodHandles.lookup().lookupClass());
 
-    /** Index all vocabularies.
+    /** Index all vocabularies. All existing documents in the index
+     * are removed first.
      * @return Result of the indexing.
      */
     @Path("index")
@@ -42,6 +43,7 @@ public class AdminRestMethods {
     @GET
     public final Response indexAll() {
         try {
+            EntityIndexer.unindexAllVocabularies();
             EntityIndexer.indexAllVocabularies();
         } catch (IOException | SolrServerException e) {
             logger.error("indexAll: got exception",  e);
@@ -51,7 +53,8 @@ public class AdminRestMethods {
         return Response.ok().entity(new SimpleResult("OK")).build();
     }
 
-    /** Index one vocabulary.
+    /** Index one vocabulary. Any existing document in the index
+     * with the same ID is removed first.
      * @param vocabularyId The vocabulary ID of the vocabulary to be indexed.
      * @return Result of the indexing.
      */
@@ -61,6 +64,7 @@ public class AdminRestMethods {
     public final Response indexOne(@PathParam("vocabularyId") final Integer
             vocabularyId) {
         try {
+            EntityIndexer.unindexVocabulary(vocabularyId);
             EntityIndexer.indexVocabulary(vocabularyId);
         } catch (IOException | SolrServerException e) {
             logger.error("indexAll: got exception",  e);

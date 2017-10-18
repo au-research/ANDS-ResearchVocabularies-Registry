@@ -351,6 +351,11 @@ public final class EntityIndexer {
             throws IOException, SolrServerException {
         Vocabulary vocabulary =
                 VocabularyDAO.getCurrentVocabularyByVocabularyId(vocabularyId);
+        if (vocabulary == null) {
+            // For now, do nothing. Maybe revisit this decision later,
+            // e.g., to throw an exception in this case.
+            return;
+        }
         SolrInputDocument document = createSolrDocument(vocabulary);
         try {
             SOLR_CLIENT.add(document);
