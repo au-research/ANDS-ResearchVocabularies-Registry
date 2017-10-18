@@ -140,7 +140,7 @@ Migrate the content from the "old-style" database into the new, blank
 Registry database:
 
 ```
-wget -O - http://localhost:8080/registry-context/registry/internal/migrateToolkitToRegistry
+wget -O - http://localhost:8080/registry-context/registry/admin/database/migrateToolkitToRegistry
 ```
 
 # Define PoolParty server for the Registry
@@ -171,7 +171,7 @@ INSERT INTO subject_resolver_sources(source,iri) VALUES ('gcmd', 'http://vocabs.
 Now run:
 
 ```
-wget -O - http://localhost:8080/registry-context/registry/internal/populateSubjectResolver
+wget -O - http://localhost:8080/registry-context/registry/admin/database/populateSubjectResolver
 ```
 
 # Create Solr collection and install schema

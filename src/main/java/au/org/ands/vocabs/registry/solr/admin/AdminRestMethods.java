@@ -17,6 +17,7 @@ import org.apache.solr.client.solrj.SolrServerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import au.org.ands.vocabs.registry.api.context.AdminApiPaths;
 import au.org.ands.vocabs.registry.api.context.ApiPaths;
 import au.org.ands.vocabs.registry.api.user.ErrorResult;
 import au.org.ands.vocabs.registry.api.user.SimpleResult;
@@ -24,11 +25,8 @@ import au.org.ands.vocabs.registry.solr.EntityIndexer;
 
 /** Solr index administration tools available through a REST-like
  * interface. */
-@Path(ApiPaths.API_ADMIN + "/" + AdminRestMethods.API_SOLR)
+@Path(AdminApiPaths.API_ADMIN + "/" + AdminApiPaths.SOLR)
 public class AdminRestMethods {
-
-    /** Intermediate path to all the methods in this class. */
-    protected static final String API_SOLR = "solr";
 
     /** Logger for this class. */
     private Logger logger = LoggerFactory.getLogger(

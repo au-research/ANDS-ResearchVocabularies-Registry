@@ -20,6 +20,7 @@ import org.openrdf.repository.sparql.SPARQLRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import au.org.ands.vocabs.registry.api.context.AdminApiPaths;
 import au.org.ands.vocabs.registry.db.dao.SubjectResolverEntryDAO;
 import au.org.ands.vocabs.registry.db.dao.SubjectResolverSourceDAO;
 import au.org.ands.vocabs.registry.db.entity.SubjectResolverEntry;
@@ -28,7 +29,7 @@ import au.org.ands.vocabs.registry.db.entity.SubjectResolverSource;
 /** Utility class for populating the subject_resolver table based on
  * the contents of the subject_resolver_sources table.
  */
-@Path("registry/internal")
+@Path(AdminApiPaths.API_ADMIN + "/" + AdminApiPaths.DATABASE)
 public class PopulateSubjectResolver {
 
     /** Logger for this class. */

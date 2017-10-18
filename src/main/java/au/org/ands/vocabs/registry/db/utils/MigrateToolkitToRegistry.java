@@ -35,6 +35,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationModule;
 
+import au.org.ands.vocabs.registry.api.context.AdminApiPaths;
 import au.org.ands.vocabs.registry.db.context.TemporalConstants;
 import au.org.ands.vocabs.registry.db.context.TemporalUtils;
 import au.org.ands.vocabs.registry.db.converter.JSONSerialization;
@@ -96,7 +97,7 @@ import au.org.ands.vocabs.toolkit.utils.ToolkitProperties;
 /** Utility class for migrating the contents of the "toolkit" database
  * to the "registry" database.
  */
-@Path("registry/internal")
+@Path(AdminApiPaths.API_ADMIN + "/" + AdminApiPaths.DATABASE)
 public final class MigrateToolkitToRegistry {
 
     /** Name of system user to use as modifiedBy value. */
