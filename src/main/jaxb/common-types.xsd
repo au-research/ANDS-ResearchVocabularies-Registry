@@ -60,7 +60,7 @@
     </xs:simpleType>
     <xs:simpleType name="related-entity-identifier-type">
         <xs:restriction base="xs:token">
-            <xs:enumeration value="AU-ANL:PEAU">
+            <xs:enumeration value="auAnlPeau">
                 <xs:annotation>
                     <xs:documentation>National Library of Australia identifier.
 These are identifiers that begin with "nla.party-".

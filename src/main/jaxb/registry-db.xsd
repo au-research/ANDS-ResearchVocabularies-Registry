@@ -8,10 +8,10 @@
     <xs:element name="vocabulary-json">
         <xs:complexType>
             <xs:sequence>
-                <xs:element minOccurs="0" name="poolparty_project">
+                <xs:element minOccurs="0" name="poolparty-project">
                     <xs:complexType>
-                        <xs:attribute name="server_id" type="xs:int"/>
-                        <xs:attribute name="project_id" type="xs:string"/>
+                        <xs:attribute name="server-id" type="xs:int"/>
+                        <xs:attribute name="project-id" type="xs:string"/>
                     </xs:complexType>
                 </xs:element>
                 <xs:element maxOccurs="unbounded" minOccurs="0" name="subjects">
@@ -22,30 +22,30 @@
                         <xs:attribute name="iri" type="xs:string"/>
                     </xs:complexType>
                 </xs:element>
-                <xs:element maxOccurs="unbounded" name="other_languages" type="xs:string"> </xs:element>
-                <xs:element maxOccurs="unbounded" minOccurs="0" name="top_concepts" type="xs:string"
+                <xs:element maxOccurs="unbounded" name="other-languages" type="xs:string"> </xs:element>
+                <xs:element maxOccurs="unbounded" minOccurs="0" name="top-concepts" type="xs:string"
                 />
             </xs:sequence>
             <xs:attribute name="title" type="xs:string"/>
             <xs:attribute name="acronym" type="xs:string"/>
             <xs:attribute name="description" type="xs:string"/>
             <xs:attribute name="note" type="xs:string"/>
-            <xs:attribute name="revision_cycle" type="xs:string"/>
-            <xs:attribute name="creation_date" type="xs:string"/>
-            <xs:attribute name="primary_language" type="xs:string"/>
+            <xs:attribute name="revision-cycle" type="xs:string"/>
+            <xs:attribute name="creation-date" type="xs:string"/>
+            <xs:attribute name="primary-language" type="xs:string"/>
             <xs:attribute name="licence" type="xs:string"/>
-            <xs:attribute name="draft_created_date" type="xs:string"/>
-            <xs:attribute name="draft_modified_date" type="xs:string"/>
+            <xs:attribute name="draft-created-date" type="xs:string"/>
+            <xs:attribute name="draft-modified-date" type="xs:string"/>
         </xs:complexType>
     </xs:element>
     <xs:element name="version-json">
         <xs:complexType>
             <xs:attribute name="title" type="xs:string"/>
             <xs:attribute name="note" type="xs:string"/>
-            <xs:attribute name="do_import" type="xs:boolean"/>
-            <xs:attribute name="do_publish" type="xs:boolean"/>
-            <xs:attribute name="draft_created_date" type="xs:string"/>
-            <xs:attribute name="draft_modified_date" type="xs:string"/>
+            <xs:attribute name="do-import" type="xs:boolean"/>
+            <xs:attribute name="do-publish" type="xs:boolean"/>
+            <xs:attribute name="draft-created-date" type="xs:string"/>
+            <xs:attribute name="draft-modified-date" type="xs:string"/>
         </xs:complexType>
     </xs:element>
     <xs:element name="access-point-json">
@@ -60,8 +60,8 @@
         </xs:complexType>
     </xs:element>
     <xs:complexType name="ap-common">
-        <xs:attribute name="draft_created_date" type="xs:string"/>
-        <xs:attribute name="draft_modified_date" type="xs:string"/>
+        <xs:attribute name="draft-created-date" type="xs:string"/>
+        <xs:attribute name="draft-modified-date" type="xs:string"/>
     </xs:complexType>
     <xs:complexType name="ap-api-sparql">
         <xs:complexContent>
@@ -85,7 +85,7 @@
             <xs:extension base="ap-common">
                 <xs:attribute name="repository" type="xs:string"/>
                 <xs:attribute name="server-base" type="xs:anyURI"/>
-                <xs:attribute name="urlPrefix" type="xs:anyURI" use="required"/>
+                <xs:attribute name="url-prefix" type="xs:anyURI" use="required"/>
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>
@@ -93,7 +93,7 @@
         <xs:complexContent>
             <xs:extension base="ap-common">
                 <xs:attribute name="source" type="common:ap-source" use="required"/>
-                <xs:attribute name="urlPrefix" type="xs:anyURI" use="required"/>
+                <xs:attribute name="url-prefix" type="xs:anyURI" use="required"/>
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>
