@@ -8,6 +8,7 @@ import static au.org.ands.vocabs.toolkit.test.utils.DatabaseSelector.TOOLKIT;
 import java.io.File;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
+import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URL;
 import java.sql.SQLException;
@@ -20,8 +21,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status.Family;
 
-import au.org.ands.vocabs.registry.db.dao.VersionDAO;
-import au.org.ands.vocabs.registry.enums.VersionStatus;
 import org.apache.commons.io.FileUtils;
 import org.apache.solr.client.solrj.SolrClient;
 import org.dbunit.Assertion;
@@ -40,10 +39,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.Assert;
 import org.testng.annotations.AfterSuite;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.BeforeSuite;
 import org.testng.annotations.Test;
 
+import au.org.ands.vocabs.registry.db.dao.VersionDAO;
 import au.org.ands.vocabs.registry.db.dao.VocabularyDAO;
+import au.org.ands.vocabs.registry.enums.VersionStatus;
 import au.org.ands.vocabs.registry.solr.SolrUtils;
 import au.org.ands.vocabs.toolkit.db.ResourceOwnerHostUtils;
 import au.org.ands.vocabs.toolkit.db.TaskUtils;
@@ -138,6 +140,17 @@ public class AllArquillianTests extends ArquillianBaseTest {
         }
     }
 
+    /** Log the beginning of each test method. Note: you will see the
+     * log message twice, if the test is a server-side test. In that
+     * case, the test method is nevertheless only run once, after the
+     * <i>second</i> log message.
+     * @param method The test method about to be run.
+     */
+    @BeforeMethod
+    public void logTestNameBefore(final Method method) {
+        logger.info("About to run test: " + method.getName());
+    }
+
     // Server-side tests go here. Client-side tests later on.
 
     // Tests of database model entity bean classes.
@@ -146,7 +159,6 @@ public class AllArquillianTests extends ArquillianBaseTest {
      * using Mean Bean. */
     @Test
     public final void testDbModelEntityBeans() {
-        logger.info("In testDbModelEntityBeans()");
         new BeanTester().testBean(AccessPoint.class);
         new BeanTester().testBean(ResourceMapEntry.class);
         // Special treatment of ResourceOwnerHost, as it has
@@ -167,7 +179,6 @@ public class AllArquillianTests extends ArquillianBaseTest {
     /** Test of {@link Version#getReleaseDate()}. */
     @Test
     public final void testVersionGetReleaseDate() {
-        logger.info("In testVersionGetReleaseDate()");
         Version v = new Version();
         // Null returned if data is null.
         v.setData(null);
@@ -192,7 +203,6 @@ public class AllArquillianTests extends ArquillianBaseTest {
      * that they do not leak an exception on an invalid provider name. */
     @Test
     public final void testProviderUtilsGetProviderNoException() {
-        logger.info("In testProviderUtilsGetProviderNoException()");
         final String provider = "NoSuchProvider";
         Assert.assertNull(BackupProviderUtils.getProvider(provider));
         Assert.assertNull(HarvestProviderUtils.getProvider(provider));
@@ -207,7 +217,6 @@ public class AllArquillianTests extends ArquillianBaseTest {
      * when there are no tasks. */
     @Test
     public final void testGetAllTasks() {
-        logger.info("In testGetAllTasks()");
         List<Task> taskList = TaskUtils.getAllTasks();
         Assert.assertNotNull(taskList,
                 "getAllTasks() with no tasks");
@@ -232,7 +241,6 @@ public class AllArquillianTests extends ArquillianBaseTest {
     @SuppressWarnings("checkstyle:MagicNumber")
     public final void testJsonTreeTransformProvider1() throws
         DatabaseUnitException, HibernateException, IOException, SQLException {
-        logger.info("In testJsonTreeTransformProvider1()");
         String testsPath = ArquillianTestUtils.getClassesPath()
                 + "/test/tests/";
         ArquillianTestUtils.clearDatabase(TOOLKIT);
@@ -345,7 +353,6 @@ public class AllArquillianTests extends ArquillianBaseTest {
     @Test
     public final void testResourceMapTransformProvider1() throws
         DatabaseUnitException, HibernateException, IOException, SQLException {
-        logger.info("In testResourceMapTransformProvider1()");
         ArquillianTestUtils.clearDatabase(TOOLKIT);
         ArquillianTestUtils.loadDbUnitTestFile(TOOLKIT,
                 "testResourceMapTransformProvider1");
@@ -415,7 +422,6 @@ public class AllArquillianTests extends ArquillianBaseTest {
     @Test
     public final void testResourceMapTransformProvider2() throws
         DatabaseUnitException, HibernateException, IOException, SQLException {
-        logger.info("In testResourceMapTransformProvider2()");
         ArquillianTestUtils.clearDatabase(TOOLKIT);
         ArquillianTestUtils.loadDbUnitTestFile(TOOLKIT,
                 "testResourceMapTransformProvider2");
@@ -474,7 +480,6 @@ public class AllArquillianTests extends ArquillianBaseTest {
     @Test
     public final void testResourceMapTransformProvider3() throws
         DatabaseUnitException, HibernateException, IOException, SQLException {
-        logger.info("In testResourceMapTransformProvider3()");
         ArquillianTestUtils.clearDatabase(TOOLKIT);
         ArquillianTestUtils.loadDbUnitTestFile(TOOLKIT,
                 "testResourceMapTransformProvider3");
@@ -549,7 +554,6 @@ public class AllArquillianTests extends ArquillianBaseTest {
     @Test
     @RunAsClient
     public final void testSystemHealthCheck() {
-        logger.info("In testSystemHealthCheck()");
         ArquillianTestUtils.clientClearDatabase(TOOLKIT, baseURL);
         Response response = NetClientUtils.doGet(baseURL,
                 "getInfo/systemHealthCheck", MediaType.APPLICATION_JSON_TYPE);
@@ -576,7 +580,6 @@ public class AllArquillianTests extends ArquillianBaseTest {
     @Test
     @RunAsClient
     public final void testResolveIRILookupIRI1() {
-        logger.info("In testResolveIRILookupIRI1()");
         ArquillianTestUtils.clientClearDatabase(TOOLKIT, baseURL);
         ArquillianTestUtils.clientLoadDbUnitTestFile(TOOLKIT, baseURL,
                 "testResolveIRILookupIRI1");
@@ -660,7 +663,6 @@ public class AllArquillianTests extends ArquillianBaseTest {
     @Test
     @RunAsClient
     public final void testResolveIRILookupIRI2() {
-        logger.info("In testResolveIRILookupIRI2()");
         ArquillianTestUtils.clientClearDatabase(TOOLKIT, baseURL);
         ArquillianTestUtils.clientLoadDbUnitTestFile(TOOLKIT, baseURL,
                 "testResolveIRILookupIRI2");
@@ -717,7 +719,6 @@ public class AllArquillianTests extends ArquillianBaseTest {
     @Test
     @RunAsClient
     public final void testResolveIRILookupIRI3() {
-        logger.info("In testResolveIRILookupIRI3()");
         ArquillianTestUtils.clientClearDatabase(TOOLKIT, baseURL);
         ArquillianTestUtils.clientLoadDbUnitTestFile(TOOLKIT, baseURL,
                 "testResolveIRILookupIRI3");
@@ -882,7 +883,7 @@ public class AllArquillianTests extends ArquillianBaseTest {
 
     /** Test of date/time conversion at the time of the
      * daylight savings changeover, using {@link ResourceOwnerHost}
-     * as an example entity class..
+     * as an example entity class.
      * @throws DatabaseUnitException If a problem with DbUnit.
      * @throws HibernateException If a problem getting the underlying
      *          JDBC connection.
@@ -896,7 +897,6 @@ public class AllArquillianTests extends ArquillianBaseTest {
     public final void testResourceOwnerHostDateTimeConversion()
             throws HibernateException, DatabaseUnitException,
             IOException, SQLException {
-        logger.info("In testResourceOwnerHostDateTimeConversion()");
         ArquillianTestUtils.clearDatabase(TOOLKIT);
         ResourceOwnerHost roh = new ResourceOwnerHost();
         // Doesn't matter what these are; we're testing start and end dates.
@@ -930,14 +930,13 @@ public class AllArquillianTests extends ArquillianBaseTest {
      * code is included correctly. */
     @Test
     public final void testVocabularyDAOGetAllVocabulary() {
-        logger.info("In testVocabularyDAOGetAllVocabulary()");
         List<au.org.ands.vocabs.registry.db.entity.Vocabulary>
             vocabularyList = VocabularyDAO.getAllVocabulary();
         Assert.assertNotNull(vocabularyList);
         Assert.assertEquals(vocabularyList.size(), 0, "Empty list");
     }
 
-    /** Test of {@link VersionDAO#getAllVersion()} ()}.
+    /** Test of {@link VersionDAO#getAllVersion()}.
      * This is just a sanity test to make sure that the registry
      * code is included correctly.
      * @throws DatabaseUnitException If a problem with DbUnit.
@@ -950,7 +949,6 @@ public class AllArquillianTests extends ArquillianBaseTest {
     @Test
     public final void testVersionDAOGetAllVersion()
             throws DatabaseUnitException, SQLException, IOException {
-        logger.info("In testVersionDAOGetAllVersion");
 
         ArquillianTestUtils.clearDatabase(REGISTRY);
 
@@ -972,7 +970,6 @@ public class AllArquillianTests extends ArquillianBaseTest {
     @Test
     public final void testVersionDAOAddVersion()
             throws DatabaseUnitException, SQLException, IOException {
-        logger.info("In testVersionDAOGetAllVersion");
 
         ArquillianTestUtils.clearDatabase(REGISTRY);
 
@@ -1010,7 +1007,6 @@ public class AllArquillianTests extends ArquillianBaseTest {
      * code is included correctly. */
     @Test
     public final void testSolrOK() {
-        logger.info("In testSolrOK()");
         SolrClient solrClient = SolrUtils.getSolrClient();
         Assert.assertNotNull(solrClient);
     }
