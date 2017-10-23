@@ -958,7 +958,7 @@ public class AllArquillianTests extends ArquillianBaseTest {
         Assert.assertEquals(versionList.size(), 0, "should be empty");
     }
 
-    /**
+    /** Test adding a Registry Version and fetching it again.
      * @throws DatabaseUnitException If a problem with DbUnit.
      * @throws HibernateException If a problem getting the underlying
      *          JDBC connection.
@@ -976,14 +976,20 @@ public class AllArquillianTests extends ArquillianBaseTest {
         au.org.ands.vocabs.registry.db.entity.Version
                 version = new au.org.ands.vocabs.registry.db.entity.Version();
         version.setVersionId(1);
+        // Fix this in VersionListener: should not be possible to persist this,
+        // as it is not valid JSON.
         version.setData("some data");
-        version.setModifiedBy("modified_by_role_id");
+        version.setModifiedBy("SYSTEM");
+        version.setStartDate(LocalDateTime.now());
         version.setEndDate(LocalDateTime.now());
+        // Fix this in VersionListener: should not be possible to persist this,
+        // as it is not in the right format.
         version.setReleaseDate("release_date");
         version.setSlug("version-slug");
         version.setStatus(VersionStatus.CURRENT);
+        // Fix this in VersionListener: should not be possible to persist this,
+        // as there is no such vocabulary.
         version.setVocabularyId(1);
-        version.setStartDate(LocalDateTime.now());
         VersionDAO.saveVersion(version);
 
         // has 1

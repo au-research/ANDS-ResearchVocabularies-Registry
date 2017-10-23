@@ -117,6 +117,12 @@
     <xsl:variable name="usesDATETIME"
                   select="dcl:column[matches(@type,
                           '^DATETIME|^TIMESTAMP', 'i')]" />
+    <!-- The value of the entityListeners attribute for this entity,
+         if there is one.
+    -->
+    <xsl:variable name="entityListeners"
+                  select="key('db-to-entity', lower-case(@tableName),
+                          $db-entity-mapping)/@entityListeners" />
     <!-- Whether or not this entity has columns for
          start/end date/time used to support history.
          This is used to decide whether or not to import the
@@ -177,7 +183,8 @@ import java.io.Serializable;
 <xsl:text>import javax.persistence.Column;
 import javax.persistence.Entity;
 </xsl:text>
-<xsl:if test="$hasEnumeratedType">import javax.persistence.EnumType;
+<xsl:if test="$entityListeners">import javax.persistence.EntityListeners;
+</xsl:if><xsl:if test="$hasEnumeratedType">import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 </xsl:if>
 <xsl:text>import javax.persistence.GeneratedValue;
@@ -208,7 +215,8 @@ import javax.persistence.Table;
 </xsl:text>
 </xsl:if>/** <xsl:value-of select="$entityName" /> model class. */
 @Entity
-@Table(name = <xsl:value-of select="$entityName" />.TABLE_NAME)
+<xsl:if test="$entityListeners">@EntityListeners(<xsl:value-of select="$entityListeners" />)
+</xsl:if>@Table(name = <xsl:value-of select="$entityName" />.TABLE_NAME)
 /* Rather than including the text of the queries directly in the
  * annotations, we use constants defined in the class itself.
  * This way, they can be found (fully expanded!) in the generated Javadoc

@@ -211,6 +211,7 @@
   <map tableName="versions"
        entityName="Version"
        serialVersionUID="-9118585204277776513L"
+       entityListeners="VersionListener.class"
        >
     <idKey keyColumn="version_id" entityName="VersionId" />
     <column db="status" enum="VersionStatus" />
