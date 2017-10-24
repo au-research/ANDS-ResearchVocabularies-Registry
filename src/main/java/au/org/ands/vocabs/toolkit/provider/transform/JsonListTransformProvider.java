@@ -148,8 +148,8 @@ public class JsonListTransformProvider extends TransformProvider {
             }
         }
 
-        /** Getter for concepts list. */
-        /** @return The completed concept map. */
+        /** Getter for concepts list.
+         * @return The completed concept map. */
         public HashMap<String, HashMap<String, Object>> getConceptMap() {
             return conceptMap;
         }

@@ -17,7 +17,9 @@
     </module>
     <module name="JavadocType"/>
     <module name="JavadocVariable"/>
-    <module name="JavadocStyle"/>
+    <module name="JavadocStyle">
+      <property name="checkEmptyJavadoc" value="true"/>
+    </module>
     <module name="ConstantName"/>
     <module name="LocalFinalVariableName"/>
     <module name="LocalVariableName"/>

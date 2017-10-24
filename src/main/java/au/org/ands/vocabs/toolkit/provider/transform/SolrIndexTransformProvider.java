@@ -120,14 +120,14 @@ public class SolrIndexTransformProvider extends TransformProvider {
             }
         }
 
-        /** Getter for prefLabel count. */
-        /** @return The number of prefLabel properties. */
+        /** Getter for prefLabel count.
+         * @return The number of prefLabel properties. */
         public int getCountedPrefLabels() {
             return countedPrefLabels;
         }
 
-        /** Getter for concepts text. */
-        /** @return The concatenation of the prefLabels. */
+        /** Getter for concepts text.
+         * @return The concatenation of the prefLabels. */
         public String getConceptText() {
             return conceptText;
         }
