@@ -959,6 +959,11 @@ public class AllArquillianTests extends ArquillianBaseTest {
     }
 
     /** Test adding a Registry Version and fetching it again.
+     * Note: as it stands, this test currently passes, but it should fail,
+     * for the reasons explained in comments that begin "Fix this".
+     * Some work should be done to enhance the VersionListener class
+     * so that each one of these cases fails in turn, and then this
+     * test code should be adjusted to make the test pass again.
      * @throws DatabaseUnitException If a problem with DbUnit.
      * @throws HibernateException If a problem getting the underlying
      *          JDBC connection.
