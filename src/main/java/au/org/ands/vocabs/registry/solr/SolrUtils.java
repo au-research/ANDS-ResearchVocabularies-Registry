@@ -67,4 +67,16 @@ public final class SolrUtils {
         return solrClient;
     }
 
+    /** Shut down the shared SolrClient, if one is active. */
+    public static void shutdownSolrClient() {
+        if (solrClient != null) {
+            try {
+                solrClient.close();
+            } catch (IOException e) {
+                LOGGER.error("Exception while closing SolrClient", e);
+            }
+            solrClient = null;
+        }
+    }
+
 }
