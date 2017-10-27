@@ -8,6 +8,7 @@ import java.lang.invoke.MethodHandles;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
+import org.eu.ingwar.tools.arquillian.extension.suite.annotations.ArquillianSuiteDeployment;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.testng.Arquillian;
 import org.jboss.shrinkwrap.api.Filters;
@@ -20,6 +21,7 @@ import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
 
 /** Base class for Arquillian tests. Defines the standard deployment. */
+@ArquillianSuiteDeployment
 @Test(groups = "arquillian")
 public class ArquillianBaseTest extends Arquillian {
 
@@ -47,9 +49,9 @@ public class ArquillianBaseTest extends Arquillian {
      *  with key of type [java.lang.InheritableThreadLocal]
      *  (value [java.lang.InheritableThreadLocal@5a6482a9]) and a value
      *  of type [org.testng.internal.TestResult] (value [[TestResult name=""
-     *  status=SUCCESS method=AllArquillianTests.testGetAllTasks()[pri:0,
+     *  status=SUCCESS method=ArquillianTestSetup.testGetAllTasks()[pri:0,
      *  instance:au.org.ands.vocabs.toolkit.test.arquillian.
-     *    AllArquillianTests@7ec71837] output={null}]]) but failed to
+     *    ArquillianTestSetup@7ec71837] output={null}]]) but failed to
      *  remove it when the web application was stopped.
      *  Threads are going to be renewed over time to try and avoid
      *  a probable memory leak.
