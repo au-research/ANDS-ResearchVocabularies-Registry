@@ -28,6 +28,7 @@ public interface VersionDbSchemaMapper {
     // Ignore here the fields that are extracted from JSON data.
     @Mapping(target = "note", ignore = true)
     @Mapping(target = "title", ignore = true)
+    @Mapping(target = "doPoolpartyHarvest", ignore = true)
     @Mapping(target = "doImport", ignore = true)
     @Mapping(target = "doPublish", ignore = true)
     @Mapping(target = "accessPoint", ignore = true)

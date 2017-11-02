@@ -84,6 +84,7 @@
             <xs:attribute name="slug" type="xs:token"/>
             <xs:attribute name="note" type="xs:token"/>
             <xs:attribute name="release-date" type="xs:token"/>
+            <xs:attribute name="do-poolparty-harvest" type="xs:boolean"/>
             <xs:attribute name="do-import" type="xs:boolean"/>
             <xs:attribute name="do-publish" type="xs:boolean"/>
         </xs:complexType>

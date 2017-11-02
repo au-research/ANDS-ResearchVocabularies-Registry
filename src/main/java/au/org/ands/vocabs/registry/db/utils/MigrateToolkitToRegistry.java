@@ -24,6 +24,7 @@ import javax.persistence.TypedQuery;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -1689,6 +1690,12 @@ public final class MigrateToolkitToRegistry {
             versionJson.setDraftModifiedDate(dateToLocalDateTime(
                     vocabulary.getModifiedDate()).toString());
         }
+
+        // For the "do_poolparty_harvest" flag, set to true iff
+        // this is a "PoolParty project", i.e., has a non-empty
+        // PoolParty ID.
+        versionJson.setDoPoolpartyHarvest(StringUtils.isNotBlank(
+                vocabulary.getPoolPartyId()));
 
         // For the "do_import" flag, see if there are any
         // local apiSparql access points for this version.
