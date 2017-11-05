@@ -255,5 +255,118 @@ public final class TemporalUtils {
         return q.setParameter(DATETIME_PARAMETER, dateTime);
     }
 
+    /* Methods that set and describe properties of entities that have
+     * temporal columns.*/
+
+    /** Make an entity represent no-longer-current data, by setting
+     * its end date to the specified value for the current time.
+     * @param entity The entity to be made no-longer-current.
+     * @param nowValue The value to be used for the end date.
+     */
+    public static void makeHistorical(final TemporalColumns entity,
+            final LocalDateTime nowValue) {
+        entity.setEndDate(nowValue);
+    }
+
+    /** Does an entity represent a historical data?
+     * @param entity The entity to be tested.
+     * @return True, iff the entity represents historical data.
+     */
+    public static boolean isHistorical(final TemporalColumns entity) {
+        return nowUTC().isAfter(entity.getEndDate());
+    }
+
+    /** Make an entity represent currently-valid data. This is done by
+     * setting the end date only. It is the responsibility of the caller
+     * to set the start date.
+     * @param entity The entity to be made to represent currently-valid data.
+     */
+    public static void makeCurrentlyValid(
+            final TemporalColumns entity) {
+        entity.setEndDate(TemporalConstants.CURRENTLY_VALID_END_DATE);
+    }
+
+    /** Does an entity represent currently-valid data?
+     * @param entity The entity to be tested.
+     * @return True, iff the entity represents currently-valid data.
+     */
+    public static boolean isCurrent(final TemporalColumns entity) {
+        return TemporalConstants.CURRENTLY_VALID_END_DATE.equals(
+                entity.getEndDate());
+    }
+
+    /** Does an entity represent draft data of some sort?
+     * @param entity The entity to be tested.
+     * @return True, iff the entity represents draft data of some sort,
+     *      whether an addition, modification, or deletion.
+     */
+    public static boolean isDraft(final TemporalColumns entity) {
+        return TemporalConstants.CURRENTLY_VALID_END_DATE.isBefore(
+                entity.getStartDate());
+    }
+
+    /** Make an entity represent either a draft addition or modification.
+     * @param entity The entity to be made to represent a draft addition
+     *      or modification.
+     */
+    public static void makeDraftAdditionOrModification(
+            final TemporalColumns entity) {
+        entity.setStartDate(TemporalConstants.
+                DRAFT_ADDITION_MODIFICATION_START_DATE);
+        entity.setEndDate(TemporalConstants.
+                DRAFT_ADDITION_MODIFICATION_END_DATE);
+    }
+
+    /** Does an entity represent draft data that is either an addition
+     * or a modification?
+     * @param entity The entity to be tested.
+     * @return True, iff the entity represents draft data that is either
+     *      an addition or a modification.
+     */
+    public static boolean isDraftAdditionOrModification(
+            final TemporalColumns entity) {
+        return TemporalConstants.DRAFT_ADDITION_MODIFICATION_START_DATE.equals(
+                entity.getStartDate());
+    }
+
+    /** Make an entity represent a draft deletion.
+     * @param entity The entity to be made to represent a draft deletion.
+     */
+    public static void makeDraftDeletion(
+            final TemporalColumns entity) {
+        entity.setStartDate(TemporalConstants.DRAFT_DELETION_START_DATE);
+        entity.setEndDate(TemporalConstants.DRAFT_DELETION_END_DATE);
+    }
+
+    /** Does an entity represent draft data that is a deletion?
+     * @param entity The entity to be tested.
+     * @return True, iff the entity represents draft data that is
+     *      a deletion.
+     */
+    public static boolean isDraftDeletion(final TemporalColumns entity) {
+        return TemporalConstants.DRAFT_DELETION_START_DATE.equals(
+                entity.getStartDate());
+    }
+
+    /** Determine the temporal meaning of a temporal entity.
+     * @param entity The temporal entity to be tested.
+     * @return The temporal meaning of the entity.
+     */
+    public static TemporalMeaning getTemporalDescription(
+            final TemporalColumns entity) {
+        if (isHistorical(entity)) {
+            return TemporalMeaning.HISTORICAL;
+        }
+        if (isCurrent(entity)) {
+            return TemporalMeaning.CURRENT;
+        }
+        if (isDraftAdditionOrModification(entity)) {
+            return TemporalMeaning.DRAFT_ADDITION_OR_MODIFICATION;
+        }
+        if (isDraftDeletion(entity)) {
+            return TemporalMeaning.DRAFT_DELETION;
+        }
+        return TemporalMeaning.UNKNOWN;
+    }
 
 }

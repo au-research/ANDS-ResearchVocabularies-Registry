@@ -171,14 +171,11 @@ package </xsl:text>
 import java.io.Serializable;
 </xsl:text>
 
-<xsl:choose>
-  <xsl:when test="$usesDATETIME">
+<xsl:if test="$usesDATETIME">
 <xsl:text>import java.time.LocalDateTime;
 
 </xsl:text>
-  </xsl:when>
-  <xsl:otherwise />
-</xsl:choose>
+</xsl:if>
 
 <xsl:text>import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -195,14 +192,12 @@ import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 
 </xsl:text>
-<xsl:choose>
-  <xsl:when test="$hasStartEndDateTime">
+<xsl:if test="$hasStartEndDateTime">
+<xsl:text>import </xsl:text><xsl:value-of select="$context-package"/>.TemporalColumns;
 <xsl:text>import </xsl:text><xsl:value-of select="$context-package"/>.TemporalUtils;
 /* import static <xsl:value-of select="$context-package"/>.TemporalUtils.E1; */
 
-</xsl:when>
-  <xsl:otherwise />
-</xsl:choose>
+</xsl:if>
 <!-- Import enumerated types -->
 <xsl:for-each select="key('db-to-entity', lower-case(@tableName),
                           $db-entity-mapping)/column[@enum]">
@@ -229,7 +224,7 @@ import javax.persistence.Table;
             name = <xsl:value-of select="$entityName" />.
                 GET_ALL_<xsl:value-of select="upper-case($entityName)" />,
             query = <xsl:value-of select="$entityName" />.
-                GET_ALL_<xsl:value-of select="upper-case($entityName)" />_QUERY)<xsl:choose><xsl:when test="$hasStartEndDateTime">,
+                GET_ALL_<xsl:value-of select="upper-case($entityName)" />_QUERY)<xsl:if test="$hasStartEndDateTime">,
     @NamedQuery(
             name = <xsl:value-of select="$entityName" />.
                 GET_ALL_CURRENT_<xsl:value-of select="upper-case($entityName)" />,
@@ -239,17 +234,22 @@ import javax.persistence.Table;
             name = <xsl:value-of select="$entityName" />.
                 GET_ALL_DRAFT_<xsl:value-of select="upper-case($entityName)" />,
             query = <xsl:value-of select="$entityName" />.
-                GET_ALL_DRAFT_<xsl:value-of select="upper-case($entityName)" />_QUERY)<xsl:choose><xsl:when test="$idKey">,
+                GET_ALL_DRAFT_<xsl:value-of select="upper-case($entityName)" />_QUERY)<xsl:if test="$idKey">,
     @NamedQuery(
             name = <xsl:value-of select="$entityName" />.
                 HAS_DRAFT_<xsl:value-of select="upper-case($entityName)" />,
             query = <xsl:value-of select="$entityName" />.
-                HAS_DRAFT_<xsl:value-of select="upper-case($entityName)" />_QUERY),</xsl:when></xsl:choose></xsl:when></xsl:choose><xsl:choose><xsl:when test="$idKey">
+                HAS_DRAFT_<xsl:value-of select="upper-case($entityName)" />_QUERY),
     @NamedQuery(
             name = <xsl:value-of select="$entityName" />.
                 GET_CURRENT_<xsl:value-of select="upper-case($entityName)" />_BY_ID,
             query = <xsl:value-of select="$entityName" />.
-                GET_CURRENT_<xsl:value-of select="upper-case($entityName)" />_BY_ID_QUERY)</xsl:when><xsl:otherwise /></xsl:choose><xsl:apply-templates select="$foreignKeyQueries" mode="annotation">
+                GET_CURRENT_<xsl:value-of select="upper-case($entityName)" />_BY_ID_QUERY),
+    @NamedQuery(
+            name = <xsl:value-of select="$entityName" />.
+                GET_DRAFT_<xsl:value-of select="upper-case($entityName)" />_BY_ID,
+            query = <xsl:value-of select="$entityName" />.
+                GET_DRAFT_<xsl:value-of select="upper-case($entityName)" />_BY_ID_QUERY)</xsl:if></xsl:if><xsl:apply-templates select="$foreignKeyQueries" mode="annotation">
   <xsl:with-param name="entityName" select="$entityName" />
   <xsl:with-param name="addTemporalVersion" select="$idKey" />
 </xsl:apply-templates>
@@ -259,15 +259,13 @@ import javax.persistence.Table;
 })
 // CHECKSTYLE:ON: LineLength
 public class <xsl:value-of select="$entityName" />
-    implements Serializable {
+    implements Serializable<xsl:if test="$hasStartEndDateTime">,
+               TemporalColumns</xsl:if> {
 
-<xsl:choose>
-  <xsl:when test="$generate-serialVersionUIDs='true'">    /** Serial version UID for serialization. */
+<xsl:if test="$generate-serialVersionUIDs='true'">    /** Serial version UID for serialization. */
     private static final long serialVersionUID = <xsl:value-of select="$serialVersionUID" />;
 
-</xsl:when>
-  <xsl:otherwise />
-</xsl:choose>    /** The name of the underlying database table.
+</xsl:if>    /** The name of the underlying database table.
      * Use this in the class's {@code @Table} annotation. */
     public static final String TABLE_NAME = "<xsl:value-of select="lower-case(@tableName)" />";
 
@@ -278,7 +276,7 @@ public class <xsl:value-of select="$entityName" />
     protected static final String GET_ALL_<xsl:value-of select="upper-case($entityName)" />_QUERY =
             "SELECT entity FROM <xsl:value-of select="$entityName" /> entity";
 
-<xsl:choose><xsl:when test="$hasStartEndDateTime">    /** Name of getAllCurrent<xsl:value-of select="$entityName" /> query. */
+<xsl:if test="$hasStartEndDateTime">    /** Name of getAllCurrent<xsl:value-of select="$entityName" /> query. */
     public static final String GET_ALL_CURRENT_<xsl:value-of select="upper-case($entityName)" /> =
             "getAllCurrent<xsl:value-of select="$entityName" />";
     /** Query of getAllCurrent<xsl:value-of select="$entityName" /> query. */
@@ -288,7 +286,7 @@ public class <xsl:value-of select="$entityName" />
         "SELECT entity FROM <xsl:value-of select="$entityName" /> entity"
         + TemporalUtils.WHERE_TEMPORAL_QUERY_VALID_SUFFIX;
 
-<xsl:choose><xsl:when test="$idKey">    /** Name of hasDraft<xsl:value-of select="$entityName" /> query. */
+<xsl:if test="$idKey">    /** Name of hasDraft<xsl:value-of select="$entityName" /> query. */
     public static final String HAS_DRAFT_<xsl:value-of select="upper-case($entityName)" /> =
             "hasDraft<xsl:value-of select="$entityName" />";
     /** Query of hasDraft<xsl:value-of select="$entityName" /> query. */
@@ -301,7 +299,7 @@ public class <xsl:value-of select="$entityName" />
         </xsl:call-template> = :id"
         + TemporalUtils.AND_TEMPORAL_QUERY_ALL_DRAFT_SUFFIX;
 
-</xsl:when></xsl:choose>    /** Name of getAllDraft<xsl:value-of select="$entityName" /> query. */
+</xsl:if>    /** Name of getAllDraft<xsl:value-of select="$entityName" /> query. */
     public static final String GET_ALL_DRAFT_<xsl:value-of select="upper-case($entityName)" /> =
             "getAllDraft<xsl:value-of select="$entityName" />";
     /** Query of getAllDraft<xsl:value-of select="$entityName" /> query. */
@@ -311,7 +309,7 @@ public class <xsl:value-of select="$entityName" />
         "SELECT entity FROM <xsl:value-of select="$entityName" /> entity"
         + TemporalUtils.WHERE_TEMPORAL_QUERY_ALL_DRAFT_SUFFIX;
 
-</xsl:when></xsl:choose><xsl:choose><xsl:when test="$idKey">    /** Name of getCurrent<xsl:value-of select="$entityName" />ById query. */
+</xsl:if><xsl:if test="$idKey">    /** Name of getCurrent<xsl:value-of select="$entityName" />ById query. */
     public static final String GET_CURRENT_<xsl:value-of select="upper-case($entityName)" />_BY_ID =
             "getCurrent<xsl:value-of select="$entityName" />ById";
     /** Query of getCurrent<xsl:value-of select="$entityName" />ById query. */
@@ -324,8 +322,20 @@ public class <xsl:value-of select="$entityName" />
         </xsl:call-template> = :id"
         + TemporalUtils.AND_TEMPORAL_QUERY_VALID_SUFFIX;
 
-</xsl:when>
-      <xsl:otherwise /></xsl:choose><xsl:apply-templates select="$foreignKeyQueries" mode="constants">
+    /** Name of getDraft<xsl:value-of select="$entityName" />ById query. */
+    public static final String GET_DRAFT_<xsl:value-of select="upper-case($entityName)" />_BY_ID =
+            "getDraft<xsl:value-of select="$entityName" />ById";
+    /** Query of getDraft<xsl:value-of select="$entityName" />ById query. */
+    protected static final String
+        GET_DRAFT_<xsl:value-of
+    select="upper-case($entityName)" />_BY_ID_QUERY =
+        "SELECT entity FROM <xsl:value-of select="$entityName" /> entity"
+        + " WHERE <xsl:call-template name="CamelCaseNotFirst">
+          <xsl:with-param name="text" select="$idKey/@keyColumn" />
+        </xsl:call-template> = :id"
+        + TemporalUtils.AND_TEMPORAL_QUERY_ALL_DRAFT_SUFFIX;
+
+</xsl:if><xsl:apply-templates select="$foreignKeyQueries" mode="constants">
   <xsl:with-param name="entityName" select="$entityName" />
   <xsl:with-param name="addTemporalVersion" select="$idKey" />
 </xsl:apply-templates>
@@ -353,23 +363,16 @@ package </xsl:text>
 import java.util.List;
 
 import javax.persistence.EntityManager;
-</xsl:text><xsl:choose>
-  <xsl:when test="$hasUpdateOrDelete">import javax.persistence.Query;
-</xsl:when>
-</xsl:choose><xsl:text>import javax.persistence.TypedQuery;
+</xsl:text><xsl:if test="$hasUpdateOrDelete">import javax.persistence.Query;
+</xsl:if><xsl:text>import javax.persistence.TypedQuery;
 
 import </xsl:text><xsl:value-of select="$context-package"/>.DBContext;
-<xsl:choose>
-  <xsl:when test="$hasStartEndDateTime">
+<xsl:if test="$hasStartEndDateTime">
 <xsl:text>import </xsl:text><xsl:value-of select="$context-package"/>.TemporalUtils;
-</xsl:when>
-  <xsl:otherwise />
-</xsl:choose>
+</xsl:if>
 import <xsl:value-of select="$entity-package"/>.<xsl:value-of select="$entityName" />;
-<xsl:choose>
-  <xsl:when test="$idKey">import <xsl:value-of select="$entity-package"/>.<xsl:value-of select="$idKey/@entityName" />;
-</xsl:when>
-</xsl:choose>
+<xsl:if test="$idKey">import <xsl:value-of select="$entity-package"/>.<xsl:value-of select="$idKey/@entityName" />;
+</xsl:if>
 <!-- Commented out for now as we don't need
      any imports for these foreign key queries.
      If we later provide foreign key queries
@@ -415,7 +418,7 @@ public final class <xsl:value-of select="$entityName" />DAO {
         return entityList;
     }
 
-<xsl:choose><xsl:when test="$hasStartEndDateTime">    /** Get all current <xsl:value-of select="$entityName" /> instances.
+<xsl:if test="$hasStartEndDateTime">    /** Get all current <xsl:value-of select="$entityName" /> instances.
      * @return An array of all <xsl:value-of select="$entityName" /> instances.
      */
     public static List&lt;<xsl:value-of select="$entityName" />&gt;
@@ -431,7 +434,7 @@ public final class <xsl:value-of select="$entityName" />DAO {
         return entityList;
     }
 
-<xsl:choose><xsl:when test="$idKey">    /** Determine if <xsl:value-of select="$entityName" /> id has a
+<xsl:if test="$idKey">    /** Determine if <xsl:value-of select="$entityName" /> id has a
      *      draft instance.
      * @param id The <xsl:value-of select="$entityName" />Id of the instance
      *     to be checked for the presence of a draft instance.
@@ -451,7 +454,7 @@ public final class <xsl:value-of select="$entityName" />DAO {
         return hasDraft;
     }
 
-</xsl:when></xsl:choose>    /** Get all draft <xsl:value-of select="$entityName" /> instances.
+</xsl:if>    /** Get all draft <xsl:value-of select="$entityName" /> instances.
      * @return An array of all draft <xsl:value-of select="$entityName" /> instances.
      */
     public static List&lt;<xsl:value-of select="$entityName" />&gt;
@@ -467,7 +470,7 @@ public final class <xsl:value-of select="$entityName" />DAO {
         return entityList;
     }
 
-</xsl:when></xsl:choose><xsl:choose><xsl:when test="$idKey">    /** Get current <xsl:value-of select="$entityName" /> instance by id.
+</xsl:if><xsl:if test="$idKey">    /** Get current <xsl:value-of select="$entityName" /> instance by id.
      * If there is no such instance, returns null.
      * This version of the method creates and uses its own EntityManager.
      * @param id The <xsl:value-of select="$entityName" />Id of the instance
@@ -523,7 +526,53 @@ public final class <xsl:value-of select="$entityName" />DAO {
         return entityList.get(0);
     }
 
-</xsl:when></xsl:choose>
+    /** Get all draft <xsl:value-of select="$entityName" /> instances by id.
+     * This version of the method creates and uses its own EntityManager.
+     * @param id The <xsl:value-of select="$entityName" />Id of the instances
+     *     to be fetched.
+     * @return The draft <xsl:value-of select="$entityName" /> instances
+     *     with that <xsl:value-of select="$entityName" />Id.
+     */
+    public static List&lt;<xsl:value-of select="$entityName" />&gt;
+        getDraft<xsl:value-of select="$entityName" />By<xsl:value-of select="$entityName" />Id(
+        final Integer id) {
+        EntityManager em = DBContext.getEntityManager();
+        TypedQuery&lt;<xsl:value-of select="$entityName" />&gt; q = em.createNamedQuery(
+                <xsl:value-of select="$entityName" />.
+                    GET_DRAFT_<xsl:value-of select="upper-case($entityName)" />_BY_ID,
+                <xsl:value-of select="$entityName" />.class)
+                .setParameter("id", id);
+        q = TemporalUtils.setDatetimeConstantParameters(q);
+        List&lt;<xsl:value-of select="$entityName" />&gt; entityList = q.getResultList();
+        em.close();
+        return entityList;
+    }
+
+    /** Get all draft <xsl:value-of select="$entityName" /> instances by id.
+     * This version of the method uses an existing EntityManager
+     * provided as a parameter; transaction begin/end must be
+     * managed by the caller.
+     * @param em The EntityManager to be used.
+     * @param id The <xsl:value-of select="$entityName" />Id of the instances
+     *     to be fetched.
+     * @return The draft <xsl:value-of select="$entityName" /> instances
+     *     with that <xsl:value-of select="$entityName" />Id.
+     */
+    public static List&lt;<xsl:value-of select="$entityName" />&gt;
+        getDraft<xsl:value-of select="$entityName" />By<xsl:value-of select="$entityName" />Id(
+        final EntityManager em,
+        final Integer id) {
+        TypedQuery&lt;<xsl:value-of select="$entityName" />&gt; q = em.createNamedQuery(
+                <xsl:value-of select="$entityName" />.
+                    GET_DRAFT_<xsl:value-of select="upper-case($entityName)" />_BY_ID,
+                <xsl:value-of select="$entityName" />.class)
+                .setParameter("id", id);
+        q = TemporalUtils.setDatetimeConstantParameters(q);
+        List&lt;<xsl:value-of select="$entityName" />&gt; entityList = q.getResultList();
+        return entityList;
+    }
+
+</xsl:if>
 
 <xsl:apply-templates select="$foreignKeyQueries" mode="method">
   <xsl:with-param name="entityName" select="$entityName" />
@@ -556,8 +605,7 @@ public final class <xsl:value-of select="$entityName" />DAO {
         em.persist(entity);
     }
 
-<xsl:choose>
-<xsl:when test="$idKey">    /** Save a new <xsl:value-of select="$entityName" /> to the database,
+<xsl:if test="$idKey">    /** Save a new <xsl:value-of select="$entityName" /> to the database,
      * creating an id in the related ID table. This version of the method
      * creates and uses its own EntityManager.
      * @param entity The <xsl:value-of select="$entityName" /> to be saved.
@@ -594,9 +642,7 @@ public final class <xsl:value-of select="$entityName" />DAO {
         em.persist(entity);
     }
 
-</xsl:when>
-  <xsl:otherwise />
-</xsl:choose>    /** Update an existing <xsl:value-of select="$entityName" /> in the database.
+</xsl:if>    /** Update an existing <xsl:value-of select="$entityName" /> in the database.
      * This version of the method creates and uses its own EntityManager.
      * @param entity The <xsl:value-of select="$entityName" /> to be updated.
      */
@@ -691,9 +737,8 @@ public final class <xsl:value-of select="$entityName" />DAO {
             + GET_<xsl:value-of select="upper-case($entityName)" />_LIST_FOR_<xsl:value-of select="upper-case(@entityName)" />_<xsl:value-of select="upper-case(@keyColumn)" />;
 // CHECKSTYLE:ON: LineLength
 
-<xsl:choose>
-<!-- Add a temporal version of the query, if this is a temporal table. -->
-<xsl:when test="$addTemporalVersion">    /** Name of getCurrent<xsl:value-of select="$entityName" />ListFor<xsl:value-of select="@entityName" /> query. */
+<xsl:comment>Add a temporal version of the query, if this is a temporal table.</xsl:comment>
+<xsl:if test="$addTemporalVersion">    /** Name of getCurrent<xsl:value-of select="$entityName" />ListFor<xsl:value-of select="@entityName" /> query. */
     public static final String
     GET_CURRENT_<xsl:value-of select="upper-case($entityName)" />_LIST_FOR_<xsl:value-of select="upper-case(@entityName)" /> =
             "getCurrent<xsl:value-of select="$entityName" />ListFor<xsl:value-of select="@entityName" />";
@@ -706,8 +751,7 @@ public final class <xsl:value-of select="$entityName" />DAO {
             + GET_<xsl:value-of select="upper-case($entityName)" />_LIST_FOR_<xsl:value-of select="upper-case(@entityName)" />_<xsl:value-of select="upper-case(@keyColumn)" />
             + TemporalUtils.AND_TEMPORAL_QUERY_VALID_SUFFIX;
 
-</xsl:when>
-</xsl:choose>
+</xsl:if>
 </xsl:template>
 
   <!-- Generate a sorted, distinct list of imports of entities
@@ -752,9 +796,8 @@ public final class <xsl:value-of select="$entityName" />DAO {
         return entityList;
     }
 
-<xsl:choose>
-<!-- Add temporal versions of the query, if this is a temporal table. -->
-<xsl:when test="$addTemporalVersion">    /** Get all current <xsl:value-of select="$entityName" /> instances for a <xsl:value-of select="@entityName" />.
+<xsl:comment>Add temporal versions of the query, if this is a temporal table.</xsl:comment>
+<xsl:if test="$addTemporalVersion">    /** Get all current <xsl:value-of select="$entityName" /> instances for a <xsl:value-of select="@entityName" />.
      * This version of the method creates and uses its own EntityManager.
      * @param id The <xsl:value-of select="@entityName" />.
      * @return The list of current <xsl:value-of select="$entityName" />
@@ -806,8 +849,7 @@ public final class <xsl:value-of select="$entityName" />DAO {
         return entityList;
     }
 
-</xsl:when>
-</xsl:choose>
+</xsl:if>
 </xsl:template>
 
 

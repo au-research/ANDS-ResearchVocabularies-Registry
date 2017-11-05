@@ -37,7 +37,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationModule;
 
 import au.org.ands.vocabs.registry.api.context.AdminApiPaths;
-import au.org.ands.vocabs.registry.db.context.TemporalConstants;
 import au.org.ands.vocabs.registry.db.context.TemporalUtils;
 import au.org.ands.vocabs.registry.db.converter.JSONSerialization;
 import au.org.ands.vocabs.registry.db.dao.AccessPointDAO;
@@ -369,9 +368,8 @@ public final class MigrateToolkitToRegistry {
             if (modifiedDate.equals(registryVocabulary.getStartDate())) {
                 // Create just one record using the combined
                 // created/modified date.
-                registryVocabulary.setEndDate(
-                        TemporalConstants.CURRENTLY_VALID_END_DATE);
-                 VocabularyDAO.saveVocabularyWithId(registryVocabulary);
+                TemporalUtils.makeCurrentlyValid(registryVocabulary);
+                VocabularyDAO.saveVocabularyWithId(registryVocabulary);
             } else {
                 // Create two records using the combined
                 // created/modified date.
@@ -383,8 +381,7 @@ public final class MigrateToolkitToRegistry {
                 // detached entity.
                 registryVocabulary.setId(null);
                 registryVocabulary.setStartDate(modifiedDate);
-                registryVocabulary
-                        .setEndDate(TemporalConstants.CURRENTLY_VALID_END_DATE);
+                TemporalUtils.makeCurrentlyValid(registryVocabulary);
                 // Use saveVocabulary() this time so as not to create a new
                 // vocabulary, but only to add a new entry for the same one.
                 VocabularyDAO.saveVocabulary(registryVocabulary);
@@ -429,10 +426,7 @@ public final class MigrateToolkitToRegistry {
             // elements of draft records. The registryVocabulary's
             // startDate/endDate values are assigned the special values
             // to indicate a draft record.
-            registryVocabulary.setStartDate(TemporalConstants.
-                    DRAFT_ADDITION_MODIFICATION_START_DATE);
-            registryVocabulary.setEndDate(
-                    TemporalConstants.DRAFT_ADDITION_MODIFICATION_END_DATE);
+            TemporalUtils.makeDraftAdditionOrModification(registryVocabulary);
             if (publishedVocabulary == null) {
                 // There is no published instance of this vocabulary, so
                 // we need to create a new vocabulary ID.
