@@ -5,6 +5,7 @@ package au.org.ands.vocabs.toolkit.test.arquillian;
 import java.io.File;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
+import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
@@ -18,6 +19,7 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 /** Base class for Arquillian tests. Defines the standard deployment. */
@@ -223,6 +225,20 @@ public class ArquillianBaseTest extends Arquillian {
         } catch (IllegalArgumentException e) {
             // No problem if the file doesn't exist.
         }
+    }
+
+    /** Log the beginning of each test method. Note: you will see the
+     * log message twice, if the test is a server-side test. In that
+     * case, the test method is nevertheless only run once, after the
+     * <i>second</i> log message.
+     * This method seems to have to be defined here, in ArquillianBaseTests,
+     * rather than in a subclass. Otherwise, it is only run on the test(s)
+     * in that subclass. Defining it here makes it apply to all subclasses.
+     * @param method The test method about to be run.
+     */
+    @BeforeMethod
+    public void logTestNameBefore(final Method method) {
+        logger.info("About to run test: " + method.getName());
     }
 
 }

@@ -5,13 +5,11 @@ package au.org.ands.vocabs.toolkit.test.arquillian;
 import java.io.File;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
-import java.lang.reflect.Method;
 
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.AfterSuite;
-import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.BeforeSuite;
 import org.testng.annotations.Test;
 
@@ -90,16 +88,11 @@ public class ArquillianTestSetup extends ArquillianBaseTest {
         }
     }
 
-    /** Log the beginning of each test method. Note: you will see the
-     * log message twice, if the test is a server-side test. In that
-     * case, the test method is nevertheless only run once, after the
-     * <i>second</i> log message.
-     * @param method The test method about to be run.
+    /* The @BeforeMethod-annotated logTestNameBefore() method was
+     * defined here, but it has been moved to ArquillianBaseTest.
+     * If defined here, it _should_ run across all test methods; but
+     * that doesn't work (yet) with the Arquillian Suite extension.
      */
-    @BeforeMethod
-    public void logTestNameBefore(final Method method) {
-        logger.info("About to run test: " + method.getName());
-    }
 
     /** This is a null test, the presence of which seems to be necessary
      * to have the BeforeSuite/AfterSuite-annotated methods recognized and

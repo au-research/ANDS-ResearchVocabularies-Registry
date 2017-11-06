@@ -269,11 +269,15 @@ public final class TemporalUtils {
     }
 
     /** Does an entity represent a historical data?
+     * Prerequisite: the end date must be set.
      * @param entity The entity to be tested.
      * @return True, iff the entity represents historical data.
      */
     public static boolean isHistorical(final TemporalColumns entity) {
-        return nowUTC().isAfter(entity.getEndDate());
+        // Test if now >= end_date.
+        // Since there is no "isAfterOrEqual" method,
+        // use !isBefore(), i.e., test if !(now < end_date).
+        return !(nowUTC().isBefore(entity.getEndDate()));
     }
 
     /** Make an entity represent currently-valid data. This is done by
@@ -287,6 +291,7 @@ public final class TemporalUtils {
     }
 
     /** Does an entity represent currently-valid data?
+     * Prerequisite: the end date must be set.
      * @param entity The entity to be tested.
      * @return True, iff the entity represents currently-valid data.
      */
@@ -296,6 +301,7 @@ public final class TemporalUtils {
     }
 
     /** Does an entity represent draft data of some sort?
+     * Prerequisite: the start date must be set.
      * @param entity The entity to be tested.
      * @return True, iff the entity represents draft data of some sort,
      *      whether an addition, modification, or deletion.
@@ -319,6 +325,7 @@ public final class TemporalUtils {
 
     /** Does an entity represent draft data that is either an addition
      * or a modification?
+     * Prerequisite: the start date must be set.
      * @param entity The entity to be tested.
      * @return True, iff the entity represents draft data that is either
      *      an addition or a modification.
@@ -339,6 +346,7 @@ public final class TemporalUtils {
     }
 
     /** Does an entity represent draft data that is a deletion?
+     * Prerequisite: the start date must be set.
      * @param entity The entity to be tested.
      * @return True, iff the entity represents draft data that is
      *      a deletion.
@@ -349,6 +357,7 @@ public final class TemporalUtils {
     }
 
     /** Determine the temporal meaning of a temporal entity.
+     * Prerequisite: the start and end dates must be set.
      * @param entity The temporal entity to be tested.
      * @return The temporal meaning of the entity.
      */
