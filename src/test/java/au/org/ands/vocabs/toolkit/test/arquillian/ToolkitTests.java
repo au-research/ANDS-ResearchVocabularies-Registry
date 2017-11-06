@@ -59,7 +59,7 @@ import au.org.ands.vocabs.toolkit.utils.ToolkitFileUtils;
 /** All Arquillian tests of the Toolkit.
  * As this class grows, it might be split up further.
  */
-@Test(groups = "arquillian")
+@Test
 public class ToolkitTests extends ArquillianBaseTest {
 
     /** Logger. */

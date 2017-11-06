@@ -231,9 +231,8 @@ public class ArquillianBaseTest extends Arquillian {
      * log message twice, if the test is a server-side test. In that
      * case, the test method is nevertheless only run once, after the
      * <i>second</i> log message.
-     * This method seems to have to be defined here, in ArquillianBaseTests,
-     * rather than in a subclass. Otherwise, it is only run on the test(s)
-     * in that subclass. Defining it here makes it apply to all subclasses.
+     * This method is defined here so that it applies to all test
+     * methods of all subclasses.
      * @param method The test method about to be run.
      */
     @BeforeMethod

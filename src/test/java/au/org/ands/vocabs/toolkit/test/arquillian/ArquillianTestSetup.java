@@ -49,7 +49,7 @@ public class ArquillianTestSetup extends ArquillianBaseTest {
      * @throws IOException If unable to remove the repository directory
      *      {@code Toolkit.storagePath}.
      */
-    @BeforeSuite(groups = "arquillian")
+    @BeforeSuite
     public final void setupSuite() throws IOException {
         if (ApplicationContextListener.getServletContext() == null) {
             logger.info("In ArquillianTestSetup.setupSuite() on client side");
@@ -77,7 +77,7 @@ public class ArquillianTestSetup extends ArquillianBaseTest {
      * Note: Arquillian invokes this method first on the server side, and
      * then on the client side after all tests are completed.
      */
-    @AfterSuite(groups = "arquillian")
+    @AfterSuite
     public final void shutdownSuite() {
         if (ApplicationContextListener.getServletContext() == null) {
             logger.info("In ArquillianTestSetup.shutdownSuite() "
@@ -87,12 +87,6 @@ public class ArquillianTestSetup extends ArquillianBaseTest {
                     + "on server side");
         }
     }
-
-    /* The @BeforeMethod-annotated logTestNameBefore() method was
-     * defined here, but it has been moved to ArquillianBaseTest.
-     * If defined here, it _should_ run across all test methods; but
-     * that doesn't work (yet) with the Arquillian Suite extension.
-     */
 
     /** This is a null test, the presence of which seems to be necessary
      * to have the BeforeSuite/AfterSuite-annotated methods recognized and

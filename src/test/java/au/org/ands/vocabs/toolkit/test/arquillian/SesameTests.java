@@ -27,7 +27,7 @@ public class SesameTests {
      * that means setting system properties for the location of
      * the repositories and log files. The test directory which contains
      * those subdirectories is deleted here. */
-    @BeforeSuite(groups = "sesame")
+    @BeforeSuite
     public final void setupSesame() {
         logger.info("In setupSesame in SesameTests");
         final String tomcatDirectory = ToolkitProperties.getProperty(

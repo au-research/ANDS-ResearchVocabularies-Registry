@@ -26,7 +26,7 @@ import au.org.ands.vocabs.registry.solr.SolrUtils;
 /** All Arquillian tests of the Registry.
  * As this class grows, it might be split up further.
  */
-@Test(groups = "arquillian")
+@Test
 public class RegistryTests extends ArquillianBaseTest {
 
     /** Logger. */

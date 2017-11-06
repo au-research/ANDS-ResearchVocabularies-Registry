@@ -14,7 +14,7 @@ import au.org.ands.vocabs.registry.db.entity.Vocabulary;
 /** Tests of the modelling of temporal data contained within registry
  * database entities.
  */
-@Test(groups = "arquillian")
+@Test
 public class RegistryTemporalDataTests extends ArquillianBaseTest {
 
     /** Test of the utility methods provided for registry database entities
