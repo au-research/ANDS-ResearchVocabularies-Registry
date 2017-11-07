@@ -15,6 +15,9 @@ public final class AdminApiPaths {
     /** Subpath for database methods. */
     public static final String DATABASE = "database";
 
+    /** Subpath for model methods. */
+    public static final String MODEL = "model";
+
     /** Subpath for Solr methods. */
     public static final String SOLR = "solr";
 

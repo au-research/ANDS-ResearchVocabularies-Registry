@@ -573,6 +573,81 @@
         return result;
     }
 
+    /** Get all current VocabularyRelatedEntity instances for
+     * a vocabulary. The results are grouped by relatedEntityId.
+     * This version of the method uses an existing EntityManager
+     * provided as a parameter; transaction begin/end must be
+     * managed by the caller.
+     * @param em The EntityManager to be used.
+     * @param vocabularyId The vocabulary id for which vocabulary related
+     *     entities are to be looked up.
+     * @return A multi-valued map of all VocabularyRelatedEntity instances for
+     *     the vocabulary.
+     */
+    public static javax.ws.rs.core.MultivaluedMap&lt;
+            Integer, VocabularyRelatedEntity&gt;
+        getCurrentVocabularyRelatedEntitiesForVocabulary(
+                final EntityManager em,
+                final int vocabularyId) {
+        TypedQuery&lt;VocabularyRelatedEntity&gt; q = em.createNamedQuery(
+                VocabularyRelatedEntity.
+                    GET_VOC_RELATED_ENTITY_LIST_FOR_VOC,
+                VocabularyRelatedEntity.class)
+                .setParameter(VocabularyRelatedEntity.
+                    GET_VOC_RELATED_ENTITY_LIST_FOR_VOC_VOCABULARYID,
+                    vocabularyId);
+        q = TemporalUtils.setDatetimeConstantParameters(q);
+        List&lt;VocabularyRelatedEntity&gt; entityList = q.getResultList();
+        javax.ws.rs.core.MultivaluedMap&lt;Integer, VocabularyRelatedEntity&gt;
+        result = new javax.ws.rs.core.MultivaluedHashMap&lt;&gt;();
+        for (VocabularyRelatedEntity vre : entityList) {
+            result.add(vre.getRelatedEntityId(), vre);
+        }
+        return result;
+    }
+
+</method>
+      </extraQuery>
+      <extraQuery name="GET_DRAFT_VOC_RE_LIST_FOR_VOC">
+        <extraQueryParameter name="vocabularyId" />
+        <queryText temporal="true">
+          SELECT entity FROM VocabularyRelatedEntity entity WHERE
+          vocabularyId = :vocabularyId
+          #AND_TEMPORAL_QUERY_ALL_DRAFT_SUFFIX
+        </queryText>
+        <method>    /** Get all draft VocabularyRelatedEntity instances for
+     * a vocabulary. The results are grouped by relatedEntityId.
+     * This version of the method uses an existing EntityManager
+     * provided as a parameter; transaction begin/end must be
+     * managed by the caller.
+     * @param em The EntityManager to be used.
+     * @param vocabularyId The vocabulary id for which vocabulary related
+     *     entities are to be looked up.
+     * @return A multi-valued map of all VocabularyRelatedEntity instances for
+     *     the vocabulary.
+     */
+    public static javax.ws.rs.core.MultivaluedMap&lt;
+            Integer, VocabularyRelatedEntity&gt;
+        getDraftVocabularyRelatedEntitiesForVocabulary(
+                final EntityManager em,
+                final int vocabularyId) {
+        TypedQuery&lt;VocabularyRelatedEntity&gt; q = em.createNamedQuery(
+                VocabularyRelatedEntity.
+                    GET_DRAFT_VOC_RE_LIST_FOR_VOC,
+                VocabularyRelatedEntity.class)
+                .setParameter(VocabularyRelatedEntity.
+                    GET_DRAFT_VOC_RE_LIST_FOR_VOC_VOCABULARYID,
+                    vocabularyId);
+        q = TemporalUtils.setDatetimeConstantParameters(q);
+        List&lt;VocabularyRelatedEntity&gt; entityList = q.getResultList();
+        javax.ws.rs.core.MultivaluedMap&lt;Integer, VocabularyRelatedEntity&gt;
+        result = new javax.ws.rs.core.MultivaluedHashMap&lt;&gt;();
+        for (VocabularyRelatedEntity vre : entityList) {
+            result.add(vre.getRelatedEntityId(), vre);
+        }
+        return result;
+    }
+
 </method>
       </extraQuery>
       <extraQuery name="GET_VOCABULARY_IDS_WITH_RELATED_ENTITY">
