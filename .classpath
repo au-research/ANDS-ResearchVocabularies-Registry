@@ -298,11 +298,6 @@
 			<attribute name="org.eclipse.jst.component.nondependency" value=""/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="libdev/dbunit-2.5.2/dbunit-2.5.2.jar" sourcepath="libdev/dbunit-2.5.2/dbunit-2.5.2-sources.jar">
-		<attributes>
-			<attribute name="org.eclipse.jst.component.nondependency" value=""/>
-		</attributes>
-	</classpathentry>
 	<classpathentry kind="lib" path="libdev/meanbean-2.0.3/meanbean-2.0.3.jar">
 		<attributes>
 			<attribute name="org.eclipse.jst.component.dependency" value="/WEB-INF/lib"/>
@@ -666,6 +661,11 @@
 	<classpathentry kind="lib" path="lib/commons-collections4-4.1/commons-collections4-4.1.jar">
 		<attributes>
 			<attribute name="org.eclipse.jst.component.dependency" value="/WEB-INF/lib"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="libdev/dbunit-2.5.4/dbunit-2.5.4.jar">
+		<attributes>
+			<attribute name="org.eclipse.jst.component.nondependency" value=""/>
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="output" path="bin"/>
