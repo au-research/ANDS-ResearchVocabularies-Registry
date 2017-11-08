@@ -467,7 +467,7 @@
       />
       <fileset
         dir="${build}"
-        includes="au/org/ands/vocabs/registry/db/context/*Converter.class"
+        includes="au/org/ands/vocabs/registry/db/context/converter/*.class"
       />
     </jar>
   </target>
@@ -489,7 +489,7 @@
       />
       <fileset
         dir="${build}"
-        includes="au/org/ands/vocabs/roles/db/context/*Converter.class"
+        includes="au/org/ands/vocabs/roles/db/context/converter/*.class"
       />
     </jar>
   </target>

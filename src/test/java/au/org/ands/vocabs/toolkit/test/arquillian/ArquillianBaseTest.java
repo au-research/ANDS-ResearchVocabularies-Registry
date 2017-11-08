@@ -105,6 +105,8 @@ public class ArquillianBaseTest extends Arquillian {
                             "registry-db-model.jar");
             registryDbModelJar.addPackage(
                     "au.org.ands.vocabs.registry.db.entity");
+            registryDbModelJar.addPackage(
+                    "au.org.ands.vocabs.registry.db.context.converter");
             registryDbModelJar.addAsManifestResource(new File(
                     "src/main/java/au/org/ands/vocabs/registry/db/entity/"
                             + "META-INF/persistence.xml"));
@@ -118,6 +120,8 @@ public class ArquillianBaseTest extends Arquillian {
                             "roles-db-model.jar");
             rolesDbModelJar.addPackage(
                     "au.org.ands.vocabs.roles.db.entity");
+            rolesDbModelJar.addPackage(
+                    "au.org.ands.vocabs.roles.db.context.converter");
             rolesDbModelJar.addAsManifestResource(new File(
                     "src/main/java/au/org/ands/vocabs/roles/db/entity/"
                             + "META-INF/persistence.xml"));
