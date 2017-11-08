@@ -760,7 +760,7 @@
        serialVersionUID="-2913007035002774527L"
        >
     <extraQueries>
-      <extraQuery name="GET_CURRENT_RESOURCEOWNERHOSTS_FOR_OWNER">
+      <extraQuery name="GET_CURRENT_R_O_HS_FOR_OWNER">
         <extraQueryParameter name="owner" />
         <queryText>
           SELECT entity FROM ResourceOwnerHost entity WHERE
@@ -777,10 +777,10 @@
             final String owner) {
         EntityManager em = DBContext.getEntityManager();
         TypedQuery&lt;ResourceOwnerHost&gt; q = em.createNamedQuery(
-                ResourceOwnerHost.GET_CURRENT_RESOURCEOWNERHOSTS_FOR_OWNER,
+                ResourceOwnerHost.GET_CURRENT_R_O_HS_FOR_OWNER,
                 ResourceOwnerHost.class).
                 setParameter(ResourceOwnerHost.
-                        GET_CURRENT_RESOURCEOWNERHOSTS_FOR_OWNER_OWNER, owner);
+                        GET_CURRENT_R_O_HS_FOR_OWNER_OWNER, owner);
         q = TemporalUtils.setDatetimeConstantParameters(q);
         List&lt;ResourceOwnerHost&gt; rohList = q.getResultList();
         em.close();
