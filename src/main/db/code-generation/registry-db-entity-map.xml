@@ -759,6 +759,37 @@
        entityName="ResourceOwnerHost"
        serialVersionUID="-2913007035002774527L"
        >
+    <extraQueries>
+      <extraQuery name="GET_CURRENT_RESOURCEOWNERHOSTS_FOR_OWNER">
+        <extraQueryParameter name="owner" />
+        <queryText>
+          SELECT entity FROM ResourceOwnerHost entity WHERE
+          owner = :owner
+          #AND_TEMPORAL_QUERY_VALID_SUFFIX
+        </queryText>
+        <method>    /** Get all resource owner hosts by owner.
+     * @param owner The owner to be looked up.
+     * @return A list of all current resource owner host entries
+     *     belonging to the owner.
+     */
+    public static List&lt;ResourceOwnerHost&gt;
+    getCurrentResourceOwnerHostsForOwner(
+            final String owner) {
+        EntityManager em = DBContext.getEntityManager();
+        TypedQuery&lt;ResourceOwnerHost&gt; q = em.createNamedQuery(
+                ResourceOwnerHost.GET_CURRENT_RESOURCEOWNERHOSTS_FOR_OWNER,
+                ResourceOwnerHost.class).
+                setParameter(ResourceOwnerHost.
+                        GET_CURRENT_RESOURCEOWNERHOSTS_FOR_OWNER_OWNER, owner);
+        q = TemporalUtils.setDatetimeConstantParameters(q);
+        List&lt;ResourceOwnerHost&gt; rohList = q.getResultList();
+        em.close();
+        return rohList;
+    }
+
+        </method>
+      </extraQuery>
+    </extraQueries>
   </map>
   <map tableName="resource_map"
        entityName="ResourceMapEntry"

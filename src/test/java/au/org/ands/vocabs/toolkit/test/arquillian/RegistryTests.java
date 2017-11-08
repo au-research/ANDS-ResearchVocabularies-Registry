@@ -18,8 +18,11 @@ import org.slf4j.LoggerFactory;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+import au.org.ands.vocabs.registry.db.context.TemporalUtils;
+import au.org.ands.vocabs.registry.db.dao.ResourceOwnerHostDAO;
 import au.org.ands.vocabs.registry.db.dao.VersionDAO;
 import au.org.ands.vocabs.registry.db.dao.VocabularyDAO;
+import au.org.ands.vocabs.registry.db.entity.ResourceOwnerHost;
 import au.org.ands.vocabs.registry.enums.VersionStatus;
 import au.org.ands.vocabs.registry.solr.SolrUtils;
 
@@ -134,6 +137,43 @@ public class RegistryTests extends ArquillianBaseTest {
     public final void testSolrOK() {
         SolrClient solrClient = SolrUtils.getSolrClient();
         Assert.assertNotNull(solrClient);
+    }
+
+    /** Test of date/time conversion at the time of the
+     * daylight savings changeover, using {@link ResourceOwnerHost}
+     * as an example entity class.
+     * @throws DatabaseUnitException If a problem with DbUnit.
+     * @throws HibernateException If a problem getting the underlying
+     *          JDBC connection.
+     * @throws IOException If a problem getting test data for DbUnit,
+     *          or reading JSON from the correct and test output files.
+     * @throws SQLException If DbUnit has a problem performing
+     *           performing JDBC operations.
+     *  */
+    @Test
+    @SuppressWarnings("checkstyle:MagicNumber")
+    public final void testResourceOwnerHostDateTimeConversion()
+            throws HibernateException, DatabaseUnitException,
+            IOException, SQLException {
+        ArquillianTestUtils.clearDatabase(REGISTRY);
+        ResourceOwnerHost roh = new ResourceOwnerHost();
+        // Doesn't matter what these are; we're testing start and end dates.
+        roh.setHost("http://www");
+        roh.setOwner("me");
+        // The date/time 2016-10-02T02:01:00 is fine in UTC,
+        // but it does not exist in the Australia/Sydney time zone!
+        // If the implementation treats the value as a time in
+        // the Australia/Sydney time zone, it will be persisted
+        // incorrectly.
+        LocalDateTime startDate = LocalDateTime.of(2016, 10, 2, 2, 1, 0);
+        TemporalUtils.makeCurrentlyValid(roh, startDate);
+        ResourceOwnerHostDAO.saveResourceOwnerHost(roh);
+        List<ResourceOwnerHost> rohList = ResourceOwnerHostDAO.
+                getCurrentResourceOwnerHostsForOwner("me");
+        Assert.assertEquals(rohList.size(), 1, "Not exactly one ROH");
+        roh = rohList.get(0);
+        Assert.assertEquals(roh.getStartDate(), startDate,
+                "Start date different");
     }
 
 
