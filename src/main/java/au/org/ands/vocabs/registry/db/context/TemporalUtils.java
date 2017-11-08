@@ -285,8 +285,19 @@ public final class TemporalUtils {
      * to set the start date.
      * @param entity The entity to be made to represent currently-valid data.
      */
-    public static void makeCurrentlyValid(
-            final TemporalColumns entity) {
+    public static void makeCurrentlyValid(final TemporalColumns entity) {
+        entity.setEndDate(TemporalConstants.CURRENTLY_VALID_END_DATE);
+    }
+
+    /** Make an entity represent currently-valid data. This is done by
+     * setting the start date to startDate and setting
+     * the end date to mark it as currently valid.
+     * @param entity The entity to be made to represent currently-valid data.
+     * @param startDate The start date to be used.
+     */
+    public static void makeCurrentlyValid(final TemporalColumns entity,
+            final LocalDateTime startDate) {
+        entity.setStartDate(startDate);
         entity.setEndDate(TemporalConstants.CURRENTLY_VALID_END_DATE);
     }
 

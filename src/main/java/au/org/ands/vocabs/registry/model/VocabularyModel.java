@@ -3,6 +3,7 @@
 package au.org.ands.vocabs.registry.model;
 
 import java.lang.invoke.MethodHandles;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -80,6 +81,18 @@ public class VocabularyModel extends ModelBase {
         setEm(anEm);
         setVocabularyId(aVocabularyId);
         populateModel();
+    }
+
+    /** Notify sub-models. */
+    @Override
+    protected void notifySetNowTime(final LocalDateTime aNowTime) {
+        subModels.forEach(sm -> sm.setNowTime(aNowTime));
+    }
+
+    /** Notify sub-models. */
+    @Override
+    protected void notifySetModifiedBy(final String aModifiedBy) {
+        subModels.forEach(sm -> sm.setModifiedBy(aModifiedBy));
     }
 
     /** {@inheritDoc} */

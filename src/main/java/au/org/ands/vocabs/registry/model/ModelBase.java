@@ -37,6 +37,15 @@ public abstract class ModelBase {
      */
     public final void setNowTime(final LocalDateTime aNowTime) {
         nowTime = aNowTime;
+        notifySetNowTime(aNowTime);
+    }
+
+    /** Set the value of nowTime in aggregated model elements.
+     * @param aNowTime The value of nowTime to set.
+     */
+    protected void notifySetNowTime(
+            @SuppressWarnings("unused") final LocalDateTime aNowTime) {
+        // Default action is to do nothing.
     }
 
     /** Set the value of modifiedBy.
@@ -44,6 +53,15 @@ public abstract class ModelBase {
      */
     public final void setModifiedBy(final String aModifiedBy) {
         modifiedBy = aModifiedBy;
+        notifySetModifiedBy(aModifiedBy);
+    }
+
+    /** Set the value of modifiedBy in aggregated model elements.
+     * @param aModifiedBy The value of modifiedBy to set.
+     */
+    protected void notifySetModifiedBy(
+            @SuppressWarnings("unused") final String aModifiedBy) {
+        // Default action is to do nothing.
     }
 
     /** Set the value of vocabularyId.

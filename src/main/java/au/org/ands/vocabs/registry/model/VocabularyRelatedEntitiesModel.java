@@ -135,6 +135,7 @@ public class VocabularyRelatedEntitiesModel extends ModelBase {
      * @param preserveAsDraft If true, preserve any existing draft,
      *      or create one, if there isn't one already.
      */
+    @Override
     public void makeCurrentHistoricalLeavingDraft(
             final boolean preserveAsDraft) {
         for (Integer reId : currentREsAndRelations.keySet()) {
@@ -173,6 +174,7 @@ public class VocabularyRelatedEntitiesModel extends ModelBase {
     }
 
     /** Delete all of the draft database rows associated with this model. */
+    @Override
     public void deleteDraftDatabaseRows() {
         for (Integer reId : draftREsAndRelations.keySet()) {
             for (VocabularyRelatedEntity vre
@@ -262,6 +264,7 @@ public class VocabularyRelatedEntitiesModel extends ModelBase {
      * @param updatedVocabulary A description of an updated vocabulary,
      *      in registry schema format.
      */
+    @Override
     public void applyChanges(final Vocabulary updatedVocabulary) {
         VocabularyStatus status = updatedVocabulary.getStatus();
         if (status == VocabularyStatus.DRAFT) {
@@ -494,7 +497,7 @@ public class VocabularyRelatedEntitiesModel extends ModelBase {
                 newVre.setRelatedEntityId(newReId);
                 newVre.setRelation(newReRelation);
                 newVre.setModifiedBy(modifiedBy());
-                TemporalUtils.makeCurrentlyValid(newVre);
+                TemporalUtils.makeCurrentlyValid(newVre, nowTime());
                 VocabularyRelatedEntityDAO.saveVocabularyRelatedEntity(em(),
                         newVre);
             }
