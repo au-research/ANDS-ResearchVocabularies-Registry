@@ -116,24 +116,31 @@ public abstract class ModelBase {
 
     /** Make all of the currently-valid database rows associated with this
      * model historical. If preserveDraft is true, leave a consistent
-     * representation behind as a draft.
+     * representation behind as a <i>draft</i>.
      * This method is provided to support deleting the current version
-     * of a vocabulary when there is an existing draft, where it is
+     * of a vocabulary (a) when there is no existing draft, and
+     * (b) when there is an existing draft, where it is
      * desired to preserve that draft.
      * To implement "deletion" of a vocabulary which exists only
      * in currently-valid form (i.e,. where there is no draft),
      * invoke this method, passing in false as the value of preserveAsDraft.
+     * Why does this method need the preserveAsDraft? Because sub-models
+     * may not otherwise "know" if there is an existing draft to preserve.
+     * Sub-models <i>are</i> affected.
      * @param preserveAsDraft If true, preserve any existing draft,
      *      or create one, if there isn't one already.
      */
-    public abstract void makeCurrentHistoricalLeavingDraft(
-            boolean preserveAsDraft);
+    protected abstract void makeCurrentHistorical(boolean preserveAsDraft);
 
-    /** Delete all of the draft database rows associated with this model. */
-    public abstract void deleteDraftDatabaseRows();
+    /** Delete all of the draft database rows associated with this model.
+     * Sub-models <i>are not</i> affected. */
+    protected abstract void deleteDraftDatabaseRows();
 
     /** Apply changes to the database as reflected in a description of
      * an updated Vocabulary, in registry schema format.
+     * If updatedVocabulary specifies published or deprecated, this
+     * will replace (by deleting) any existing draft.
+     * Sub-models <i>are</i> affected.
      * @param updatedVocabulary A description of an updated vocabulary,
      *      in registry schema format.
      */

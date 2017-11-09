@@ -123,25 +123,14 @@ public class VocabularyRelatedEntitiesModel extends ModelBase {
         }
     }
 
-    /** Make all of the currently-valid database rows associated with this
-     * model historical. If preserveDraft is true, leave a consistent
-     * representation behind as a draft.
-     * This method is provided to support deleting the current version
-     * of a vocabulary when there is an existing draft, where it is
-     * desired to preserve that draft.
-     * To implement "deletion" of a vocabulary which exists only
-     * in currently-valid form (i.e,. where there is no draft),
-     * invoke this method, passing in false as the value of preserveAsDraft.
-     * @param preserveAsDraft If true, preserve any existing draft,
-     *      or create one, if there isn't one already.
-     */
+    /** {@inheritDoc} */
     @Override
-    public void makeCurrentHistoricalLeavingDraft(
-            final boolean preserveAsDraft) {
+    public void makeCurrentHistorical(final boolean preserveAsDraft) {
         for (Integer reId : currentREsAndRelations.keySet()) {
             for (VocabularyRelatedEntity vre
                     : currentREsAndRelations.get(reId)) {
                 TemporalUtils.makeHistorical(vre, nowTime());
+                vre.setModifiedBy(modifiedBy());
                 VocabularyRelatedEntityDAO.updateVocabularyRelatedEntity(
                         em(), vre);
                 if (preserveAsDraft) {
@@ -173,9 +162,9 @@ public class VocabularyRelatedEntitiesModel extends ModelBase {
         }
     }
 
-    /** Delete all of the draft database rows associated with this model. */
+    /** {@inheritDoc} */
     @Override
-    public void deleteDraftDatabaseRows() {
+    protected void deleteDraftDatabaseRows() {
         for (Integer reId : draftREsAndRelations.keySet()) {
             for (VocabularyRelatedEntity vre
                     : draftREsAndRelations.get(reId)) {
@@ -241,6 +230,8 @@ public class VocabularyRelatedEntitiesModel extends ModelBase {
         return null;
     }
 
+    // The following method was done as preliminary work, but it
+    // has not been needed so far.
 //    /** Delete all of the draft database rows associated with this model
 //     * that specify addition/modification of a row with a specified
 //     * related entity Id and relation.
@@ -259,11 +250,7 @@ public class VocabularyRelatedEntitiesModel extends ModelBase {
 //        draftREsAndRelations.remove(reId);
 //    }
 
-    /** Apply changes to the database as reflected in a description of
-     * an updated Vocabulary, in registry schema format.
-     * @param updatedVocabulary A description of an updated vocabulary,
-     *      in registry schema format.
-     */
+    /** {@inheritDoc} */
     @Override
     public void applyChanges(final Vocabulary updatedVocabulary) {
         VocabularyStatus status = updatedVocabulary.getStatus();
@@ -350,6 +337,7 @@ public class VocabularyRelatedEntitiesModel extends ModelBase {
                 if (TemporalUtils.isDraftAdditionOrModification(draftVre)) {
                     // Turn the add/modify record into a deletion record.
                     TemporalUtils.makeDraftDeletion(draftVre);
+                    draftVre.setModifiedBy(modifiedBy());
                     VocabularyRelatedEntityDAO.updateVocabularyRelatedEntity(
                             em(), draftVre);
                 }
@@ -463,6 +451,7 @@ public class VocabularyRelatedEntitiesModel extends ModelBase {
             // Make the existing row historical.
             VocabularyRelatedEntity vre = vree.getVre();
             TemporalUtils.makeHistorical(vre, nowTime());
+            vre.setModifiedBy(modifiedBy());
             VocabularyRelatedEntityDAO.updateVocabularyRelatedEntity(
                     em(), vre);
             deleteDraftDeletionDatabaseRow(vre.getRelatedEntityId(),
@@ -484,6 +473,7 @@ public class VocabularyRelatedEntitiesModel extends ModelBase {
                 // Reuse existing draft row.
                 draftVre.setModifiedBy(modifiedBy());
                 TemporalUtils.makeCurrentlyValid(draftVre);
+                draftVre.setModifiedBy(modifiedBy());
                 VocabularyRelatedEntityDAO.updateVocabularyRelatedEntity(
                         em(), draftVre);
                 // No longer regard as a draft row in our own records.

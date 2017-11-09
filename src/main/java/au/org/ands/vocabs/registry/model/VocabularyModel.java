@@ -196,23 +196,40 @@ public class VocabularyModel extends ModelBase {
         }
     }
 
-    /** Make all of the currently-valid database rows associated with this
-     * model historical. If preserveDraft is true, leave a consistent
-     * representation behind as a draft.
-     * This method is provided to support deleting the current version
-     * of a vocabulary when there is an existing draft, where it is
-     * desired to preserve that draft.
-     * To implement "deletion" of a vocabulary which exists only
-     * in currently-valid form (i.e,. where there is no draft),
-     * invoke this method, passing in false as the value of preserveAsDraft.
-     * @param preserveAsDraft If true, preserve any existing draft,
-     *      or create one, if there isn't one already.
+    /** Determine if this model represents a vocabulary that has
+     * a current instance.
+     * @return True, iff there is a current instance.
      */
+    public boolean hasCurrent() {
+        return currentVocabulary != null;
+    }
+
+    /** Determine if this model represents a vocabulary that has
+     * a draft instance.
+     * @return True, iff there is a draft instance.
+     */
+    public boolean hasDraft() {
+        return draftVocabulary != null;
+    }
+
+    /** Delete only the current instance of a vocabulary.
+     * If there is no current instance, there is nothing to be done.
+     * Otherwise, if there is a draft, the draft is preserved.
+     */
+    public void deleteOnlyCurrent() {
+        if (currentVocabulary == null) {
+            // Oops, nothing to do!
+            return;
+        }
+        makeCurrentHistorical(draftVocabulary != null);
+    }
+
+    /** {@inheritDoc} */
     @Override
-    public void makeCurrentHistoricalLeavingDraft(
-            final boolean preserveAsDraft) {
+    public void makeCurrentHistorical(final boolean preserveAsDraft) {
         if (currentVocabulary != null) {
             TemporalUtils.makeHistorical(currentVocabulary, nowTime());
+            currentVocabulary.setModifiedBy(modifiedBy());
             VocabularyDAO.updateVocabulary(
                         em(), currentVocabulary);
             if (preserveAsDraft) {
@@ -230,26 +247,32 @@ public class VocabularyModel extends ModelBase {
 
         // Sub-models.
         subModels.forEach(sm ->
-            sm.makeCurrentHistoricalLeavingDraft(preserveAsDraft));
+            sm.makeCurrentHistorical(preserveAsDraft));
     }
 
-    /** Delete all of the draft database rows associated with this model. */
+    /** Delete only the draft instance of a vocabulary.
+     * If there is no draft instance, there is nothing to be done.
+     * Otherwise, if there is a current instance, it is preserved.
+     */
+    public void deleteOnlyDraft() {
+        if (draftVocabulary == null) {
+            // Oops, nothing to do!
+            return;
+        }
+        deleteDraftDatabaseRows();
+    }
+
+
+    /** {@inheritDoc} */
     @Override
-    public void deleteDraftDatabaseRows() {
+    protected void deleteDraftDatabaseRows() {
         if (draftVocabulary != null) {
             em().remove(draftVocabulary);
             draftVocabulary = null;
         }
-
-        // Sub-models. Hmm, not sure about doing this automatically.
-        subModels.forEach(sm -> sm.deleteDraftDatabaseRows());
     }
 
-    /** Apply changes to the database as reflected in a description of
-     * an updated Vocabulary, in registry schema format.
-     * @param updatedVocabulary A description of an updated vocabulary,
-     *      in registry schema format.
-     */
+    /** {@inheritDoc} */
     @Override
     public void applyChanges(
             final au.org.ands.vocabs.registry.schema.vocabulary201701.
@@ -262,7 +285,8 @@ public class VocabularyModel extends ModelBase {
         }
 
         // Sub-models.
-        vreModel.applyChanges(updatedVocabulary);
+        subModels.forEach(sm ->
+            sm.applyChanges(updatedVocabulary));
     }
 
     /** Make the database's draft view of the
@@ -296,6 +320,7 @@ public class VocabularyModel extends ModelBase {
             Vocabulary updatedVocabulary) {
         if (currentVocabulary != null) {
             TemporalUtils.makeHistorical(currentVocabulary, nowTime());
+            currentVocabulary.setModifiedBy(modifiedBy());
             VocabularyDAO.updateVocabulary(em(), currentVocabulary);
         }
         currentVocabulary = draftVocabulary;
