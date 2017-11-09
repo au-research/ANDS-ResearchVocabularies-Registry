@@ -16,7 +16,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -24,6 +26,7 @@ import javax.persistence.EntityManager;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status.Family;
 
+import org.dbunit.Assertion;
 import org.dbunit.DatabaseUnitException;
 import org.dbunit.database.IDatabaseConnection;
 import org.dbunit.dataset.IDataSet;
@@ -135,6 +138,88 @@ public final class ArquillianTestUtils {
         }
     }
 
+    /** The EntityManagers used across DbUnit methods. */
+    private static Map<DatabaseSelector, EntityManager>
+    entityManagersForDbUnit = new HashMap<>();
+
+    /** The JDBC Connections used across DbUnit methods. */
+    private static Map<DatabaseSelector, Connection> jdbcConnectionsForDbUnit =
+            new HashMap<>();
+
+    /** The DbUnit Connections used across DbUnit methods. */
+    private static Map<DatabaseSelector, IDatabaseConnection>
+        iDatabaseConnectionsForDbUnit = new HashMap<>();
+
+
+    /** Get the shared JDBC Connection for DbUnit methods for the selected
+     * database.
+     * @param dbs The database for which the Connection is to be fetched.
+     * @return The Connection to use for DbUnit methods.
+     */
+    private static synchronized Connection getJDBCConnectionForDbUnit(
+            final DatabaseSelector dbs) {
+        if (dbs == null) {
+            // Booboo in the test method!
+            return null;
+        }
+        Connection conn = jdbcConnectionsForDbUnit.get(dbs);
+        if (conn != null) {
+            return conn;
+        }
+        EntityManager em = getEntityManagerForDb(dbs);
+        entityManagersForDbUnit.put(dbs, em);
+        logger.info("In getJDBCConnectionForDbUnit; setting shared "
+                + "JDBC Connection for: " + dbs);
+        conn = em.unwrap(SessionImpl.class).connection();
+        jdbcConnectionsForDbUnit.put(dbs, conn);
+        return conn;
+    }
+
+    /** Get the shared DbUnit IDatabaseConnection for DbUnit methods
+     * for the selected database.
+     * @param dbs The database for which the Connection is to be fetched.
+     * @return The Connection to use for DbUnit methods.
+     * @throws DatabaseUnitException If a problem with DbUnit.
+     */
+    private static synchronized IDatabaseConnection
+    getIDatabaseConnectionForDbUnit(final DatabaseSelector dbs)
+            throws DatabaseUnitException {
+        if (dbs == null) {
+            // Booboo in the test method!
+            return null;
+        }
+        IDatabaseConnection idc = iDatabaseConnectionsForDbUnit.get(dbs);
+        if (idc != null) {
+            return idc;
+        }
+        Connection conn = getJDBCConnectionForDbUnit(dbs);
+        idc = new H2Connection(conn, null);
+        iDatabaseConnectionsForDbUnit.put(dbs, idc);
+        return idc;
+    }
+
+    /** Close all shared Connections for DbUnit methods. */
+    public static void closeConnectionsForDbUnit() {
+        logger.info("In closeConnectionsForDbUnit");
+        for (IDatabaseConnection conn
+                : iDatabaseConnectionsForDbUnit.values()) {
+            try {
+                logger.info("Closing a shared IDatabaseConnection");
+                conn.close();
+            } catch (SQLException e) {
+                logger.error("SQLException while closing DbUnit connection",
+                        e);
+            }
+        }
+        for (EntityManager em : entityManagersForDbUnit.values()) {
+            em.close();
+        }
+        iDatabaseConnectionsForDbUnit.clear();
+        jdbcConnectionsForDbUnit.clear();
+        entityManagersForDbUnit.clear();
+    }
+
+
     /** Clear a database. Tables are truncated, and sequence values
      * for auto-incrementing columns are reset.
      * @param dbs The database which is to be cleared.
@@ -147,60 +232,55 @@ public final class ArquillianTestUtils {
      */
     public static void clearDatabase(final DatabaseSelector dbs) throws
         DatabaseUnitException, HibernateException, IOException, SQLException {
-        EntityManager em = getEntityManagerForDb(dbs);
-        try (Connection conn = em.unwrap(SessionImpl.class).connection()) {
+        Connection conn = getJDBCConnectionForDbUnit(dbs);
+        IDatabaseConnection connection = getIDatabaseConnectionForDbUnit(dbs);
 
-            IDatabaseConnection connection = new H2Connection(conn, null);
+        FlatXmlDataSet dataset = new FlatXmlDataSetBuilder()
+                .setMetaDataSetFromDtd(getResourceAsInputStream(
+                        dbs.getDTDFilename()))
+                .build(getResourceAsInputStream(
+                        dbs.getBlankDataFilename()));
 
-            logger.info("doing clean_insert");
-            FlatXmlDataSet dataset = new FlatXmlDataSetBuilder()
-                    .setMetaDataSetFromDtd(getResourceAsInputStream(
-                            dbs.getDTDFilename()))
-                    .build(getResourceAsInputStream(
-                            dbs.getBlankDataFilename()));
+        // Delete the contents of the tables referred to in
+        // the dataset.
+        DatabaseOperation.DELETE_ALL.execute(connection, dataset);
 
-            // Delete the contents of the tables referred to in
-            // the dataset.
-            DatabaseOperation.DELETE_ALL.execute(connection, dataset);
+        // Now reset the sequences used for auto-increment columns.
+        // As DbUnit does not provide direct support for this,
+        // this is H2-specific!
+        // Inspired by: http://stackoverflow.com/questions/8523423
+        // Get the names of the tables referred to in the dataset
+        // used for blanking ...
+        String[] tableNames = dataset.getTableNames();
+        // ... and convert that into a string of the form:
+        // "'TABLE_1', 'TABLE_2', 'TABLE_3'"
+        String tableNamesForQuery =
+                Arrays.asList(tableNames).stream()
+                .map(i -> "'" + i.toString() + "'")
+                .collect(Collectors.joining(", "));
 
-            // Now reset the sequences used for auto-increment columns.
-            // As DbUnit does not provide direct support for this,
-            // this is H2-specific!
-            // Inspired by: http://stackoverflow.com/questions/8523423
-            // Get the names of the tables referred to in the dataset
-            // used for blanking ...
-            String[] tableNames = dataset.getTableNames();
-            // ... and convert that into a string of the form:
-            // "'TABLE_1', 'TABLE_2', 'TABLE_3'"
-            String tableNamesForQuery =
-                    Arrays.asList(tableNames).stream()
-                    .map(i -> "'" + i.toString() + "'")
-                    .collect(Collectors.joining(", "));
-
-            // This query gets the names of the sequences used by
-            // the tables in the dataset.
-            String getSequencesQuery =
-                    "SELECT SEQUENCE_NAME FROM INFORMATION_SCHEMA.COLUMNS "
+        // This query gets the names of the sequences used by
+        // the tables in the dataset.
+        String getSequencesQuery =
+                "SELECT SEQUENCE_NAME FROM INFORMATION_SCHEMA.COLUMNS "
                     + "WHERE TABLE_SCHEMA='PUBLIC' AND TABLE_NAME IN ("
                     + tableNamesForQuery
                     + ") AND SEQUENCE_NAME IS NOT NULL";
 
-            Set<String> sequences = new HashSet<>();
-            try (Statement s = conn.createStatement();
-                    ResultSet rs = s.executeQuery(getSequencesQuery)) {
-                while (rs.next()) {
-                    sequences.add(rs.getString(1));
-                }
-                for (String seq : sequences) {
-                    s.executeUpdate("ALTER SEQUENCE "
-                            + seq + " RESTART WITH 1");
-                }
+        Set<String> sequences = new HashSet<>();
+        try (Statement s = conn.createStatement();
+                ResultSet rs = s.executeQuery(getSequencesQuery)) {
+            while (rs.next()) {
+                sequences.add(rs.getString(1));
             }
-            // Force commit at the JDBC level, as closing the EntityManager
-            // does a rollback!
-            conn.commit();
+            for (String seq : sequences) {
+                s.executeUpdate("ALTER SEQUENCE "
+                        + seq + " RESTART WITH 1");
+            }
         }
-        em.close();
+        // Force commit at the JDBC level, as closing the EntityManager
+        // does a rollback!
+        conn.commit();
     }
 
     /** Load a DbUnit test file into a database.
@@ -222,29 +302,25 @@ public final class ArquillianTestUtils {
     public static void loadDbUnitTestFile(final DatabaseSelector dbs,
             final String testName) throws
         DatabaseUnitException, HibernateException, IOException, SQLException {
-        EntityManager em = getEntityManagerForDb(dbs);
-        try (Connection conn = em.unwrap(SessionImpl.class).connection()) {
+        Connection conn = getJDBCConnectionForDbUnit(dbs);
+        IDatabaseConnection connection = getIDatabaseConnectionForDbUnit(dbs);
 
-            IDatabaseConnection connection = new H2Connection(conn, null);
-
-            FlatXmlDataSet xmlDataset = new FlatXmlDataSetBuilder()
-                    .setMetaDataSetFromDtd(getResourceAsInputStream(
-                            dbs.getDTDFilename()))
-                    .build(getResourceAsInputStream(
-                            "test/tests/au.org.ands.vocabs.toolkit."
-                            + "test.arquillian.AllArquillianTests."
-                            + testName
-                            + "/input-" + dbs.getNameLowerCase()
-                            + "-dbunit.xml"));
-            ReplacementDataSet dataset = new ReplacementDataSet(xmlDataset);
-            addReplacementSubstringsToDataset(dataset);
-            logger.info("doing clean_insert");
-            DatabaseOperation.CLEAN_INSERT.execute(connection, dataset);
-            // Force commit at the JDBC level, as closing the EntityManager
-            // does a rollback!
-            conn.commit();
-        }
-        em.close();
+        FlatXmlDataSet xmlDataset = new FlatXmlDataSetBuilder()
+                .setMetaDataSetFromDtd(getResourceAsInputStream(
+                        dbs.getDTDFilename()))
+                .build(getResourceAsInputStream(
+                        "test/tests/au.org.ands.vocabs.toolkit."
+                        + "test.arquillian.AllArquillianTests."
+                        + testName
+                        + "/input-" + dbs.getNameLowerCase()
+                        + "-dbunit.xml"));
+        ReplacementDataSet dataset = new ReplacementDataSet(xmlDataset);
+        addReplacementSubstringsToDataset(dataset);
+        logger.info("doing clean_insert");
+        DatabaseOperation.CLEAN_INSERT.execute(connection, dataset);
+        // Force commit at the JDBC level, as closing the EntityManager
+        // does a rollback!
+        conn.commit();
     }
 
     /** Load a DbUnit test file into a database as an update.
@@ -269,29 +345,24 @@ public final class ArquillianTestUtils {
             final String testName,
             final String filename) throws
         DatabaseUnitException, HibernateException, IOException, SQLException {
+        Connection conn = getJDBCConnectionForDbUnit(dbs);
+        IDatabaseConnection connection = getIDatabaseConnectionForDbUnit(dbs);
 
-        EntityManager em = getEntityManagerForDb(dbs);
-        try (Connection conn = em.unwrap(SessionImpl.class).connection()) {
-
-            IDatabaseConnection connection = new H2Connection(conn, null);
-
-            FlatXmlDataSet xmlDataset = new FlatXmlDataSetBuilder()
-                    .setMetaDataSetFromDtd(getResourceAsInputStream(
-                            dbs.getDTDFilename()))
-                    .build(getResourceAsInputStream(
-                            "test/tests/au.org.ands.vocabs.toolkit."
-                            + "test.arquillian.AllArquillianTests."
-                            + testName
-                            + "/" + filename));
-            ReplacementDataSet dataset = new ReplacementDataSet(xmlDataset);
-            addReplacementSubstringsToDataset(dataset);
-            logger.info("doing update");
-            DatabaseOperation.UPDATE.execute(connection, dataset);
-            // Force commit at the JDBC level, as closing the EntityManager
-            // does a rollback!
-            conn.commit();
-        }
-        em.close();
+        FlatXmlDataSet xmlDataset = new FlatXmlDataSetBuilder()
+                .setMetaDataSetFromDtd(getResourceAsInputStream(
+                        dbs.getDTDFilename()))
+                .build(getResourceAsInputStream(
+                        "test/tests/au.org.ands.vocabs.toolkit."
+                        + "test.arquillian.AllArquillianTests."
+                        + testName
+                        + "/" + filename));
+        ReplacementDataSet dataset = new ReplacementDataSet(xmlDataset);
+        addReplacementSubstringsToDataset(dataset);
+        logger.info("doing update");
+        DatabaseOperation.UPDATE.execute(connection, dataset);
+        // Force commit at the JDBC level, as closing the EntityManager
+        // does a rollback!
+        conn.commit();
     }
 
     /** Export the DbUnit database schema of a database as a DTD.
@@ -306,22 +377,18 @@ public final class ArquillianTestUtils {
     public static void exportDbUnitDTD(final DatabaseSelector dbs,
             final String dtdExportFilename) throws
         DatabaseUnitException, SQLException, IOException {
-        EntityManager em = getEntityManagerForDb(dbs);
-        try (Connection conn = em.unwrap(SessionImpl.class).connection()) {
+        IDatabaseConnection connection = getIDatabaseConnectionForDbUnit(dbs);
 
-            IDatabaseConnection connection = new H2Connection(conn, null);
-            IDataSet dataSet = connection.createDataSet();
-            Writer out =
-                    new OutputStreamWriter(new FileOutputStream(
-                            dtdExportFilename), StandardCharsets.UTF_8);
-            FlatDtdWriter datasetWriter = new FlatDtdWriter(out);
-            datasetWriter.setContentModel(FlatDtdWriter.CHOICE);
-            // You could also use the sequence model, which is the default:
-            // datasetWriter.setContentModel(FlatDtdWriter.SEQUENCE);
-            datasetWriter.write(dataSet);
-            out.close();
-        }
-        em.close();
+        IDataSet dataSet = connection.createDataSet();
+        Writer out =
+                new OutputStreamWriter(new FileOutputStream(
+                        dtdExportFilename), StandardCharsets.UTF_8);
+        FlatDtdWriter datasetWriter = new FlatDtdWriter(out);
+        datasetWriter.setContentModel(FlatDtdWriter.CHOICE);
+        // You could also use the sequence model, which is the default:
+        // datasetWriter.setContentModel(FlatDtdWriter.SEQUENCE);
+        datasetWriter.write(dataSet);
+        out.close();
     }
 
     /** Do a full export of a database in DbUnit format.
@@ -338,14 +405,10 @@ public final class ArquillianTestUtils {
     public static void exportFullDbUnitData(final DatabaseSelector dbs,
             final String exportFilename) throws
         DatabaseUnitException, HibernateException, IOException, SQLException {
-        EntityManager em = getEntityManagerForDb(dbs);
-        try (Connection conn = em.unwrap(SessionImpl.class).connection()) {
-            IDatabaseConnection connection = new H2Connection(conn, null);
-            IDataSet fullDataSet = connection.createDataSet();
-            FlatXmlDataSet.write(fullDataSet,
-                    new FileOutputStream(exportFilename));
-        }
-        em.close();
+        IDatabaseConnection connection = getIDatabaseConnectionForDbUnit(dbs);
+        IDataSet fullDataSet = connection.createDataSet();
+        FlatXmlDataSet.write(fullDataSet,
+                new FileOutputStream(exportFilename));
     }
 
     /** Client-side clearing of a database.
@@ -410,6 +473,22 @@ public final class ArquillianTestUtils {
         response.close();
     }
 
+    /** Get the current contents of a database.
+     * @param dbs The database from which the data is to be fetched.
+     * @return The current contents of the database.
+     * @throws DatabaseUnitException If a problem with DbUnit.
+     * @throws HibernateException If a problem getting the underlying
+     *          JDBC connection.
+     * @throws SQLException If DbUnit has a problem performing
+     *           performing JDBC operations.
+     */
+    public static IDataSet getDatabaseCurrentContents(
+            final DatabaseSelector dbs) throws
+            DatabaseUnitException, HibernateException, SQLException {
+        IDatabaseConnection connection = getIDatabaseConnectionForDbUnit(dbs);
+        IDataSet databaseDataSet = connection.createDataSet();
+        return databaseDataSet;
+    }
 
     /** Get the current contents of a database table.
      * @param dbs The database from which the data is to be fetched.
@@ -425,14 +504,9 @@ public final class ArquillianTestUtils {
             final DatabaseSelector dbs,
             final String tableName) throws
             DatabaseUnitException, HibernateException, SQLException {
-        EntityManager em = getEntityManagerForDb(dbs);
-        ITable currentTable;
-        try (Connection conn = em.unwrap(SessionImpl.class).connection()) {
-            IDatabaseConnection connection = new H2Connection(conn, null);
-            IDataSet databaseDataSet = connection.createDataSet();
-            currentTable = databaseDataSet.getTable(tableName);
-        }
-        em.close();
+        IDatabaseConnection connection = getIDatabaseConnectionForDbUnit(dbs);
+        IDataSet databaseDataSet = connection.createDataSet();
+        ITable currentTable = databaseDataSet.getTable(tableName);
         return currentTable;
     }
 
@@ -459,6 +533,35 @@ public final class ArquillianTestUtils {
         return dataset;
     }
 
+    /** Get the current contents of a database and the expected
+     * contents, and assert their equality..
+     * @param dbs The database from which the data is to be fetched.
+     * @param filename The filename of the file containing the expected
+     *      database contents.
+     * @throws DatabaseUnitException If a problem with DbUnit.
+     * @throws HibernateException If a problem getting the underlying
+     *          JDBC connection.
+     * @throws SQLException If DbUnit has a problem performing
+     *           performing JDBC operations.
+     * @throws IOException If reading the DTD fails.
+     */
+    public static void compareDatabaseCurrentAndExpectedContents(
+            final DatabaseSelector dbs,
+            final String filename) throws
+            DatabaseUnitException, HibernateException, SQLException,
+            IOException {
+        IDatabaseConnection connection = getIDatabaseConnectionForDbUnit(dbs);
+        IDataSet databaseDataSet = connection.createDataSet();
+        FlatXmlDataSet xmlDataset = new FlatXmlDataSetBuilder()
+                .setMetaDataSetFromDtd(getResourceAsInputStream(
+                        dbs.getDTDFilename()))
+                .build(getResourceAsInputStream(
+                        filename));
+        ReplacementDataSet expectedDataset =
+                new ReplacementDataSet(xmlDataset);
+        addReplacementSubstringsToDataset(expectedDataset);
+        Assertion.assertEquals(expectedDataset, databaseDataSet);
+    }
 
     /** Compare two files containing JSON, asserting that they contain
      * the same content.

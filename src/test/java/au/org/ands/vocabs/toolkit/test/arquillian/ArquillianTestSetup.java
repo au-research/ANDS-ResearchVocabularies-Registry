@@ -9,22 +9,13 @@ import java.lang.invoke.MethodHandles;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.testng.annotations.AfterSuite;
 import org.testng.annotations.BeforeSuite;
 import org.testng.annotations.Test;
 
 import au.org.ands.vocabs.toolkit.utils.ApplicationContextListener;
 import au.org.ands.vocabs.toolkit.utils.ToolkitConfig;
 
-/** All Arquillian tests of the Toolkit.
- * Very unfortunately, there is no way to share Arquillian deployments
- * across multiple classes. Each separate test class causes a fresh
- * deployment. So for now, put all tests here. When Suite support
- * is implemented, refactor. See
- * <a href="https://issues.jboss.org/browse/ARQ-197">JBoss JIRA ARQ-197</a>.
- * At least we can put the deployment definition in a parent class
- * @see ArquillianBaseTest
- */
+/** Code to be executed for test setup. */
 @Test(groups = "arquillian")
 public class ArquillianTestSetup extends ArquillianBaseTest {
 
@@ -39,8 +30,6 @@ public class ArquillianTestSetup extends ArquillianBaseTest {
     /** Have we run setupSuite on server side at least once? */
     private static boolean setupSuiteRunServerSide;
 
-    // Test setup/shutdown
-
     /** Set up the suite. This means:
      * clear out the contents of the repository (deleting
      * the directory pointed to by property {@code Toolkit.storagePath}).
@@ -49,7 +38,7 @@ public class ArquillianTestSetup extends ArquillianBaseTest {
      * @throws IOException If unable to remove the repository directory
      *      {@code Toolkit.storagePath}.
      */
-    @BeforeSuite
+    @BeforeSuite(groups = "arquillian")
     public final void setupSuite() throws IOException {
         if (ApplicationContextListener.getServletContext() == null) {
             logger.info("In ArquillianTestSetup.setupSuite() on client side");
@@ -73,27 +62,12 @@ public class ArquillianTestSetup extends ArquillianBaseTest {
         }
     }
 
-    /** Shut down the suite.
-     * Note: Arquillian invokes this method first on the server side, and
-     * then on the client side after all tests are completed.
-     */
-    @AfterSuite
-    public final void shutdownSuite() {
-        if (ApplicationContextListener.getServletContext() == null) {
-            logger.info("In ArquillianTestSetup.shutdownSuite() "
-                    + "on client side");
-        } else {
-            logger.info("In ArquillianTestSetup.shutdownSuite() "
-                    + "on server side");
-        }
-    }
-
     /** This is a null test, the presence of which seems to be necessary
      * to have the BeforeSuite/AfterSuite-annotated methods recognized and
      * run.
      */
     @Test
-    public void dummyTest() {
+    public void dummyTestForSetup() {
     }
 
 }

@@ -32,11 +32,27 @@
              See https://issues.jboss.org/browse/ARQ-127
         -->
         <include name="arquillian" />
+        <!-- We also need explicitly to exclude the "shutdown" group,
+             otherwise it gets run here too.
+        -->
+        <exclude name="shutdown" />
       </run>
     </groups>
     <packages>
       <package name="au.org.ands.vocabs.toolkit.test.*" />
    </packages>
+  </test>
+
+  <!-- Separate test group used for shutdown. -->
+  <test name="Shutdown" preserve-order="true">
+    <groups>
+      <run>
+        <include name="shutdown" />
+      </run>
+    </groups>
+    <classes>
+      <class name="au.org.ands.vocabs.toolkit.test.arquillian.ArquillianTestShutdown" />
+   </classes>
   </test>
 
 </suite>
