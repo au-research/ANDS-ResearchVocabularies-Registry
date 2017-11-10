@@ -257,16 +257,16 @@ public class VocabularyModel extends ModelBase {
             sm.makeCurrentHistorical(preserveAsDraft));
     }
 
-    /** Delete only the draft instance of a vocabulary.
-     * If there is no draft instance, there is nothing to be done.
-     * Otherwise, if there is a current instance, it is preserved.
-     */
-    public void deleteOnlyDraft() {
+    /** {@inheritDoc} */
+    @Override
+    protected void deleteOnlyDraft() {
         if (draftVocabulary == null) {
             // Oops, nothing to do!
             return;
         }
         deleteDraftDatabaseRows();
+        // Sub-models.
+        subModels.forEach(sm -> sm.deleteOnlyDraft());
     }
 
 

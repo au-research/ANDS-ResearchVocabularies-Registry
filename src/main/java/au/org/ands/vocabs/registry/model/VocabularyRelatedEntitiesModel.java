@@ -164,14 +164,20 @@ public class VocabularyRelatedEntitiesModel extends ModelBase {
 
     /** {@inheritDoc} */
     @Override
+    protected void deleteOnlyDraft() {
+        deleteDraftDatabaseRows();
+    }
+
+    /** {@inheritDoc} */
+    @Override
     protected void deleteDraftDatabaseRows() {
         for (Integer reId : draftREsAndRelations.keySet()) {
             for (VocabularyRelatedEntity vre
                     : draftREsAndRelations.get(reId)) {
                 em().remove(vre);
             }
-            draftREsAndRelations.remove(reId);
         }
+        draftREsAndRelations.clear();
     }
 
     /** Delete a draft database row associated with this model
@@ -187,9 +193,9 @@ public class VocabularyRelatedEntitiesModel extends ModelBase {
                     && TemporalUtils.isDraftDeletion(vre)) {
                 em().remove(vre);
                 draftREsAndRelations.remove(reId, vre);
+                return;
             }
         }
-        draftREsAndRelations.remove(reId);
     }
 
     /** Get a draft database row associated with this model

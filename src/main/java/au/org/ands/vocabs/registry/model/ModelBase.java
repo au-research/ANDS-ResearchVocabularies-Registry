@@ -132,6 +132,12 @@ public abstract class ModelBase {
      */
     protected abstract void makeCurrentHistorical(boolean preserveAsDraft);
 
+    /** Delete the draft associated with with this model.
+     * Any current instance is unaffected.
+     * Sub-models <i>are</i> affected.
+     */
+    protected abstract void deleteOnlyDraft();
+
     /** Delete all of the draft database rows associated with this model.
      * Sub-models <i>are not</i> affected. */
     protected abstract void deleteDraftDatabaseRows();
