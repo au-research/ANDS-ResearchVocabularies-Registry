@@ -53,6 +53,9 @@
   <property name="war" value="vocabtoolkit.war" />
   <property name="javadoc-output" value="doc/javadoc" />
   <property name="test-output" value="test-output" />
+  <!-- JaCoCo -->
+  <property name="jacoco-agent"
+            value="libdev/jacoco-0.7.6.201602180812/jacocoagent.jar" />
   <property name="jacoco-output" value="jacoco.exec" />
   <property name="jacoco-report" value="jacoco-report" />
 
@@ -974,36 +977,35 @@
   <!-- Run the Arquillian TestNG test suite. -->
   <target name="testng"
           depends="compile-test,toolkit-db-model-jar,registry-db-model-jar,roles-db-model-jar,generate-registry-dbunit-dtd">
-    <jacoco:coverage
-      destfile="${jacoco-output}">
-      <testng
+    <testng
         classpathref="testng.classpath"
-      >
-        <jvmarg
+        >
+      <env key="JACOCO_AGENT" value="${basedir}/${jacoco-agent}" />
+      <env key="JACOCO_OUTPUT" value="${basedir}/${jacoco-output}" />
+      <jvmarg
           value="-DPROPS_FILE=WEB-INF/classes/toolkit-h2.properties" />
-        <jvmarg
+      <jvmarg
           value="-DPROPS_FILE_CLIENT_MODE=conf/toolkit-h2.properties" />
-        <jvmarg
+      <jvmarg
           value="-DREGISTRY_PROPS_FILE=WEB-INF/classes/registry-h2.properties" />
-        <jvmarg
+      <jvmarg
           value="-DROLES_PROPS_FILE=WEB-INF/classes/roles-h2.properties" />
-        <jvmarg
+      <jvmarg
           value="-DVERSION_PROPS_FILE=conf/version.properties" />
-        <jvmarg
+      <jvmarg
           value="-DdumpClasspath" />
-        <jvmarg
+      <jvmarg
           value="-DdumpProperties" />
-        <!-- Uncomment to allow Hibernate logging to be configured
-             using our logback.xml.
-        <jvmarg
-            value="-Dorg.jboss.logging.provider=slf4j" />
-        -->
-        <xmlfileset dir="src/test/resources" includes="arquillian-tests.xml"/>
-      </testng>
-    </jacoco:coverage>
+      <!-- Uncomment to allow Hibernate logging to be configured
+           using our logback.xml.
+         <jvmarg
+           value="-Dorg.jboss.logging.provider=slf4j" />
+      -->
+      <xmlfileset dir="src/test/resources" includes="arquillian-tests.xml"/>
+    </testng>
     <jacoco:report>
       <executiondata>
-        <file file="jacoco.exec"/>
+        <file file="${jacoco-output}"/>
       </executiondata>
       <structure name="ANDS-Vocabs-Toolkit">
         <classfiles>
@@ -1072,31 +1074,30 @@
           value="${bambooBuildWorkingDirectory}" />
       </filterset>
     </copy>
-    <jacoco:coverage
-      destfile="${jacoco-output}">
-      <testng
+    <testng
         classpathref="testng.classpath"
-      >
-        <jvmarg value=
-          "-DPROPS_FILE=WEB-INF/classes/toolkit-h2-bamboo.properties" />
-        <jvmarg
+        >
+      <env key="JACOCO_AGENT" value="${basedir}/${jacoco-agent}" />
+      <env key="JACOCO_OUTPUT" value="${basedir}/${jacoco-output}" />
+      <jvmarg value=
+              "-DPROPS_FILE=WEB-INF/classes/toolkit-h2-bamboo.properties" />
+      <jvmarg
           value="-DPROPS_FILE_CLIENT_MODE=conf/toolkit-h2-bamboo.properties" />
-        <jvmarg
+      <jvmarg
           value="-DREGISTRY_PROPS_FILE=WEB-INF/classes/registry-h2-bamboo.properties" />
-        <jvmarg
+      <jvmarg
           value="-DROLES_PROPS_FILE=WEB-INF/classes/roles-h2-bamboo.properties" />
-        <jvmarg
+      <jvmarg
           value="-DVERSION_PROPS_FILE=conf/version.properties" />
-        <jvmarg
+      <jvmarg
           value="-DdumpClasspath" />
-        <jvmarg
+      <jvmarg
           value="-DdumpProperties" />
-        <xmlfileset dir="src/test/resources" includes="arquillian-tests.xml"/>
-      </testng>
-    </jacoco:coverage>
+      <xmlfileset dir="src/test/resources" includes="arquillian-tests.xml"/>
+    </testng>
     <jacoco:report>
       <executiondata>
-        <file file="jacoco.exec"/>
+        <file file="${jacoco-output}"/>
       </executiondata>
       <structure name="ANDS-Vocabs-Toolkit">
         <classfiles>

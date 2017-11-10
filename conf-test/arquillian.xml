@@ -23,6 +23,10 @@
            setupSesame(). The values that are set are derived
            from the setting test.Tomcat.directory in the Toolkit
            properties.
+           There _must_ be environment variables JACOCO_AGENT
+           and JACOCO_OUTPUT set; starting up the JVM fails
+           otherwise. See the testng/testng-bamboo targets in
+           build.xml.
       -->
       <property name="javaVmArguments">
         -DPROPS_FILE=${PROPS_FILE}
@@ -32,7 +36,8 @@
         -DdumpClasspath
         -Dinfo.aduna.platform.appdata.basedir=${SESAME_BASEDIR}
         -Dinfo.aduna.logging.dir=${SESAME_LOGGING_DIR}
-      </property>
+        -javaagent:${env.JACOCO_AGENT}=destfile=${env.JACOCO_OUTPUT}
+    </property>
 
       <!-- Where to find Tomcat. NB: you "should" only have to specify
            catalinaHome, but because of a defect in the version of
