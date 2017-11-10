@@ -19,6 +19,7 @@ import au.org.ands.vocabs.registry.db.context.TemporalUtils;
 import au.org.ands.vocabs.registry.db.dao.AccessPointDAO;
 import au.org.ands.vocabs.registry.db.dao.VersionDAO;
 import au.org.ands.vocabs.registry.db.dao.VocabularyDAO;
+import au.org.ands.vocabs.registry.db.dao.VocabularyIdDAO;
 import au.org.ands.vocabs.registry.db.entity.AccessPoint;
 import au.org.ands.vocabs.registry.db.entity.Version;
 import au.org.ands.vocabs.registry.db.entity.Vocabulary;
@@ -77,6 +78,12 @@ public class VocabularyModel extends ModelBase {
             logger.error("Attempt to construct vocabulary model with no Id");
             throw new IllegalArgumentException(
                     "Attempt to construct vocabulary model with no Id");
+        }
+        if (VocabularyIdDAO.getVocabularyIdById(aVocabularyId) == null) {
+            logger.error("Attempt to construct vocabulary model with "
+                    + "invalid Id");
+            throw new IllegalArgumentException(
+                    "Attempt to construct vocabulary model with invalid Id");
         }
         setEm(anEm);
         setVocabularyId(aVocabularyId);

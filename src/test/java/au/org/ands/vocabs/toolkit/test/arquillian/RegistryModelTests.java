@@ -39,6 +39,50 @@ public class RegistryModelTests extends ArquillianBaseTest {
     private static LocalDateTime nowTime =
             LocalDateTime.of(2017, 10, 1, 10, 10);
 
+    /** Test of attempting to request a vocabulary model without
+     * specifying a vocabulary ID. It should throw an exception.
+     * @throws DatabaseUnitException If a problem with DbUnit.
+     * @throws IOException If a problem getting test data for DbUnit,
+     *          or reading JSON from the correct and test output files.
+     * @throws SQLException If DbUnit has a problem performing
+     *           performing JDBC operations.
+     *  */
+    @Test(expectedExceptions = IllegalArgumentException.class,
+            expectedExceptionsMessageRegExp =
+            "Attempt to construct vocabulary model with no Id")
+    public final void testRequestModelNullVocabularyId() throws
+    DatabaseUnitException, IOException, SQLException {
+        ArquillianTestUtils.clearDatabase(REGISTRY);
+        EntityManager em = DBContext.getEntityManager();
+        try {
+            ModelMethods.createVocabularyModel(em, null);
+        } finally {
+            em.close();
+        }
+    }
+
+    /** Test of attempting to request the vocabulary model of
+     * a never-existent vocabulary. It should throw an exception.
+     * @throws DatabaseUnitException If a problem with DbUnit.
+     * @throws IOException If a problem getting test data for DbUnit,
+     *          or reading JSON from the correct and test output files.
+     * @throws SQLException If DbUnit has a problem performing
+     *           performing JDBC operations.
+     *  */
+    @Test(expectedExceptions = IllegalArgumentException.class,
+            expectedExceptionsMessageRegExp =
+            "Attempt to construct vocabulary model with invalid Id")
+    public final void testRequestModelOfNeverExistentVocabulary() throws
+    DatabaseUnitException, IOException, SQLException {
+        ArquillianTestUtils.clearDatabase(REGISTRY);
+        EntityManager em = DBContext.getEntityManager();
+        try {
+            ModelMethods.createVocabularyModel(em, 1);
+        } finally {
+            em.close();
+        }
+    }
+
     /** Test of deleting the current version of a vocabulary that has only
      * a current instance, with Vocabulary and VocabularyRelatedEntity
      * model elements.
