@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Method;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import org.eu.ingwar.tools.arquillian.extension.suite.annotations.ArquillianSuiteDeployment;
@@ -161,9 +162,11 @@ public class ArquillianBaseTest extends Arquillian {
                 .filter(Files::isRegularFile)
                 .forEach(p -> war.addAsManifestResource(p.toFile()));
             // Add WEB-INF content
-            Files.walk(Paths.get("WebContent/WEB-INF"))
+            Path webInfPath = Paths.get("WebContent/WEB-INF");
+            Files.walk(webInfPath)
                 .filter(Files::isRegularFile)
-                .forEach(p -> war.addAsWebInfResource(p.toFile()));
+                .forEach(p -> war.addAsWebInfResource(p.toFile(),
+                        webInfPath.relativize(p).toString()));
             // Add test data
             Files.walk(Paths.get(RESOURCES_DEPLOY_PATH))
                 .filter(Files::isRegularFile)
