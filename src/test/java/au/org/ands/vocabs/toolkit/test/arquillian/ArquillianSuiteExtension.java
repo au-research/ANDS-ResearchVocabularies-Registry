@@ -97,8 +97,7 @@ public class ArquillianSuiteExtension implements LoadableExtension {
     /**
      * Finds class with should produce global deployment PER project.
      *
-     * @return class marked witch
-     * @ArquillianSuiteDeployment annotation
+     * @return class marked with ArquillianSuiteDeployment annotation.
      */
     private static Class<?> getDeploymentClass() {
         // Had a bug that if you open inside eclipse more than one project with @ArquillianSuiteDeployment and is a dependency, the test doesn't run because found more than one @ArquillianSuiteDeployment.
