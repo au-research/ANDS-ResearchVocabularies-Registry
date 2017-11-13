@@ -15,13 +15,18 @@ import javax.validation.Payload;
  * instances provided as input to API methods. */
 @Target({ ElementType.PARAMETER })
 @Retention(RetentionPolicy.RUNTIME)
-@Constraint(validatedBy = CheckNewVocabularyImpl.class)
+@Constraint(validatedBy = CheckVocabularyImpl.class)
 @Documented
-public @interface CheckNewVocabulary {
+public @interface CheckVocabulary {
 
     /** The fully-qualified name of this interface. */
     String INTERFACE_NAME =
-            "au.org.ands.vocabs.registry.api.validation.CheckNewVocabulary";
+            "au.org.ands.vocabs.registry.api.validation.CheckVocabulary";
+
+    /** Get the validation mode to use during validation.
+     * Defaults to CREATE.
+     * @return The validation mode to use during validation. */
+    ValidationMode mode() default ValidationMode.CREATE;
 
     /** Get the default message template for violations.
      * @return The default message template. */

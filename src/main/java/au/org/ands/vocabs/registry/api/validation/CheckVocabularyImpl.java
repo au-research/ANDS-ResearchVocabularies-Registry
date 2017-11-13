@@ -2,7 +2,7 @@
 
 package au.org.ands.vocabs.registry.api.validation;
 
-import static au.org.ands.vocabs.registry.api.validation.CheckNewVocabulary.INTERFACE_NAME;
+import static au.org.ands.vocabs.registry.api.validation.CheckVocabulary.INTERFACE_NAME;
 
 import java.lang.invoke.MethodHandles;
 import java.util.HashSet;
@@ -36,20 +36,28 @@ import au.org.ands.vocabs.registry.utils.SlugGenerator;
 
 /** Validation of input data provided for vocabulary creation.
  */
-public class CheckNewVocabularyImpl
-    implements ConstraintValidator<CheckNewVocabulary, Vocabulary> {
+public class CheckVocabularyImpl
+    implements ConstraintValidator<CheckVocabulary, Vocabulary> {
 
     /** Logger for this class. */
     private Logger logger = LoggerFactory.getLogger(
             MethodHandles.lookup().lookupClass());
 
+    /** The validation mode to be used during validation. */
+    private ValidationMode mode;
+
+    /** Initialize this instance of the validator.
+     * That means: copy the value of the mode parameter into a private field,
+     * so that it can be used later by {@link #isValid(Vocabulary,
+     * ConstraintValidatorContext)}.
+     */
     @Override
-    public void initialize(final CheckNewVocabulary cnv) {
-        // No initialization required.
+    public void initialize(final CheckVocabulary cnv) {
+        mode = cnv.mode();
     }
 
-    /** Validate a proposed new vocabulary.
-     * @param newVocabulary The new vocabulary that is being created.
+    /** Validate a proposed new or updated vocabulary.
+     * @param newVocabulary The vocabulary that is being validated.
      * @return true, if newVocabulary represents a valid vocabulary.
      */
     @SuppressWarnings("checkstyle:MethodLength")
@@ -58,7 +66,7 @@ public class CheckNewVocabularyImpl
             final ConstraintValidatorContext constraintContext) {
 
         boolean valid = true;
-        logger.info("In CheckNewVocabularyImpl.isValid()");
+        logger.info("In CheckVocabularyImpl.isValid()");
 
         // Table of contents of this method:
         // id
@@ -82,14 +90,8 @@ public class CheckNewVocabularyImpl
         // relatedVocabularyRef
         // version
 
-        // id: required _not_ to be provided
-        if (newVocabulary.getId() != null) {
-            valid = false;
-            constraintContext.buildConstraintViolationWithTemplate(
-                    "{" + INTERFACE_NAME + ".id}").
-            addPropertyNode("id").
-            addConstraintViolation();
-        }
+        // id: mode-specific validation.
+        valid = isValidVocabularyId(valid, newVocabulary, constraintContext);
 
         // status: required
         valid = ValidationUtils.requireFieldNotNull(
@@ -162,77 +164,7 @@ public class CheckNewVocabularyImpl
                 constraintContext, valid);
 
         // subject: at least one from ANZSRC-FOR required
-        boolean validSubjects = false;
-        // Keep track of the local subjects that were specified, so
-        // we can check for duplicates at the end. We keep track of their
-        // labels.
-        int numLocalSubjectsSpecified = 0;
-        Set<String> localSubjectsSpecified = new HashSet<>();
-        // Also, keep track of the non-local subjects, so we can check
-        // for duplicates of them, too. We keep track of their IRIs.
-        int numNonLocalSubjectsSpecified = 0;
-        Set<String> nonLocalSubjectsSpecified = new HashSet<>();
-        int subjectIndex = 0;
-        for (Iterator<Subject> it = newVocabulary.getSubject().iterator();
-                it.hasNext(); subjectIndex++) {
-            Subject subject = it.next();
-            if (SubjectSources.LOCAL.equals(subject.getSource())) {
-                numLocalSubjectsSpecified++;
-                localSubjectsSpecified.add(subject.getLabel());
-            } else {
-                numNonLocalSubjectsSpecified++;
-                nonLocalSubjectsSpecified.add(subject.getIri());
-            }
-            final int index = subjectIndex;
-            valid = ValidationUtils.
-                    requireFieldNotEmptyStringAndSatisfiesPredicate(
-                            INTERFACE_NAME,
-                            subject.getSource(), "subject.source",
-                            SubjectSources::isValidSubjectSource,
-                            constraintContext,
-                            cvb -> cvb.addPropertyNode("subject").
-                                addPropertyNode("source").inIterable().
-                                atIndex(index).addConstraintViolation(),
-                                valid);
-            valid = ValidationUtils.
-                    requireFieldNotEmptyString(
-                            INTERFACE_NAME,
-                            subject.getLabel(), "subject.label",
-                            constraintContext,
-                            cvb -> cvb.addPropertyNode("subject").
-                                addPropertyNode("label").inIterable().
-                                atIndex(index).addConstraintViolation(),
-                                valid);
-            if (SubjectSources.subjectRequiresIRI(subject)
-                    && !SubjectSources.subjectHasValidIRI(subject)) {
-                valid = false;
-                constraintContext.buildConstraintViolationWithTemplate(
-                    "{" + INTERFACE_NAME + ".subject.unknown}").
-                addPropertyNode("subject").addBeanNode().inIterable().
-                atIndex(index).addConstraintViolation();
-            }
-            if (SubjectSources.ANZSRC_FOR.equals(subject.getSource())) {
-                validSubjects = true;
-            }
-        }
-        if (!validSubjects) {
-            valid = false;
-            constraintContext.buildConstraintViolationWithTemplate(
-                "{" + INTERFACE_NAME + ".subject.noAnzsrcFor}").
-            addPropertyNode("subject").addConstraintViolation();
-        }
-        if (numLocalSubjectsSpecified != localSubjectsSpecified.size()) {
-            valid = false;
-            constraintContext.buildConstraintViolationWithTemplate(
-                "{" + INTERFACE_NAME + ".subject.duplicateLocal}").
-            addPropertyNode("subject").addConstraintViolation();
-        }
-        if (numNonLocalSubjectsSpecified != nonLocalSubjectsSpecified.size()) {
-            valid = false;
-            constraintContext.buildConstraintViolationWithTemplate(
-                "{" + INTERFACE_NAME + ".subject.duplicateNonLocal}").
-            addPropertyNode("subject").addConstraintViolation();
-        }
+        valid = isValidSubjects(valid, newVocabulary, constraintContext);
 
         // primaryLanguage: required, and must come from the list
         String primaryLanguage = newVocabulary.getPrimaryLanguage();
@@ -345,174 +277,12 @@ public class CheckNewVocabularyImpl
         // revisionCycle: optional
 
         // relatedEntityRef
-        // Boolean to keep track of when we have seen a publisher.
-        boolean publisherSeen = false;
-        // We keep track of the related entity relations we've seen.
-        // As we go, we check that there are no duplicate related entity ids.
-        // For each related entity, we check that there are no duplicate
-        // relations.
-        // Set of RE IDs we have seen.
-        Set<Integer> reIDs = new HashSet<>();
-        int reIndex = 0;
-        for (Iterator<RelatedEntityRef> it =
-                newVocabulary.getRelatedEntityRef().iterator();
-                it.hasNext(); reIndex++) {
-            RelatedEntityRef reRef = it.next();
-            // Check not a previously-seen ID.
-            if (reIDs.contains(reRef.getId())) {
-                valid = false;
-                constraintContext.buildConstraintViolationWithTemplate(
-                    "{" + INTERFACE_NAME + ".relatedEntityRef.duplicateID}").
-                addPropertyNode("relatedEntityRef").addBeanNode().inIterable().
-                atIndex(reIndex).
-                addConstraintViolation();
-            }
-            reIDs.add(reRef.getId());
-            // Check for an existing RE.
-            RelatedEntity re =
-                    RelatedEntityDAO.getCurrentRelatedEntityByRelatedEntityId(
-                            reRef.getId());
-            if (re == null) {
-                valid = false;
-                constraintContext.buildConstraintViolationWithTemplate(
-                    "{" + INTERFACE_NAME + ".relatedEntityRef.unknown}").
-                addPropertyNode("relatedEntityRef").addBeanNode().inIterable().
-                atIndex(reIndex).
-                addConstraintViolation();
-                continue;
-            }
-
-            // Check no duplicate relations, and that each is allowed.
-            // Set of _valid_ relations we have seen for this RE.
-            Set<RelatedEntityRelation> reRelations = new HashSet<>();
-            for (RelatedEntityRelation relation : reRef.getRelation()) {
-                if (reRelations.contains(relation)) {
-                    valid = false;
-                    constraintContext.buildConstraintViolationWithTemplate(
-                        "{" + INTERFACE_NAME
-                        + ".relatedEntityRef.duplicateRelation}").
-                    addPropertyNode("relatedEntityRef").
-                    addBeanNode().inIterable().atIndex(reIndex).
-                    addConstraintViolation();
-                }
-                // NB: If the relation type specified in the input is not even
-                // in the enumerated type (e.g., it is misspelled), then
-                // reRef.getRelation() returns null ... and you correctly
-                // get an error generated for this.
-                if (ValidationUtils.isAllowedRelation(re.getType(),
-                        relation)) {
-                    reRelations.add(relation);
-                } else {
-                    valid = false;
-                    constraintContext.buildConstraintViolationWithTemplate(
-                            "{" + INTERFACE_NAME
-                            + ".relatedEntityRef.badRelation}").
-                    addPropertyNode("relatedEntityRef").addBeanNode().
-                    inIterable().atIndex(reIndex).
-                    addConstraintViolation();
-                    continue;
-                }
-                if (relation == RelatedEntityRelation.PUBLISHED_BY) {
-                    publisherSeen = true;
-                }
-            }
-            if (reRelations.isEmpty()) {
-                valid = false;
-                constraintContext.buildConstraintViolationWithTemplate(
-                    "{" + INTERFACE_NAME + ".relatedEntityRef.noRelation}").
-                addPropertyNode("relatedEntityRef").
-                addBeanNode().inIterable().atIndex(reIndex).
-                addConstraintViolation();
-            }
-        }
-
-        // Ensure at least one publisher has been specified.
-        if (!publisherSeen) {
-            valid = false;
-            constraintContext.buildConstraintViolationWithTemplate(
-                "{" + INTERFACE_NAME + ".relatedEntityRef.noPublisher}").
-            addPropertyNode("relatedEntityRef").
-            addConstraintViolation();
-        }
+        valid = isValidRelatedEntityRefs(valid, newVocabulary,
+                constraintContext);
 
         // relatedVocabularyRef
-        // We keep track of the related vocabulary relations we've seen.
-        // As we go, we check that there are no duplicate vocabulary ids.
-        // For each related vocabulary, we check that there are no duplicate
-        // relations.
-        // Set of vocabulary IDs we have seen.
-        Set<Integer> rvIDs = new HashSet<>();
-        int rvIndex = 0;
-        for (Iterator<RelatedVocabularyRef> it =
-                newVocabulary.getRelatedVocabularyRef().iterator();
-                it.hasNext(); rvIndex++) {
-            RelatedVocabularyRef rvRef = it.next();
-            // Check not a previously-seen ID.
-            if (rvIDs.contains(rvRef.getId())) {
-                valid = false;
-                constraintContext.buildConstraintViolationWithTemplate(
-                    "{" + INTERFACE_NAME
-                    + ".relatedVocabularyRef.duplicateID}").
-                addPropertyNode("relatedVocabularyRef").addBeanNode().
-                inIterable().atIndex(rvIndex).
-                addConstraintViolation();
-            }
-            rvIDs.add(rvRef.getId());
-            // Check for an existing vocabulary.
-            au.org.ands.vocabs.registry.db.entity.Vocabulary rv =
-                    VocabularyDAO.getCurrentVocabularyByVocabularyId(
-                            rvRef.getId());
-            if (rv == null) {
-                valid = false;
-                constraintContext.buildConstraintViolationWithTemplate(
-                    "{" + INTERFACE_NAME
-                    + ".relatedVocabularyRef.unknown}").
-                addPropertyNode("relatedVocabularyRef").addBeanNode().
-                inIterable().atIndex(rvIndex).
-                addConstraintViolation();
-                continue;
-            }
-
-            // Check no duplicate relations, and that each is allowed.
-            // Set of _valid_ relations we have seen for this vocabulary.
-            Set<RelatedVocabularyRelation> rvRelations = new HashSet<>();
-            for (RelatedVocabularyRelation relation : rvRef.getRelation()) {
-                if (rvRelations.contains(relation)) {
-                    valid = false;
-                    constraintContext.buildConstraintViolationWithTemplate(
-                        "{" + INTERFACE_NAME
-                        + ".relatedVocabularyRef.duplicateRelation}").
-                    addPropertyNode("relatedVocabularyRef").
-                    addBeanNode().inIterable().atIndex(rvIndex).
-                    addConstraintViolation();
-                }
-                // NB: If the relation type specified in the input is not even
-                // in the enumerated type (e.g., it is misspelled), then
-                // reRef.getRelation() returns null ... and you correctly
-                // get an error generated for this.
-                if (ValidationUtils.isAllowedRelation(relation)) {
-                    rvRelations.add(relation);
-                } else {
-                    valid = false;
-                    constraintContext.buildConstraintViolationWithTemplate(
-                            "{" + INTERFACE_NAME
-                            + ".relatedVocabularyRef.badRelation}").
-                    addPropertyNode("relatedVocabularyRef").addBeanNode().
-                    inIterable().atIndex(rvIndex).
-                    addConstraintViolation();
-                    continue;
-                }
-            }
-            if (rvRelations.isEmpty()) {
-                valid = false;
-                constraintContext.buildConstraintViolationWithTemplate(
-                    "{" + INTERFACE_NAME
-                    + ".relatedVocabularyRef.noRelation}").
-                addPropertyNode("relatedVocabularyRef").
-                addBeanNode().inIterable().atIndex(rvIndex).
-                addConstraintViolation();
-            }
-        }
+        valid = isValidRelatedVocabularyRefs(valid, newVocabulary,
+                constraintContext);
 
         // version
         int versionIndex = 0;
@@ -558,8 +328,321 @@ public class CheckNewVocabularyImpl
         return valid;
     }
 
+
+    /** Validate the vocabulary Id.
+     * @param valid The current validity status.
+     * @param newVocabulary The vocabulary that is being validated.
+     * @param constraintContext The constraint context, into which
+     *      validation errors are reported.
+     * @return The updated validity status.
+     */
+    private boolean isValidVocabularyId(final boolean valid,
+            final Vocabulary newVocabulary,
+            final ConstraintValidatorContext constraintContext) {
+        boolean newValid = valid;
+        if (mode == ValidationMode.CREATE) {
+            // For CREATE: required _not_ to be provided.
+            if (newVocabulary.getId() != null) {
+                newValid = false;
+                constraintContext.buildConstraintViolationWithTemplate(
+                        "{" + INTERFACE_NAME + ".create.id}").
+                addPropertyNode("id").
+                addConstraintViolation();
+            }
+        } else {
+            // For UPDATE: required.
+            if (newVocabulary.getId() == null || newVocabulary.getId() <= 0) {
+                newValid = false;
+                constraintContext.buildConstraintViolationWithTemplate(
+                        "{" + INTERFACE_NAME + ".update.id}").
+                addPropertyNode("id").
+                addConstraintViolation();
+            }
+        }
+        return newValid;
+    }
+
+    /** Validate the subject elements.
+     * @param valid The current validity status.
+     * @param newVocabulary The vocabulary that is being validated.
+     * @param constraintContext The constraint context, into which
+     *      validation errors are reported.
+     * @return The updated validity status.
+     */
+    private boolean isValidSubjects(final boolean valid,
+            final Vocabulary newVocabulary,
+            final ConstraintValidatorContext constraintContext) {
+        boolean newValid = valid;
+        boolean validSubjects = false;
+        // Keep track of the local subjects that were specified, so
+        // we can check for duplicates at the end. We keep track of their
+        // labels.
+        int numLocalSubjectsSpecified = 0;
+        Set<String> localSubjectsSpecified = new HashSet<>();
+        // Also, keep track of the non-local subjects, so we can check
+        // for duplicates of them, too. We keep track of their IRIs.
+        int numNonLocalSubjectsSpecified = 0;
+        Set<String> nonLocalSubjectsSpecified = new HashSet<>();
+        int subjectIndex = 0;
+        for (Iterator<Subject> it = newVocabulary.getSubject().iterator();
+                it.hasNext(); subjectIndex++) {
+            Subject subject = it.next();
+            if (SubjectSources.LOCAL.equals(subject.getSource())) {
+                numLocalSubjectsSpecified++;
+                localSubjectsSpecified.add(subject.getLabel());
+            } else {
+                numNonLocalSubjectsSpecified++;
+                nonLocalSubjectsSpecified.add(subject.getIri());
+            }
+            final int index = subjectIndex;
+            newValid = ValidationUtils.
+                    requireFieldNotEmptyStringAndSatisfiesPredicate(
+                            INTERFACE_NAME,
+                            subject.getSource(), "subject.source",
+                            SubjectSources::isValidSubjectSource,
+                            constraintContext,
+                            cvb -> cvb.addPropertyNode("subject").
+                                addPropertyNode("source").inIterable().
+                                atIndex(index).addConstraintViolation(),
+                                valid);
+            newValid = ValidationUtils.
+                    requireFieldNotEmptyString(
+                            INTERFACE_NAME,
+                            subject.getLabel(), "subject.label",
+                            constraintContext,
+                            cvb -> cvb.addPropertyNode("subject").
+                                addPropertyNode("label").inIterable().
+                                atIndex(index).addConstraintViolation(),
+                                valid);
+            if (SubjectSources.subjectRequiresIRI(subject)
+                    && !SubjectSources.subjectHasValidIRI(subject)) {
+                newValid = false;
+                constraintContext.buildConstraintViolationWithTemplate(
+                    "{" + INTERFACE_NAME + ".subject.unknown}").
+                addPropertyNode("subject").addBeanNode().inIterable().
+                atIndex(index).addConstraintViolation();
+            }
+            if (SubjectSources.ANZSRC_FOR.equals(subject.getSource())) {
+                validSubjects = true;
+            }
+        }
+        if (!validSubjects) {
+            newValid = false;
+            constraintContext.buildConstraintViolationWithTemplate(
+                "{" + INTERFACE_NAME + ".subject.noAnzsrcFor}").
+            addPropertyNode("subject").addConstraintViolation();
+        }
+        if (numLocalSubjectsSpecified != localSubjectsSpecified.size()) {
+            newValid = false;
+            constraintContext.buildConstraintViolationWithTemplate(
+                "{" + INTERFACE_NAME + ".subject.duplicateLocal}").
+            addPropertyNode("subject").addConstraintViolation();
+        }
+        if (numNonLocalSubjectsSpecified != nonLocalSubjectsSpecified.size()) {
+            newValid = false;
+            constraintContext.buildConstraintViolationWithTemplate(
+                "{" + INTERFACE_NAME + ".subject.duplicateNonLocal}").
+            addPropertyNode("subject").addConstraintViolation();
+        }
+        return newValid;
+    }
+
+    /** Validate the related entity ref elements.
+     * @param valid The current validity status.
+     * @param newVocabulary The vocabulary that is being validated.
+     * @param constraintContext The constraint context, into which
+     *      validation errors are reported.
+     * @return The updated validity status.
+     */
+    private boolean isValidRelatedEntityRefs(final boolean valid,
+            final Vocabulary newVocabulary,
+            final ConstraintValidatorContext constraintContext) {
+        boolean newValid = valid;
+        // Boolean to keep track of when we have seen a publisher.
+        boolean publisherSeen = false;
+        // We keep track of the related entity relations we've seen.
+        // As we go, we check that there are no duplicate related entity ids.
+        // For each related entity, we check that there are no duplicate
+        // relations.
+        // Set of RE IDs we have seen.
+        Set<Integer> reIDs = new HashSet<>();
+        int reIndex = 0;
+        for (Iterator<RelatedEntityRef> it =
+                newVocabulary.getRelatedEntityRef().iterator();
+                it.hasNext(); reIndex++) {
+            RelatedEntityRef reRef = it.next();
+            // Check not a previously-seen ID.
+            if (reIDs.contains(reRef.getId())) {
+                newValid = false;
+                constraintContext.buildConstraintViolationWithTemplate(
+                    "{" + INTERFACE_NAME + ".relatedEntityRef.duplicateID}").
+                addPropertyNode("relatedEntityRef").addBeanNode().inIterable().
+                atIndex(reIndex).
+                addConstraintViolation();
+            }
+            reIDs.add(reRef.getId());
+            // Check for an existing RE.
+            RelatedEntity re =
+                    RelatedEntityDAO.getCurrentRelatedEntityByRelatedEntityId(
+                            reRef.getId());
+            if (re == null) {
+                newValid = false;
+                constraintContext.buildConstraintViolationWithTemplate(
+                    "{" + INTERFACE_NAME + ".relatedEntityRef.unknown}").
+                addPropertyNode("relatedEntityRef").addBeanNode().inIterable().
+                atIndex(reIndex).
+                addConstraintViolation();
+                continue;
+            }
+
+            // Check no duplicate relations, and that each is allowed.
+            // Set of _valid_ relations we have seen for this RE.
+            Set<RelatedEntityRelation> reRelations = new HashSet<>();
+            for (RelatedEntityRelation relation : reRef.getRelation()) {
+                if (reRelations.contains(relation)) {
+                    newValid = false;
+                    constraintContext.buildConstraintViolationWithTemplate(
+                        "{" + INTERFACE_NAME
+                        + ".relatedEntityRef.duplicateRelation}").
+                    addPropertyNode("relatedEntityRef").
+                    addBeanNode().inIterable().atIndex(reIndex).
+                    addConstraintViolation();
+                }
+                // NB: If the relation type specified in the input is not even
+                // in the enumerated type (e.g., it is misspelled), then
+                // reRef.getRelation() returns null ... and you correctly
+                // get an error generated for this.
+                if (ValidationUtils.isAllowedRelation(re.getType(),
+                        relation)) {
+                    reRelations.add(relation);
+                } else {
+                    newValid = false;
+                    constraintContext.buildConstraintViolationWithTemplate(
+                            "{" + INTERFACE_NAME
+                            + ".relatedEntityRef.badRelation}").
+                    addPropertyNode("relatedEntityRef").addBeanNode().
+                    inIterable().atIndex(reIndex).
+                    addConstraintViolation();
+                    continue;
+                }
+                if (relation == RelatedEntityRelation.PUBLISHED_BY) {
+                    publisherSeen = true;
+                }
+            }
+            if (reRelations.isEmpty()) {
+                newValid = false;
+                constraintContext.buildConstraintViolationWithTemplate(
+                    "{" + INTERFACE_NAME + ".relatedEntityRef.noRelation}").
+                addPropertyNode("relatedEntityRef").
+                addBeanNode().inIterable().atIndex(reIndex).
+                addConstraintViolation();
+            }
+        }
+
+        // Ensure at least one publisher has been specified.
+        if (!publisherSeen) {
+            newValid = false;
+            constraintContext.buildConstraintViolationWithTemplate(
+                "{" + INTERFACE_NAME + ".relatedEntityRef.noPublisher}").
+            addPropertyNode("relatedEntityRef").
+            addConstraintViolation();
+        }
+        return newValid;
+    }
+
+    /** Validate the related vocabulary ref elements.
+     * @param valid The current validity status.
+     * @param newVocabulary The vocabulary that is being validated.
+     * @param constraintContext The constraint context, into which
+     *      validation errors are reported.
+     * @return The updated validity status.
+     */
+    private boolean isValidRelatedVocabularyRefs(final boolean valid,
+            final Vocabulary newVocabulary,
+            final ConstraintValidatorContext constraintContext) {
+        boolean newValid = valid;
+        // We keep track of the related vocabulary relations we've seen.
+        // As we go, we check that there are no duplicate vocabulary ids.
+        // For each related vocabulary, we check that there are no duplicate
+        // relations.
+        // Set of vocabulary IDs we have seen.
+        Set<Integer> rvIDs = new HashSet<>();
+        int rvIndex = 0;
+        for (Iterator<RelatedVocabularyRef> it =
+                newVocabulary.getRelatedVocabularyRef().iterator();
+                it.hasNext(); rvIndex++) {
+            RelatedVocabularyRef rvRef = it.next();
+            // Check not a previously-seen ID.
+            if (rvIDs.contains(rvRef.getId())) {
+                newValid = false;
+                constraintContext.buildConstraintViolationWithTemplate(
+                    "{" + INTERFACE_NAME
+                    + ".relatedVocabularyRef.duplicateID}").
+                addPropertyNode("relatedVocabularyRef").addBeanNode().
+                inIterable().atIndex(rvIndex).
+                addConstraintViolation();
+            }
+            rvIDs.add(rvRef.getId());
+            // Check for an existing vocabulary.
+            au.org.ands.vocabs.registry.db.entity.Vocabulary rv =
+                    VocabularyDAO.getCurrentVocabularyByVocabularyId(
+                            rvRef.getId());
+            if (rv == null) {
+                newValid = false;
+                constraintContext.buildConstraintViolationWithTemplate(
+                    "{" + INTERFACE_NAME
+                    + ".relatedVocabularyRef.unknown}").
+                addPropertyNode("relatedVocabularyRef").addBeanNode().
+                inIterable().atIndex(rvIndex).
+                addConstraintViolation();
+                continue;
+            }
+
+            // Check no duplicate relations, and that each is allowed.
+            // Set of _valid_ relations we have seen for this vocabulary.
+            Set<RelatedVocabularyRelation> rvRelations = new HashSet<>();
+            for (RelatedVocabularyRelation relation : rvRef.getRelation()) {
+                if (rvRelations.contains(relation)) {
+                    newValid = false;
+                    constraintContext.buildConstraintViolationWithTemplate(
+                        "{" + INTERFACE_NAME
+                        + ".relatedVocabularyRef.duplicateRelation}").
+                    addPropertyNode("relatedVocabularyRef").
+                    addBeanNode().inIterable().atIndex(rvIndex).
+                    addConstraintViolation();
+                }
+                // NB: If the relation type specified in the input is not even
+                // in the enumerated type (e.g., it is misspelled), then
+                // reRef.getRelation() returns null ... and you correctly
+                // get an error generated for this.
+                if (ValidationUtils.isAllowedRelation(relation)) {
+                    rvRelations.add(relation);
+                } else {
+                    newValid = false;
+                    constraintContext.buildConstraintViolationWithTemplate(
+                            "{" + INTERFACE_NAME
+                            + ".relatedVocabularyRef.badRelation}").
+                    addPropertyNode("relatedVocabularyRef").addBeanNode().
+                    inIterable().atIndex(rvIndex).
+                    addConstraintViolation();
+                    continue;
+                }
+            }
+            if (rvRelations.isEmpty()) {
+                newValid = false;
+                constraintContext.buildConstraintViolationWithTemplate(
+                    "{" + INTERFACE_NAME
+                    + ".relatedVocabularyRef.noRelation}").
+                addPropertyNode("relatedVocabularyRef").
+                addBeanNode().inIterable().atIndex(rvIndex).
+                addConstraintViolation();
+            }
+        }
+        return newValid;
+    }
+
     /** Validate a proposed new version.
-     * @param newVocabulary The new vocabulary that is being created
+     * @param newVocabulary The vocabulary that is being validated.
      * @param versionIndex The index of the version being created.
      * @param newVersion The new version that is being created.
      * @param constraintContext The constraint context, into which
@@ -571,7 +654,7 @@ public class CheckNewVocabularyImpl
             final Version newVersion,
             final ConstraintValidatorContext constraintContext) {
         boolean valid = true;
-        logger.info("In CheckNewVocabularyImpl.isValidVersion("
+        logger.info("In CheckVocabularyImpl.isValidVersion("
                 + versionIndex + ")");
 
         // Table of contents of this method:
@@ -586,18 +669,9 @@ public class CheckNewVocabularyImpl
         // doPublish
         // accessPoint
 
-        // id: required _not_ to be provided
-        if (newVersion.getId() != 0) {
-            /* User can't specify an id for a new version.
-             * Note: _we_ can't distinguish omitting an id,
-             * from specifying an id of 0. */
-            valid = false;
-            constraintContext.buildConstraintViolationWithTemplate(
-                    "{" + INTERFACE_NAME + ".version.id}").
-            addPropertyNode("version").
-            addPropertyNode("id").inIterable().atIndex(versionIndex).
-            addConstraintViolation();
-        }
+        // id: mode-specific validation.
+        valid = isValidVersionId(valid, newVersion, versionIndex,
+                constraintContext);
 
         // status: required
         valid = ValidationUtils.requireFieldNotNull(
@@ -667,6 +741,9 @@ public class CheckNewVocabularyImpl
                 addConstraintViolation();
         }
 
+        // doPoolpartyHarvest: we can't distinguish between a missing value,
+        // and the value specified as false.
+
         // doImport: we can't distinguish between a missing value,
         // and the value specified as false.
 
@@ -679,8 +756,8 @@ public class CheckNewVocabularyImpl
                 newVersion.getAccessPoint().iterator();
                 it.hasNext(); accessPointIndex++) {
             AccessPoint ap = it.next();
-            if (!isValidAccessPoint(versionIndex, accessPointIndex,
-                    ap, constraintContext)) {
+            if (!isValidAccessPoint(versionIndex, newVersion.getId(),
+                    accessPointIndex, ap, constraintContext)) {
                 valid = false;
             }
         }
@@ -688,8 +765,43 @@ public class CheckNewVocabularyImpl
         return valid;
     }
 
+    /** Validate the version Id.
+     * @param valid The current validity status.
+     * @param newVersion The version that is being validated
+     * @param versionIndex The index of the version within the vocabulary
+     * @param constraintContext The constraint context, into which
+     *      validation errors are reported.
+     * @return The updated validity status.
+     */
+    private boolean isValidVersionId(final boolean valid,
+            final Version newVersion,
+            final int versionIndex,
+            final ConstraintValidatorContext constraintContext) {
+        if (mode == ValidationMode.UPDATE) {
+            // For UPDATE: no further check here.
+            // User can update existing versions, and add new ones.
+            return valid;
+        }
+        boolean newValid = valid;
+        /* Note: _we_ can't distinguish omitting an id,
+         * from specifying an id of 0. */
+        if (mode == ValidationMode.CREATE) {
+            // For CREATE: required _not_ to be provided.
+            if (newVersion.getId() != 0) {
+                newValid = false;
+                constraintContext.buildConstraintViolationWithTemplate(
+                        "{" + INTERFACE_NAME + ".version.id}").
+                addPropertyNode("version").
+                addPropertyNode("id").inIterable().atIndex(versionIndex).
+                addConstraintViolation();
+            }
+        }
+        return newValid;
+    }
+
     /** Validate a proposed new access point.
      * @param versionIndex The index of the version being created.
+     * @param newVersionId The value of id specified in newVersion.
      * @param accessPointIndex The index of the access point being created.
      * @param newAccessPoint The new access point that is being created.
      * @param constraintContext The constraint context, into which
@@ -698,32 +810,21 @@ public class CheckNewVocabularyImpl
      */
     @SuppressWarnings("checkstyle:MethodLength")
     private boolean isValidAccessPoint(final int versionIndex,
+            final int newVersionId,
             final int accessPointIndex,
             final AccessPoint newAccessPoint,
             final ConstraintValidatorContext constraintContext) {
         boolean valid = true;
-        logger.info("In CheckNewVocabularyImpl.isValidAccessPoint("
+        logger.info("In CheckVocabularyImpl.isValidAccessPoint("
                 + accessPointIndex + ")");
 
         // Table of contents of this method:
         // id
         // discriminator
 
-        // id: required _not_ to be provided
-        if (newAccessPoint.getId() != 0) {
-            /* User can't specify an id for a new access point.
-             * Note: _we_ can't distinguish omitting an id,
-             * from specifying an id of 0. */
-            valid = false;
-            constraintContext.buildConstraintViolationWithTemplate(
-                    "{" + INTERFACE_NAME + ".accessPoint.id}").
-            addPropertyNode("version").
-            addPropertyNode("accessPoint").
-            inIterable().atIndex(versionIndex).
-            addPropertyNode("id").
-            inIterable().atIndex(accessPointIndex).
-            addConstraintViolation();
-        }
+        // id: mode-specific validation.
+        valid = isValidAccessPointId(valid, versionIndex, newVersionId,
+                newAccessPoint, accessPointIndex, constraintContext);
 
         // discriminator
         if (newAccessPoint.getDiscriminator() == null) {
@@ -868,10 +969,59 @@ public class CheckNewVocabularyImpl
                 addPropertyNode("discriminator").
                 inIterable().atIndex(accessPointIndex).
                 addConstraintViolation();
-
         }
 
         return valid;
+    }
+
+    /** Validate the access point Id.
+     * @param valid The current validity status.
+     * @param versionIndex The index of the version within the vocabulary
+     * @param newVersionId The value of id specified in newVersion. Used to
+     *      determine if this is a new or an existing version.
+     * @param newAccessPoint The access point that is being validated.
+     * @param accessPointIndex The index of the access point within
+     *      the version.
+     * @param constraintContext The constraint context, into which
+     *      validation errors are reported.
+     * @return The updated validity status.
+     */
+    private boolean isValidAccessPointId(final boolean valid,
+            final int versionIndex, final int newVersionId,
+            final AccessPoint newAccessPoint, final int accessPointIndex,
+            final ConstraintValidatorContext constraintContext) {
+        /* Note: _we_ can't distinguish omitting an id,
+         * from specifying an id of 0. */
+        boolean newValid = valid;
+        if (mode == ValidationMode.CREATE) {
+            if (newAccessPoint.getId() != 0) {
+                /* User can't specify an id for a new access point. */
+                newValid = false;
+                constraintContext.buildConstraintViolationWithTemplate(
+                        "{" + INTERFACE_NAME + ".accessPoint.id}").
+                addPropertyNode("version").
+                addPropertyNode("accessPoint").
+                inIterable().atIndex(versionIndex).
+                addPropertyNode("id").
+                inIterable().atIndex(accessPointIndex).
+                addConstraintViolation();
+            }
+        } else {
+            if (newVersionId == 0 && newAccessPoint.getId() != 0) {
+                /* User can't specify an id for an access point of
+                 * a new version. */
+                newValid = false;
+                constraintContext.buildConstraintViolationWithTemplate(
+                        "{" + INTERFACE_NAME + ".accessPoint.id}").
+                addPropertyNode("version").
+                addPropertyNode("accessPoint").
+                inIterable().atIndex(versionIndex).
+                addPropertyNode("id").
+                inIterable().atIndex(accessPointIndex).
+                addConstraintViolation();
+            }
+        }
+        return newValid;
     }
 
 }
