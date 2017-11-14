@@ -639,6 +639,12 @@ public final class ValidationUtils {
         }
     }
 
+    /** A convenience reference to the class object for
+     * {@link FieldValidationHelper}. Used in {@link
+     * #isValidRelatedEntityIdentifier(RelatedEntityIdentifier)}. */
+    private static final Class<FieldValidationHelper> FVH_CLASS =
+            FieldValidationHelper.class;
+
     /** Determine if a related entity identifier is valid, according
      * to the rules for each identifier type.
      * Prerequisite: the type is not null, and value is non-empty.
@@ -648,17 +654,16 @@ public final class ValidationUtils {
     public static boolean isValidRelatedEntityIdentifier(
             final RelatedEntityIdentifier rei) {
         String value = rei.getIdentifierValue();
-        Class<FieldValidationHelper> fvhClass = FieldValidationHelper.class;
         switch (rei.getIdentifierType()) {
         case AU_ANL_PEAU:
-            return validator.validateValue(fvhClass,
+            return validator.validateValue(FVH_CLASS,
                     FieldValidationHelper.AU_ANL_PEAU_FIELDNAME,
                     value).isEmpty();
         case DOI:
-            return validator.validateValue(fvhClass,
+            return validator.validateValue(FVH_CLASS,
                     FieldValidationHelper.DOI_FIELDNAME, value).isEmpty();
         case HANDLE:
-            return validator.validateValue(fvhClass,
+            return validator.validateValue(FVH_CLASS,
                     FieldValidationHelper.HANDLE_FIELDNAME,
                     value).isEmpty();
         case INFOURI:
@@ -671,27 +676,27 @@ public final class ValidationUtils {
                 return false;
             }
             // Second: must also begin with "info:".
-            return validator.validateValue(fvhClass,
+            return validator.validateValue(FVH_CLASS,
                     FieldValidationHelper.INFOURI_FIELDNAME,
                     value).isEmpty();
         case ISIL:
-            return validator.validateValue(fvhClass,
+            return validator.validateValue(FVH_CLASS,
                     FieldValidationHelper.ISIL_FIELDNAME, value).isEmpty();
         case ISNI:
-            return validator.validateValue(fvhClass,
+            return validator.validateValue(FVH_CLASS,
                     FieldValidationHelper.ISNI_FIELDNAME, value).isEmpty();
         case LOCAL:
             // Anything goes;
             return true;
         case ORCID:
-            return validator.validateValue(fvhClass,
+            return validator.validateValue(FVH_CLASS,
                     FieldValidationHelper.ORCID_FIELDNAME, value).isEmpty();
         case PURL:
-            return validator.validateValue(fvhClass,
+            return validator.validateValue(FVH_CLASS,
                     FieldValidationHelper.PURL_FIELDNAME,
                     value).isEmpty() && isValidURL(value);
         case RESEARCHER_ID:
-            return validator.validateValue(fvhClass,
+            return validator.validateValue(FVH_CLASS,
                     FieldValidationHelper.RESEARCHER_ID_FIELDNAME,
                     value).isEmpty();
         case URI:
@@ -704,7 +709,7 @@ public final class ValidationUtils {
             }
             return true;
         case VIAF:
-            return validator.validateValue(fvhClass,
+            return validator.validateValue(FVH_CLASS,
                     FieldValidationHelper.VIAF_FIELDNAME, value).isEmpty();
         default:
             // Can't happen! (Unless we added a new identifier type, but
