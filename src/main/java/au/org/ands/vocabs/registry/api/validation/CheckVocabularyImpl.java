@@ -12,6 +12,7 @@ import java.util.Set;
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 
+import org.apache.commons.lang3.BooleanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -730,7 +731,7 @@ public class CheckVocabularyImpl
         // doPoolpartyHarvest: only allow it to be true if
         // this is a "PoolParty project", i.e., a PoolParty project ID
         // has been specified for the vocabulary.
-        if (newVersion.isDoPoolpartyHarvest()
+        if (BooleanUtils.isTrue(newVersion.isDoPoolpartyHarvest())
                 && newVocabulary.getPoolpartyProject() == null) {
             valid = false;
             constraintContext.buildConstraintViolationWithTemplate(
@@ -741,14 +742,9 @@ public class CheckVocabularyImpl
                 addConstraintViolation();
         }
 
-        // doPoolpartyHarvest: we can't distinguish between a missing value,
-        // and the value specified as false.
+        // doImport
 
-        // doImport: we can't distinguish between a missing value,
-        // and the value specified as false.
-
-        // doPublish: we can't distinguish between a missing value,
-        // and the value specified as false.
+        // doPublish
 
         // accessPoint
         int accessPointIndex = 0;
