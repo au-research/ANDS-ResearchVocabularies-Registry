@@ -76,7 +76,7 @@ public final class ArquillianTestUtils {
      * @param filename The filename of the resource.
      * @return An {@link InputStream} for the resource.
      */
-    private static InputStream getResourceAsInputStream(
+    static InputStream getResourceAsInputStream(
             final String filename) {
         InputStream inputStream = classLoader.getResourceAsStream(filename);
         if (inputStream == null) {
