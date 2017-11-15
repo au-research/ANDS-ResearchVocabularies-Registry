@@ -78,7 +78,7 @@
             <xs:sequence>
                 <xs:element maxOccurs="unbounded" minOccurs="0" ref="access-point"/>
             </xs:sequence>
-            <xs:attribute name="id" type="id-type" use="required"> </xs:attribute>
+            <xs:attribute name="id" type="id-type" use="optional"> </xs:attribute>
             <xs:attribute name="status" use="required" type="common:version-status"> </xs:attribute>
             <xs:attribute name="title" use="required" type="xs:token"/>
             <xs:attribute name="slug" type="xs:token"/>
@@ -105,7 +105,7 @@
                 <xs:element name="ap-sissvoc" type="ap-sissvoc"/>
                 <xs:element name="ap-web-page" type="ap-web-page"/>
             </xs:choice>
-            <xs:attribute name="id" type="id-type" use="required"/>
+            <xs:attribute name="id" type="id-type" use="optional"/>
             <xs:attribute name="discriminator" type="common:access-point-discriminator"
                 use="required"/>
         </xs:complexType>

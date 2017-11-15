@@ -779,11 +779,9 @@ public class CheckVocabularyImpl
             return valid;
         }
         boolean newValid = valid;
-        /* Note: _we_ can't distinguish omitting an id,
-         * from specifying an id of 0. */
         if (mode == ValidationMode.CREATE) {
             // For CREATE: required _not_ to be provided.
-            if (newVersion.getId() != 0) {
+            if (newVersion.getId() != null) {
                 newValid = false;
                 constraintContext.buildConstraintViolationWithTemplate(
                         "{" + INTERFACE_NAME + ".version.id}").
@@ -806,7 +804,7 @@ public class CheckVocabularyImpl
      */
     @SuppressWarnings("checkstyle:MethodLength")
     private boolean isValidAccessPoint(final int versionIndex,
-            final int newVersionId,
+            final Integer newVersionId,
             final int accessPointIndex,
             final AccessPoint newAccessPoint,
             final ConstraintValidatorContext constraintContext) {
@@ -983,14 +981,14 @@ public class CheckVocabularyImpl
      * @return The updated validity status.
      */
     private boolean isValidAccessPointId(final boolean valid,
-            final int versionIndex, final int newVersionId,
+            final int versionIndex, final Integer newVersionId,
             final AccessPoint newAccessPoint, final int accessPointIndex,
             final ConstraintValidatorContext constraintContext) {
         /* Note: _we_ can't distinguish omitting an id,
          * from specifying an id of 0. */
         boolean newValid = valid;
         if (mode == ValidationMode.CREATE) {
-            if (newAccessPoint.getId() != 0) {
+            if (newAccessPoint.getId() != null) {
                 /* User can't specify an id for a new access point. */
                 newValid = false;
                 constraintContext.buildConstraintViolationWithTemplate(
@@ -1003,7 +1001,7 @@ public class CheckVocabularyImpl
                 addConstraintViolation();
             }
         } else {
-            if (newVersionId == 0 && newAccessPoint.getId() != 0) {
+            if (newVersionId == null && newAccessPoint.getId() != null) {
                 /* User can't specify an id for an access point of
                  * a new version. */
                 newValid = false;
