@@ -193,7 +193,11 @@ public final class ArquillianTestUtils {
             return idc;
         }
         Connection conn = getJDBCConnectionForDbUnit(dbs);
-        idc = new H2Connection(conn, null);
+        // For H2, essential to specify "PUBLIC" as the schema.
+        // Otherwise, when working with the roles database, DbUnit
+        // thinks that the ROLES table also has the columns of H2's
+        // INFORMATION_SCHEMA.ROLES table!
+        idc = new H2Connection(conn, "PUBLIC");
         iDatabaseConnectionsForDbUnit.put(dbs, idc);
         return idc;
     }
