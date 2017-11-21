@@ -60,6 +60,10 @@
   </filter-mapping>
   <filter-mapping>
     <filter-name>ApiOriginFilter</filter-name>
+    <url-pattern>/api/user/*</url-pattern>
+  </filter-mapping>
+  <filter-mapping>
+    <filter-name>ApiOriginFilter</filter-name>
     <url-pattern>/api/utilities/*</url-pattern>
   </filter-mapping>
 

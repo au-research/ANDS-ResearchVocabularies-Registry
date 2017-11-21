@@ -28,6 +28,7 @@ import javax.ws.rs.core.Response.Status.Family;
 
 import org.dbunit.Assertion;
 import org.dbunit.DatabaseUnitException;
+import org.dbunit.database.DatabaseConfig;
 import org.dbunit.database.IDatabaseConnection;
 import org.dbunit.dataset.IDataSet;
 import org.dbunit.dataset.ITable;
@@ -199,6 +200,11 @@ public final class ArquillianTestUtils {
         // INFORMATION_SCHEMA.ROLES table!
         idc = new H2Connection(conn, "PUBLIC");
         iDatabaseConnectionsForDbUnit.put(dbs, idc);
+        if (dbs == DatabaseSelector.ROLES) {
+            // Just for the roles database, we need to allow empty values.
+            idc.getConfig().setProperty(
+                    DatabaseConfig.FEATURE_ALLOW_EMPTY_FIELDS, true);
+        }
         return idc;
     }
 

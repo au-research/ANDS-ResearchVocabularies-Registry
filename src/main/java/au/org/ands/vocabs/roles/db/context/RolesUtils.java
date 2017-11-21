@@ -119,6 +119,11 @@ public final class RolesUtils {
         userInfo.setAuthenticationServiceId(role.getAuthenticationServiceId());
         userInfo.setFullName(role.getName());
         updateRoles(roleId, userInfo);
+        if (userInfo.getIsSuperUser() == null) {
+            // Didn't find the superuser role anywhere, so make it
+            // explicit that this user doesn't have such a role.
+            userInfo.setIsSuperUser(false);
+        }
         return userInfo;
     }
 

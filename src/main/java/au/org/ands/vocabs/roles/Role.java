@@ -2,9 +2,12 @@
 
 package au.org.ands.vocabs.roles;
 
+import javax.xml.bind.annotation.XmlType;
+
 import au.org.ands.vocabs.roles.db.entity.RoleTypeId;
 
 /** Representation of one role. */
+@XmlType
 public class Role {
 
     /** id. */
@@ -13,6 +16,11 @@ public class Role {
     private RoleTypeId typeId;
     /** fullName. */
     private String fullName;
+
+    /** Default constructor. Currently used during automated testing
+     * when parsing XML generated from instances of this class. */
+    public Role() {
+    }
 
     /** Constructor that takes all properties.
      * @param anId The value of id.
