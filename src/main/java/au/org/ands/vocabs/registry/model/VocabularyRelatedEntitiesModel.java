@@ -209,7 +209,12 @@ public class VocabularyRelatedEntitiesModel extends ModelBase {
      */
     private VocabularyRelatedEntity getDraftDatabaseRow(
             final Integer reId, final RelatedEntityRelation rer) {
-        for (VocabularyRelatedEntity vre : draftREsAndRelations.get(reId)) {
+        List<VocabularyRelatedEntity> draftsForId =
+                draftREsAndRelations.get(reId);
+        if (draftsForId == null) {
+            return null;
+        }
+        for (VocabularyRelatedEntity vre : draftsForId) {
             if (vre.getRelation() == rer) {
                 return vre;
             }
@@ -227,7 +232,12 @@ public class VocabularyRelatedEntitiesModel extends ModelBase {
      */
     private VocabularyRelatedEntity getDraftAdditionOrModificationDatabaseRow(
             final Integer reId, final RelatedEntityRelation rer) {
-        for (VocabularyRelatedEntity vre : draftREsAndRelations.get(reId)) {
+        List<VocabularyRelatedEntity> draftsForId =
+                draftREsAndRelations.get(reId);
+        if (draftsForId == null) {
+            return null;
+        }
+        for (VocabularyRelatedEntity vre : draftsForId) {
             if (vre.getRelation() == rer
                     && TemporalUtils.isDraftAdditionOrModification(vre)) {
                 return vre;

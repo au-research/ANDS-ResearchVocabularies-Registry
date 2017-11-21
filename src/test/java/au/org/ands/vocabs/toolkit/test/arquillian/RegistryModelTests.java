@@ -20,8 +20,7 @@ import au.org.ands.vocabs.registry.db.context.DBContext;
 import au.org.ands.vocabs.registry.model.ModelMethods;
 import au.org.ands.vocabs.registry.model.VocabularyModel;
 
-/** Tests of the registry model.
- */
+/** Tests of the registry model. */
 @Test
 public class RegistryModelTests extends ArquillianBaseTest {
 
@@ -152,6 +151,44 @@ public class RegistryModelTests extends ArquillianBaseTest {
                 + "testDeleteOnlyDraft1/"
                 + "test-registry-results.xml");
     }
+
+    /** Test of deleting the current version of a vocabulary that also has
+     * a draft instance, with Vocabulary and VocabularyRelatedEntity
+     * model elements.
+     * @throws DatabaseUnitException If a problem with DbUnit.
+     * @throws IOException If a problem getting test data for DbUnit,
+     *          or reading JSON from the correct and test output files.
+     * @throws SQLException If DbUnit has a problem performing
+     *           performing JDBC operations.
+     *  */
+    @Test
+    public final void testDeleteDraftLeavingCurrent1() throws
+    DatabaseUnitException, IOException, SQLException {
+        ArquillianTestUtils.clearDatabase(REGISTRY);
+        ArquillianTestUtils.loadDbUnitTestFile(REGISTRY,
+                "testDeleteDraftLeavingCurrent1");
+        EntityManager em = null;
+        try {
+            em = DBContext.getEntityManager();
+            em.getTransaction().begin();
+            VocabularyModel vm = ModelMethods.createVocabularyModel(em, 1);
+            ModelMethods.deleteOnlyCurrentVocabulary(vm, "TEST", nowTime);
+            em.getTransaction().commit();
+        } finally {
+            if (em != null) {
+                em.close();
+            }
+        }
+
+        ArquillianTestUtils.compareDatabaseCurrentAndExpectedContents(
+                REGISTRY,
+                "test/tests/au.org.ands.vocabs.toolkit."
+                + "test.arquillian.AllArquillianTests."
+                + "testDeleteDraftLeavingCurrent1/"
+                + "test-registry-results.xml");
+    }
+
+
 
 //  ArquillianTestUtils.exportFullDbUnitData(REGISTRY,
 //  "testDeleteOnlyPublished-out.xml");
