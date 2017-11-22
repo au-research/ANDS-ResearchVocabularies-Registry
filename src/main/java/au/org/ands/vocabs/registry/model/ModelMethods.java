@@ -6,6 +6,8 @@ import java.time.LocalDateTime;
 
 import javax.persistence.EntityManager;
 
+import au.org.ands.vocabs.registry.schema.vocabulary201701.Vocabulary;
+
 /** The interface provided by the model package. API and methods
  * in other parts of the registry should invoke the methods of this class,
  * rather than directly invoking the methods of the model classes
@@ -59,5 +61,21 @@ public final class ModelMethods {
         vm.deleteOnlyDraft();
     }
 
+    /** Apply changes to a vocabulary model using data specified
+     * in registry schema format.
+     * @param vm The VocabularyModel representing the vocabulary.
+     * @param modifiedBy The value to use for "modifiedBy" when adding
+     *      or updating rows of the database.
+     * @param nowTime The time to use as the value of "now" when
+     *      applying changes to rows of the database.
+     * @param updatedVocabulary The updates to be applied to the model.
+     */
+    public static void applyChanges(final VocabularyModel vm,
+            final String modifiedBy, final LocalDateTime nowTime,
+            final Vocabulary updatedVocabulary) {
+        vm.setModifiedBy(modifiedBy);
+        vm.setNowTime(nowTime);
+        vm.applyChanges(updatedVocabulary);
+    }
 
 }

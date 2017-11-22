@@ -7,6 +7,7 @@ import static au.org.ands.vocabs.registry.api.validation.CheckVocabulary.INTERFA
 import java.lang.invoke.MethodHandles;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 import javax.validation.ConstraintValidator;
@@ -94,6 +95,31 @@ public class CheckVocabularyImpl
         // id: mode-specific validation.
         valid = isValidVocabularyId(valid, newVocabulary, constraintContext);
 
+        au.org.ands.vocabs.registry.db.entity.Vocabulary existingInstance =
+                null;
+        if (mode == ValidationMode.UPDATE) {
+            // Try to get a current instance, then fall back to
+            // looking for a draft.
+            existingInstance =
+                VocabularyDAO.getCurrentVocabularyByVocabularyId(
+                        newVocabulary.getId());
+            if (existingInstance == null) {
+                List<au.org.ands.vocabs.registry.db.entity.Vocabulary>
+                existingDraftInstances =
+                        VocabularyDAO.getDraftVocabularyByVocabularyId(
+                                newVocabulary.getId());
+                if (existingDraftInstances.size() == 0) {
+                    valid = false;
+                    constraintContext.buildConstraintViolationWithTemplate(
+                            "{" + INTERFACE_NAME + ".update.id.unknown}").
+                    addPropertyNode("id").
+                    addConstraintViolation();
+                } else {
+                    existingInstance = existingDraftInstances.get(0);
+                }
+            }
+        }
+
         // status: required
         valid = ValidationUtils.requireFieldNotNull(
                 INTERFACE_NAME,
@@ -109,17 +135,33 @@ public class CheckVocabularyImpl
 
         // slug: optional, but if specified, must not already exist
         String slug = newVocabulary.getSlug();
-        if (slug != null) {
-            if (!ValidationUtils.isValidSlug(slug)) {
+        if (mode == ValidationMode.CREATE) {
+            // For creation, the slug must be omitted.
+            // But if specified, it must be valid, and not already in use.
+            if (slug != null) {
+                if (!ValidationUtils.isValidSlug(slug)) {
+                    valid = false;
+                    constraintContext.buildConstraintViolationWithTemplate(
+                            "{" + INTERFACE_NAME + ".slug}").
+                    addPropertyNode("slug").
+                    addConstraintViolation();
+                } else if (VocabularyDAO.isSlugInUse(slug)) {
+                    valid = false;
+                    constraintContext.buildConstraintViolationWithTemplate(
+                            "{" + INTERFACE_NAME + ".slug.inUse}").
+                    addPropertyNode("slug").
+                    addConstraintViolation();
+                }
+            }
+        } else {
+            // For update, the slug must be specified, and for now, must
+            // be the same as the existing slug. Future work is
+            // to allow changing the slug.
+            if (slug == null || (existingInstance != null
+                    && !existingInstance.getSlug().equals(slug))) {
                 valid = false;
                 constraintContext.buildConstraintViolationWithTemplate(
-                    "{" + INTERFACE_NAME + ".slug}").
-                addPropertyNode("slug").
-                addConstraintViolation();
-            } else if (VocabularyDAO.isSlugInUse(slug)) {
-                valid = false;
-                constraintContext.buildConstraintViolationWithTemplate(
-                    "{" + INTERFACE_NAME + ".slug.inUse}").
+                        "{" + INTERFACE_NAME + ".update.slug}").
                 addPropertyNode("slug").
                 addConstraintViolation();
             }

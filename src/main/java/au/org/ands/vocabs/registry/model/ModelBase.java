@@ -124,8 +124,9 @@ public abstract class ModelBase {
      * To implement "deletion" of a vocabulary which exists only
      * in currently-valid form (i.e,. where there is no draft),
      * invoke this method, passing in false as the value of preserveAsDraft.
-     * Why does this method need the preserveAsDraft? Because sub-models
-     * may not otherwise "know" if there is an existing draft to preserve.
+     * Why does this method need the preserveAsDraft parameter?
+     * Because sub-models may not otherwise "know" if there is an
+     * existing draft to preserve.
      * Sub-models <i>are</i> affected.
      * @param preserveAsDraft If true, preserve any existing draft,
      *      or create one, if there isn't one already.

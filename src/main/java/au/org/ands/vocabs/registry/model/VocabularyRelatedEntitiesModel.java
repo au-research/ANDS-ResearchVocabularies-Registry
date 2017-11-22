@@ -188,11 +188,16 @@ public class VocabularyRelatedEntitiesModel extends ModelBase {
      */
     private void deleteDraftDeletionDatabaseRow(final Integer reId,
             final RelatedEntityRelation rer) {
-        for (VocabularyRelatedEntity vre : draftREsAndRelations.get(reId)) {
+        List<VocabularyRelatedEntity> draftsForId =
+                draftREsAndRelations.get(reId);
+        if (draftsForId == null) {
+            return;
+        }
+        for (VocabularyRelatedEntity vre : draftsForId) {
             if (vre.getRelation() == rer
                     && TemporalUtils.isDraftDeletion(vre)) {
                 em().remove(vre);
-                draftREsAndRelations.remove(reId, vre);
+                draftREsAndRelations.get(reId).remove(vre);
                 return;
             }
         }
@@ -260,7 +265,7 @@ public class VocabularyRelatedEntitiesModel extends ModelBase {
 //            if (vre.getRelation() == rer
 //                    && TemporalUtils.isDraftAdditionOrModification(vre)) {
 //                em.remove(vre);
-//                draftREsAndRelations.remove(reId, vre);
+//                draftREsAndRelations.get(reId).remove(vre);
 //            }
 //        }
 //        draftREsAndRelations.remove(reId);
@@ -300,9 +305,9 @@ public class VocabularyRelatedEntitiesModel extends ModelBase {
                 new ArrayList<>();
         updatedVocabulary.getRelatedEntityRef().forEach(
                 reRef -> {
-                    Integer reId = reRef.getRelatedEntity().getId();
+                    Integer reId = reRef.getId();
                     for (RelatedEntityRelation rel : reRef.getRelation()) {
-                        currentSequence.add(new VocabularyRelatedEntityElement(
+                        updatedSequence.add(new VocabularyRelatedEntityElement(
                                 reId, rel, null));
                     }
                 });
@@ -427,9 +432,9 @@ public class VocabularyRelatedEntitiesModel extends ModelBase {
                 new ArrayList<>();
         updatedVocabulary.getRelatedEntityRef().forEach(
                 reRef -> {
-                    Integer reId = reRef.getRelatedEntity().getId();
+                    Integer reId = reRef.getId();
                     for (RelatedEntityRelation rel : reRef.getRelation()) {
-                        currentSequence.add(new VocabularyRelatedEntityElement(
+                        updatedSequence.add(new VocabularyRelatedEntityElement(
                                 reId, rel, null));
                     }
                 });
@@ -487,7 +492,7 @@ public class VocabularyRelatedEntitiesModel extends ModelBase {
                             newReRelation);
             if (draftVre != null) {
                 // Reuse existing draft row.
-                draftVre.setModifiedBy(modifiedBy());
+                draftVre.setStartDate(nowTime());
                 TemporalUtils.makeCurrentlyValid(draftVre);
                 draftVre.setModifiedBy(modifiedBy());
                 VocabularyRelatedEntityDAO.updateVocabularyRelatedEntity(
@@ -495,7 +500,7 @@ public class VocabularyRelatedEntitiesModel extends ModelBase {
                 // No longer regard as a draft row in our own records.
                 // Important to to do this, as we will call
                 // deleteDraftDatabaseRows() later.
-                draftREsAndRelations.remove(newReId, draftVre);
+                draftREsAndRelations.get(newReId).remove(draftVre);
             } else {
                 // New row required.
                 VocabularyRelatedEntity newVre = new VocabularyRelatedEntity();

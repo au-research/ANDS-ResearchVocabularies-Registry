@@ -314,6 +314,8 @@ public class VocabularyModel extends ModelBase {
         } else {
             // Add a new draft record.
             draftVocabulary = mapper.sourceToTarget(updatedVocabulary);
+            TemporalUtils.makeDraftAdditionOrModification(draftVocabulary);
+            draftVocabulary.setModifiedBy(modifiedBy());
             VocabularyDAO.saveVocabulary(em(), draftVocabulary);
         }
     }
@@ -335,9 +337,11 @@ public class VocabularyModel extends ModelBase {
         VocabularyRegistrySchemaMapper mapper =
                 VocabularyRegistrySchemaMapper.INSTANCE;
         if (currentVocabulary != null) {
-            // Already a draft. Update it.
+            // There was already a draft. Reuse it as the new current instance.
             mapper.updateTargetFromSource(
                     updatedVocabulary, currentVocabulary);
+            currentVocabulary.setStartDate(nowTime());
+            TemporalUtils.makeCurrentlyValid(currentVocabulary);
             currentVocabulary.setModifiedBy(modifiedBy());
             VocabularyDAO.updateVocabulary(em(), currentVocabulary);
         } else {
@@ -345,6 +349,7 @@ public class VocabularyModel extends ModelBase {
             currentVocabulary = mapper.sourceToTarget(updatedVocabulary);
             currentVocabulary.setStartDate(nowTime());
             TemporalUtils.makeCurrentlyValid(currentVocabulary);
+            currentVocabulary.setModifiedBy(modifiedBy());
             VocabularyDAO.saveVocabulary(em(), currentVocabulary);
         }
     }
