@@ -5,22 +5,16 @@ package au.org.ands.vocabs.toolkit.test.arquillian;
 import static au.org.ands.vocabs.toolkit.test.utils.DatabaseSelector.REGISTRY;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.lang.invoke.MethodHandles;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
-import java.util.Set;
 
 import javax.persistence.EntityManager;
-import javax.validation.ConstraintViolation;
-import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
 
 import org.dbunit.DatabaseUnitException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import au.org.ands.vocabs.registry.api.validation.ValidationMode;
@@ -28,7 +22,6 @@ import au.org.ands.vocabs.registry.db.context.DBContext;
 import au.org.ands.vocabs.registry.model.ModelMethods;
 import au.org.ands.vocabs.registry.model.VocabularyModel;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.Vocabulary;
-import au.org.ands.vocabs.toolkit.test.utils.RegistrySchemaValidationHelper;
 
 /** Tests of the registry model. */
 @Test
@@ -219,47 +212,6 @@ public class RegistryModelTests extends ArquillianBaseTest {
                 + "test-registry-results.xml");
     }
 
-    /** Get vocabulary data from a file, in registry schema format.
-     * Validate it according to the specified mode.
-     * @param filename The filename of the file to be loaded.
-     * @param validationMode The validation mode to be used.
-     * @return The parsed vocabulary data.
-     * @throws JAXBException If a problem loading vocabulary data.
-     */
-    private Vocabulary getValidatedVocabularyFromFile(final String filename,
-            final ValidationMode validationMode) throws JAXBException {
-        InputStream is = ArquillianTestUtils.getResourceAsInputStream(
-                filename);
-        JAXBContext jaxbContext = JAXBContext.newInstance(Vocabulary.class);
-        Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
-        Vocabulary vocabulary = (Vocabulary) jaxbUnmarshaller.unmarshal(is);
-
-        Set<ConstraintViolation<RegistrySchemaValidationHelper>>
-        errors;
-        switch (validationMode) {
-        case CREATE:
-            errors = RegistrySchemaValidationHelper.getNewVocabularyValidation(
-                    vocabulary);
-            break;
-        case UPDATE:
-            errors = RegistrySchemaValidationHelper.
-            getValidUpdatedVocabularyValidation(vocabulary);
-            break;
-        default:
-            logger.error("Can't happen: unknown validation mode.");
-            throw new IllegalArgumentException("Unknown validation mode");
-        }
-
-        // If we do get validation errors, helpful to see them.
-        for (Object oneError : errors) {
-            logger.error("Validation error: {}", oneError.toString());
-        }
-        // But do require that there be no errors.
-        Assert.assertEquals(errors.size(), 0);
-        return vocabulary;
-    }
-
-
     /** Test of applying changes to the current version of a vocabulary
      * that does not have a draft instance.
      * Only Vocabulary and VocabularyRelatedEntity
@@ -277,7 +229,8 @@ public class RegistryModelTests extends ArquillianBaseTest {
         ArquillianTestUtils.clearDatabase(REGISTRY);
         ArquillianTestUtils.loadDbUnitTestFile(REGISTRY,
                 "testApplyChangesCurrent1");
-        Vocabulary vocabulary = getValidatedVocabularyFromFile(
+        Vocabulary vocabulary = RegistryTestUtils.
+                getValidatedVocabularyFromFile(
                 "test/tests/au.org.ands.vocabs.toolkit."
                         + "test.arquillian.AllArquillianTests."
                         + "testApplyChangesCurrent1/"
@@ -326,7 +279,8 @@ public class RegistryModelTests extends ArquillianBaseTest {
         ArquillianTestUtils.clearDatabase(REGISTRY);
         ArquillianTestUtils.loadDbUnitTestFile(REGISTRY,
                 "testApplyChangesDraft1");
-        Vocabulary vocabulary = getValidatedVocabularyFromFile(
+        Vocabulary vocabulary = RegistryTestUtils.
+                getValidatedVocabularyFromFile(
                 "test/tests/au.org.ands.vocabs.toolkit."
                         + "test.arquillian.AllArquillianTests."
                         + "testApplyChangesDraft1/"
@@ -356,7 +310,7 @@ public class RegistryModelTests extends ArquillianBaseTest {
                 + "testApplyChangesDraft1/"
                 + "test-registry-results-1.xml");
 
-        vocabulary = getValidatedVocabularyFromFile(
+        vocabulary = RegistryTestUtils.getValidatedVocabularyFromFile(
                 "test/tests/au.org.ands.vocabs.toolkit."
                         + "test.arquillian.AllArquillianTests."
                         + "testApplyChangesDraft1/"
@@ -385,6 +339,55 @@ public class RegistryModelTests extends ArquillianBaseTest {
                 + "test.arquillian.AllArquillianTests."
                 + "testApplyChangesDraft1/"
                 + "test-registry-results-2.xml");
+    }
+
+    /** Test of updating a draft of a vocabulary
+     * that already has both existing published and draft instances.
+     * Only Vocabulary and VocabularyRelatedEntity
+     * model elements are used.
+     * @throws DatabaseUnitException If a problem with DbUnit.
+     * @throws IOException If a problem getting test data for DbUnit,
+     *          or reading JSON from the correct and test output files.
+     * @throws SQLException If DbUnit has a problem performing
+     *           performing JDBC operations.
+     * @throws JAXBException If a problem loading vocabulary data.
+     *  */
+    @Test
+    public final void testApplyChangesDraft2() throws
+    DatabaseUnitException, IOException, SQLException, JAXBException {
+        ArquillianTestUtils.clearDatabase(REGISTRY);
+        ArquillianTestUtils.loadDbUnitTestFile(REGISTRY,
+                "testApplyChangesDraft2");
+        Vocabulary vocabulary = RegistryTestUtils.
+                getValidatedVocabularyFromFile(
+                "test/tests/au.org.ands.vocabs.toolkit."
+                        + "test.arquillian.AllArquillianTests."
+                        + "testApplyChangesDraft2/"
+                        + "test-vocabulary.xml", ValidationMode.UPDATE);
+        EntityManager em = null;
+        try {
+            em = DBContext.getEntityManager();
+            em.getTransaction().begin();
+            VocabularyModel vm = ModelMethods.createVocabularyModel(em, 1);
+            ModelMethods.applyChanges(vm, "TEST", nowTime1, vocabulary);
+            em.getTransaction().commit();
+        } catch (Exception e) {
+            if (em != null) {
+                em.getTransaction().rollback();
+                throw e;
+            }
+        } finally {
+            if (em != null) {
+                em.close();
+            }
+        }
+
+        ArquillianTestUtils.compareDatabaseCurrentAndExpectedContents(
+                REGISTRY,
+                "test/tests/au.org.ands.vocabs.toolkit."
+                + "test.arquillian.AllArquillianTests."
+                + "testApplyChangesDraft2/"
+                + "test-registry-results.xml");
     }
 
 

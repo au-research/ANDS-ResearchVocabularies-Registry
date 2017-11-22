@@ -352,17 +352,15 @@ public class VocabularyRelatedEntitiesModel extends ModelBase {
             RelatedEntityRelation deleteReRelation = vree.getReRelation();
             VocabularyRelatedEntity draftVre =
                     getDraftDatabaseRow(deleteReId, deleteReRelation);
-            if (draftVre != null) {
-                // It could be either type of draft row.
-                // No action required for existing draft deletion.
-                if (TemporalUtils.isDraftAdditionOrModification(draftVre)) {
-                    // Turn the add/modify record into a deletion record.
-                    TemporalUtils.makeDraftDeletion(draftVre);
-                    draftVre.setModifiedBy(modifiedBy());
-                    VocabularyRelatedEntityDAO.updateVocabularyRelatedEntity(
-                            em(), draftVre);
-                }
-            } else {
+            // If there is an existing draft row, it can only be a draft
+            // deletion. In that case, no further action is required;
+            // leave the existing draft deletion.
+            // NB: this is the case because for VREs, there is no
+            // notion of "modification/update", but only add and delete.
+            // If there were, we would need to have code to apply
+            // an update to an existing draft modification.
+            // But if there is no existing draft row ...
+            if (draftVre == null) {
                 // No draft row; add one to do the deletion.
                 VocabularyRelatedEntity draftDeletionVre =
                         new VocabularyRelatedEntity();
@@ -384,16 +382,15 @@ public class VocabularyRelatedEntitiesModel extends ModelBase {
             RelatedEntityRelation insertReRelation = vree.getReRelation();
             VocabularyRelatedEntity draftVre =
                     getDraftDatabaseRow(insertReId, insertReRelation);
-            if (draftVre != null) {
-                // It could be either type of draft row.
-                // No action required for existing draft addition/modification.
-                if (TemporalUtils.isDraftDeletion(draftVre)) {
-                    // There's a draft delete row, but we want it after
-                    // all.
-                    deleteDraftDeletionDatabaseRow(insertReId,
-                            insertReRelation);
-                }
-            } else {
+            // If there is an existing draft row, it can only be a draft
+            // addition. In that case, no further action is required;
+            // leave the existing draft addition.
+            // NB: this is the case because for VREs, there is no
+            // notion of "modification/update", but only add and delete.
+            // If there were, we would need to have code to apply
+            // an update to an existing draft modification.
+            // But if there is no existing draft row ...
+            if (draftVre == null) {
                 // No draft row; add one to do the insertion.
                 VocabularyRelatedEntity draftInsertionVre =
                         new VocabularyRelatedEntity();
