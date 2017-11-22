@@ -1,4 +1,5 @@
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!DOCTYPE vocabulary>
 <vocabulary xmlns="http://vocabs.ands.org.au/registry/schema/2017/01/vocabulary"  status="published" owner="string" slug="string" title="string" acronym="string" description="string" note="string" revision-cycle="string" creation-date="2017-04-05" primary-language="en" licence="string">
   <poolparty-project server-id="1" project-id="string"></poolparty-project>
   <subject source="string" label="string" notation="string" iri="string"></subject>
