@@ -82,11 +82,11 @@ public class ArquillianBaseTest extends Arquillian {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "test.war")
                 .addPackages(true,
                         Filters.exclude("/au/org/ands/vocabs/"
-                                + "toolkit/db/model/.*.class|"
+                                + "toolkit/db/model/[^/]*.class|"
                                 + "/au/org/ands/vocabs/"
-                                + "registry/db/entity/.*.class|"
+                                + "registry/db/entity/[^/]*.class|"
                                 + "/au/org/ands/vocabs/"
-                                + "roles/db/entity/.*.class"),
+                                + "roles/db/entity/[^/]*.class"),
                         "au.org.ands.vocabs");
         try {
             JavaArchive toolkitDbModelJar =

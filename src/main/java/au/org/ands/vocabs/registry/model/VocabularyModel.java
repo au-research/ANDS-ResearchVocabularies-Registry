@@ -231,6 +231,23 @@ public class VocabularyModel extends ModelBase {
         makeCurrentHistorical(draftVocabulary != null);
     }
 
+    /** For a vocabulary that has a current instance, make
+     * that instance into a draft.
+     * If there is no current instance, there is nothing to be done.
+     * If there is an existing draft, don't use this method: you should use
+     * {@link
+     *  #deleteOnlyCurrentVocabulary(VocabularyModel, String, LocalDateTime)}
+     * instead. However, if there is an existing draft, and you do call
+     * this method anyway, it behaves in the same way as that other method.
+     */
+    public void makeCurrentVocabularyDraft() {
+        if (currentVocabulary == null) {
+            // Oops, nothing to do!
+            return;
+        }
+        makeCurrentHistorical(true);
+    }
+
     /** {@inheritDoc} */
     @Override
     public void makeCurrentHistorical(final boolean preserveAsDraft) {
@@ -250,11 +267,10 @@ public class VocabularyModel extends ModelBase {
                     VocabularyDAO.saveVocabulary(em(), draftVocabulary);
                 }
             }
+            // Sub-models.
+            subModels.forEach(sm ->
+                sm.makeCurrentHistorical(preserveAsDraft));
         }
-
-        // Sub-models.
-        subModels.forEach(sm ->
-            sm.makeCurrentHistorical(preserveAsDraft));
     }
 
     /** {@inheritDoc} */

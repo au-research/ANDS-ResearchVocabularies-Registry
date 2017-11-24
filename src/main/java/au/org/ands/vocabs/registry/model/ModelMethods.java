@@ -61,6 +61,25 @@ public final class ModelMethods {
         vm.deleteOnlyDraft();
     }
 
+    /** For a vocabulary that has a current instance, make
+     * that instance into a draft only. This is akin to "unpublishing"
+     * the vocabulary but retaining it as a draft.
+     * If there is an existing draft, don't use this method: use {@link
+     *  #deleteOnlyCurrentVocabulary(VocabularyModel, String, LocalDateTime)}
+     * instead.
+     * @param vm The VocabularyModel representing the vocabulary.
+     * @param modifiedBy The value to use for "modifiedBy" when adding
+     *      or updating rows of the database.
+     * @param nowTime The time to use as the value of "now" when
+     *      applying changes to rows of the database.
+     */
+    public static void makeCurrentVocabularyDraft(final VocabularyModel vm,
+            final String modifiedBy, final LocalDateTime nowTime) {
+        vm.setModifiedBy(modifiedBy);
+        vm.setNowTime(nowTime);
+        vm.makeCurrentVocabularyDraft();
+    }
+
     /** Apply changes to a vocabulary model using data specified
      * in registry schema format.
      * @param vm The VocabularyModel representing the vocabulary.
