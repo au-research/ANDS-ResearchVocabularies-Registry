@@ -108,7 +108,7 @@ public class GetVocabularies {
                 VocabularyDbSchemaMapper.INSTANCE;
         for (au.org.ands.vocabs.registry.db.entity.Vocabulary dbVocabulary
                 : dbVocabularies) {
-            outputVocabularies.add(mapper.sourceToTarget(dbVocabulary));
+            outputVocabularies.add(mapper.sourceToTarget(dbVocabulary, true));
         }
 
         Logging.logRequest(true, request, uriInfo, null,
@@ -134,11 +134,11 @@ public class GetVocabularies {
                 VocabularyDbSchemaMapper.INSTANCE;
         for (au.org.ands.vocabs.registry.db.entity.Vocabulary dbVocabulary
                 : dbVocabularies) {
-            outputVocabularies.add(mapper.sourceToTarget(dbVocabulary));
+            outputVocabularies.add(mapper.sourceToTarget(dbVocabulary, true));
         }
         for (au.org.ands.vocabs.registry.db.entity.Vocabulary dbVocabulary
                 : dbDraftVocabularies) {
-            outputVocabularies.add(mapper.sourceToTarget(dbVocabulary));
+            outputVocabularies.add(mapper.sourceToTarget(dbVocabulary, true));
         }
 
         return outputVocabularyList;
@@ -197,7 +197,7 @@ public class GetVocabularies {
 
         VocabularyDbSchemaMapper mapper =
                 VocabularyDbSchemaMapper.INSTANCE;
-        outputVocabulary = mapper.sourceToTarget(dbVocabulary);
+        outputVocabulary = mapper.sourceToTarget(dbVocabulary, true);
         if (outputVocabulary == null) {
             return Response.status(Status.BAD_REQUEST).entity(
                     new ErrorResult("No vocabulary with that id")).build();
@@ -287,7 +287,7 @@ public class GetVocabularies {
     @Pac4JSecurity
     @GET
     @ApiOperation(value = "Query if the user has authorization to modify "
-            + "the current vocabulary. A Boolean result will be returned.",
+            + "a current vocabulary. A Boolean result will be returned.",
             response = SimpleResult.class,
             authorizations = {@Authorization(
                     value = SwaggerInterface.BASIC_AUTH),

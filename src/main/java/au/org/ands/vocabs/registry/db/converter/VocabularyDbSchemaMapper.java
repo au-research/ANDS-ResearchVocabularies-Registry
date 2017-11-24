@@ -2,6 +2,7 @@
 
 package au.org.ands.vocabs.registry.db.converter;
 
+import org.mapstruct.Context;
 import org.mapstruct.DecoratedWith;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -25,9 +26,12 @@ public interface VocabularyDbSchemaMapper {
      * This mapper looks up related entities and related
      * vocabularies.
      * @param source The Vocabulary entity from the database.
+     * @param addRelated Include related entity references and
+     *      related vocabulary references as fetched from the
+     *      current instance in the database.
      * @return The schema version of the vocabulary.
      */
-    @Mapping(source = "vocabularyId", target = "id")
+    @Mapping(source = "source.vocabularyId", target = "id")
     @Mapping(target = "acronym", ignore = true)
     @Mapping(target = "creationDate", ignore = true)
     @Mapping(target = "description", ignore = true)
@@ -44,7 +48,8 @@ public interface VocabularyDbSchemaMapper {
     @Mapping(target = "relatedEntityRef", ignore = true)
     @Mapping(target = "relatedVocabularyRef", ignore = true)
     au.org.ands.vocabs.registry.schema.vocabulary201701.Vocabulary
-      sourceToTarget(au.org.ands.vocabs.registry.db.entity.Vocabulary source);
+      sourceToTarget(au.org.ands.vocabs.registry.db.entity.Vocabulary source,
+              @Context boolean addRelated);
 
     /** MapStruct-generated Mapper from VocabularyJson into an existing
      * schema object.

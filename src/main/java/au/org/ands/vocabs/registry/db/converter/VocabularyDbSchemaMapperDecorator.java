@@ -39,53 +39,57 @@ public abstract class VocabularyDbSchemaMapperDecorator
     @SuppressWarnings("checkstyle:DesignForExtension")
     public au.org.ands.vocabs.registry.schema.vocabulary201701.Vocabulary
     sourceToTarget(final au.org.ands.vocabs.registry.db.entity.Vocabulary
-            source) {
+            source, final boolean addRelated) {
         if (source == null) {
             return null;
         }
 
         // Basic fields, handled for us by MapStruct.
         au.org.ands.vocabs.registry.schema.vocabulary201701.Vocabulary
-            target = delegate.sourceToTarget(source);
+            target = delegate.sourceToTarget(source, addRelated);
 
-        // Related entity refs.
-        MultivaluedMap<Integer, VocabularyRelatedEntity> vreMap =
-                VocabularyRelatedEntityDAO.
-                getCurrentVocabularyRelatedEntitiesForVocabulary(
-                        source.getVocabularyId());
-        List<RelatedEntityRef> rerList = target.getRelatedEntityRef();
-        VocabularyRelatedEntityDbSchemaMapper vredbMapper =
-                VocabularyRelatedEntityDbSchemaMapper.INSTANCE;
-        for (Map.Entry<Integer, List<VocabularyRelatedEntity>>
-            vreMapElement : vreMap.entrySet()) {
-            RelatedEntityRef reRef = null;
-            for (VocabularyRelatedEntity vre : vreMapElement.getValue()) {
-                if (reRef == null) {
-                    reRef = vredbMapper.sourceToTarget(vre);
+        if (addRelated) {
+            // Related entity refs.
+            MultivaluedMap<Integer, VocabularyRelatedEntity> vreMap =
+                    VocabularyRelatedEntityDAO.
+                    getCurrentVocabularyRelatedEntitiesForVocabulary(
+                            source.getVocabularyId());
+            List<RelatedEntityRef> rerList = target.getRelatedEntityRef();
+            VocabularyRelatedEntityDbSchemaMapper vredbMapper =
+                    VocabularyRelatedEntityDbSchemaMapper.INSTANCE;
+            for (Map.Entry<Integer, List<VocabularyRelatedEntity>>
+                vreMapElement : vreMap.entrySet()) {
+                RelatedEntityRef reRef = null;
+                for (VocabularyRelatedEntity vre : vreMapElement.getValue()) {
+                    if (reRef == null) {
+                        reRef = vredbMapper.sourceToTarget(vre);
+                    }
+                    reRef.getRelation().add(vre.getRelation());
                 }
-                reRef.getRelation().add(vre.getRelation());
+                rerList.add(reRef);
             }
-            rerList.add(reRef);
-        }
 
-        // Related vocabulary refs.
-        MultivaluedMap<Integer, VocabularyRelatedVocabulary> vrvMap =
-                VocabularyRelatedVocabularyDAO.
-                getCurrentVocabularyRelatedVocabulariesForVocabulary(
-                        source.getVocabularyId());
-        List<RelatedVocabularyRef> rvrList = target.getRelatedVocabularyRef();
-        VocabularyRelatedVocabularyDbSchemaMapper vrvdbMapper =
-                VocabularyRelatedVocabularyDbSchemaMapper.INSTANCE;
-        for (Map.Entry<Integer, List<VocabularyRelatedVocabulary>>
-            vrvMapElement : vrvMap.entrySet()) {
-            RelatedVocabularyRef rvRef = null;
-            for (VocabularyRelatedVocabulary vrv : vrvMapElement.getValue()) {
-                if (rvRef == null) {
-                    rvRef = vrvdbMapper.sourceToTarget(vrv);
+            // Related vocabulary refs.
+            MultivaluedMap<Integer, VocabularyRelatedVocabulary> vrvMap =
+                    VocabularyRelatedVocabularyDAO.
+                    getCurrentVocabularyRelatedVocabulariesForVocabulary(
+                            source.getVocabularyId());
+            List<RelatedVocabularyRef> rvrList =
+                    target.getRelatedVocabularyRef();
+            VocabularyRelatedVocabularyDbSchemaMapper vrvdbMapper =
+                    VocabularyRelatedVocabularyDbSchemaMapper.INSTANCE;
+            for (Map.Entry<Integer, List<VocabularyRelatedVocabulary>>
+                vrvMapElement : vrvMap.entrySet()) {
+                RelatedVocabularyRef rvRef = null;
+                for (VocabularyRelatedVocabulary vrv
+                        : vrvMapElement.getValue()) {
+                    if (rvRef == null) {
+                        rvRef = vrvdbMapper.sourceToTarget(vrv);
+                    }
+                    rvRef.getRelation().add(vrv.getRelation());
                 }
-                rvRef.getRelation().add(vrv.getRelation());
+                rvrList.add(rvRef);
             }
-            rvrList.add(rvRef);
         }
 
         // And last, the JSON.
