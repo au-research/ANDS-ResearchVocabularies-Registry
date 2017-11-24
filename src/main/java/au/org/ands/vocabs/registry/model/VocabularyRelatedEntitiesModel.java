@@ -150,12 +150,18 @@ public class VocabularyRelatedEntitiesModel extends ModelBase {
                                 em(), newVre);
                     } else {
                         // An existing draft row.
-                        if (TemporalUtils.isDraftDeletion(draftVre)) {
-                            // The existing draft specified deletion; now there
-                            // is no currently-valid row either, so delete
-                            // this deletion!
-                            deleteDraftDeletionDatabaseRow(reId, reRelation);
-                        }
+                        // This row must be a draft deletion.
+                        // NB: this is the case because for VREs, there is no
+                        // notion of "modification/update", but only add
+                        // and delete.
+                        // If there were, we would need to wrap this line
+                        // in the following conditional:
+                        // if (TemporalUtils.isDraftDeletion(draftVre)) {
+                        // The existing draft specified deletion; now there
+                        // is no currently-valid row either, so delete
+                        // this deletion!
+                        deleteDraftDeletionDatabaseRow(reId, reRelation);
+                        // }
                     }
                 }
             }

@@ -224,11 +224,11 @@ public class RegistryModelTests extends ArquillianBaseTest {
      *           performing JDBC operations.
      *  */
     @Test
-    public final void testDeleteDraftLeavingCurrent1() throws
+    public final void testDeleteCurrentLeavingDraft1() throws
     DatabaseUnitException, IOException, SQLException {
         ArquillianTestUtils.clearDatabase(REGISTRY);
         ArquillianTestUtils.loadDbUnitTestFile(REGISTRY,
-                "testDeleteDraftLeavingCurrent1");
+                "testDeleteCurrentLeavingDraft1");
         EntityManager em = null;
         try {
             em = DBContext.getEntityManager();
@@ -251,7 +251,7 @@ public class RegistryModelTests extends ArquillianBaseTest {
                 REGISTRY,
                 "test/tests/au.org.ands.vocabs.toolkit."
                 + "test.arquillian.AllArquillianTests."
-                + "testDeleteDraftLeavingCurrent1/"
+                + "testDeleteCurrentLeavingDraft1/"
                 + "test-registry-results.xml");
     }
 
