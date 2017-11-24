@@ -213,6 +213,46 @@ public class RegistryModelTests extends ArquillianBaseTest {
                 + "test-registry-results.xml");
     }
 
+    /** Test of deleting the draft version of a vocabulary that also has
+     * a current instance, with Vocabulary and VocabularyRelatedEntity
+     * model elements.
+     * @throws DatabaseUnitException If a problem with DbUnit.
+     * @throws IOException If a problem getting test data for DbUnit,
+     *          or reading JSON from the correct and test output files.
+     * @throws SQLException If DbUnit has a problem performing
+     *           performing JDBC operations.
+     *  */
+    @Test
+    public final void testDeleteDraftLeavingCurrent1() throws
+    DatabaseUnitException, IOException, SQLException {
+        ArquillianTestUtils.clearDatabase(REGISTRY);
+        ArquillianTestUtils.loadDbUnitTestFile(REGISTRY,
+                "testDeleteDraftLeavingCurrent1");
+        EntityManager em = null;
+        try {
+            em = DBContext.getEntityManager();
+            em.getTransaction().begin();
+            VocabularyModel vm = ModelMethods.createVocabularyModel(em, 1);
+            ModelMethods.deleteOnlyDraftVocabulary(vm, "TEST", nowTime1);
+            em.getTransaction().commit();
+        } catch (Exception e) {
+            if (em != null) {
+                em.getTransaction().rollback();
+                throw e;
+            }
+        } finally {
+            if (em != null) {
+                em.close();
+            }
+        }
+
+        ArquillianTestUtils.compareDatabaseCurrentAndExpectedContents(
+                REGISTRY,
+                "test/tests/au.org.ands.vocabs.toolkit."
+                + "test.arquillian.AllArquillianTests."
+                + "testDeleteDraftLeavingCurrent1/"
+                + "test-registry-results.xml");
+    }
 
     /** Test of deleting the current version of a vocabulary that also has
      * a draft instance, with Vocabulary and VocabularyRelatedEntity
