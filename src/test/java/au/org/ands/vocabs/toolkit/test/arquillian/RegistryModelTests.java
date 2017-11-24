@@ -15,6 +15,7 @@ import javax.xml.bind.JAXBException;
 import org.dbunit.DatabaseUnitException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import au.org.ands.vocabs.registry.api.validation.ValidationMode;
@@ -116,6 +117,8 @@ public class RegistryModelTests extends ArquillianBaseTest {
             em = DBContext.getEntityManager();
             em.getTransaction().begin();
             VocabularyModel vm = ModelMethods.createVocabularyModel(em, 1);
+            Assert.assertTrue(vm.hasCurrent(), "Missing current instance");
+            Assert.assertFalse(vm.hasDraft(), "Unexpected draft instance");
             ModelMethods.deleteOnlyCurrentVocabulary(vm, "TEST", nowTime1);
             em.getTransaction().commit();
         } catch (Exception e) {
@@ -156,6 +159,8 @@ public class RegistryModelTests extends ArquillianBaseTest {
             em = DBContext.getEntityManager();
             em.getTransaction().begin();
             VocabularyModel vm = ModelMethods.createVocabularyModel(em, 1);
+            Assert.assertFalse(vm.hasCurrent(), "Unexpected current instance");
+            Assert.assertTrue(vm.hasDraft(), "Missing draft instance");
             ModelMethods.deleteOnlyDraftVocabulary(vm, "TEST", nowTime1);
             em.getTransaction().commit();
         } finally {
