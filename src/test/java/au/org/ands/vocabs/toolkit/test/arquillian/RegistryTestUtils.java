@@ -3,12 +3,14 @@
 package au.org.ands.vocabs.toolkit.test.arquillian;
 
 import java.io.InputStream;
+import java.io.StringWriter;
 import java.lang.invoke.MethodHandles;
 import java.util.Set;
 
 import javax.validation.ConstraintViolation;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 
 import org.slf4j.Logger;
@@ -73,6 +75,21 @@ public final class RegistryTestUtils {
         // But do require that there be no errors.
         Assert.assertEquals(errors.size(), 0);
         return vocabulary;
+    }
+
+    /** Serialize a registry schema format Vocabulary instance into
+     * an XML String.
+     * @param vocabulary The Vocabulary instance to be serialized.
+     * @return The Vocabulary instance serialized as XML.
+     * @throws JAXBException If a problem loading vocabulary data.
+     */
+    public static String serializeVocabularySchemaEntityToXML(
+            final Vocabulary vocabulary) throws JAXBException {
+        JAXBContext jaxbContext = JAXBContext.newInstance(Vocabulary.class);
+        Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
+        StringWriter stringWriter = new StringWriter();
+        jaxbMarshaller.marshal(vocabulary, stringWriter);
+        return stringWriter.toString();
     }
 
 }
