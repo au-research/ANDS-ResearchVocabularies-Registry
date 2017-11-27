@@ -549,7 +549,6 @@ public class RegistryModelTests extends ArquillianBaseTest {
         EntityManager em = null;
         try {
             em = DBContext.getEntityManager();
-            em.getTransaction().begin();
             VocabularyModel vm = ModelMethods.createVocabularyModel(em, 1);
             // First time, get without REs.
             Vocabulary vocabularyAsSchema = ModelMethods.getDraft(vm,
@@ -576,12 +575,6 @@ public class RegistryModelTests extends ArquillianBaseTest {
                             vocabularyAsSchema);
             MatcherAssert.assertThat(actualString,
                     Matchers.equalToIgnoringWhiteSpace(expectedString));
-            em.getTransaction().rollback();
-        } catch (Exception e) {
-            if (em != null) {
-                em.getTransaction().rollback();
-                throw e;
-            }
         } finally {
             if (em != null) {
                 em.close();
@@ -610,7 +603,6 @@ public class RegistryModelTests extends ArquillianBaseTest {
         EntityManager em = null;
         try {
             em = DBContext.getEntityManager();
-            em.getTransaction().begin();
             VocabularyModel vm = ModelMethods.createVocabularyModel(em, 1);
             // First time, get without REs.
             Vocabulary vocabularyAsSchema = ModelMethods.getDraft(vm,
@@ -637,12 +629,6 @@ public class RegistryModelTests extends ArquillianBaseTest {
                             vocabularyAsSchema);
             MatcherAssert.assertThat(actualString,
                     Matchers.equalToIgnoringWhiteSpace(expectedString));
-            em.getTransaction().rollback();
-        } catch (Exception e) {
-            if (em != null) {
-                em.getTransaction().rollback();
-                throw e;
-            }
         } finally {
             if (em != null) {
                 em.close();
