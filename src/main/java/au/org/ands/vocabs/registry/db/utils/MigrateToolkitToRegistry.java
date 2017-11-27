@@ -999,8 +999,15 @@ public final class MigrateToolkitToRegistry {
                 }
             }
 
-            relatedEntity.setStartDate(registryVocabulary.getStartDate());
-            relatedEntity.setEndDate(registryVocabulary.getEndDate());
+            if (TemporalUtils.isDraft(registryVocabulary)) {
+                // A related entity must be currently valid, even for
+                // a draft vocabulary.
+                TemporalUtils.makeCurrentlyValid(relatedEntity,
+                        TemporalUtils.nowUTC());
+            } else {
+                relatedEntity.setStartDate(registryVocabulary.getStartDate());
+                relatedEntity.setEndDate(registryVocabulary.getEndDate());
+            }
             // Set modifiedBy now, so it can be passed as a parameter
             // to makeRelatedEntityIdentifier().
             if (vocabulary.getModifiedWho() != null
@@ -1082,8 +1089,13 @@ public final class MigrateToolkitToRegistry {
             final HashSet<RelatedEntityRelation> relations) {
         for (RelatedEntityRelation relation : relations) {
             VocabularyRelatedEntity vre = new VocabularyRelatedEntity();
-            vre.setStartDate(relatedEntity.getStartDate());
-            vre.setEndDate(relatedEntity.getEndDate());
+            if (TemporalUtils.isDraft(registryVocabulary)) {
+                // If the vocabulary is a draft, vre must be also.
+                TemporalUtils.makeDraft(vre);
+            } else {
+                vre.setStartDate(relatedEntity.getStartDate());
+                vre.setEndDate(relatedEntity.getEndDate());
+            }
             vre.setVocabularyId(registryVocabulary.getVocabularyId());
             vre.setRelatedEntityId(relatedEntity.getRelatedEntityId());
             vre.setModifiedBy(relatedEntity.getModifiedBy());
@@ -1317,8 +1329,15 @@ public final class MigrateToolkitToRegistry {
                 }
             }
 
-            relatedEntity.setStartDate(registryVocabulary.getStartDate());
-            relatedEntity.setEndDate(registryVocabulary.getEndDate());
+            if (TemporalUtils.isDraft(registryVocabulary)) {
+                // A related entity must be currently valid, even for
+                // a draft vocabulary.
+                TemporalUtils.makeCurrentlyValid(relatedEntity,
+                        TemporalUtils.nowUTC());
+            } else {
+                relatedEntity.setStartDate(registryVocabulary.getStartDate());
+                relatedEntity.setEndDate(registryVocabulary.getEndDate());
+            }
             // Set modifiedBy now, so it can be passed as a parameter
             // to makeRelatedEnttityIdentifier().
             if (vocabulary.getModifiedWho() != null
@@ -1453,8 +1472,15 @@ public final class MigrateToolkitToRegistry {
                 }
             }
 
-            relatedEntity.setStartDate(registryVocabulary.getStartDate());
-            relatedEntity.setEndDate(registryVocabulary.getEndDate());
+            if (TemporalUtils.isDraft(registryVocabulary)) {
+                // A related entity must be currently valid, even for
+                // a draft vocabulary.
+                TemporalUtils.makeCurrentlyValid(relatedEntity,
+                        TemporalUtils.nowUTC());
+            } else {
+                relatedEntity.setStartDate(registryVocabulary.getStartDate());
+                relatedEntity.setEndDate(registryVocabulary.getEndDate());
+            }
             // Set modifiedBy now, so it can be passed as a parameter
             // to makeRelatedEnttityIdentifier().
             if (vocabulary.getModifiedWho() != null
