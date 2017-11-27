@@ -869,6 +869,8 @@
     <testng
         classpathref="testng.classpath"
         >
+      <env key="JACOCO_AGENT" value="${basedir}/${jacoco-agent}" />
+      <env key="JACOCO_OUTPUT" value="${basedir}/${jacoco-output}" />
       <jvmarg value=
               "-DPROPS_FILE=WEB-INF/classes/toolkit-h2-bamboo.properties" />
       <jvmarg
