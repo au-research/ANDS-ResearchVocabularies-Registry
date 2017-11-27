@@ -87,6 +87,11 @@ public final class RegistryTestUtils {
             final Vocabulary vocabulary) throws JAXBException {
         JAXBContext jaxbContext = JAXBContext.newInstance(Vocabulary.class);
         Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
+        // Generate DOCTYPE, to match what we put in our test data.
+        jaxbMarshaller.setProperty("com.sun.xml.internal.bind.xmlHeaders",
+                " <!DOCTYPE vocabulary>\n");
+        // Make it pretty, so we can use newlines in our test data.
+        jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
         StringWriter stringWriter = new StringWriter();
         jaxbMarshaller.marshal(vocabulary, stringWriter);
         return stringWriter.toString();

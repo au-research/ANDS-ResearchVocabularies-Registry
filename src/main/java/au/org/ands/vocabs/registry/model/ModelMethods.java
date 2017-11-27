@@ -31,6 +31,29 @@ public final class ModelMethods {
         return new VocabularyModel(em, vocabularyId);
     }
 
+    /** Get the draft instance of the vocabulary, in registry schema
+     * format. If there is no draft instance, null is returned.
+     * @param vm The VocabularyModel representing the vocabulary.
+     * @param includeVersions Whether or not to include version elements.
+     * @param includeAccessPoints Whether or not to include access point
+     *      elements.
+     * @param includeRelatedEntitiesAndVocabularies Whether or not to include
+     *      full related entity elements, and top-level details of
+     *      related vocabularies.
+     * @return The draft instance of the vocabulary, in registry schema
+     *      format, if there is a draft instance; null, otherwise.
+     */
+    public static Vocabulary getDraft(final VocabularyModel vm,
+            final boolean includeVersions,
+            final boolean includeAccessPoints,
+            final boolean includeRelatedEntitiesAndVocabularies) {
+        if (!vm.hasDraft()) {
+            return null;
+        }
+        return vm.getDraft(includeVersions, includeAccessPoints,
+                includeRelatedEntitiesAndVocabularies);
+    }
+
     /** Delete only the current version of a vocabulary.
      * If there is a draft, the draft is preserved.
      * @param vm The VocabularyModel representing the vocabulary.

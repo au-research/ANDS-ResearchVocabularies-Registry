@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory;
 
 import au.org.ands.vocabs.registry.api.converter.VocabularyRegistrySchemaMapper;
 import au.org.ands.vocabs.registry.db.context.TemporalUtils;
+import au.org.ands.vocabs.registry.db.converter.VocabularyDbSchemaMapper;
 import au.org.ands.vocabs.registry.db.dao.AccessPointDAO;
 import au.org.ands.vocabs.registry.db.dao.VersionDAO;
 import au.org.ands.vocabs.registry.db.dao.VocabularyDAO;
@@ -217,6 +218,48 @@ public class VocabularyModel extends ModelBase {
      */
     public boolean hasDraft() {
         return draftVocabulary != null;
+    }
+
+    /** Get the draft instance of the vocabulary, in registry schema
+     * format. If there is no draft instance, null is returned.
+     * @param includeVersions Whether or not to include version elements.
+     * @param includeAccessPoints Whether or not to include access point
+     *      elements.
+     * @param includeRelatedEntitiesAndVocabularies Whether or not to include
+     *      full related entity elements, and top-level details of
+     *      related vocabularies.
+     * @return The draft instance of the vocabulary, in registry schema
+     *      format, if there is a draft instance; null, otherwise.
+     */
+    public au.org.ands.vocabs.registry.schema.vocabulary201701.Vocabulary
+    getDraft(final boolean includeVersions,
+            final boolean includeAccessPoints,
+            final boolean includeRelatedEntitiesAndVocabularies) {
+        if (draftVocabulary == null) {
+            return null;
+        }
+        au.org.ands.vocabs.registry.schema.vocabulary201701.Vocabulary
+        outputVocabulary;
+
+        VocabularyDbSchemaMapper mapper =
+                VocabularyDbSchemaMapper.INSTANCE;
+        outputVocabulary = mapper.sourceToTarget(draftVocabulary, false);
+        // Sub-models.
+        subModels.forEach(sm -> sm.insertIntoSchemaFromDraft(outputVocabulary,
+                includeVersions, includeAccessPoints,
+                includeRelatedEntitiesAndVocabularies));
+        return outputVocabulary;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected void insertIntoSchemaFromDraft(final
+            au.org.ands.vocabs.registry.schema.vocabulary201701.Vocabulary
+            outputVocabulary,
+            final boolean includeVersions,
+            final boolean includeAccessPoints,
+            final boolean includeRelatedEntitiesAndVocabularies) {
+        // No action here. Everything else happens in sub-models.
     }
 
     /** {@inheritDoc} */

@@ -26,6 +26,7 @@ import javax.persistence.EntityManager;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status.Family;
 
+import org.apache.commons.io.IOUtils;
 import org.dbunit.Assertion;
 import org.dbunit.DatabaseUnitException;
 import org.dbunit.database.DatabaseConfig;
@@ -85,6 +86,25 @@ public final class ArquillianTestUtils {
                     + filename);
         }
         return inputStream;
+    }
+
+    /** Get the contents of a file as a String, given its filename.
+     * @param filename The filename of the resource.
+     * @return A {@link String} containing the contents the resource.
+     */
+    static String getResourceAsString(
+            final String filename) {
+        InputStream inputStream = classLoader.getResourceAsStream(filename);
+        if (inputStream == null) {
+            throw new IllegalArgumentException("Can't load resource: "
+                    + filename);
+        }
+        try {
+            return IOUtils.toString(inputStream, StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            throw new IllegalArgumentException("Can't load resource: "
+                    + filename);
+        }
     }
 
     /** Get the absolute path to {@code /WEB-INF/classes} within the web app.

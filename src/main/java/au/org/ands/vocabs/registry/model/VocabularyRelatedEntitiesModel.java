@@ -17,12 +17,20 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import au.org.ands.vocabs.registry.db.context.TemporalUtils;
+import au.org.ands.vocabs.registry.db.converter.RelatedEntityDbSchemaMapper;
+import au.org.ands.vocabs.registry.db.converter.RelatedEntityIdentifierDbSchemaMapper;
+import au.org.ands.vocabs.registry.db.converter.VocabularyRelatedEntityDbSchemaMapper;
+import au.org.ands.vocabs.registry.db.dao.RelatedEntityDAO;
+import au.org.ands.vocabs.registry.db.dao.RelatedEntityIdentifierDAO;
 import au.org.ands.vocabs.registry.db.dao.VocabularyRelatedEntityDAO;
+import au.org.ands.vocabs.registry.db.entity.RelatedEntity;
 import au.org.ands.vocabs.registry.db.entity.VocabularyRelatedEntity;
 import au.org.ands.vocabs.registry.enums.RelatedEntityRelation;
 import au.org.ands.vocabs.registry.enums.VocabularyStatus;
 import au.org.ands.vocabs.registry.model.sequence.VocabularyRelatedEntityElement;
+import au.org.ands.vocabs.registry.schema.vocabulary201701.RelatedEntityIdentifier;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.Vocabulary;
+import au.org.ands.vocabs.registry.schema.vocabulary201701.Vocabulary.RelatedEntityRef;
 
 /** Domain model of a vocabulary's vocabulary-related-entities.
  */
@@ -121,6 +129,76 @@ public class VocabularyRelatedEntitiesModel extends ModelBase {
         for (String line : description) {
             logger.info(line);
         }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected void insertIntoSchemaFromDraft(final
+            au.org.ands.vocabs.registry.schema.vocabulary201701.Vocabulary
+            outputVocabulary,
+            final boolean includeVersions,
+            final boolean includeAccessPoints,
+            final boolean includeRelatedEntitiesAndVocabularies) {
+
+        List<RelatedEntityRef> rerList = outputVocabulary.getRelatedEntityRef();
+        VocabularyRelatedEntityDbSchemaMapper vredbMapper =
+                VocabularyRelatedEntityDbSchemaMapper.INSTANCE;
+
+        RelatedEntityDbSchemaMapper reMapper =
+                RelatedEntityDbSchemaMapper.INSTANCE;
+        RelatedEntityIdentifierDbSchemaMapper reiMapper =
+                RelatedEntityIdentifierDbSchemaMapper.INSTANCE;
+
+        for (Integer reId : draftREsAndRelations.keySet()) {
+            RelatedEntityRef reRef = null;
+            for (VocabularyRelatedEntity vre
+                    : draftREsAndRelations.get(reId)) {
+                if (reRef == null) {
+                    reRef = vredbMapper.sourceToTarget(vre);
+                }
+                reRef.getRelation().add(vre.getRelation());
+            }
+            if (includeRelatedEntitiesAndVocabularies) {
+                au.org.ands.vocabs.registry.schema.vocabulary201701.
+                RelatedEntity targetRelatedEntity = getRelatedEntity(
+                        reId, reMapper, reiMapper);
+                reRef.setRelatedEntity(targetRelatedEntity);
+            }
+            rerList.add(reRef);
+        }
+    }
+
+    /** Fetch a RelatedEntity and map to the registry schema.
+     * @param reId The related entity Id.
+     * @param reMapper The Related Entity mapper to use.
+     * @param reiMapper The Related Entity Identifier mapper to use.
+     * @return The RelatedEntity, in registry schema format.
+     */
+    private au.org.ands.vocabs.registry.schema.vocabulary201701.RelatedEntity
+    getRelatedEntity(
+            final Integer reId, final RelatedEntityDbSchemaMapper reMapper,
+            final RelatedEntityIdentifierDbSchemaMapper reiMapper) {
+        RelatedEntity dbRE = RelatedEntityDAO.
+                getCurrentRelatedEntityByRelatedEntityId(reId);
+        au.org.ands.vocabs.registry.schema.vocabulary201701.
+        RelatedEntity targetRelatedEntity =
+            reMapper.sourceToTarget(dbRE);
+        // Get the related entity identifiers.
+        List<RelatedEntityIdentifier>
+        targetRelatedEntityIdentifiers =
+                targetRelatedEntity.getRelatedEntityIdentifier();
+        List<au.org.ands.vocabs.registry.db.entity.
+        RelatedEntityIdentifier>
+            dbRelatedEntityIdentifiers =
+                RelatedEntityIdentifierDAO.
+                getCurrentRelatedEntityIdentifierListForRelatedEntity(
+                        dbRE.getRelatedEntityId());
+        for (au.org.ands.vocabs.registry.db.entity.RelatedEntityIdentifier
+                dbREI : dbRelatedEntityIdentifiers) {
+            targetRelatedEntityIdentifiers.add(
+                    reiMapper.sourceToTarget(dbREI));
+        }
+        return targetRelatedEntity;
     }
 
     /** {@inheritDoc} */

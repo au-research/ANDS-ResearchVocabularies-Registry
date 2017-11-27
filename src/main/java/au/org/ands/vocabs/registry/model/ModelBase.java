@@ -114,6 +114,26 @@ public abstract class ModelBase {
      */
     public abstract List<String> describeModel();
 
+    /** Given a partially-complete vocabulary entity in registry schema
+     * format, fill it in with details of the draft instance.
+     * Sub-models <i>are</i> invoked.
+     * @param outputVocabulary The draft instance of the vocabulary,
+     *      in registry schema format. Each concrete implementation
+     *      is responsible for updating this value as it can.
+     * @param includeVersions Whether or not to include version elements.
+     * @param includeAccessPoints Whether or not to include access point
+     *      elements.
+     * @param includeRelatedEntitiesAndVocabularies Whether or not to include
+     *      full related entity elements, and top-level details of
+     *      related vocabularies.
+     */
+    protected abstract void insertIntoSchemaFromDraft(
+            au.org.ands.vocabs.registry.schema.vocabulary201701.Vocabulary
+            outputVocabulary,
+            boolean includeVersions,
+            boolean includeAccessPoints,
+            boolean includeRelatedEntitiesAndVocabularies);
+
     /** For a vocabulary which exists only as a current instance,
      * make that instance into a draft. This is akin to the "unpublishing"
      * of a published instance back into draft form.
