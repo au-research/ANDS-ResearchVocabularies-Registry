@@ -34,9 +34,9 @@ public final class TemporalUtils {
             "currently_valid_end_date";
 
     /** The name of a JPQL parameter to use for the constant
-     * {@link TemporalConstants#DRAFT_ADDITION_MODIFICATION_START_DATE}. */
-    private static final String DRAFT_ADDITION_MODIFICATION_START_DATE =
-            "draft_addition_modification_start_date";
+     * {@link TemporalConstants#DRAFT_START_DATE}. */
+    private static final String DRAFT_START_DATE =
+            "draft_start_date";
 
     /** Start date field name. Must match the property name in the entity
      * class. */
@@ -202,8 +202,8 @@ public final class TemporalUtils {
             // No problem.
         }
         try {
-            q.setParameter(DRAFT_ADDITION_MODIFICATION_START_DATE,
-                    TemporalConstants.DRAFT_ADDITION_MODIFICATION_START_DATE);
+            q.setParameter(DRAFT_START_DATE,
+                    TemporalConstants.DRAFT_START_DATE);
         } catch (IllegalArgumentException e) {
             // No problem.
         }
@@ -224,8 +224,8 @@ public final class TemporalUtils {
             // No problem.
         }
         try {
-            q.setParameter(DRAFT_ADDITION_MODIFICATION_START_DATE,
-                    TemporalConstants.DRAFT_ADDITION_MODIFICATION_START_DATE);
+            q.setParameter(DRAFT_START_DATE,
+                    TemporalConstants.DRAFT_START_DATE);
         } catch (IllegalArgumentException e) {
             // No problem.
         }
@@ -322,49 +322,12 @@ public final class TemporalUtils {
                 entity.getStartDate());
     }
 
-    /** Make an entity represent either a draft addition or modification.
-     * @param entity The entity to be made to represent a draft addition
-     *      or modification.
+    /** Make an entity represent a draft.
+     * @param entity The entity to be made to represent a draft.
      */
-    public static void makeDraftAdditionOrModification(
-            final TemporalColumns entity) {
-        entity.setStartDate(TemporalConstants.
-                DRAFT_ADDITION_MODIFICATION_START_DATE);
-        entity.setEndDate(TemporalConstants.
-                DRAFT_ADDITION_MODIFICATION_END_DATE);
-    }
-
-    /** Does an entity represent draft data that is either an addition
-     * or a modification?
-     * Prerequisite: the start date must be set.
-     * @param entity The entity to be tested.
-     * @return True, iff the entity represents draft data that is either
-     *      an addition or a modification.
-     */
-    public static boolean isDraftAdditionOrModification(
-            final TemporalColumns entity) {
-        return TemporalConstants.DRAFT_ADDITION_MODIFICATION_START_DATE.equals(
-                entity.getStartDate());
-    }
-
-    /** Make an entity represent a draft deletion.
-     * @param entity The entity to be made to represent a draft deletion.
-     */
-    public static void makeDraftDeletion(
-            final TemporalColumns entity) {
-        entity.setStartDate(TemporalConstants.DRAFT_DELETION_START_DATE);
-        entity.setEndDate(TemporalConstants.DRAFT_DELETION_END_DATE);
-    }
-
-    /** Does an entity represent draft data that is a deletion?
-     * Prerequisite: the start date must be set.
-     * @param entity The entity to be tested.
-     * @return True, iff the entity represents draft data that is
-     *      a deletion.
-     */
-    public static boolean isDraftDeletion(final TemporalColumns entity) {
-        return TemporalConstants.DRAFT_DELETION_START_DATE.equals(
-                entity.getStartDate());
+    public static void makeDraft(final TemporalColumns entity) {
+        entity.setStartDate(TemporalConstants.DRAFT_START_DATE);
+        entity.setEndDate(TemporalConstants.DRAFT_END_DATE);
     }
 
     /** Determine the temporal meaning of a temporal entity.
@@ -380,11 +343,8 @@ public final class TemporalUtils {
         if (isCurrent(entity)) {
             return TemporalMeaning.CURRENT;
         }
-        if (isDraftAdditionOrModification(entity)) {
-            return TemporalMeaning.DRAFT_ADDITION_OR_MODIFICATION;
-        }
-        if (isDraftDeletion(entity)) {
-            return TemporalMeaning.DRAFT_DELETION;
+        if (isDraft(entity)) {
+            return TemporalMeaning.DRAFT;
         }
         return TemporalMeaning.UNKNOWN;
     }

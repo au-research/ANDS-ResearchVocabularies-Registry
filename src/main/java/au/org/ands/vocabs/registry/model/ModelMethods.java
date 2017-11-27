@@ -77,7 +77,7 @@ public final class ModelMethods {
             final String modifiedBy, final LocalDateTime nowTime) {
         vm.setModifiedBy(modifiedBy);
         vm.setNowTime(nowTime);
-        vm.makeCurrentVocabularyDraft();
+        vm.makeCurrentIntoDraft();
     }
 
     /** Apply changes to a vocabulary model using data specified

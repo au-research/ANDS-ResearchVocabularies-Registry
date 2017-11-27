@@ -15,11 +15,8 @@ public enum TemporalMeaning {
     /** Currently-valid data. */
     CURRENT("current"),
 
-    /** Draft data that represents either an addition or modification. */
-    DRAFT_ADDITION_OR_MODIFICATION("draft-addition-or-modification"),
-
-    /** Draft data that represents a deletion. */
-    DRAFT_DELETION("draft-deletion");
+    /** Draft data. */
+    DRAFT("draft");
 
     /** The human-readable form of the meaning. */
     private final String value;

@@ -114,24 +114,20 @@ public abstract class ModelBase {
      */
     public abstract List<String> describeModel();
 
-    /** Make all of the currently-valid database rows associated with this
-     * model historical. If preserveDraft is true, leave a consistent
-     * representation behind as a <i>draft</i>.
-     * This method is provided to support deleting the current version
-     * of a vocabulary (a) when there is no existing draft, and
-     * (b) when there is an existing draft, where it is
-     * desired to preserve that draft.
-     * To implement "deletion" of a vocabulary which exists only
-     * in currently-valid form (i.e,. where there is no draft),
-     * invoke this method, passing in false as the value of preserveAsDraft.
-     * Why does this method need the preserveAsDraft parameter?
-     * Because sub-models may not otherwise "know" if there is an
-     * existing draft to preserve.
+    /** For a vocabulary which exists only as a current instance,
+     * make that instance into a draft. This is akin to the "unpublishing"
+     * of a published instance back into draft form.
+     * Do not invoke this method if there is an existing draft;
+     * the caller is responsible for using {@link #deleteOnlyDraft()} first.
      * Sub-models <i>are</i> affected.
-     * @param preserveAsDraft If true, preserve any existing draft,
-     *      or create one, if there isn't one already.
      */
-    protected abstract void makeCurrentHistorical(boolean preserveAsDraft);
+    protected abstract void makeCurrentIntoDraft();
+
+    /** Delete the current associated with with this model.
+     * Any draft instance is unaffected.
+     * Sub-models <i>are</i> affected.
+     */
+    protected abstract void deleteOnlyCurrent();
 
     /** Delete the draft associated with with this model.
      * Any current instance is unaffected.

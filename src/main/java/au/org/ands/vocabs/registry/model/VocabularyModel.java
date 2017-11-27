@@ -219,58 +219,45 @@ public class VocabularyModel extends ModelBase {
         return draftVocabulary != null;
     }
 
-    /** Delete only the current instance of a vocabulary.
-     * If there is no current instance, there is nothing to be done.
-     * Otherwise, if there is a draft, the draft is preserved.
-     */
+    /** {@inheritDoc} */
+    @Override
     public void deleteOnlyCurrent() {
         if (currentVocabulary == null) {
             // Oops, nothing to do!
             return;
         }
-        makeCurrentHistorical(draftVocabulary != null);
-    }
-
-    /** For a vocabulary that has a current instance, make
-     * that instance into a draft.
-     * If there is no current instance, there is nothing to be done.
-     * If there is an existing draft, don't use this method: you should use
-     * {@link
-     *  #deleteOnlyCurrentVocabulary(VocabularyModel, String, LocalDateTime)}
-     * instead. However, if there is an existing draft, and you do call
-     * this method anyway, it behaves in the same way as that other method.
-     */
-    public void makeCurrentVocabularyDraft() {
-        if (currentVocabulary == null) {
-            // Oops, nothing to do!
-            return;
-        }
-        makeCurrentHistorical(true);
+        TemporalUtils.makeHistorical(currentVocabulary, nowTime());
+        currentVocabulary.setModifiedBy(modifiedBy());
+        VocabularyDAO.updateVocabulary(em(), currentVocabulary);
+        currentVocabulary = null;
+        // Sub-models.
+        subModels.forEach(sm -> sm.deleteOnlyCurrent());
     }
 
     /** {@inheritDoc} */
     @Override
-    public void makeCurrentHistorical(final boolean preserveAsDraft) {
-        if (currentVocabulary != null) {
-            TemporalUtils.makeHistorical(currentVocabulary, nowTime());
-            currentVocabulary.setModifiedBy(modifiedBy());
-            VocabularyDAO.updateVocabulary(
-                        em(), currentVocabulary);
-            if (preserveAsDraft) {
-                if (draftVocabulary == null) {
-                    // No existing draft row; add one.
-                    draftVocabulary = VocabularyClone.INSTANCE.
-                            clone(currentVocabulary);
-                    draftVocabulary.setModifiedBy(modifiedBy());
-                    TemporalUtils.makeDraftAdditionOrModification(
-                            draftVocabulary);
-                    VocabularyDAO.saveVocabulary(em(), draftVocabulary);
-                }
-            }
-            // Sub-models.
-            subModels.forEach(sm ->
-                sm.makeCurrentHistorical(preserveAsDraft));
+    public void makeCurrentIntoDraft() {
+        if (currentVocabulary == null) {
+            // Oops, nothing to do!
+            return;
         }
+        if (draftVocabulary != null) {
+            // Error
+            throw new IllegalArgumentException(
+                    "Existing draft; you must delete it first");
+        }
+        TemporalUtils.makeHistorical(currentVocabulary, nowTime());
+        currentVocabulary.setModifiedBy(modifiedBy());
+        VocabularyDAO.updateVocabulary(em(), currentVocabulary);
+        // Now make a new draft record.
+        draftVocabulary = VocabularyClone.INSTANCE.
+                clone(currentVocabulary);
+        draftVocabulary.setModifiedBy(modifiedBy());
+        TemporalUtils.makeDraft(draftVocabulary);
+        VocabularyDAO.saveVocabulary(em(), draftVocabulary);
+        currentVocabulary = null;
+        // Sub-models.
+        subModels.forEach(sm -> sm.makeCurrentIntoDraft());
     }
 
     /** {@inheritDoc} */
@@ -330,7 +317,7 @@ public class VocabularyModel extends ModelBase {
         } else {
             // Add a new draft record.
             draftVocabulary = mapper.sourceToTarget(updatedVocabulary);
-            TemporalUtils.makeDraftAdditionOrModification(draftVocabulary);
+            TemporalUtils.makeDraft(draftVocabulary);
             draftVocabulary.setModifiedBy(modifiedBy());
             VocabularyDAO.saveVocabulary(em(), draftVocabulary);
         }

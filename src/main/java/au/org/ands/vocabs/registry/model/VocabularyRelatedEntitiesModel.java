@@ -125,7 +125,7 @@ public class VocabularyRelatedEntitiesModel extends ModelBase {
 
     /** {@inheritDoc} */
     @Override
-    public void makeCurrentHistorical(final boolean preserveAsDraft) {
+    public void deleteOnlyCurrent() {
         for (Integer reId : currentREsAndRelations.keySet()) {
             for (VocabularyRelatedEntity vre
                     : currentREsAndRelations.get(reId)) {
@@ -133,39 +133,44 @@ public class VocabularyRelatedEntitiesModel extends ModelBase {
                 vre.setModifiedBy(modifiedBy());
                 VocabularyRelatedEntityDAO.updateVocabularyRelatedEntity(
                         em(), vre);
-                if (preserveAsDraft) {
-                    RelatedEntityRelation reRelation = vre.getRelation();
-                    VocabularyRelatedEntity draftVre =
-                            getDraftDatabaseRow(reId, reRelation);
-                    if (draftVre == null) {
-                        // No existing draft row; add one.
-                        VocabularyRelatedEntity newVre =
-                                new VocabularyRelatedEntity();
-                        newVre.setVocabularyId(vocabularyId());
-                        newVre.setRelatedEntityId(reId);
-                        newVre.setRelation(reRelation);
-                        newVre.setModifiedBy(modifiedBy());
-                        TemporalUtils.makeDraftAdditionOrModification(newVre);
-                        VocabularyRelatedEntityDAO.saveVocabularyRelatedEntity(
-                                em(), newVre);
-                    } else {
-                        // An existing draft row.
-                        // This row must be a draft deletion.
-                        // NB: this is the case because for VREs, there is no
-                        // notion of "modification/update", but only add
-                        // and delete.
-                        // If there were, we would need to wrap this line
-                        // in the following conditional:
-                        // if (TemporalUtils.isDraftDeletion(draftVre)) {
-                        // The existing draft specified deletion; now there
-                        // is no currently-valid row either, so delete
-                        // this deletion!
-                        deleteDraftDeletionDatabaseRow(reId, reRelation);
-                        // }
-                    }
-                }
             }
         }
+        currentREsAndRelations.clear();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void makeCurrentIntoDraft() {
+        if (currentREsAndRelations.isEmpty()) {
+            // Oops, nothing to do!
+            return;
+        }
+        if (!draftREsAndRelations.isEmpty()) {
+            // Error
+            throw new IllegalArgumentException(
+                    "Existing draft; you must delete it first");
+        }
+        for (Integer reId : currentREsAndRelations.keySet()) {
+            for (VocabularyRelatedEntity vre
+                    : currentREsAndRelations.get(reId)) {
+                TemporalUtils.makeHistorical(vre, nowTime());
+                vre.setModifiedBy(modifiedBy());
+                VocabularyRelatedEntityDAO.updateVocabularyRelatedEntity(
+                        em(), vre);
+                // Now make a new draft record.
+                VocabularyRelatedEntity newVre =
+                        new VocabularyRelatedEntity();
+                newVre.setVocabularyId(vocabularyId());
+                newVre.setRelatedEntityId(reId);
+                newVre.setRelation(vre.getRelation());
+                newVre.setModifiedBy(modifiedBy());
+                TemporalUtils.makeDraft(newVre);
+                VocabularyRelatedEntityDAO.saveVocabularyRelatedEntity(
+                        em(), newVre);
+                draftREsAndRelations.add(reId, newVre);
+            }
+        }
+        currentREsAndRelations.clear();
     }
 
     /** {@inheritDoc} */
@@ -186,33 +191,9 @@ public class VocabularyRelatedEntitiesModel extends ModelBase {
         draftREsAndRelations.clear();
     }
 
-    /** Delete a draft database row associated with this model
-     * that specifies deletion of a row with a specified related entity Id
-     * and relation; if there is such a draft database row.
-     * @param reId The related entity.
-     * @param rer The related entity relation.
-     */
-    private void deleteDraftDeletionDatabaseRow(final Integer reId,
-            final RelatedEntityRelation rer) {
-        List<VocabularyRelatedEntity> draftsForId =
-                draftREsAndRelations.get(reId);
-        if (draftsForId == null) {
-            return;
-        }
-        for (VocabularyRelatedEntity vre : draftsForId) {
-            if (vre.getRelation() == rer
-                    && TemporalUtils.isDraftDeletion(vre)) {
-                em().remove(vre);
-                draftREsAndRelations.get(reId).remove(vre);
-                return;
-            }
-        }
-    }
-
     /** Get a draft database row associated with this model
      * with a specified related entity Id and relation,
      * if there is such a draft row.
-     * It might specify either addition/modification or deletion.
      * @param reId The related entity.
      * @param rer The related entity relation.
      * @return The draft VocabularyRelatedEntity row, if there is one,
@@ -233,50 +214,6 @@ public class VocabularyRelatedEntitiesModel extends ModelBase {
         return null;
     }
 
-    /** Get a draft database row associated with this model
-     * that specify addition/modification of a row with a specified
-     * related entity Id and relation, if there is such a draft row.
-     * @param reId The related entity.
-     * @param rer The related entity relation.
-     * @return The draft VocabularyRelatedEntity row, if there is one,
-     *      or null if there is no such row.
-     */
-    private VocabularyRelatedEntity getDraftAdditionOrModificationDatabaseRow(
-            final Integer reId, final RelatedEntityRelation rer) {
-        List<VocabularyRelatedEntity> draftsForId =
-                draftREsAndRelations.get(reId);
-        if (draftsForId == null) {
-            return null;
-        }
-        for (VocabularyRelatedEntity vre : draftsForId) {
-            if (vre.getRelation() == rer
-                    && TemporalUtils.isDraftAdditionOrModification(vre)) {
-                return vre;
-            }
-        }
-        return null;
-    }
-
-    // The following method was done as preliminary work, but it
-    // has not been needed so far.
-//    /** Delete all of the draft database rows associated with this model
-//     * that specify addition/modification of a row with a specified
-//     * related entity Id and relation.
-//     * @param reId The related entity.
-//     * @param rer The related entity relation.
-//     */
-//    private void deleteDraftAdditionOrModificationDatabaseRow(
-//            final Integer reId, final RelatedEntityRelation rer) {
-//        for (VocabularyRelatedEntity vre : draftREsAndRelations.get(reId)) {
-//            if (vre.getRelation() == rer
-//                    && TemporalUtils.isDraftAdditionOrModification(vre)) {
-//                em.remove(vre);
-//                draftREsAndRelations.get(reId).remove(vre);
-//            }
-//        }
-//        draftREsAndRelations.remove(reId);
-//    }
-
     /** {@inheritDoc} */
     @Override
     public void applyChanges(final Vocabulary updatedVocabulary) {
@@ -294,19 +231,19 @@ public class VocabularyRelatedEntitiesModel extends ModelBase {
      */
     private void applyChangesDraft(final Vocabulary updatedVocabulary) {
         // Create sequences.
-        // First, the current values.
-        List<VocabularyRelatedEntityElement> currentSequence =
+        // First, any existing draft values.
+        List<VocabularyRelatedEntityElement> existingDraftSequence =
                 new ArrayList<>();
-        for (Integer reId : currentREsAndRelations.keySet()) {
+        for (Integer reId : draftREsAndRelations.keySet()) {
             for (VocabularyRelatedEntity vre
-                    : currentREsAndRelations.get(reId)) {
-                currentSequence.add(new VocabularyRelatedEntityElement(
+                    : draftREsAndRelations.get(reId)) {
+                existingDraftSequence.add(new VocabularyRelatedEntityElement(
                         reId, vre.getRelation(), vre));
             }
         }
-        Collections.sort(currentSequence);
+        Collections.sort(existingDraftSequence);
 
-        // And now, the updated values.
+        // And now, the updated draft values.
         List<VocabularyRelatedEntityElement> updatedSequence =
                 new ArrayList<>();
         updatedVocabulary.getRelatedEntityRef().forEach(
@@ -322,7 +259,7 @@ public class VocabularyRelatedEntitiesModel extends ModelBase {
         // Compute difference.
         final SequencesComparator<VocabularyRelatedEntityElement> comparator =
                 new SequencesComparator<>(
-                        currentSequence, updatedSequence);
+                        existingDraftSequence, updatedSequence);
         // Apply the changes.
         comparator.getScript().visit(new UpdateDraftVisitor());
     }
@@ -336,48 +273,19 @@ public class VocabularyRelatedEntitiesModel extends ModelBase {
         @Override
         public void visitKeepCommand(
                 final VocabularyRelatedEntityElement vree) {
-            Integer keepReId = vree.getReId();
-            RelatedEntityRelation keepReRelation = vree.getReRelation();
-            VocabularyRelatedEntity draftVre =
-                    getDraftDatabaseRow(keepReId, keepReRelation);
-            if (draftVre != null) {
-                // In this case, it must be a draft deletion.
-                // (There isn't (i.e., shouldn't be) a draft row
-                // for addition/modification where the published
-                // view already has a row specifying the same values.)
-                // We no longer wish to do that deletion.
-                deleteDraftDeletionDatabaseRow(keepReId, keepReRelation);
-            }
+            // No action required.
         }
 
         /** {@inheritDoc} */
         @Override
         public void visitDeleteCommand(
                 final VocabularyRelatedEntityElement vree) {
-            Integer deleteReId = vree.getReId();
-            RelatedEntityRelation deleteReRelation = vree.getReRelation();
-            VocabularyRelatedEntity draftVre =
-                    getDraftDatabaseRow(deleteReId, deleteReRelation);
-            // If there is an existing draft row, it can only be a draft
-            // deletion. In that case, no further action is required;
-            // leave the existing draft deletion.
-            // NB: this is the case because for VREs, there is no
-            // notion of "modification/update", but only add and delete.
-            // If there were, we would need to have code to apply
-            // an update to an existing draft modification.
-            // But if there is no existing draft row ...
-            if (draftVre == null) {
-                // No draft row; add one to do the deletion.
-                VocabularyRelatedEntity draftDeletionVre =
-                        new VocabularyRelatedEntity();
-                draftDeletionVre.setVocabularyId(vocabularyId());
-                draftDeletionVre.setRelatedEntityId(deleteReId);
-                draftDeletionVre.setRelation(deleteReRelation);
-                draftDeletionVre.setModifiedBy(modifiedBy());
-                TemporalUtils.makeDraftDeletion(draftDeletionVre);
-                VocabularyRelatedEntityDAO.saveVocabularyRelatedEntity(em(),
-                        draftDeletionVre);
-            }
+            Integer draftReId = vree.getReId();
+            VocabularyRelatedEntity draftVre = vree.getVre();
+            // Remove from our own records ...
+            draftREsAndRelations.get(draftReId).remove(draftVre);
+            // ... and from the database.
+            em().remove(draftVre);
         }
 
         /** {@inheritDoc} */
@@ -386,29 +294,16 @@ public class VocabularyRelatedEntitiesModel extends ModelBase {
                 final VocabularyRelatedEntityElement vree) {
             Integer insertReId = vree.getReId();
             RelatedEntityRelation insertReRelation = vree.getReRelation();
-            VocabularyRelatedEntity draftVre =
-                    getDraftDatabaseRow(insertReId, insertReRelation);
-            // If there is an existing draft row, it can only be a draft
-            // addition. In that case, no further action is required;
-            // leave the existing draft addition.
-            // NB: this is the case because for VREs, there is no
-            // notion of "modification/update", but only add and delete.
-            // If there were, we would need to have code to apply
-            // an update to an existing draft modification.
-            // But if there is no existing draft row ...
-            if (draftVre == null) {
-                // No draft row; add one to do the insertion.
-                VocabularyRelatedEntity draftInsertionVre =
-                        new VocabularyRelatedEntity();
-                draftInsertionVre.setVocabularyId(vocabularyId());
-                draftInsertionVre.setRelatedEntityId(insertReId);
-                draftInsertionVre.setRelation(insertReRelation);
-                draftInsertionVre.setModifiedBy(modifiedBy());
-                TemporalUtils.makeDraftAdditionOrModification(
-                        draftInsertionVre);
-                VocabularyRelatedEntityDAO.saveVocabularyRelatedEntity(em(),
-                        draftInsertionVre);
-            }
+            VocabularyRelatedEntity draftInsertionVre =
+                    new VocabularyRelatedEntity();
+            draftInsertionVre.setVocabularyId(vocabularyId());
+            draftInsertionVre.setRelatedEntityId(insertReId);
+            draftInsertionVre.setRelation(insertReRelation);
+            draftInsertionVre.setModifiedBy(modifiedBy());
+            TemporalUtils.makeDraft(draftInsertionVre);
+            VocabularyRelatedEntityDAO.saveVocabularyRelatedEntity(em(),
+                    draftInsertionVre);
+            draftREsAndRelations.add(insertReId, draftInsertionVre);
         }
     }
 
@@ -463,9 +358,6 @@ public class VocabularyRelatedEntitiesModel extends ModelBase {
         public void visitKeepCommand(
                 final VocabularyRelatedEntityElement vree) {
             // No action required.
-            // There _may_ be draft rows that say to delete this VRE.
-            // We don't worry about them here; they are cleaned up by a
-            // subsequent call to deleteDraftDatabaseRows().
         }
 
         /** {@inheritDoc} */
@@ -478,8 +370,6 @@ public class VocabularyRelatedEntitiesModel extends ModelBase {
             vre.setModifiedBy(modifiedBy());
             VocabularyRelatedEntityDAO.updateVocabularyRelatedEntity(
                     em(), vre);
-            deleteDraftDeletionDatabaseRow(vre.getRelatedEntityId(),
-                    vre.getRelation());
         }
 
         /** {@inheritDoc} */
@@ -491,8 +381,7 @@ public class VocabularyRelatedEntitiesModel extends ModelBase {
             Integer newReId = vree.getReId();
             RelatedEntityRelation newReRelation = vree.getReRelation();
             VocabularyRelatedEntity draftVre =
-                    getDraftAdditionOrModificationDatabaseRow(newReId,
-                            newReRelation);
+                    getDraftDatabaseRow(newReId, newReRelation);
             if (draftVre != null) {
                 // Reuse existing draft row.
                 draftVre.setStartDate(nowTime());

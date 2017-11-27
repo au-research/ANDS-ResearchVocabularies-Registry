@@ -46,32 +46,15 @@ public class RegistryTemporalDataTests extends ArquillianBaseTest {
         Assert.assertEquals(TemporalUtils.getTemporalDescription(vocabulary),
                 TemporalMeaning.HISTORICAL, "Meaning not HISTORICAL");
 
-        // Draft addition or modification.
-        TemporalUtils.makeDraftAdditionOrModification(vocabulary);
+        // Draft.
+        TemporalUtils.makeDraft(vocabulary);
         Assert.assertTrue(TemporalUtils.isDraft(vocabulary), "Not draft");
-        Assert.assertTrue(TemporalUtils.isDraftAdditionOrModification(
-                vocabulary), "Not draft addition or modification");
         Assert.assertFalse(TemporalUtils.isHistorical(vocabulary),
                 "Is historical");
         Assert.assertFalse(TemporalUtils.isCurrent(vocabulary), "Is current");
-        Assert.assertFalse(TemporalUtils.isDraftDeletion(
-                vocabulary), "Is draft deletion");
         Assert.assertEquals(TemporalUtils.getTemporalDescription(vocabulary),
-                TemporalMeaning.DRAFT_ADDITION_OR_MODIFICATION,
-                "Meaning not DRAFT_ADDITION_OR_MODIFICATION");
-
-        // Draft deletion.
-        TemporalUtils.makeDraftDeletion(vocabulary);
-        Assert.assertTrue(TemporalUtils.isDraft(vocabulary), "Not draft");
-        Assert.assertTrue(TemporalUtils.isDraftDeletion(
-                vocabulary), "Not draft deletion");
-        Assert.assertFalse(TemporalUtils.isHistorical(vocabulary),
-                "Is historical");
-        Assert.assertFalse(TemporalUtils.isCurrent(vocabulary), "Is current");
-        Assert.assertFalse(TemporalUtils.isDraftAdditionOrModification(
-                vocabulary), "Is draft addition or modification");
-        Assert.assertEquals(TemporalUtils.getTemporalDescription(vocabulary),
-                TemporalMeaning.DRAFT_DELETION, "Meaning not DRAFT_DELETION");
+                TemporalMeaning.DRAFT,
+                "Meaning not DRAFT");
     }
 
 }

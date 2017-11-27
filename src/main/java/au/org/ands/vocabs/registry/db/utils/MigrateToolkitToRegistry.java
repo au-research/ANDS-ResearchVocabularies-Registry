@@ -426,7 +426,7 @@ public final class MigrateToolkitToRegistry {
             // elements of draft records. The registryVocabulary's
             // startDate/endDate values are assigned the special values
             // to indicate a draft record.
-            TemporalUtils.makeDraftAdditionOrModification(registryVocabulary);
+            TemporalUtils.makeDraft(registryVocabulary);
             if (publishedVocabulary == null) {
                 // There is no published instance of this vocabulary, so
                 // we need to create a new vocabulary ID.
