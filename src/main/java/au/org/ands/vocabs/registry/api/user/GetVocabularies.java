@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.persistence.EntityManager;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
@@ -30,7 +31,9 @@ import org.slf4j.LoggerFactory;
 
 import au.org.ands.vocabs.registry.api.auth.AuthUtils;
 import au.org.ands.vocabs.registry.api.context.ApiPaths;
+import au.org.ands.vocabs.registry.api.context.ResponseUtils;
 import au.org.ands.vocabs.registry.api.context.SwaggerInterface;
+import au.org.ands.vocabs.registry.db.context.DBContext;
 import au.org.ands.vocabs.registry.db.converter.AccessPointDbSchemaMapper;
 import au.org.ands.vocabs.registry.db.converter.RelatedEntityDbSchemaMapper;
 import au.org.ands.vocabs.registry.db.converter.RelatedEntityIdentifierDbSchemaMapper;
@@ -43,6 +46,8 @@ import au.org.ands.vocabs.registry.db.dao.RelatedEntityIdentifierDAO;
 import au.org.ands.vocabs.registry.db.dao.VersionDAO;
 import au.org.ands.vocabs.registry.db.dao.VocabularyDAO;
 import au.org.ands.vocabs.registry.enums.RelatedVocabularyRelation;
+import au.org.ands.vocabs.registry.model.ModelMethods;
+import au.org.ands.vocabs.registry.model.VocabularyModel;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.AccessPoint;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.RelatedEntity;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.RelatedEntityIdentifier;
@@ -169,9 +174,9 @@ public class GetVocabularies {
     public final Response getVocabularyById(
             @Context final HttpServletRequest request,
             @Context final UriInfo uriInfo,
-            @ApiParam(value = "The ID of the vocabulary to get")
+            @ApiParam(value = "The ID of the vocabulary to get.")
             @PathParam("vocabularyId") final Integer vocabularyId,
-            @ApiParam(value = "Whether or not to include version elements",
+            @ApiParam(value = "Whether or not to include version elements.",
                 defaultValue = "false")
             @QueryParam("includeVersions") @DefaultValue("false")
             final boolean includeVersions,
@@ -271,6 +276,94 @@ public class GetVocabularies {
 
         Logging.logRequest(true, request, uriInfo, null, "Get a vocabulary");
         return Response.ok().entity(outputVocabulary).build();
+    }
+
+    /** Get a vocabulary for editing, by its vocabulary id.
+     * The caller must be authenticated, and authorized to modify the
+     * vocabulary. If there is a draft instance, that is returned.
+     * Otherwise, the current instance is returned.
+     * @param request The HTTP request.
+     * @param uriInfo The UriInfo of the request.
+     * @param profile The caller's security profile.
+     * @param vocabularyId The VocabularyId of the vocabulary to be fetched.
+     * @return The vocabulary, in either XML or JSON format,
+     *      or an error result, if there is no such vocabulary. */
+    @Path(ApiPaths.VOCABULARY_ID + "/edit")
+    @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+    @Pac4JSecurity
+    @GET
+    @ApiOperation(value = "Get a vocabulary by its id, for editing.",
+            response = Vocabulary.class,
+            authorizations = {@Authorization(
+                    value = SwaggerInterface.BASIC_AUTH),
+                    @Authorization(value = SwaggerInterface.API_KEY_AUTH)})
+    @ApiResponses(value = {
+            @ApiResponse(code = HttpStatus.SC_BAD_REQUEST,
+                    message = "No vocabulary with that id",
+                    response = ErrorResult.class),
+            @ApiResponse(code = HttpStatus.SC_UNAUTHORIZED,
+                    message = "Not authenticated",
+                    response = ErrorResult.class,
+                    responseHeaders = {
+                            @ResponseHeader(name = "WWW-Authenticate",
+                                    response = String.class)
+                            }),
+            @ApiResponse(code = HttpStatus.SC_FORBIDDEN,
+                    message = "Not authenticated, or not authorized",
+                    response = ErrorResult.class)
+            })
+    public final Response getVocabularyByIdEdit(
+            @Context final HttpServletRequest request,
+            @Context final UriInfo uriInfo,
+            @ApiParam(hidden = true) @Pac4JProfile final CommonProfile profile,
+            @ApiParam(value = "The ID of the vocabulary to get for editing.")
+            @PathParam("vocabularyId") final Integer vocabularyId) {
+        logger.debug("called getVocabularyByIdEdit: " + vocabularyId);
+        if (VocabularyDAO.hasDraftVocabulary(vocabularyId)) {
+            au.org.ands.vocabs.registry.db.entity.Vocabulary
+            draftDbVocabulary = VocabularyDAO.getDraftVocabularyByVocabularyId(
+                    vocabularyId).get(0);
+            if (!AuthUtils.ownerIsAuthorizedByOrganisationOrUsername(profile,
+                    draftDbVocabulary.getOwner())) {
+                return ResponseUtils.generateForbiddenResponseForOwner();
+            }
+            EntityManager em = null;
+            Vocabulary vocabularyAsSchema;
+            try {
+                em = DBContext.getEntityManager();
+                VocabularyModel vm = ModelMethods.createVocabularyModel(em,
+                        vocabularyId);
+                vocabularyAsSchema = ModelMethods.getDraft(vm,
+                        true, true, true);
+            } catch (Exception e) {
+                return ResponseUtils.generateInternalServerError(
+                        "Unable to get draft instance");
+            } finally {
+                if (em != null) {
+                    em.close();
+                }
+            }
+            Logging.logRequest(true, request, uriInfo, null,
+                    "Get a vocabulary to edit");
+            return Response.ok().entity(vocabularyAsSchema).build();
+        }
+        // No draft. Get the current instance.
+        au.org.ands.vocabs.registry.db.entity.Vocabulary
+        dbVocabulary = VocabularyDAO.getCurrentVocabularyByVocabularyId(
+                vocabularyId);
+        if (dbVocabulary == null) {
+            return Response.status(Status.BAD_REQUEST).entity(
+                    new ErrorResult("No vocabulary with that id")).build();
+        }
+        if (!AuthUtils.ownerIsAuthorizedByOrganisationOrUsername(profile,
+                dbVocabulary.getOwner())) {
+            return ResponseUtils.generateForbiddenResponseForOwner();
+        }
+
+        // No draft, and the caller is authorized. Defer to
+        // getVocabularyById().
+        return getVocabularyById(request, uriInfo, vocabularyId,
+                true, true, true);
     }
 
     /** Query if the user profile is authorized to modify the
