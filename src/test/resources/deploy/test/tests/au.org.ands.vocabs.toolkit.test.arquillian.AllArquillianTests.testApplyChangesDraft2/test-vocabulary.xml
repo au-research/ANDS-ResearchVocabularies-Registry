@@ -6,7 +6,6 @@
   <related-entity-ref id="1">
     <relation>publishedBy</relation>
     <relation>hasAuthor</relation>
-    <relation>pointOfContact</relation>
     <relation>implementedBy</relation>
   </related-entity-ref>
   <related-entity-ref id="3">
