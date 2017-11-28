@@ -264,7 +264,7 @@ public class VocabularyModel extends ModelBase {
 
     /** {@inheritDoc} */
     @Override
-    public void deleteOnlyCurrent() {
+    protected void deleteOnlyCurrent() {
         if (currentVocabulary == null) {
             // Oops, nothing to do!
             return;
@@ -279,7 +279,7 @@ public class VocabularyModel extends ModelBase {
 
     /** {@inheritDoc} */
     @Override
-    public void makeCurrentIntoDraft() {
+    protected void makeCurrentIntoDraft() {
         if (currentVocabulary == null) {
             // Oops, nothing to do!
             return;
@@ -327,7 +327,7 @@ public class VocabularyModel extends ModelBase {
 
     /** {@inheritDoc} */
     @Override
-    public void applyChanges(
+    protected void applyChanges(
             final au.org.ands.vocabs.registry.schema.vocabulary201701.
             Vocabulary updatedVocabulary) {
         VocabularyStatus status = updatedVocabulary.getStatus();

@@ -203,7 +203,7 @@ public class VocabularyRelatedEntitiesModel extends ModelBase {
 
     /** {@inheritDoc} */
     @Override
-    public void deleteOnlyCurrent() {
+    protected void deleteOnlyCurrent() {
         for (Integer reId : currentREsAndRelations.keySet()) {
             for (VocabularyRelatedEntity vre
                     : currentREsAndRelations.get(reId)) {
@@ -218,7 +218,7 @@ public class VocabularyRelatedEntitiesModel extends ModelBase {
 
     /** {@inheritDoc} */
     @Override
-    public void makeCurrentIntoDraft() {
+    protected void makeCurrentIntoDraft() {
         if (currentREsAndRelations.isEmpty()) {
             // Oops, nothing to do!
             return;
@@ -294,7 +294,7 @@ public class VocabularyRelatedEntitiesModel extends ModelBase {
 
     /** {@inheritDoc} */
     @Override
-    public void applyChanges(final Vocabulary updatedVocabulary) {
+    protected void applyChanges(final Vocabulary updatedVocabulary) {
         VocabularyStatus status = updatedVocabulary.getStatus();
         if (status == VocabularyStatus.DRAFT) {
             applyChangesDraft(updatedVocabulary);

@@ -167,7 +167,7 @@ public abstract class ModelBase {
      * @param updatedVocabulary A description of an updated vocabulary,
      *      in registry schema format.
      */
-    public abstract void applyChanges(
+    protected abstract void applyChanges(
             au.org.ands.vocabs.registry.schema.vocabulary201701.
             Vocabulary updatedVocabulary);
 
