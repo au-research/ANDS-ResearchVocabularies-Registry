@@ -696,7 +696,8 @@
           #AND_TEMPORAL_QUERY_VALID_SUFFIX
         </queryText>
         <method>    /** Get all current VocabularyRelatedVocabulary
-     * instances for a vocabulary. The results are grouped by vocabularyId.
+     * instances for a vocabulary. The results are grouped by vocabularyId
+     * of the related vocabularies.
      * @param vocabularyId The vocabulary id for which vocabulary related
      *     vocabularies are to be looked up.
      * @return An multi-valued map of all VocabularyRelatedVocabulary
@@ -721,7 +722,86 @@
             VocabularyRelatedVocabulary&gt;
         result = new javax.ws.rs.core.MultivaluedHashMap&lt;&gt;();
         for (VocabularyRelatedVocabulary vrv : entityList) {
-            result.add(vrv.getVocabularyId(), vrv);
+            result.add(vrv.getRelatedVocabularyId(), vrv);
+        }
+        return result;
+    }
+
+    /** Get all current VocabularyRelatedVocabulary
+     * instances for a vocabulary. The results are grouped by vocabularyId
+     * of the related vocabularies.
+     * This version of the method uses an existing EntityManager
+     * provided as a parameter; transaction begin/end must be
+     * managed by the caller.
+     * @param em The EntityManager to be used.
+     * @param vocabularyId The vocabulary id for which vocabulary related
+     *     vocabularies are to be looked up.
+     * @return An multi-valued map of all VocabularyRelatedVocabulary
+     *     instances for the vocabulary.
+     */
+    public static javax.ws.rs.core.MultivaluedMap&lt;
+            Integer, VocabularyRelatedVocabulary&gt;
+        getCurrentVocabularyRelatedVocabulariesForVocabulary(
+                final EntityManager em,
+                final int vocabularyId) {
+        TypedQuery&lt;VocabularyRelatedVocabulary&gt; q = em.createNamedQuery(
+                VocabularyRelatedVocabulary.
+                    GET_VOC_RELATED_VOC_LIST_FOR_VOC,
+                VocabularyRelatedVocabulary.class)
+                .setParameter(VocabularyRelatedVocabulary.
+                    GET_VOC_RELATED_VOC_LIST_FOR_VOC_VOCABULARYID,
+                    vocabularyId);
+        q = TemporalUtils.setDatetimeConstantParameters(q);
+        List&lt;VocabularyRelatedVocabulary&gt; entityList = q.getResultList();
+        javax.ws.rs.core.MultivaluedMap&lt;Integer,
+            VocabularyRelatedVocabulary&gt;
+        result = new javax.ws.rs.core.MultivaluedHashMap&lt;&gt;();
+        for (VocabularyRelatedVocabulary vrv : entityList) {
+            result.add(vrv.getRelatedVocabularyId(), vrv);
+        }
+        return result;
+    }
+
+</method>
+      </extraQuery>
+      <extraQuery name="GET_DRAFT_VOC_RV_LIST_FOR_VOC">
+        <extraQueryParameter name="vocabularyId" />
+        <queryText temporal="true">
+          SELECT entity FROM VocabularyRelatedVocabulary entity WHERE
+          vocabularyId = :vocabularyId
+          #AND_TEMPORAL_QUERY_ALL_DRAFT_SUFFIX
+        </queryText>
+        <method>    /** Get all draft VocabularyRelatedVocabulary
+     * instances for a vocabulary. The results are grouped by vocabularyId
+     * of the related vocabularies.
+     * This version of the method uses an existing EntityManager
+     * provided as a parameter; transaction begin/end must be
+     * managed by the caller.
+     * @param em The EntityManager to be used.
+     * @param vocabularyId The vocabulary id for which vocabulary related
+     *     vocabularies are to be looked up.
+     * @return An multi-valued map of all VocabularyRelatedVocabulary
+     *     instances for the vocabulary.
+     */
+    public static javax.ws.rs.core.MultivaluedMap&lt;
+            Integer, VocabularyRelatedVocabulary&gt;
+        getDraftVocabularyRelatedVocabulariesForVocabulary(
+                final EntityManager em,
+                final int vocabularyId) {
+        TypedQuery&lt;VocabularyRelatedVocabulary&gt; q = em.createNamedQuery(
+                VocabularyRelatedVocabulary.
+                    GET_DRAFT_VOC_RV_LIST_FOR_VOC,
+                VocabularyRelatedVocabulary.class)
+                .setParameter(VocabularyRelatedVocabulary.
+                    GET_DRAFT_VOC_RV_LIST_FOR_VOC_VOCABULARYID,
+                    vocabularyId);
+        q = TemporalUtils.setDatetimeConstantParameters(q);
+        List&lt;VocabularyRelatedVocabulary&gt; entityList = q.getResultList();
+        javax.ws.rs.core.MultivaluedMap&lt;Integer,
+            VocabularyRelatedVocabulary&gt;
+        result = new javax.ws.rs.core.MultivaluedHashMap&lt;&gt;();
+        for (VocabularyRelatedVocabulary vrv : entityList) {
+            result.add(vrv.getRelatedVocabularyId(), vrv);
         }
         return result;
     }
