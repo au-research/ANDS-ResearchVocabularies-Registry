@@ -359,12 +359,13 @@ public class VocabularyModel extends ModelBase {
         if (draftVocabulary != null) {
             // Already a draft. Update it.
             mapper.updateTargetFromSource(
-                    updatedVocabulary, draftVocabulary);
+                    updatedVocabulary, draftVocabulary, nowTime());
             draftVocabulary.setModifiedBy(modifiedBy());
             VocabularyDAO.updateVocabulary(em(), draftVocabulary);
         } else {
             // Add a new draft record.
-            draftVocabulary = mapper.sourceToTarget(updatedVocabulary);
+            draftVocabulary = mapper.sourceToTarget(updatedVocabulary,
+                    nowTime());
             TemporalUtils.makeDraft(draftVocabulary);
             draftVocabulary.setModifiedBy(modifiedBy());
             VocabularyDAO.saveVocabulary(em(), draftVocabulary);
