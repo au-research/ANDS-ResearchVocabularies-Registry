@@ -94,6 +94,7 @@ public interface VocabularyRegistrySchemaMapper {
      * modification of this draft is specified as a context parameter.
      * @param source The Vocabulary entity from the registry.
      * @param target The database version of the vocabulary being updated.
+     * @param draftModifiedDate The value of draftModifiedDate to be set.
      */
     // OH! Note carefully the _two_ @Mapping annotations for ids!
     // With the second, but without the first, the generated code invokes
