@@ -35,6 +35,10 @@ public class RegistryCheckVocabularyTests extends ArquillianBaseTest {
     private Logger logger = LoggerFactory.getLogger(
             MethodHandles.lookup().lookupClass());
 
+    /** Name of this class, used in paths to test data files. */
+    private static final String CLASS_NAME_PREFIX =
+            "RegistryCheckVocabularyTests.";
+
     /** Test of the CheckVocabulary validator.
      * @throws DatabaseUnitException If a problem with DbUnit.
      * @throws IOException If a problem getting test data for DbUnit,
@@ -51,8 +55,8 @@ public class RegistryCheckVocabularyTests extends ArquillianBaseTest {
         Vocabulary newVocabulary;
 
         InputStream is = ArquillianTestUtils.getResourceAsInputStream(
-                "test/tests/au.org.ands.vocabs.toolkit."
-                + "test.arquillian.AllArquillianTests."
+                "test/tests/"
+                + CLASS_NAME_PREFIX
                 + "testCheckVocabulary1/"
                 + "test-validation-1.xml");
         JAXBContext jaxbContext = JAXBContext.newInstance(Vocabulary.class);

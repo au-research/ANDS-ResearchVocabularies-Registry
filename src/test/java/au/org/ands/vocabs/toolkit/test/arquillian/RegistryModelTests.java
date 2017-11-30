@@ -38,6 +38,9 @@ public class RegistryModelTests extends ArquillianBaseTest {
                 MethodHandles.lookup().lookupClass());
     }
 
+    /** Name of this class, used in paths to test data files. */
+    private static final String CLASS_NAME_PREFIX = "RegistryModelTests.";
+
     /** A convenient value to use for endDate properties when
      * deleting. */
     @SuppressWarnings("checkstyle:MagicNumber")
@@ -112,8 +115,8 @@ public class RegistryModelTests extends ArquillianBaseTest {
     public final void testDeleteOnlyCurrent1() throws
     DatabaseUnitException, IOException, SQLException {
         ArquillianTestUtils.clearDatabase(REGISTRY);
-        ArquillianTestUtils.loadDbUnitTestFile(REGISTRY,
-                "testDeleteOnlyCurrent1");
+        ArquillianTestUtils.loadDbUnitTestFile(REGISTRY, CLASS_NAME_PREFIX
+                + "testDeleteOnlyCurrent1");
         EntityManager em = null;
         try {
             em = DBContext.getEntityManager();
@@ -135,8 +138,8 @@ public class RegistryModelTests extends ArquillianBaseTest {
         }
         ArquillianTestUtils.compareDatabaseCurrentAndExpectedContents(
                 REGISTRY,
-                "test/tests/au.org.ands.vocabs.toolkit."
-                + "test.arquillian.AllArquillianTests."
+                "test/tests/"
+                + CLASS_NAME_PREFIX
                 + "testDeleteOnlyCurrent1/"
                 + "test-registry-results.xml");
     }
@@ -154,8 +157,8 @@ public class RegistryModelTests extends ArquillianBaseTest {
     public final void testDeleteOnlyCurrent2() throws
     DatabaseUnitException, IOException, SQLException {
         ArquillianTestUtils.clearDatabase(REGISTRY);
-        ArquillianTestUtils.loadDbUnitTestFile(REGISTRY,
-                "testDeleteOnlyCurrent2");
+        ArquillianTestUtils.loadDbUnitTestFile(REGISTRY, CLASS_NAME_PREFIX
+                + "testDeleteOnlyCurrent2");
         EntityManager em = null;
         try {
             em = DBContext.getEntityManager();
@@ -177,8 +180,8 @@ public class RegistryModelTests extends ArquillianBaseTest {
         }
         ArquillianTestUtils.compareDatabaseCurrentAndExpectedContents(
                 REGISTRY,
-                "test/tests/au.org.ands.vocabs.toolkit."
-                + "test.arquillian.AllArquillianTests."
+                "test/tests/"
+                + CLASS_NAME_PREFIX
                 + "testDeleteOnlyCurrent2/"
                 + "test-registry-results.xml");
     }
@@ -196,8 +199,8 @@ public class RegistryModelTests extends ArquillianBaseTest {
     public final void testDeleteOnlyDraft1() throws
     DatabaseUnitException, IOException, SQLException {
         ArquillianTestUtils.clearDatabase(REGISTRY);
-        ArquillianTestUtils.loadDbUnitTestFile(REGISTRY,
-                "testDeleteOnlyDraft1");
+        ArquillianTestUtils.loadDbUnitTestFile(REGISTRY, CLASS_NAME_PREFIX
+                + "testDeleteOnlyDraft1");
         EntityManager em = null;
         try {
             em = DBContext.getEntityManager();
@@ -214,8 +217,8 @@ public class RegistryModelTests extends ArquillianBaseTest {
         }
         ArquillianTestUtils.compareDatabaseCurrentAndExpectedContents(
                 REGISTRY,
-                "test/tests/au.org.ands.vocabs.toolkit."
-                + "test.arquillian.AllArquillianTests."
+                "test/tests/"
+                + CLASS_NAME_PREFIX
                 + "testDeleteOnlyDraft1/"
                 + "test-registry-results.xml");
     }
@@ -233,8 +236,8 @@ public class RegistryModelTests extends ArquillianBaseTest {
     public final void testDeleteOnlyDraft2() throws
     DatabaseUnitException, IOException, SQLException {
         ArquillianTestUtils.clearDatabase(REGISTRY);
-        ArquillianTestUtils.loadDbUnitTestFile(REGISTRY,
-                "testDeleteOnlyDraft2");
+        ArquillianTestUtils.loadDbUnitTestFile(REGISTRY, CLASS_NAME_PREFIX
+                + "testDeleteOnlyDraft2");
         EntityManager em = null;
         try {
             em = DBContext.getEntityManager();
@@ -251,8 +254,8 @@ public class RegistryModelTests extends ArquillianBaseTest {
         }
         ArquillianTestUtils.compareDatabaseCurrentAndExpectedContents(
                 REGISTRY,
-                "test/tests/au.org.ands.vocabs.toolkit."
-                + "test.arquillian.AllArquillianTests."
+                "test/tests/"
+                + CLASS_NAME_PREFIX
                 + "testDeleteOnlyDraft2/"
                 + "test-registry-results.xml");
     }
@@ -271,8 +274,8 @@ public class RegistryModelTests extends ArquillianBaseTest {
     public final void testMakeCurrentVocabularyDraft1() throws
     DatabaseUnitException, IOException, SQLException {
         ArquillianTestUtils.clearDatabase(REGISTRY);
-        ArquillianTestUtils.loadDbUnitTestFile(REGISTRY,
-                "testMakeCurrentVocabularyDraft1");
+        ArquillianTestUtils.loadDbUnitTestFile(REGISTRY, CLASS_NAME_PREFIX
+                + "testMakeCurrentVocabularyDraft1");
         EntityManager em = null;
         try {
             em = DBContext.getEntityManager();
@@ -293,8 +296,8 @@ public class RegistryModelTests extends ArquillianBaseTest {
 
         ArquillianTestUtils.compareDatabaseCurrentAndExpectedContents(
                 REGISTRY,
-                "test/tests/au.org.ands.vocabs.toolkit."
-                + "test.arquillian.AllArquillianTests."
+                "test/tests/"
+                + CLASS_NAME_PREFIX
                 + "testMakeCurrentVocabularyDraft1/"
                 + "test-registry-results.xml");
     }
@@ -313,8 +316,8 @@ public class RegistryModelTests extends ArquillianBaseTest {
     public final void testMakeCurrentVocabularyDraft2() throws
     DatabaseUnitException, IOException, SQLException {
         ArquillianTestUtils.clearDatabase(REGISTRY);
-        ArquillianTestUtils.loadDbUnitTestFile(REGISTRY,
-                "testMakeCurrentVocabularyDraft2");
+        ArquillianTestUtils.loadDbUnitTestFile(REGISTRY, CLASS_NAME_PREFIX
+                + "testMakeCurrentVocabularyDraft2");
         EntityManager em = null;
         try {
             em = DBContext.getEntityManager();
@@ -335,8 +338,8 @@ public class RegistryModelTests extends ArquillianBaseTest {
 
         ArquillianTestUtils.compareDatabaseCurrentAndExpectedContents(
                 REGISTRY,
-                "test/tests/au.org.ands.vocabs.toolkit."
-                + "test.arquillian.AllArquillianTests."
+                "test/tests/"
+                + CLASS_NAME_PREFIX
                 + "testMakeCurrentVocabularyDraft2/"
                 + "test-registry-results.xml");
     }
@@ -354,8 +357,8 @@ public class RegistryModelTests extends ArquillianBaseTest {
     public final void testDeleteDraftLeavingCurrent1() throws
     DatabaseUnitException, IOException, SQLException {
         ArquillianTestUtils.clearDatabase(REGISTRY);
-        ArquillianTestUtils.loadDbUnitTestFile(REGISTRY,
-                "testDeleteDraftLeavingCurrent1");
+        ArquillianTestUtils.loadDbUnitTestFile(REGISTRY, CLASS_NAME_PREFIX
+                + "testDeleteDraftLeavingCurrent1");
         EntityManager em = null;
         try {
             em = DBContext.getEntityManager();
@@ -376,8 +379,8 @@ public class RegistryModelTests extends ArquillianBaseTest {
 
         ArquillianTestUtils.compareDatabaseCurrentAndExpectedContents(
                 REGISTRY,
-                "test/tests/au.org.ands.vocabs.toolkit."
-                + "test.arquillian.AllArquillianTests."
+                "test/tests/"
+                + CLASS_NAME_PREFIX
                 + "testDeleteDraftLeavingCurrent1/"
                 + "test-registry-results.xml");
     }
@@ -395,8 +398,8 @@ public class RegistryModelTests extends ArquillianBaseTest {
     public final void testDeleteDraftLeavingCurrent2() throws
     DatabaseUnitException, IOException, SQLException {
         ArquillianTestUtils.clearDatabase(REGISTRY);
-        ArquillianTestUtils.loadDbUnitTestFile(REGISTRY,
-                "testDeleteDraftLeavingCurrent2");
+        ArquillianTestUtils.loadDbUnitTestFile(REGISTRY, CLASS_NAME_PREFIX
+                + "testDeleteDraftLeavingCurrent2");
         EntityManager em = null;
         try {
             em = DBContext.getEntityManager();
@@ -417,8 +420,8 @@ public class RegistryModelTests extends ArquillianBaseTest {
 
         ArquillianTestUtils.compareDatabaseCurrentAndExpectedContents(
                 REGISTRY,
-                "test/tests/au.org.ands.vocabs.toolkit."
-                + "test.arquillian.AllArquillianTests."
+                "test/tests/"
+                + CLASS_NAME_PREFIX
                 + "testDeleteDraftLeavingCurrent2/"
                 + "test-registry-results.xml");
     }
@@ -436,8 +439,8 @@ public class RegistryModelTests extends ArquillianBaseTest {
     public final void testDeleteCurrentLeavingDraft1() throws
     DatabaseUnitException, IOException, SQLException {
         ArquillianTestUtils.clearDatabase(REGISTRY);
-        ArquillianTestUtils.loadDbUnitTestFile(REGISTRY,
-                "testDeleteCurrentLeavingDraft1");
+        ArquillianTestUtils.loadDbUnitTestFile(REGISTRY, CLASS_NAME_PREFIX
+                + "testDeleteCurrentLeavingDraft1");
         EntityManager em = null;
         try {
             em = DBContext.getEntityManager();
@@ -458,8 +461,8 @@ public class RegistryModelTests extends ArquillianBaseTest {
 
         ArquillianTestUtils.compareDatabaseCurrentAndExpectedContents(
                 REGISTRY,
-                "test/tests/au.org.ands.vocabs.toolkit."
-                + "test.arquillian.AllArquillianTests."
+                "test/tests/"
+                + CLASS_NAME_PREFIX
                 + "testDeleteCurrentLeavingDraft1/"
                 + "test-registry-results.xml");
     }
@@ -477,8 +480,8 @@ public class RegistryModelTests extends ArquillianBaseTest {
     public final void testDeleteCurrentLeavingDraft2() throws
     DatabaseUnitException, IOException, SQLException {
         ArquillianTestUtils.clearDatabase(REGISTRY);
-        ArquillianTestUtils.loadDbUnitTestFile(REGISTRY,
-                "testDeleteCurrentLeavingDraft2");
+        ArquillianTestUtils.loadDbUnitTestFile(REGISTRY, CLASS_NAME_PREFIX
+                + "testDeleteCurrentLeavingDraft2");
         EntityManager em = null;
         try {
             em = DBContext.getEntityManager();
@@ -499,8 +502,8 @@ public class RegistryModelTests extends ArquillianBaseTest {
 
         ArquillianTestUtils.compareDatabaseCurrentAndExpectedContents(
                 REGISTRY,
-                "test/tests/au.org.ands.vocabs.toolkit."
-                + "test.arquillian.AllArquillianTests."
+                "test/tests/"
+                + CLASS_NAME_PREFIX
                 + "testDeleteCurrentLeavingDraft2/"
                 + "test-registry-results.xml");
     }
@@ -520,12 +523,12 @@ public class RegistryModelTests extends ArquillianBaseTest {
     public final void testApplyChangesCurrent1() throws
     DatabaseUnitException, IOException, SQLException, JAXBException {
         ArquillianTestUtils.clearDatabase(REGISTRY);
-        ArquillianTestUtils.loadDbUnitTestFile(REGISTRY,
-                "testApplyChangesCurrent1");
+        ArquillianTestUtils.loadDbUnitTestFile(REGISTRY, CLASS_NAME_PREFIX
+                + "testApplyChangesCurrent1");
         Vocabulary vocabulary = RegistryTestUtils.
                 getValidatedVocabularyFromFile(
-                "test/tests/au.org.ands.vocabs.toolkit."
-                        + "test.arquillian.AllArquillianTests."
+                "test/tests/"
+                        + CLASS_NAME_PREFIX
                         + "testApplyChangesCurrent1/"
                         + "test-vocabulary.xml", ValidationMode.UPDATE);
         EntityManager em = null;
@@ -548,8 +551,8 @@ public class RegistryModelTests extends ArquillianBaseTest {
 
         ArquillianTestUtils.compareDatabaseCurrentAndExpectedContents(
                 REGISTRY,
-                "test/tests/au.org.ands.vocabs.toolkit."
-                + "test.arquillian.AllArquillianTests."
+                "test/tests/"
+                + CLASS_NAME_PREFIX
                 + "testApplyChangesCurrent1/"
                 + "test-registry-results.xml");
     }
@@ -569,12 +572,12 @@ public class RegistryModelTests extends ArquillianBaseTest {
     public final void testApplyChangesCurrent2() throws
     DatabaseUnitException, IOException, SQLException, JAXBException {
         ArquillianTestUtils.clearDatabase(REGISTRY);
-        ArquillianTestUtils.loadDbUnitTestFile(REGISTRY,
-                "testApplyChangesCurrent2");
+        ArquillianTestUtils.loadDbUnitTestFile(REGISTRY, CLASS_NAME_PREFIX
+                + "testApplyChangesCurrent2");
         Vocabulary vocabulary = RegistryTestUtils.
                 getValidatedVocabularyFromFile(
-                "test/tests/au.org.ands.vocabs.toolkit."
-                        + "test.arquillian.AllArquillianTests."
+                "test/tests/"
+                        + CLASS_NAME_PREFIX
                         + "testApplyChangesCurrent2/"
                         + "test-vocabulary.xml", ValidationMode.UPDATE);
         EntityManager em = null;
@@ -597,8 +600,8 @@ public class RegistryModelTests extends ArquillianBaseTest {
 
         ArquillianTestUtils.compareDatabaseCurrentAndExpectedContents(
                 REGISTRY,
-                "test/tests/au.org.ands.vocabs.toolkit."
-                + "test.arquillian.AllArquillianTests."
+                "test/tests/"
+                + CLASS_NAME_PREFIX
                 + "testApplyChangesCurrent2/"
                 + "test-registry-results.xml");
     }
@@ -618,12 +621,12 @@ public class RegistryModelTests extends ArquillianBaseTest {
     public final void testApplyChangesCurrent3() throws
     DatabaseUnitException, IOException, SQLException, JAXBException {
         ArquillianTestUtils.clearDatabase(REGISTRY);
-        ArquillianTestUtils.loadDbUnitTestFile(REGISTRY,
-                "testApplyChangesCurrent3");
+        ArquillianTestUtils.loadDbUnitTestFile(REGISTRY, CLASS_NAME_PREFIX
+                + "testApplyChangesCurrent3");
         Vocabulary vocabulary = RegistryTestUtils.
                 getValidatedVocabularyFromFile(
-                "test/tests/au.org.ands.vocabs.toolkit."
-                        + "test.arquillian.AllArquillianTests."
+                "test/tests/"
+                        + CLASS_NAME_PREFIX
                         + "testApplyChangesCurrent3/"
                         + "test-vocabulary.xml", ValidationMode.UPDATE);
         EntityManager em = null;
@@ -646,8 +649,8 @@ public class RegistryModelTests extends ArquillianBaseTest {
 
         ArquillianTestUtils.compareDatabaseCurrentAndExpectedContents(
                 REGISTRY,
-                "test/tests/au.org.ands.vocabs.toolkit."
-                + "test.arquillian.AllArquillianTests."
+                "test/tests/"
+                + CLASS_NAME_PREFIX
                 + "testApplyChangesCurrent3/"
                 + "test-registry-results.xml");
     }
@@ -667,12 +670,12 @@ public class RegistryModelTests extends ArquillianBaseTest {
     public final void testApplyChangesCurrent4() throws
     DatabaseUnitException, IOException, SQLException, JAXBException {
         ArquillianTestUtils.clearDatabase(REGISTRY);
-        ArquillianTestUtils.loadDbUnitTestFile(REGISTRY,
-                "testApplyChangesCurrent4");
+        ArquillianTestUtils.loadDbUnitTestFile(REGISTRY, CLASS_NAME_PREFIX
+                + "testApplyChangesCurrent4");
         Vocabulary vocabulary = RegistryTestUtils.
                 getValidatedVocabularyFromFile(
-                "test/tests/au.org.ands.vocabs.toolkit."
-                        + "test.arquillian.AllArquillianTests."
+                "test/tests/"
+                        + CLASS_NAME_PREFIX
                         + "testApplyChangesCurrent4/"
                         + "test-vocabulary.xml", ValidationMode.UPDATE);
         EntityManager em = null;
@@ -695,8 +698,8 @@ public class RegistryModelTests extends ArquillianBaseTest {
 
         ArquillianTestUtils.compareDatabaseCurrentAndExpectedContents(
                 REGISTRY,
-                "test/tests/au.org.ands.vocabs.toolkit."
-                + "test.arquillian.AllArquillianTests."
+                "test/tests/"
+                + CLASS_NAME_PREFIX
                 + "testApplyChangesCurrent4/"
                 + "test-registry-results.xml");
     }
@@ -717,12 +720,12 @@ public class RegistryModelTests extends ArquillianBaseTest {
     public final void testApplyChangesDraft1() throws
     DatabaseUnitException, IOException, SQLException, JAXBException {
         ArquillianTestUtils.clearDatabase(REGISTRY);
-        ArquillianTestUtils.loadDbUnitTestFile(REGISTRY,
-                "testApplyChangesDraft1");
+        ArquillianTestUtils.loadDbUnitTestFile(REGISTRY, CLASS_NAME_PREFIX
+                + "testApplyChangesDraft1");
         Vocabulary vocabulary = RegistryTestUtils.
                 getValidatedVocabularyFromFile(
-                "test/tests/au.org.ands.vocabs.toolkit."
-                        + "test.arquillian.AllArquillianTests."
+                "test/tests/"
+                        + CLASS_NAME_PREFIX
                         + "testApplyChangesDraft1/"
                         + "test-vocabulary-1.xml", ValidationMode.UPDATE);
         EntityManager em = null;
@@ -745,14 +748,14 @@ public class RegistryModelTests extends ArquillianBaseTest {
 
         ArquillianTestUtils.compareDatabaseCurrentAndExpectedContents(
                 REGISTRY,
-                "test/tests/au.org.ands.vocabs.toolkit."
-                + "test.arquillian.AllArquillianTests."
+                "test/tests/"
+                + CLASS_NAME_PREFIX
                 + "testApplyChangesDraft1/"
                 + "test-registry-results-1.xml");
 
         vocabulary = RegistryTestUtils.getValidatedVocabularyFromFile(
-                "test/tests/au.org.ands.vocabs.toolkit."
-                        + "test.arquillian.AllArquillianTests."
+                "test/tests/"
+                        + CLASS_NAME_PREFIX
                         + "testApplyChangesDraft1/"
                         + "test-vocabulary-2.xml", ValidationMode.UPDATE);
         em = null;
@@ -775,8 +778,8 @@ public class RegistryModelTests extends ArquillianBaseTest {
 
         ArquillianTestUtils.compareDatabaseCurrentAndExpectedContents(
                 REGISTRY,
-                "test/tests/au.org.ands.vocabs.toolkit."
-                + "test.arquillian.AllArquillianTests."
+                "test/tests/"
+                + CLASS_NAME_PREFIX
                 + "testApplyChangesDraft1/"
                 + "test-registry-results-2.xml");
     }
@@ -796,12 +799,12 @@ public class RegistryModelTests extends ArquillianBaseTest {
     public final void testApplyChangesDraft2() throws
     DatabaseUnitException, IOException, SQLException, JAXBException {
         ArquillianTestUtils.clearDatabase(REGISTRY);
-        ArquillianTestUtils.loadDbUnitTestFile(REGISTRY,
-                "testApplyChangesDraft2");
+        ArquillianTestUtils.loadDbUnitTestFile(REGISTRY, CLASS_NAME_PREFIX
+                + "testApplyChangesDraft2");
         Vocabulary vocabulary = RegistryTestUtils.
                 getValidatedVocabularyFromFile(
-                "test/tests/au.org.ands.vocabs.toolkit."
-                        + "test.arquillian.AllArquillianTests."
+                "test/tests/"
+                        + CLASS_NAME_PREFIX
                         + "testApplyChangesDraft2/"
                         + "test-vocabulary.xml", ValidationMode.UPDATE);
         EntityManager em = null;
@@ -824,8 +827,8 @@ public class RegistryModelTests extends ArquillianBaseTest {
 
         ArquillianTestUtils.compareDatabaseCurrentAndExpectedContents(
                 REGISTRY,
-                "test/tests/au.org.ands.vocabs.toolkit."
-                + "test.arquillian.AllArquillianTests."
+                "test/tests/"
+                + CLASS_NAME_PREFIX
                 + "testApplyChangesDraft2/"
                 + "test-registry-results.xml");
     }
@@ -846,12 +849,12 @@ public class RegistryModelTests extends ArquillianBaseTest {
     public final void testApplyChangesDraft3() throws
     DatabaseUnitException, IOException, SQLException, JAXBException {
         ArquillianTestUtils.clearDatabase(REGISTRY);
-        ArquillianTestUtils.loadDbUnitTestFile(REGISTRY,
-                "testApplyChangesDraft3");
+        ArquillianTestUtils.loadDbUnitTestFile(REGISTRY, CLASS_NAME_PREFIX
+                + "testApplyChangesDraft3");
         Vocabulary vocabulary = RegistryTestUtils.
                 getValidatedVocabularyFromFile(
-                "test/tests/au.org.ands.vocabs.toolkit."
-                        + "test.arquillian.AllArquillianTests."
+                "test/tests/"
+                        + CLASS_NAME_PREFIX
                         + "testApplyChangesDraft3/"
                         + "test-vocabulary-1.xml", ValidationMode.UPDATE);
         EntityManager em = null;
@@ -874,14 +877,14 @@ public class RegistryModelTests extends ArquillianBaseTest {
 
         ArquillianTestUtils.compareDatabaseCurrentAndExpectedContents(
                 REGISTRY,
-                "test/tests/au.org.ands.vocabs.toolkit."
-                + "test.arquillian.AllArquillianTests."
+                "test/tests/"
+                + CLASS_NAME_PREFIX
                 + "testApplyChangesDraft3/"
                 + "test-registry-results-1.xml");
 
         vocabulary = RegistryTestUtils.getValidatedVocabularyFromFile(
-                "test/tests/au.org.ands.vocabs.toolkit."
-                        + "test.arquillian.AllArquillianTests."
+                "test/tests/"
+                        + CLASS_NAME_PREFIX
                         + "testApplyChangesDraft3/"
                         + "test-vocabulary-2.xml", ValidationMode.UPDATE);
         em = null;
@@ -904,8 +907,8 @@ public class RegistryModelTests extends ArquillianBaseTest {
 
         ArquillianTestUtils.compareDatabaseCurrentAndExpectedContents(
                 REGISTRY,
-                "test/tests/au.org.ands.vocabs.toolkit."
-                + "test.arquillian.AllArquillianTests."
+                "test/tests/"
+                + CLASS_NAME_PREFIX
                 + "testApplyChangesDraft3/"
                 + "test-registry-results-2.xml");
     }
@@ -925,12 +928,12 @@ public class RegistryModelTests extends ArquillianBaseTest {
     public final void testApplyChangesDraft4() throws
     DatabaseUnitException, IOException, SQLException, JAXBException {
         ArquillianTestUtils.clearDatabase(REGISTRY);
-        ArquillianTestUtils.loadDbUnitTestFile(REGISTRY,
-                "testApplyChangesDraft4");
+        ArquillianTestUtils.loadDbUnitTestFile(REGISTRY, CLASS_NAME_PREFIX
+                + "testApplyChangesDraft4");
         Vocabulary vocabulary = RegistryTestUtils.
                 getValidatedVocabularyFromFile(
-                "test/tests/au.org.ands.vocabs.toolkit."
-                        + "test.arquillian.AllArquillianTests."
+                "test/tests/"
+                        + CLASS_NAME_PREFIX
                         + "testApplyChangesDraft4/"
                         + "test-vocabulary.xml", ValidationMode.UPDATE);
         EntityManager em = null;
@@ -953,8 +956,8 @@ public class RegistryModelTests extends ArquillianBaseTest {
 
         ArquillianTestUtils.compareDatabaseCurrentAndExpectedContents(
                 REGISTRY,
-                "test/tests/au.org.ands.vocabs.toolkit."
-                + "test.arquillian.AllArquillianTests."
+                "test/tests/"
+                + CLASS_NAME_PREFIX
                 + "testApplyChangesDraft4/"
                 + "test-registry-results.xml");
     }
@@ -974,8 +977,8 @@ public class RegistryModelTests extends ArquillianBaseTest {
     public final void testGetDraft1() throws
     DatabaseUnitException, IOException, SQLException, JAXBException {
         ArquillianTestUtils.clearDatabase(REGISTRY);
-        ArquillianTestUtils.loadDbUnitTestFile(REGISTRY,
-                "testGetDraft1");
+        ArquillianTestUtils.loadDbUnitTestFile(REGISTRY, CLASS_NAME_PREFIX
+                + "testGetDraft1");
         EntityManager em = null;
         try {
             em = DBContext.getEntityManager();
@@ -984,8 +987,8 @@ public class RegistryModelTests extends ArquillianBaseTest {
             Vocabulary vocabularyAsSchema = ModelMethods.getDraft(vm,
                     false, false, false);
             String expectedString = ArquillianTestUtils.getResourceAsString(
-                    "test/tests/au.org.ands.vocabs.toolkit."
-                            + "test.arquillian.AllArquillianTests."
+                    "test/tests/"
+                            + CLASS_NAME_PREFIX
                             + "testGetDraft1/"
                             + "test-vocabulary-output-1.xml");
             String actualString =
@@ -996,8 +999,8 @@ public class RegistryModelTests extends ArquillianBaseTest {
             // Second time, get with REs.
             vocabularyAsSchema = ModelMethods.getDraft(vm, false, false, true);
             expectedString = ArquillianTestUtils.getResourceAsString(
-                    "test/tests/au.org.ands.vocabs.toolkit."
-                            + "test.arquillian.AllArquillianTests."
+                    "test/tests/"
+                            + CLASS_NAME_PREFIX
                             + "testGetDraft1/"
                             + "test-vocabulary-output-2.xml");
             actualString =
@@ -1027,8 +1030,8 @@ public class RegistryModelTests extends ArquillianBaseTest {
     public final void testGetDraft2() throws
     DatabaseUnitException, IOException, SQLException, JAXBException {
         ArquillianTestUtils.clearDatabase(REGISTRY);
-        ArquillianTestUtils.loadDbUnitTestFile(REGISTRY,
-                "testGetDraft2");
+        ArquillianTestUtils.loadDbUnitTestFile(REGISTRY, CLASS_NAME_PREFIX
+                + "testGetDraft2");
         EntityManager em = null;
         try {
             em = DBContext.getEntityManager();
@@ -1037,8 +1040,8 @@ public class RegistryModelTests extends ArquillianBaseTest {
             Vocabulary vocabularyAsSchema = ModelMethods.getDraft(vm,
                     false, false, false);
             String expectedString = ArquillianTestUtils.getResourceAsString(
-                    "test/tests/au.org.ands.vocabs.toolkit."
-                            + "test.arquillian.AllArquillianTests."
+                    "test/tests/"
+                            + CLASS_NAME_PREFIX
                             + "testGetDraft2/"
                             + "test-vocabulary-output-1.xml");
             String actualString =
@@ -1049,8 +1052,8 @@ public class RegistryModelTests extends ArquillianBaseTest {
             // Second time, get with REs.
             vocabularyAsSchema = ModelMethods.getDraft(vm, false, false, true);
             expectedString = ArquillianTestUtils.getResourceAsString(
-                    "test/tests/au.org.ands.vocabs.toolkit."
-                            + "test.arquillian.AllArquillianTests."
+                    "test/tests/"
+                            + CLASS_NAME_PREFIX
                             + "testGetDraft2/"
                             + "test-vocabulary-output-2.xml");
             actualString =
@@ -1080,8 +1083,8 @@ public class RegistryModelTests extends ArquillianBaseTest {
     public final void testGetDraft3() throws
     DatabaseUnitException, IOException, SQLException, JAXBException {
         ArquillianTestUtils.clearDatabase(REGISTRY);
-        ArquillianTestUtils.loadDbUnitTestFile(REGISTRY,
-                "testGetDraft3");
+        ArquillianTestUtils.loadDbUnitTestFile(REGISTRY, CLASS_NAME_PREFIX
+                + "testGetDraft3");
         EntityManager em = null;
         try {
             em = DBContext.getEntityManager();
@@ -1090,8 +1093,8 @@ public class RegistryModelTests extends ArquillianBaseTest {
             Vocabulary vocabularyAsSchema = ModelMethods.getDraft(vm,
                     false, false, false);
             String expectedString = ArquillianTestUtils.getResourceAsString(
-                    "test/tests/au.org.ands.vocabs.toolkit."
-                            + "test.arquillian.AllArquillianTests."
+                    "test/tests/"
+                            + CLASS_NAME_PREFIX
                             + "testGetDraft3/"
                             + "test-vocabulary-output-1.xml");
             String actualString =
@@ -1102,8 +1105,8 @@ public class RegistryModelTests extends ArquillianBaseTest {
             // Second time, get with REs.
             vocabularyAsSchema = ModelMethods.getDraft(vm, false, false, true);
             expectedString = ArquillianTestUtils.getResourceAsString(
-                    "test/tests/au.org.ands.vocabs.toolkit."
-                            + "test.arquillian.AllArquillianTests."
+                    "test/tests/"
+                            + CLASS_NAME_PREFIX
                             + "testGetDraft3/"
                             + "test-vocabulary-output-2.xml");
             actualString =
@@ -1133,8 +1136,8 @@ public class RegistryModelTests extends ArquillianBaseTest {
     public final void testGetDraft4() throws
     DatabaseUnitException, IOException, SQLException, JAXBException {
         ArquillianTestUtils.clearDatabase(REGISTRY);
-        ArquillianTestUtils.loadDbUnitTestFile(REGISTRY,
-                "testGetDraft4");
+        ArquillianTestUtils.loadDbUnitTestFile(REGISTRY, CLASS_NAME_PREFIX
+                + "testGetDraft4");
         EntityManager em = null;
         try {
             em = DBContext.getEntityManager();
@@ -1143,8 +1146,8 @@ public class RegistryModelTests extends ArquillianBaseTest {
             Vocabulary vocabularyAsSchema = ModelMethods.getDraft(vm,
                     false, false, false);
             String expectedString = ArquillianTestUtils.getResourceAsString(
-                    "test/tests/au.org.ands.vocabs.toolkit."
-                            + "test.arquillian.AllArquillianTests."
+                    "test/tests/"
+                            + CLASS_NAME_PREFIX
                             + "testGetDraft4/"
                             + "test-vocabulary-output-1.xml");
             String actualString =
@@ -1155,8 +1158,8 @@ public class RegistryModelTests extends ArquillianBaseTest {
             // Second time, get with REs.
             vocabularyAsSchema = ModelMethods.getDraft(vm, false, false, true);
             expectedString = ArquillianTestUtils.getResourceAsString(
-                    "test/tests/au.org.ands.vocabs.toolkit."
-                            + "test.arquillian.AllArquillianTests."
+                    "test/tests/"
+                            + CLASS_NAME_PREFIX
                             + "testGetDraft4/"
                             + "test-vocabulary-output-2.xml");
             actualString =

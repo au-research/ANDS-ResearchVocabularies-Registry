@@ -45,6 +45,9 @@ public class RolesTests extends ArquillianBaseTest {
                 MethodHandles.lookup().lookupClass());
     }
 
+    /** Name of this class, used in paths to test data files. */
+    private static final String CLASS_NAME_PREFIX = "RolesTests.";
+
     // Server-side tests go here. Client-side tests later on.
 
     /** Test of roles.
@@ -60,8 +63,8 @@ public class RolesTests extends ArquillianBaseTest {
             throws DatabaseUnitException, SQLException, IOException {
 
         ArquillianTestUtils.clearDatabase(ROLES);
-        ArquillianTestUtils.loadDbUnitTestFile(ROLES,
-                "testRoles1");
+        ArquillianTestUtils.loadDbUnitTestFile(ROLES, CLASS_NAME_PREFIX
+                + "testRoles1");
 
         AuthorizationFetcher authorizationFetcher = new AuthorizationFetcher();
 
@@ -146,7 +149,7 @@ public class RolesTests extends ArquillianBaseTest {
     public final void testRolesClient1() {
         ArquillianTestUtils.clientClearDatabase(ROLES, baseURL);
         ArquillianTestUtils.clientLoadDbUnitTestFile(ROLES, baseURL,
-                "testRoles1");
+                CLASS_NAME_PREFIX + "testRoles1");
         String urlUnderTest = "api/user/userData";
 
         Response response = NetClientUtils.doGet(baseURL,

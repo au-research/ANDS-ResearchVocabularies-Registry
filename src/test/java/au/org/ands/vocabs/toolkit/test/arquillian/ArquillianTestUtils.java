@@ -339,8 +339,7 @@ public final class ArquillianTestUtils {
                 .setMetaDataSetFromDtd(getResourceAsInputStream(
                         dbs.getDTDFilename()))
                 .build(getResourceAsInputStream(
-                        "test/tests/au.org.ands.vocabs.toolkit."
-                        + "test.arquillian.AllArquillianTests."
+                        "test/tests/"
                         + testName
                         + "/input-" + dbs.getNameLowerCase()
                         + "-dbunit.xml"));
@@ -382,8 +381,7 @@ public final class ArquillianTestUtils {
                 .setMetaDataSetFromDtd(getResourceAsInputStream(
                         dbs.getDTDFilename()))
                 .build(getResourceAsInputStream(
-                        "test/tests/au.org.ands.vocabs.toolkit."
-                        + "test.arquillian.AllArquillianTests."
+                        "test/tests/"
                         + testName
                         + "/" + filename));
         ReplacementDataSet dataset = new ReplacementDataSet(xmlDataset);

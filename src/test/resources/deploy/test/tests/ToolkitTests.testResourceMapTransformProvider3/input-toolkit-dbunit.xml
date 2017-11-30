@@ -57,7 +57,7 @@
                 {
                   ''type'': ''HARVEST'',
                   ''provider_type'': ''File'',
-                  ''file_path'': ''{CLASSES}/test/tests/au.org.ands.vocabs.toolkit.test.arquillian.AllArquillianTests.testResourceMapTransformProvider3/test-data1.ttl''
+                  ''file_path'': ''{CLASSES}/test/tests/ToolkitTests.testResourceMapTransformProvider3/test-data1.ttl''
                 },
                 {
                   ''type'': ''IMPORT'',
@@ -81,7 +81,7 @@
                 {
                   ''type'': ''HARVEST'',
                   ''provider_type'': ''File'',
-                  ''file_path'': ''{CLASSES}/test/tests/au.org.ands.vocabs.toolkit.test.arquillian.AllArquillianTests.testResourceMapTransformProvider3/test-data2.ttl''
+                  ''file_path'': ''{CLASSES}/test/tests/ToolkitTests.testResourceMapTransformProvider3/test-data2.ttl''
                 },
                 {
                   ''type'': ''IMPORT'',

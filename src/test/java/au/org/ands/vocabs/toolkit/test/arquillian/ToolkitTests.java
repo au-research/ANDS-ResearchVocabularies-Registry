@@ -70,6 +70,9 @@ public class ToolkitTests extends ArquillianBaseTest {
                 MethodHandles.lookup().lookupClass());
     }
 
+    /** Name of this class, used in paths to test data files. */
+    private static final String CLASS_NAME_PREFIX = "ToolkitTests.";
+
     // Server-side tests go here. Client-side tests later on.
 
     // Tests of database model entity bean classes.
@@ -163,8 +166,8 @@ public class ToolkitTests extends ArquillianBaseTest {
         String testsPath = ArquillianTestUtils.getClassesPath()
                 + "/test/tests/";
         ArquillianTestUtils.clearDatabase(TOOLKIT);
-        ArquillianTestUtils.loadDbUnitTestFile(TOOLKIT,
-                "testJsonTreeTransformProvider1");
+        ArquillianTestUtils.loadDbUnitTestFile(TOOLKIT, CLASS_NAME_PREFIX
+                + "testJsonTreeTransformProvider1");
         List<Task> taskList = TaskUtils.getAllTasks();
         logger.info("testJsonTreeTransformProvider1: task list length = "
                 + taskList.size());
@@ -180,8 +183,8 @@ public class ToolkitTests extends ArquillianBaseTest {
         String conceptsTreeFilename = results.get("concepts_tree");
         ArquillianTestUtils.compareJson(conceptsTreeFilename,
                 testsPath
-                + "au.org.ands.vocabs.toolkit.test.arquillian."
-                + "AllArquillianTests.testJsonTreeTransformProvider1/"
+                + CLASS_NAME_PREFIX
+                + "testJsonTreeTransformProvider1/"
                 + "test-data1-concepts_tree.json");
 
         taskInfo = ToolkitFileUtils.getTaskInfo(2);
@@ -197,8 +200,8 @@ public class ToolkitTests extends ArquillianBaseTest {
         // Note the use of the same correct output as the previous test.
         ArquillianTestUtils.compareJson(conceptsTreeFilename,
                 testsPath
-                + "au.org.ands.vocabs.toolkit.test.arquillian."
-                + "AllArquillianTests.testJsonTreeTransformProvider1/"
+                + CLASS_NAME_PREFIX
+                + "testJsonTreeTransformProvider1/"
                 + "test-data1-concepts_tree.json");
 
         // Polyhierarchy detection
@@ -251,8 +254,8 @@ public class ToolkitTests extends ArquillianBaseTest {
         conceptsTreeFilename = results.get("concepts_tree");
         ArquillianTestUtils.compareJson(conceptsTreeFilename,
                 testsPath
-                + "au.org.ands.vocabs.toolkit.test.arquillian."
-                + "AllArquillianTests.testJsonTreeTransformProvider1/"
+                + CLASS_NAME_PREFIX
+                + "testJsonTreeTransformProvider1/"
                 + "test-data5-concepts_tree.json");
     }
 
@@ -273,8 +276,8 @@ public class ToolkitTests extends ArquillianBaseTest {
     public final void testResourceMapTransformProvider1() throws
         DatabaseUnitException, HibernateException, IOException, SQLException {
         ArquillianTestUtils.clearDatabase(TOOLKIT);
-        ArquillianTestUtils.loadDbUnitTestFile(TOOLKIT,
-                "testResourceMapTransformProvider1");
+        ArquillianTestUtils.loadDbUnitTestFile(TOOLKIT, CLASS_NAME_PREFIX
+                + "testResourceMapTransformProvider1");
         List<Task> taskList = TaskUtils.getAllTasks();
         logger.info("testResourceMapTransformProvider1: task list length = "
                 + taskList.size());
@@ -300,8 +303,8 @@ public class ToolkitTests extends ArquillianBaseTest {
 
         IDataSet expectedDataSet = ArquillianTestUtils.
                 getDatabaseTableExpectedContents(TOOLKIT,
-                        "test/tests/au.org.ands.vocabs.toolkit."
-                        + "test.arquillian.AllArquillianTests."
+                        "test/tests/"
+                        + CLASS_NAME_PREFIX
                         + "testResourceMapTransformProvider1/"
                         + "test-data1-results.xml");
         ITable expectedTable = expectedDataSet.getTable(
@@ -342,8 +345,8 @@ public class ToolkitTests extends ArquillianBaseTest {
     public final void testResourceMapTransformProvider2() throws
         DatabaseUnitException, HibernateException, IOException, SQLException {
         ArquillianTestUtils.clearDatabase(TOOLKIT);
-        ArquillianTestUtils.loadDbUnitTestFile(TOOLKIT,
-                "testResourceMapTransformProvider2");
+        ArquillianTestUtils.loadDbUnitTestFile(TOOLKIT, CLASS_NAME_PREFIX
+                + "testResourceMapTransformProvider2");
         List<Task> taskList = TaskUtils.getAllTasks();
         logger.info("testResourceMapTransformProvider2: task list length = "
                 + taskList.size());
@@ -369,8 +372,8 @@ public class ToolkitTests extends ArquillianBaseTest {
 
         IDataSet expectedDataSet = ArquillianTestUtils.
                 getDatabaseTableExpectedContents(TOOLKIT,
-                        "test/tests/au.org.ands.vocabs.toolkit."
-                        + "test.arquillian.AllArquillianTests."
+                        "test/tests/"
+                        + CLASS_NAME_PREFIX
                         + "testResourceMapTransformProvider2/"
                         + "test-data1-results.xml");
         ITable expectedTable = expectedDataSet.getTable(
@@ -400,8 +403,8 @@ public class ToolkitTests extends ArquillianBaseTest {
     public final void testResourceMapTransformProvider3() throws
         DatabaseUnitException, HibernateException, IOException, SQLException {
         ArquillianTestUtils.clearDatabase(TOOLKIT);
-        ArquillianTestUtils.loadDbUnitTestFile(TOOLKIT,
-                "testResourceMapTransformProvider3");
+        ArquillianTestUtils.loadDbUnitTestFile(TOOLKIT, CLASS_NAME_PREFIX
+                + "testResourceMapTransformProvider3");
         List<Task> taskList = TaskUtils.getAllTasks();
         logger.info("testResourceMapTransformProvider3: task list length = "
                 + taskList.size());
@@ -440,8 +443,8 @@ public class ToolkitTests extends ArquillianBaseTest {
 
         IDataSet expectedDataSet = ArquillianTestUtils.
                 getDatabaseTableExpectedContents(TOOLKIT,
-                        "test/tests/au.org.ands.vocabs.toolkit."
-                        + "test.arquillian.AllArquillianTests."
+                        "test/tests/"
+                        + CLASS_NAME_PREFIX
                         + "testResourceMapTransformProvider3/"
                         + "test-data1-results.xml");
         ITable expectedTable = expectedDataSet.getTable(
@@ -501,7 +504,7 @@ public class ToolkitTests extends ArquillianBaseTest {
     public final void testResolveIRILookupIRI1() {
         ArquillianTestUtils.clientClearDatabase(TOOLKIT, baseURL);
         ArquillianTestUtils.clientLoadDbUnitTestFile(TOOLKIT, baseURL,
-                "testResolveIRILookupIRI1");
+                CLASS_NAME_PREFIX + "testResolveIRILookupIRI1");
 
         String service = "resolve/lookupIRI";
 
@@ -584,7 +587,7 @@ public class ToolkitTests extends ArquillianBaseTest {
     public final void testResolveIRILookupIRI2() {
         ArquillianTestUtils.clientClearDatabase(TOOLKIT, baseURL);
         ArquillianTestUtils.clientLoadDbUnitTestFile(TOOLKIT, baseURL,
-                "testResolveIRILookupIRI2");
+                CLASS_NAME_PREFIX + "testResolveIRILookupIRI2");
 
         String service = "resolve/lookupIRI";
 
@@ -640,7 +643,7 @@ public class ToolkitTests extends ArquillianBaseTest {
     public final void testResolveIRILookupIRI3() {
         ArquillianTestUtils.clientClearDatabase(TOOLKIT, baseURL);
         ArquillianTestUtils.clientLoadDbUnitTestFile(TOOLKIT, baseURL,
-                "testResolveIRILookupIRI3");
+                CLASS_NAME_PREFIX + "testResolveIRILookupIRI3");
 
         String service = "resolve/lookupIRI";
 
@@ -708,7 +711,8 @@ public class ToolkitTests extends ArquillianBaseTest {
         // Now make one of the versions superseded, and observe how this
         // affects resolution.
         ArquillianTestUtils.clientLoadDbUnitTestFileAsUpdate(TOOLKIT, baseURL,
-                "testResolveIRILookupIRI3", "input-dbunit2.xml");
+                CLASS_NAME_PREFIX + "testResolveIRILookupIRI3",
+                "input-dbunit2.xml");
 
         // Tests: valid IRI specified.
         testValidIRISpecified(service, redirectPrefix,

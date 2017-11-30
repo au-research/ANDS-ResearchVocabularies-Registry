@@ -60,4 +60,3 @@
   <RESOURCE_MAP ID="57" ACCESS_POINT_ID="8" DEPRECATED="true" IRI="http://third.another.edu/def/vocab3/9" OWNED="true" RESOURCE_TYPE="http://www.w3.org/2002/07/owl#deprecated"/>
   <RESOURCE_MAP ID="58" ACCESS_POINT_ID="8" DEPRECATED="true" IRI="http://some.other.org/def/vocab1/9" OWNED="false" RESOURCE_TYPE="http://www.w3.org/2002/07/owl#deprecated"/>
 </dataset>
-
