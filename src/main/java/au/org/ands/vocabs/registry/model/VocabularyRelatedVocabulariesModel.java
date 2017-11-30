@@ -98,7 +98,7 @@ public class VocabularyRelatedVocabulariesModel extends ModelBase {
             for (Integer rvId : currentRVsAndRelations.keySet()) {
                 for (VocabularyRelatedVocabulary vrv
                         : currentRVsAndRelations.get(rvId)) {
-                    description.add("VRE | Current vocabulary has RV; "
+                    description.add("VRV | Current vocabulary has RV; "
                             + "RV Id, relation: " + rvId + ","
                             + vrv.getRelation());
                 }
@@ -251,20 +251,20 @@ public class VocabularyRelatedVocabulariesModel extends ModelBase {
      * with a specified related vocabulary Id and relation,
      * if there is such a draft row.
      * @param reId The related vocabulary.
-     * @param rer The related vocabulary relation.
+     * @param rvr The related vocabulary relation.
      * @return The draft VocabularyRelatedVocabulary row, if there is one,
      *      or null if there is no such row.
      */
     private VocabularyRelatedVocabulary getDraftDatabaseRow(
-            final Integer reId, final RelatedVocabularyRelation rer) {
+            final Integer reId, final RelatedVocabularyRelation rvr) {
         List<VocabularyRelatedVocabulary> draftsForId =
                 draftRVsAndRelations.get(reId);
         if (draftsForId == null) {
             return null;
         }
-        for (VocabularyRelatedVocabulary vre : draftsForId) {
-            if (vre.getRelation() == rer) {
-                return vre;
+        for (VocabularyRelatedVocabulary vrv : draftsForId) {
+            if (vrv.getRelation() == rvr) {
+                return vrv;
             }
         }
         return null;
@@ -375,10 +375,10 @@ public class VocabularyRelatedVocabulariesModel extends ModelBase {
         List<VocabularyRelatedVocabularyElement> currentSequence =
                 new ArrayList<>();
         for (Integer reId : currentRVsAndRelations.keySet()) {
-            for (VocabularyRelatedVocabulary vre
+            for (VocabularyRelatedVocabulary vrv
                     : currentRVsAndRelations.get(reId)) {
                 currentSequence.add(new VocabularyRelatedVocabularyElement(
-                        reId, vre.getRelation(), vre));
+                        reId, vrv.getRelation(), vrv));
             }
         }
         Collections.sort(currentSequence);
@@ -415,16 +415,16 @@ public class VocabularyRelatedVocabulariesModel extends ModelBase {
         /** {@inheritDoc} */
         @Override
         public void visitKeepCommand(
-                final VocabularyRelatedVocabularyElement vree) {
+                final VocabularyRelatedVocabularyElement vrve) {
             // No action required.
         }
 
         /** {@inheritDoc} */
         @Override
         public void visitDeleteCommand(
-                final VocabularyRelatedVocabularyElement vree) {
+                final VocabularyRelatedVocabularyElement vrve) {
             // Make the existing row historical.
-            VocabularyRelatedVocabulary vrv = vree.getVrv();
+            VocabularyRelatedVocabulary vrv = vrve.getVrv();
             TemporalUtils.makeHistorical(vrv, nowTime());
             vrv.setModifiedBy(modifiedBy());
             VocabularyRelatedVocabularyDAO.updateVocabularyRelatedVocabulary(
@@ -438,9 +438,9 @@ public class VocabularyRelatedVocabulariesModel extends ModelBase {
             // Add a new row ...
             // ... but try to reuse a suitable draft row, if there is one.
             Integer newRvId = vrve.getRvId();
-            RelatedVocabularyRelation newReRelation = vrve.getRvRelation();
+            RelatedVocabularyRelation newRvRelation = vrve.getRvRelation();
             VocabularyRelatedVocabulary draftVrv =
-                    getDraftDatabaseRow(newRvId, newReRelation);
+                    getDraftDatabaseRow(newRvId, newRvRelation);
             if (draftVrv != null) {
                 // Reuse existing draft row.
                 draftVrv.setStartDate(nowTime());
@@ -458,7 +458,7 @@ public class VocabularyRelatedVocabulariesModel extends ModelBase {
                         new VocabularyRelatedVocabulary();
                 newVrv.setVocabularyId(vocabularyId());
                 newVrv.setRelatedVocabularyId(newRvId);
-                newVrv.setRelation(newReRelation);
+                newVrv.setRelation(newRvRelation);
                 newVrv.setModifiedBy(modifiedBy());
                 TemporalUtils.makeCurrentlyValid(newVrv, nowTime());
                 VocabularyRelatedVocabularyDAO.saveVocabularyRelatedVocabulary(
