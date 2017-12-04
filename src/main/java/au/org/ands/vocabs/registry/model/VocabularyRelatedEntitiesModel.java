@@ -133,6 +133,43 @@ public class VocabularyRelatedEntitiesModel extends ModelBase {
 
     /** {@inheritDoc} */
     @Override
+    protected void insertIntoSchemaFromCurrent(final
+            au.org.ands.vocabs.registry.schema.vocabulary201701.Vocabulary
+            outputVocabulary,
+            final boolean includeVersions,
+            final boolean includeAccessPoints,
+            final boolean includeRelatedEntitiesAndVocabularies) {
+
+        List<RelatedEntityRef> rerList = outputVocabulary.getRelatedEntityRef();
+        VocabularyRelatedEntityDbSchemaMapper vredbMapper =
+                VocabularyRelatedEntityDbSchemaMapper.INSTANCE;
+
+        RelatedEntityDbSchemaMapper reMapper =
+                RelatedEntityDbSchemaMapper.INSTANCE;
+        RelatedEntityIdentifierDbSchemaMapper reiMapper =
+                RelatedEntityIdentifierDbSchemaMapper.INSTANCE;
+
+        for (Integer reId : currentREsAndRelations.keySet()) {
+            RelatedEntityRef reRef = null;
+            for (VocabularyRelatedEntity vre
+                    : currentREsAndRelations.get(reId)) {
+                if (reRef == null) {
+                    reRef = vredbMapper.sourceToTarget(vre);
+                }
+                reRef.getRelation().add(vre.getRelation());
+            }
+            if (includeRelatedEntitiesAndVocabularies) {
+                au.org.ands.vocabs.registry.schema.vocabulary201701.
+                RelatedEntity targetRelatedEntity = getRelatedEntity(
+                        reId, reMapper, reiMapper);
+                reRef.setRelatedEntity(targetRelatedEntity);
+            }
+            rerList.add(reRef);
+        }
+    }
+
+    /** {@inheritDoc} */
+    @Override
     protected void insertIntoSchemaFromDraft(final
             au.org.ands.vocabs.registry.schema.vocabulary201701.Vocabulary
             outputVocabulary,

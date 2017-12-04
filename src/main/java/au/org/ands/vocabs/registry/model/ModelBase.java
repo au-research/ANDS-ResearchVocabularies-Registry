@@ -115,12 +115,36 @@ public abstract class ModelBase {
     public abstract List<String> describeModel();
 
     /** Given a partially-complete vocabulary entity in registry schema
+     * format, fill it in with details of the current instance.
+     * Sub-models <i>are</i> invoked.
+     * @param outputVocabulary The current instance of the vocabulary,
+     *      in registry schema format. Each concrete implementation
+     *      is responsible for updating this value as it can.
+     * @param includeVersions Whether or not to include version elements.
+     *      Note: if includeAccessPoints is true, version elements will be
+     *      included, irrespective of the value of includeVersions.
+     * @param includeAccessPoints Whether or not to include access point
+     *      elements.
+     * @param includeRelatedEntitiesAndVocabularies Whether or not to include
+     *      full related entity elements, and top-level details of
+     *      related vocabularies.
+     */
+    protected abstract void insertIntoSchemaFromCurrent(
+            au.org.ands.vocabs.registry.schema.vocabulary201701.Vocabulary
+            outputVocabulary,
+            boolean includeVersions,
+            boolean includeAccessPoints,
+            boolean includeRelatedEntitiesAndVocabularies);
+
+    /** Given a partially-complete vocabulary entity in registry schema
      * format, fill it in with details of the draft instance.
      * Sub-models <i>are</i> invoked.
      * @param outputVocabulary The draft instance of the vocabulary,
      *      in registry schema format. Each concrete implementation
      *      is responsible for updating this value as it can.
      * @param includeVersions Whether or not to include version elements.
+     *      Note: if includeAccessPoints is true, version elements will be
+     *      included, irrespective of the value of includeVersions.
      * @param includeAccessPoints Whether or not to include access point
      *      elements.
      * @param includeRelatedEntitiesAndVocabularies Whether or not to include
