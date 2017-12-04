@@ -448,6 +448,8 @@ public class VocabularyRelatedEntitiesModel extends ModelBase {
             vre.setModifiedBy(modifiedBy());
             VocabularyRelatedEntityDAO.updateVocabularyRelatedEntity(
                     em(), vre);
+            // Remove from our own records ...
+            currentREsAndRelations.get(vre.getRelatedEntityId()).remove(vre);
         }
 
         /** {@inheritDoc} */
@@ -471,6 +473,7 @@ public class VocabularyRelatedEntitiesModel extends ModelBase {
                 // Important to to do this, as we will call
                 // deleteDraftDatabaseRows() later.
                 draftREsAndRelations.get(newReId).remove(draftVre);
+                currentREsAndRelations.add(newReId, draftVre);
             } else {
                 // New row required.
                 VocabularyRelatedEntity newVre = new VocabularyRelatedEntity();
@@ -481,6 +484,7 @@ public class VocabularyRelatedEntitiesModel extends ModelBase {
                 TemporalUtils.makeCurrentlyValid(newVre, nowTime());
                 VocabularyRelatedEntityDAO.saveVocabularyRelatedEntity(em(),
                         newVre);
+                currentREsAndRelations.add(newReId, newVre);
             }
         }
     }

@@ -429,6 +429,9 @@ public class VocabularyRelatedVocabulariesModel extends ModelBase {
             vrv.setModifiedBy(modifiedBy());
             VocabularyRelatedVocabularyDAO.updateVocabularyRelatedVocabulary(
                     em(), vrv);
+            // Remove from our own records ...
+            currentRVsAndRelations.get(vrv.getRelatedVocabularyId()).
+                remove(vrv);
         }
 
         /** {@inheritDoc} */
@@ -452,6 +455,7 @@ public class VocabularyRelatedVocabulariesModel extends ModelBase {
                 // Important to to do this, as we will call
                 // deleteDraftDatabaseRows() later.
                 draftRVsAndRelations.get(newRvId).remove(draftVrv);
+                currentRVsAndRelations.add(newRvId, draftVrv);
             } else {
                 // New row required.
                 VocabularyRelatedVocabulary newVrv =
@@ -463,6 +467,7 @@ public class VocabularyRelatedVocabulariesModel extends ModelBase {
                 TemporalUtils.makeCurrentlyValid(newVrv, nowTime());
                 VocabularyRelatedVocabularyDAO.saveVocabularyRelatedVocabulary(
                         em(), newVrv);
+                currentRVsAndRelations.add(newRvId, newVrv);
             }
         }
     }
