@@ -5,7 +5,8 @@ package au.org.ands.vocabs.registry.db.entity;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 
 /** Utility methods for comparing two registry database entities
- * of the same type.
+ * of the same type, and for comparing a registry database entity
+ * with a registry schema entity.
  * These methods should be used, for example, to determine if an
  * API update request should cause a new version of an entity to be added
  * to the database.
@@ -33,7 +34,7 @@ public final class ComparisonUtils {
      * @return true, if the two related entity entities should be considered
      *      to be the same.
      */
-    public static boolean isEqualRegistryEntity(final RelatedEntity re1,
+    public static boolean isEqualRelatedEntity(final RelatedEntity re1,
             final RelatedEntity re2) {
         return new EqualsBuilder().
                 append(re1.getType(), re2.getType()).
@@ -49,7 +50,7 @@ public final class ComparisonUtils {
      * @return true, if the two related entity identifier entities should be
      *      considered to be the same.
      */
-    public static boolean isEqualRegistryEntityIdentifier(
+    public static boolean isEqualRelatedEntityIdentifier(
             final RelatedEntityIdentifier rei1,
             final RelatedEntityIdentifier rei2) {
         return new EqualsBuilder().

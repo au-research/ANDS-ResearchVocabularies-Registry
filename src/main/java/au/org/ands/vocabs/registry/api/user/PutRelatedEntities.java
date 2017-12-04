@@ -411,7 +411,7 @@ public class PutRelatedEntities {
                         updatedRelatedEntity);
 
             // Did the top-level data stay the same?
-            boolean sameTopLevel = ComparisonUtils.isEqualRegistryEntity(
+            boolean sameTopLevel = ComparisonUtils.isEqualRelatedEntity(
                     existingDbRelatedEntity, updatedDbRelatedEntity);
 
             // Check for duplicates.
@@ -514,7 +514,7 @@ public class PutRelatedEntities {
                     RelatedEntityIdentifier reiDb =
                         reiToDbMapper.sourceToTarget(rei);
 
-                    if (ComparisonUtils.isEqualRegistryEntityIdentifier(
+                    if (ComparisonUtils.isEqualRelatedEntityIdentifier(
                             existingDbREIMap.get(reiID), reiDb)) {
                         unmodifiedIdentifiers.add(rei);
                     } else {
