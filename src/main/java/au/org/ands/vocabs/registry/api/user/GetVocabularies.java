@@ -96,7 +96,7 @@ public class GetVocabularies {
     public final VocabularyList getVocabularies(
             @Context final HttpServletRequest request,
             @Context final UriInfo uriInfo,
-            @ApiParam(value = "If true, also include draft vocabulary records")
+            @ApiParam(value = "If true, also include draft vocabulary records.")
             @QueryParam("includeDraft")
             @DefaultValue("false") final boolean includeDraft) {
         if (includeDraft) {
@@ -401,7 +401,7 @@ public class GetVocabularies {
             @Context final HttpServletRequest request,
             @Context final UriInfo uriInfo,
             @ApiParam(hidden = true) @Pac4JProfile final CommonProfile profile,
-            @ApiParam(value = "The ID of the vocabulary to check ownership")
+            @ApiParam(value = "The ID of the vocabulary to check ownership.")
             @PathParam("vocabularyId") final Integer vocabularyId) {
         logger.debug("called ownsVocabularyById: " + vocabularyId);
         au.org.ands.vocabs.registry.db.entity.Vocabulary
@@ -431,7 +431,7 @@ public class GetVocabularies {
             + "property.",
             response = SimpleResult.class)
     public final Response hasDraftVocabularyById(
-            @ApiParam(value = "The ID of the vocabulary to check")
+            @ApiParam(value = "The ID of the vocabulary to check.")
             @PathParam("vocabularyId") final Integer vocabularyId) {
         logger.debug("called hasDraftVocabularyById: " + vocabularyId);
         boolean hasDraft = VocabularyDAO.hasDraftVocabulary(vocabularyId);
@@ -449,7 +449,7 @@ public class GetVocabularies {
             + "by its vocabulary id.")
     public final VersionList getVersionsForVocabularyById(
             @ApiParam(value = "The ID of the vocabulary from which to get "
-                    + "the current versions")
+                    + "the current versions.")
             @PathParam("vocabularyId") final Integer vocabularyId) {
         logger.debug("called getVersionsForVocabularyById: " + vocabularyId);
 
@@ -483,7 +483,7 @@ public class GetVocabularies {
             + "by its vocabulary id.")
     public final RelatedEntityList getRelatedEntitiesForVocabularyById(
             @ApiParam(value = "The ID of the vocabulary from which to get "
-                    + "the current related entities")
+                    + "the current related entities.")
             @PathParam("vocabularyId") final Integer vocabularyId) {
         logger.debug("called getRelatedEntitiesForVocabularyById: "
             + vocabularyId);

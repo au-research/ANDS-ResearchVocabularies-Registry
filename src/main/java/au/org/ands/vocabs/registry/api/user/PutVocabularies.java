@@ -246,24 +246,26 @@ public class PutVocabularies {
             @Context final HttpServletRequest request,
             @Context final UriInfo uriInfo,
             @ApiParam(hidden = true) @Pac4JProfile final CommonProfile profile,
+            @ApiParam(value = "The ID of the vocabulary to be updated.",
+                 required = true)
             @PathParam("vocabularyId") final Integer vocabularyId,
             @ApiParam(value = "The vocabulary to be updated.",
                 required = true)
-            @NotNull(message = "The vocabulary must not be null")
+            @NotNull(message = "The vocabulary must not be null.")
             @CheckVocabulary(mode = ValidationMode.UPDATE)
             final Vocabulary updatedVocabulary) {
         logger.debug("called updateVocabulary");
 
         if (!vocabularyId.equals(updatedVocabulary.getId())) {
             // Id parameter must match what's inside the metadata.
-            logger.error("Vocabulary Id parameter doesn't match metadata");
+            logger.error("Vocabulary Id parameter doesn't match metadata.");
             List<ValidationError> validationErrors = new ArrayList<>();
             ValidationError ve = new ValidationError();
-            ve.setMessage("Vocabulary Id parameter doesn't match metadata");
+            ve.setMessage("Vocabulary Id parameter doesn't match metadata.");
             ve.setPath(vocabularyId.toString());
             validationErrors.add(ve);
             ErrorResult errorResult =
-                    new ErrorResult("Won't update vocabulary");
+                    new ErrorResult("Won't update vocabulary.");
             errorResult.setConstraintViolation(validationErrors);
             return Response.status(Response.Status.BAD_REQUEST).
                     entity(errorResult).build();

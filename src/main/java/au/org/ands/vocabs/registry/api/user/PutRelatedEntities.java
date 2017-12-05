@@ -297,11 +297,11 @@ public class PutRelatedEntities {
             @Context final HttpServletRequest request,
             @Context final UriInfo uriInfo,
             @ApiParam(hidden = true) @Pac4JProfile final CommonProfile profile,
-            @ApiParam(value = "The ID of the related entity to be updated")
+            @ApiParam(value = "The ID of the related entity to be updated.")
             @PathParam("relatedEntityId") final Integer relatedEntityId,
-            @ApiParam(value = "The new value of the related entity",
+            @ApiParam(value = "The new value of the related entity.",
                 required = true)
-            @NotNull(message = "The related entity must not be null")
+            @NotNull(message = "The related entity must not be null.")
             @CheckRelatedEntity(mode = ValidationMode.UPDATE)
             final RelatedEntity updatedRelatedEntity) {
         logger.debug("called updateRelatedEntity");

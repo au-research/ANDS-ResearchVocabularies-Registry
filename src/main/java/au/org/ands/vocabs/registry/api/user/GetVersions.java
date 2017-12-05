@@ -48,7 +48,7 @@ public class GetVersions {
     @ApiOperation(value = "Get a current version by its id.",
             response = Version.class)
     public final Response getVersionById(
-            @ApiParam(value = "The ID of the version to get")
+            @ApiParam(value = "The ID of the version to get.")
             @PathParam("versionId") final Integer versionId) {
         logger.debug("called getVersion: " + versionId);
         au.org.ands.vocabs.registry.db.entity.Version
@@ -79,7 +79,7 @@ public class GetVersions {
             + "version id. The result is returned in the booleanValue "
             + "property.")
     public final SimpleResult hasDraftVersionById(
-            @ApiParam(value = "The ID of the version to check")
+            @ApiParam(value = "The ID of the version to check.")
             @PathParam("versionId") final Integer versionId) {
         logger.debug("called hasDraftVersionById: " + versionId);
         boolean hasDraft = VersionDAO.hasDraftVersion(versionId);
@@ -97,7 +97,7 @@ public class GetVersions {
             + "by its version id.")
     public final AccessPointList getAccessPointsForVersionById(
             @ApiParam(value = "The ID of the version from which to get "
-                    + "the current access points")
+                    + "the current access points.")
             @PathParam("versionId") final Integer versionId) {
         logger.debug("called getAccessPointsForVersionById: " + versionId);
 

@@ -73,9 +73,9 @@ public class GetVersionArtefacts {
             @Context final UriInfo uriInfo,
             @ApiParam(hidden = true) @Pac4JProfile final CommonProfile profile,
             @ApiParam(value = "The ID of the version from which to "
-                    + "get the version artefacts")
+                    + "get the version artefacts.")
             @PathParam("versionId") final Integer versionId,
-            @ApiParam(value = "Version artefact type used to filter results")
+            @ApiParam(value = "Version artefact type used to filter results.")
             @QueryParam("type") final VersionArtefactType vaType) {
         logger.debug("called getVersionArtefact");
 
@@ -129,7 +129,7 @@ public class GetVersionArtefacts {
             @Context final UriInfo uriInfo,
             @ApiParam(hidden = true) @Pac4JProfile final CommonProfile profile,
             @ApiParam(value = "The ID of the version from which to "
-                    + "get the concept tree")
+                    + "get the concept tree.")
             @PathParam("versionId") final Integer versionId) {
         logger.debug("called getVersionArtefactConceptTree");
 

@@ -105,7 +105,7 @@ public class DeleteRelatedEntities {
             @Context final HttpServletRequest request,
             @Context final UriInfo uriInfo,
             @ApiParam(hidden = true) @Pac4JProfile final CommonProfile profile,
-            @ApiParam(value = "The ID of the related entity to be deleted")
+            @ApiParam(value = "The ID of the related entity to be deleted.")
             @PathParam("relatedEntityId") final Integer relatedEntityId) {
         logger.debug("called deleteRelatedEntity");
 
