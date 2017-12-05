@@ -76,6 +76,18 @@ public final class EntityPaths {
                 path(entity.getVocabularyId().toString()).getUri();
     }
 
+    /** Get the URI which an API user can use to retrieve this registry entity,
+     * represented in registry schema format.
+     * @param entity A registry entity.
+     * @return The URI that an API user can use to retrieve the entity.
+     */
+    public static URI getURIOfEntity(
+            final au.org.ands.vocabs.registry.schema.vocabulary201701.
+            Vocabulary entity) {
+        return resourceTarget.path(ApiPaths.VOCABULARIES).
+                path(entity.getId().toString()).getUri();
+    }
+
     /** Get the URI which an API user can use to retrieve a Version.
      * @param entity A registry entity.
      * @return The URI that an API user can use to retrieve the entity.

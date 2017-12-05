@@ -26,6 +26,7 @@ import au.org.ands.vocabs.registry.db.entity.Version;
 import au.org.ands.vocabs.registry.db.entity.Vocabulary;
 import au.org.ands.vocabs.registry.db.entity.clone.VocabularyClone;
 import au.org.ands.vocabs.registry.enums.VocabularyStatus;
+import au.org.ands.vocabs.registry.utils.SlugGenerator;
 
 /** Vocabulary domain model.
  * This is a representation of a vocabulary as an abstract data type.
@@ -316,12 +317,13 @@ public class VocabularyModel extends ModelBase {
             // Oops, nothing to do!
             return;
         }
+        // Sub-models first.
+        subModels.forEach(sm -> sm.deleteOnlyCurrent());
+
         TemporalUtils.makeHistorical(currentVocabulary, nowTime());
         currentVocabulary.setModifiedBy(modifiedBy());
         VocabularyDAO.updateVocabulary(em(), currentVocabulary);
         currentVocabulary = null;
-        // Sub-models.
-        subModels.forEach(sm -> sm.deleteOnlyCurrent());
     }
 
     /** {@inheritDoc} */
@@ -336,6 +338,9 @@ public class VocabularyModel extends ModelBase {
             throw new IllegalArgumentException(
                     "Existing draft; you must delete it first");
         }
+        // Sub-models first.
+        subModels.forEach(sm -> sm.makeCurrentIntoDraft());
+
         TemporalUtils.makeHistorical(currentVocabulary, nowTime());
         currentVocabulary.setModifiedBy(modifiedBy());
         VocabularyDAO.updateVocabulary(em(), currentVocabulary);
@@ -346,8 +351,6 @@ public class VocabularyModel extends ModelBase {
         TemporalUtils.makeDraft(draftVocabulary);
         VocabularyDAO.saveVocabulary(em(), draftVocabulary);
         currentVocabulary = null;
-        // Sub-models.
-        subModels.forEach(sm -> sm.makeCurrentIntoDraft());
     }
 
     /** {@inheritDoc} */
@@ -357,11 +360,10 @@ public class VocabularyModel extends ModelBase {
             // Oops, nothing to do!
             return;
         }
-        deleteDraftDatabaseRows();
-        // Sub-models.
+        // Sub-models first.
         subModels.forEach(sm -> sm.deleteOnlyDraft());
+        deleteDraftDatabaseRows();
     }
-
 
     /** {@inheritDoc} */
     @Override
@@ -377,16 +379,41 @@ public class VocabularyModel extends ModelBase {
     protected void applyChanges(
             final au.org.ands.vocabs.registry.schema.vocabulary201701.
             Vocabulary updatedVocabulary) {
+        prepareUpdatedVocabulary(updatedVocabulary);
+        // Sub-models first.
+        subModels.forEach(sm ->
+            sm.applyChanges(updatedVocabulary));
         VocabularyStatus status = updatedVocabulary.getStatus();
         if (status == VocabularyStatus.DRAFT) {
             applyChangesDraft(updatedVocabulary);
         } else {
             applyChangesCurrent(updatedVocabulary);
         }
+    }
 
-        // Sub-models.
-        subModels.forEach(sm ->
-            sm.applyChanges(updatedVocabulary));
+    /** Incoming vocabulary metadata in registry schema may be incomplete.
+     * In particular, there may be slugs missing from top-level
+     * vocabulary and version metadata.
+     * Prepare the incoming data to be used by the model, by
+     * making the necessary adjustments.
+     * @param updatedVocabulary The vocabulary metada in registry schema
+     *      format, that may need adjustment before it can be used.
+     */
+    private void prepareUpdatedVocabulary(
+            final au.org.ands.vocabs.registry.schema.vocabulary201701.
+            Vocabulary updatedVocabulary) {
+        // Create slugs, where needed.
+        if (updatedVocabulary.getSlug() == null) {
+            updatedVocabulary.setSlug(SlugGenerator.generateSlug(
+                    updatedVocabulary.getTitle()));
+        }
+        for (au.org.ands.vocabs.registry.schema.vocabulary201701.Version
+                version : updatedVocabulary.getVersion()) {
+            if (version.getSlug() == null) {
+                version.setSlug(SlugGenerator.generateSlug(
+                        version.getTitle()));
+            }
+        }
     }
 
     /** Make the database's draft view of the
@@ -408,6 +435,8 @@ public class VocabularyModel extends ModelBase {
             // Add a new draft record.
             draftVocabulary = mapper.sourceToTarget(updatedVocabulary,
                     nowTime());
+            // updatedVocabulary doesn't have the vocabulary Id.
+            draftVocabulary.setVocabularyId(vocabularyId());
             TemporalUtils.makeDraft(draftVocabulary);
             draftVocabulary.setModifiedBy(modifiedBy());
             VocabularyDAO.saveVocabulary(em(), draftVocabulary);
@@ -415,7 +444,7 @@ public class VocabularyModel extends ModelBase {
     }
 
     /** Make the database's currently-valid view of the
-     * VocabularyRelatedEntities match updatedVocabulary.
+     * Vocabulary match updatedVocabulary.
      * @param updatedVocabulary The updated vocabulary.
      */
     private void applyChangesCurrent(
@@ -441,6 +470,8 @@ public class VocabularyModel extends ModelBase {
         } else {
             // No existing current vocabulary. Make one.
             currentVocabulary = mapper.sourceToTarget(updatedVocabulary);
+            // updatedVocabulary doesn't have the vocabulary Id.
+            currentVocabulary.setVocabularyId(vocabularyId());
             currentVocabulary.setStartDate(nowTime());
             TemporalUtils.makeCurrentlyValid(currentVocabulary);
             currentVocabulary.setModifiedBy(modifiedBy());

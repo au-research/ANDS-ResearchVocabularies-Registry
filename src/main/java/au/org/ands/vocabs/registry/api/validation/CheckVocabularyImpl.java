@@ -95,15 +95,18 @@ public class CheckVocabularyImpl
         // id: mode-specific validation.
         valid = isValidVocabularyId(valid, newVocabulary, constraintContext);
 
-        au.org.ands.vocabs.registry.db.entity.Vocabulary existingInstance =
+        /* The database instance of the vocabulary, if there is one.
+         * This is the draft instance, if there is one; otherwise, it
+         * is the current instance. */
+        au.org.ands.vocabs.registry.db.entity.Vocabulary existingVocabulary =
                 null;
         if (mode == ValidationMode.UPDATE) {
             // Try to get a current instance, then fall back to
             // looking for a draft.
-            existingInstance =
+            existingVocabulary =
                 VocabularyDAO.getCurrentVocabularyByVocabularyId(
                         newVocabulary.getId());
-            if (existingInstance == null) {
+            if (existingVocabulary == null) {
                 List<au.org.ands.vocabs.registry.db.entity.Vocabulary>
                 existingDraftInstances =
                         VocabularyDAO.getDraftVocabularyByVocabularyId(
@@ -115,7 +118,7 @@ public class CheckVocabularyImpl
                     addPropertyNode("id").
                     addConstraintViolation();
                 } else {
-                    existingInstance = existingDraftInstances.get(0);
+                    existingVocabulary = existingDraftInstances.get(0);
                 }
             }
         }
@@ -157,8 +160,8 @@ public class CheckVocabularyImpl
             // For update, the slug must be specified, and for now, must
             // be the same as the existing slug. Future work is
             // to allow changing the slug.
-            if (slug == null || (existingInstance != null
-                    && !existingInstance.getSlug().equals(slug))) {
+            if (slug == null || (existingVocabulary != null
+                    && !existingVocabulary.getSlug().equals(slug))) {
                 valid = false;
                 constraintContext.buildConstraintViolationWithTemplate(
                         "{" + INTERFACE_NAME + ".update.slug}").
