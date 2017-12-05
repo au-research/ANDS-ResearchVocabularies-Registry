@@ -116,6 +116,10 @@ public final class Analytics {
     public static final String EVENT_UPDATE_VOCABULARY =
             "update_vocabulary";
     /** The value of the "message" field to use for log entries
+     * for deleting a vocabulary. */
+    public static final String EVENT_DELETE_VOCABULARY =
+            "delete_vocabulary";
+    /** The value of the "message" field to use for log entries
      * for creating a related entity. */
     public static final String EVENT_CREATE_RELATED_ENTITY =
             "create_relatedEntity";
