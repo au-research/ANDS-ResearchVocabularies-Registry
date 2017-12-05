@@ -271,6 +271,9 @@ public class PutVocabularies {
                     entity(errorResult).build();
         }
 
+        // TODO: not good enough! Must get existing vocab.
+        // For now, make sure we're not changing the owner.
+        // Future: allow changing the owner.
         if (!AuthUtils.ownerIsAuthorizedByOrganisationOrUsername(profile,
                 updatedVocabulary.getOwner())) {
             return ResponseUtils.generateForbiddenResponseForOwner();
@@ -298,7 +301,7 @@ public class PutVocabularies {
             // If we have reached this point, we have success.
             // Analytics logging.
             Logging.logRequest(true, request, uriInfo, profile,
-                    Analytics.EVENT_CREATE_VOCABULARY,
+                    Analytics.EVENT_UPDATE_VOCABULARY,
                     Analytics.VOCABULARY_ID_FIELD, updatedVocabularyId,
                     Analytics.TITLE_FIELD, updatedVocabulary.getTitle(),
                     Analytics.ENTITY_STATUS_FIELD,

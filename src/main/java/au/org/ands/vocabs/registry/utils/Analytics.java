@@ -112,6 +112,10 @@ public final class Analytics {
     public static final String EVENT_GET_VOCABULARY =
             "read_vocabulary";
     /** The value of the "message" field to use for log entries
+     * for updating a vocabulary. */
+    public static final String EVENT_UPDATE_VOCABULARY =
+            "update_vocabulary";
+    /** The value of the "message" field to use for log entries
      * for creating a related entity. */
     public static final String EVENT_CREATE_RELATED_ENTITY =
             "create_relatedEntity";
