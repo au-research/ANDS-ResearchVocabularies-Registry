@@ -41,6 +41,7 @@ import au.org.ands.vocabs.registry.api.validation.ValidationMode;
 import au.org.ands.vocabs.registry.db.context.DBContext;
 import au.org.ands.vocabs.registry.db.context.TemporalUtils;
 import au.org.ands.vocabs.registry.db.dao.RegistryEventDAO;
+import au.org.ands.vocabs.registry.db.dao.VocabularyDAO;
 import au.org.ands.vocabs.registry.db.dao.VocabularyIdDAO;
 import au.org.ands.vocabs.registry.db.entity.RegistryEvent;
 import au.org.ands.vocabs.registry.db.entity.VocabularyId;
@@ -271,11 +272,23 @@ public class PutVocabularies {
                     entity(errorResult).build();
         }
 
-        // TODO: not good enough! Must get existing vocab.
-        // For now, make sure we're not changing the owner.
-        // Future: allow changing the owner.
-        if (!AuthUtils.ownerIsAuthorizedByOrganisationOrUsername(profile,
-                updatedVocabulary.getOwner())) {
+        // Need to have permissions on the existing draft, if there is one.
+        List<au.org.ands.vocabs.registry.db.entity.Vocabulary>
+        draftDbVocabularyList = VocabularyDAO.getDraftVocabularyByVocabularyId(
+                vocabularyId);
+        if (draftDbVocabularyList.size() > 0) {
+            if (!AuthUtils.ownerIsAuthorizedByOrganisationOrUsername(profile,
+                    draftDbVocabularyList.get(0).getOwner())) {
+                return ResponseUtils.generateForbiddenResponseForOwner();
+            }
+        }
+        // Need to have permissions on the current instance, if there is one.
+        au.org.ands.vocabs.registry.db.entity.Vocabulary
+        dbVocabulary = VocabularyDAO.getCurrentVocabularyByVocabularyId(
+                vocabularyId);
+        if (dbVocabulary != null && !AuthUtils.
+                ownerIsAuthorizedByOrganisationOrUsername(profile,
+                dbVocabulary.getOwner())) {
             return ResponseUtils.generateForbiddenResponseForOwner();
         }
 
