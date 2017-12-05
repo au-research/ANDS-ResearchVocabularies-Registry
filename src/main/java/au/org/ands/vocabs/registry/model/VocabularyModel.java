@@ -83,7 +83,7 @@ public class VocabularyModel extends ModelBase {
             throw new IllegalArgumentException(
                     "Attempt to construct vocabulary model with no Id");
         }
-        if (VocabularyIdDAO.getVocabularyIdById(aVocabularyId) == null) {
+        if (VocabularyIdDAO.getVocabularyIdById(anEm, aVocabularyId) == null) {
             logger.error("Attempt to construct vocabulary model with "
                     + "invalid Id");
             throw new IllegalArgumentException(

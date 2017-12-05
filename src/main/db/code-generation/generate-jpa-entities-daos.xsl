@@ -403,6 +403,23 @@ public final class <xsl:value-of select="$entityName" />DAO {
         return entity;
     }
 
+    /** Get <xsl:value-of select="$entityName" /> by id.
+     * This version of the method uses an existing EntityManager
+     * provided as a parameter; transaction begin/end must be
+     * managed by the caller.
+     * @param em The EntityManager to be used.
+     * @param id <xsl:value-of select="$entityName" /> id.
+     * @return The <xsl:value-of select="$entityName" />.
+     */
+    public static <xsl:value-of select="$entityName" />
+        get<xsl:value-of select="$entityName" />ById(
+        final EntityManager em,
+        final int id) {
+        <xsl:value-of select="$entityName" /> entity = em.find(
+            <xsl:value-of select="$entityName" />.class, id);
+        return entity;
+    }
+
     /** Get all <xsl:value-of select="$entityName" /> instances.
      * @return An array of all <xsl:value-of select="$entityName" /> instances.
      */
