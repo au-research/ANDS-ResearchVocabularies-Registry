@@ -26,6 +26,7 @@ import static au.org.ands.vocabs.registry.solr.FieldConstants.WIDGETABLE;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
@@ -38,6 +39,7 @@ import org.apache.solr.client.solrj.SolrQuery.ORDER;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.NoOpResponseParser;
 import org.apache.solr.client.solrj.request.QueryRequest;
+import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.params.CommonParams;
 import org.apache.solr.common.params.DisMaxParams;
 import org.apache.solr.common.params.FacetParams;
@@ -82,6 +84,10 @@ public final class SearchIndex {
      * @throws SolrServerException If the Solr query generated a
      *      SolrServerException.
      */
+    // Sorry for the long method, due to complex legacy behaviour
+    // and the need to support embedded Solr for testing.
+    // Please refactor this.
+    @SuppressWarnings("checkstyle:MethodLength")
     public static String query(
             final String filtersJson)
             throws IOException, SolrServerException {
@@ -226,7 +232,28 @@ public final class SearchIndex {
 
         try {
             NamedList<Object> response = SOLR_CLIENT.request(request);
-            return (String) (response.get("response"));
+            Object responseObject = response.get("response");
+            if (responseObject instanceof SolrDocumentList) {
+                // NB: We reach here _only_ for the embedded Solr.
+                // For "normal" use with the HTTP server, we fall through
+                // without further modifying responseObject.
+                // Special treatment for the embedded Solr used in
+                // testing: fake the JSON that comes back from the HTTP server.
+                SolrDocumentList solrDocumentList =
+                        (SolrDocumentList) responseObject;
+                Map<String, Object> map = new HashMap<>();
+                map.put("responseHeader", new HashMap<>());
+                Map<String, Object> responseMap = new HashMap<>();
+                responseMap.put("docs", response.get("response"));
+                responseMap.put("numFound", solrDocumentList.getNumFound());
+                responseMap.put("start", solrDocumentList.getStart());
+                map.put("response", responseMap);
+                // Now overwrite responseObject, so that it approximates
+                // the "real thing".
+                responseObject = JSONSerialization.serializeObjectAsJsonString(
+                        map);
+            }
+            return (String) (responseObject);
         } catch (IOException | SolrServerException e) {
             LOGGER.error("Exception while performing Solr query", e);
             throw e;

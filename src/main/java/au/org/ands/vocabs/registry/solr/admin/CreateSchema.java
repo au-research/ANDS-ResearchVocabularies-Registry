@@ -531,6 +531,9 @@ public final class CreateSchema {
             if (installedSchemaVersion < 1) {
                 installSchema1(client);
             }
+            // Don't want to have to wait. This is most useful when
+            // running the embedded Solr instance used for the test suite.
+            client.commit();
         } catch (RuntimeException re) {
             // Most likely, already installed.
             logger.error("Runtime exception: ", re);

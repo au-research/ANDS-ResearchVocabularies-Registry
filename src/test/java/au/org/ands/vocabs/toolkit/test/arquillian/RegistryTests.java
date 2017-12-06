@@ -10,7 +10,7 @@ import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import org.apache.solr.client.solrj.SolrClient;
+import org.apache.solr.client.solrj.SolrServerException;
 import org.dbunit.DatabaseUnitException;
 import org.hibernate.HibernateException;
 import org.slf4j.Logger;
@@ -18,13 +18,18 @@ import org.slf4j.LoggerFactory;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+import com.fasterxml.jackson.databind.JsonNode;
+
 import au.org.ands.vocabs.registry.db.context.TemporalUtils;
 import au.org.ands.vocabs.registry.db.dao.ResourceOwnerHostDAO;
 import au.org.ands.vocabs.registry.db.dao.VersionDAO;
 import au.org.ands.vocabs.registry.db.dao.VocabularyDAO;
 import au.org.ands.vocabs.registry.db.entity.ResourceOwnerHost;
 import au.org.ands.vocabs.registry.enums.VersionStatus;
+import au.org.ands.vocabs.registry.solr.EntityIndexer;
+import au.org.ands.vocabs.registry.solr.SearchIndex;
 import au.org.ands.vocabs.registry.solr.SolrUtils;
+import au.org.ands.vocabs.toolkit.db.TaskUtils;
 
 /** All Arquillian tests of the Registry.
  * As this class grows, it might be split up further.
@@ -39,6 +44,9 @@ public class RegistryTests extends ArquillianBaseTest {
         logger = LoggerFactory.getLogger(
                 MethodHandles.lookup().lookupClass());
     }
+
+    /** Name of this class, used in paths to test data files. */
+    private static final String CLASS_NAME_PREFIX = "RegistryTests.";
 
     // Server-side tests go here. Client-side tests later on.
 
@@ -130,13 +138,37 @@ public class RegistryTests extends ArquillianBaseTest {
 
     /* Solr. */
 
-    /** Test of {@link VocabularyDAO#getAllVocabulary()}.
-     * This is just a sanity test to make sure that the registry
-     * code is included correctly. */
+    /** Test of Solr indexing of one vocabulary.
+     * @throws DatabaseUnitException If a problem with DbUnit.
+     * @throws HibernateException If a problem getting the underlying
+     *          JDBC connection.
+     * @throws IOException If a problem getting test data for DbUnit,
+     *          or reading JSON from the correct and test output files.
+     * @throws SQLException If DbUnit has a problem performing
+     *           performing JDBC operations.
+     * @throws SolrServerException If an error during Solr indexing.
+     */
     @Test
-    public final void testSolrOK() {
-        SolrClient solrClient = SolrUtils.getSolrClient();
-        Assert.assertNotNull(solrClient);
+    public final void testSolrIndexing1()
+            throws HibernateException, DatabaseUnitException,
+            IOException, SQLException, SolrServerException {
+        ArquillianTestUtils.clearDatabase(REGISTRY);
+        ArquillianTestUtils.loadDbUnitTestFile(REGISTRY,
+                CLASS_NAME_PREFIX + "testSolrIndexing1");
+        EntityIndexer.indexVocabulary(1);
+        // Explicit commit is required so that we can do a search
+        // immediately.
+        SolrUtils.getSolrClient().commit();
+        String searchResults = SearchIndex.query("{}");
+        logger.info("Result: " + searchResults);
+        JsonNode resultsJson = TaskUtils.jsonStringToTree(searchResults);
+        JsonNode response = resultsJson.get("response");
+        Assert.assertEquals(response.get("numFound").asInt(), 1, "numFound");
+        JsonNode doc = response.get("docs").get(0);
+        Assert.assertEquals(doc.get("id").asText(), "1", "id");
+        Assert.assertEquals(doc.get("slug").asText(), "rifcs", "slug");
+        // And so on, for the rest of the fields.
+
     }
 
     /** Test of date/time conversion at the time of the
