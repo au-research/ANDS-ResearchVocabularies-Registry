@@ -3,6 +3,7 @@
 package au.org.ands.vocabs.toolkit.test.arquillian;
 
 import static au.org.ands.vocabs.toolkit.test.utils.DatabaseSelector.REGISTRY;
+import static au.org.ands.vocabs.toolkit.test.utils.DatabaseSelector.ROLES;
 
 import java.lang.invoke.MethodHandles;
 import java.net.URL;
@@ -147,6 +148,45 @@ public class RegistryAPITests extends ArquillianBaseTest {
         Assert.assertEquals(vocabulary.getVersion().size(), 0, "version");
 //        Assert.assertEquals(vocabulary.get, "", "");
 
+    }
+
+    /** Client-side test of deleteVocabulary, deleting a current instance.
+     */
+    @Test
+    @RunAsClient
+    public final void testDeleteVocabulary1() {
+        // Delete requires authorization, so load roles.
+        ArquillianTestUtils.clientClearDatabase(ROLES, baseURL);
+        ArquillianTestUtils.clientLoadDbUnitTestFile(ROLES, baseURL,
+                CLASS_NAME_PREFIX + "testDeleteVocabulary1");
+        ArquillianTestUtils.clientClearDatabase(REGISTRY, baseURL);
+        ArquillianTestUtils.clientLoadDbUnitTestFile(REGISTRY, baseURL,
+                CLASS_NAME_PREFIX + "testDeleteVocabulary1");
+        Response response = NetClientUtils.doDeleteWithAdditionalComponents(
+                baseURL,
+                ApiPaths.API_RESOURCE + "/" + ApiPaths.VOCABULARIES + "/1",
+                MediaType.APPLICATION_XML_TYPE, "test1", "test",
+                webTarget -> webTarget.queryParam("deleteCurrent", "true"));
+
+        Assert.assertEquals(response.getStatusInfo().getFamily(),
+                Family.SUCCESSFUL,
+                "deleteVocabularies response status");
+        response.close();
+
+        // Now confirm that there are no current vocabularies.
+        response = NetClientUtils.doGet(baseURL,
+                ApiPaths.API_RESOURCE + "/" + ApiPaths.VOCABULARIES,
+                MediaType.APPLICATION_XML_TYPE);
+
+        Assert.assertEquals(response.getStatusInfo().getFamily(),
+                Family.SUCCESSFUL,
+                "getVocabularies response status");
+        VocabularyList vocabularyList =
+                response.readEntity(VocabularyList.class);
+        response.close();
+
+        Assert.assertEquals(vocabularyList.getVocabulary().size(), 0,
+            "vocabularyList size");
     }
 
 }
