@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified"
+    targetNamespace="http://vocabs.ands.org.au/registry/schema/2017/01/vocabulary"
+    xmlns="http://vocabs.ands.org.au/registry/schema/2017/01/vocabulary"
+    xmlns:common="http://vocabs.ands.org.au/registry/schema/2017/01/common">
+    <xs:import id="common" namespace="http://vocabs.ands.org.au/registry/schema/2017/01/common"
+        schemaLocation="common-types.xsd"/>
+    <xs:simpleType name="id-type">
+        <xs:restriction base="xs:int">
+            <xs:minInclusive value="1"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:element name="vocabulary">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element minOccurs="0" name="poolparty-project">
+                    <xs:complexType>
+                        <xs:attribute name="server-id" type="xs:int"/>
+                        <xs:attribute name="project-id" type="xs:token"/>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element maxOccurs="unbounded" minOccurs="0" name="subject">
+                    <xs:complexType>
+                        <xs:attribute name="source" use="required" type="xs:token"/>
+                        <xs:attribute name="label" use="required" type="xs:token"/>
+                        <xs:attribute name="notation" type="xs:token"/>
+                        <xs:attribute name="iri" type="xs:anyURI"/>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element maxOccurs="unbounded" minOccurs="0" ref="version"/>
+                <xs:element maxOccurs="unbounded" name="other-language" minOccurs="0"
+                    type="xs:token"> </xs:element>
+                <xs:element maxOccurs="unbounded" minOccurs="0" name="top-concept" type="xs:token"/>
+                <xs:element maxOccurs="unbounded" name="related-entity-ref">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element maxOccurs="unbounded" name="relation"
+                                type="common:related-entity-relation"/>
+                            <xs:element ref="related-entity" minOccurs="0"/>
+                        </xs:sequence>
+                        <xs:attribute name="id" type="id-type" use="required"/>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element maxOccurs="unbounded" minOccurs="0" name="related-vocabulary-ref">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element maxOccurs="unbounded" name="relation"
+                                type="common:related-vocabulary-relation"/>
+                            <xs:element ref="related-vocabulary"/>
+                        </xs:sequence>
+                        <xs:attribute name="id" type="id-type" use="required"/>
+                    </xs:complexType>
+                </xs:element>
+            </xs:sequence>
+            <xs:attribute name="id" type="id-type"> </xs:attribute>
+            <xs:attribute name="status" use="required" type="common:vocabulary-status"> </xs:attribute>
+            <xs:attribute name="owner" use="required" type="xs:token"/>
+            <xs:attribute name="slug" type="xs:token"/>
+            <xs:attribute name="title" use="required" type="xs:token"/>
+            <xs:attribute name="acronym" type="xs:token"/>
+            <xs:attribute name="description" type="xs:token"/>
+            <xs:attribute name="note" type="xs:token"/>
+            <xs:attribute name="revision-cycle" type="xs:token"/>
+            <xs:attribute name="creation-date" type="xs:token"/>
+            <xs:attribute name="primary-language" type="xs:token"/>
+            <xs:attribute name="licence" type="xs:token"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="vocabulary-list">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element maxOccurs="unbounded" minOccurs="0" ref="vocabulary"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="version">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element maxOccurs="unbounded" minOccurs="0" ref="access-point"/>
+            </xs:sequence>
+            <xs:attribute name="id" type="id-type" use="optional"> </xs:attribute>
+            <xs:attribute name="status" use="required" type="common:version-status"> </xs:attribute>
+            <xs:attribute name="title" use="required" type="xs:token"/>
+            <xs:attribute name="slug" type="xs:token"/>
+            <xs:attribute name="note" type="xs:token"/>
+            <xs:attribute name="release-date" type="xs:token"/>
+            <xs:attribute name="do-poolparty-harvest" type="xs:boolean"/>
+            <xs:attribute name="do-import" type="xs:boolean"/>
+            <xs:attribute name="do-publish" type="xs:boolean"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="version-list">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element maxOccurs="unbounded" minOccurs="0" ref="version"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="access-point">
+        <xs:complexType>
+            <xs:choice>
+                <xs:element name="ap-api-sparql" type="ap-api-sparql"/>
+                <xs:element name="ap-file" type="ap-file"/>
+                <xs:element name="ap-sesame-download" type="ap-sesame-download"/>
+                <xs:element name="ap-sissvoc" type="ap-sissvoc"/>
+                <xs:element name="ap-web-page" type="ap-web-page"/>
+            </xs:choice>
+            <xs:attribute name="id" type="id-type" use="optional"/>
+            <xs:attribute name="discriminator" type="common:access-point-discriminator"
+                use="required"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="access-point-list">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element maxOccurs="unbounded" minOccurs="0" ref="access-point"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:complexType name="ap-common"/>
+    <xs:complexType name="ap-api-sparql">
+        <xs:complexContent>
+            <xs:extension base="ap-common">
+                <xs:attribute name="source" type="common:ap-source"/>
+                <xs:attribute name="url" type="xs:anyURI" use="required"/>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+    <xs:complexType name="ap-file">
+        <xs:complexContent>
+            <xs:extension base="ap-common">
+                <xs:attribute name="format" type="xs:token"/>
+                <xs:attribute name="url" type="xs:anyURI"/>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+    <xs:complexType name="ap-sesame-download">
+        <xs:complexContent>
+            <xs:extension base="ap-common">
+                <xs:attribute name="urlPrefix" type="xs:anyURI"/>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+    <xs:complexType name="ap-sissvoc">
+        <xs:complexContent>
+            <xs:extension base="ap-common">
+                <xs:attribute name="source" type="common:ap-source"/>
+                <xs:attribute name="urlPrefix" type="xs:anyURI"/>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+    <xs:complexType name="ap-web-page">
+        <xs:complexContent>
+            <xs:extension base="ap-common">
+                <xs:attribute name="url" type="xs:anyURI" use="required"/>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+    <xs:element name="related-entity-list">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element maxOccurs="unbounded" minOccurs="0" ref="related-entity"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="related-entity">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="related-entity-identifier" maxOccurs="unbounded" minOccurs="0"/>
+                <xs:element maxOccurs="unbounded" minOccurs="0" name="url" type="xs:anyURI"/>
+            </xs:sequence>
+            <xs:attribute name="id" type="id-type"/>
+            <xs:attribute name="type" use="required" type="common:related-entity-type"/>
+            <xs:attribute name="owner" type="xs:token"/>
+            <xs:attribute name="title" type="xs:token"/>
+            <xs:attribute name="email" type="xs:token"/>
+            <xs:attribute name="phone" type="xs:token"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="related-entity-identifier">
+        <xs:complexType>
+            <xs:attribute name="id" type="id-type"/>
+            <xs:attribute name="identifier-type" type="common:related-entity-identifier-type"/>
+            <xs:attribute name="identifier-value" type="xs:token"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="version-artefact">
+        <xs:complexType>
+            <xs:attribute name="id" type="id-type"/>
+            <xs:attribute name="status" type="common:version-artefact-status"/>
+            <xs:attribute name="type" type="common:version-artefact-type"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="version-artefact-list">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element maxOccurs="unbounded" minOccurs="0" ref="version-artefact"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="related-vocabulary">
+        <xs:complexType>
+            <xs:sequence> </xs:sequence>
+            <xs:attribute name="id" type="id-type"> </xs:attribute>
+            <xs:attribute name="status" use="required" type="common:vocabulary-status"> </xs:attribute>
+            <xs:attribute name="owner" use="required" type="xs:token"/>
+            <xs:attribute name="slug" type="xs:token"/>
+            <xs:attribute name="title" use="required" type="xs:token"/>
+            <xs:attribute name="acronym" type="xs:token"/>
+            <xs:attribute name="description" type="xs:token"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="reverse-related-vocabulary-list">
+        <xs:complexType>
+            <xs:sequence maxOccurs="unbounded" minOccurs="0">
+                <xs:element ref="reverse-related-vocabulary"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="reverse-related-vocabulary">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element maxOccurs="unbounded" minOccurs="0" name="related-entity-relation"
+                    type="common:related-entity-relation"/>
+                <xs:element maxOccurs="unbounded" minOccurs="0" name="related-vocabulary-relation"
+                    type="common:related-vocabulary-relation"/>
+                <xs:element ref="related-vocabulary"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+</xs:schema>

@@ -1,18 +1,13 @@
 /** See the file "LICENSE" for the full license governing this code. */
 package au.org.ands.vocabs.toolkit.provider.transform;
 import java.util.HashMap;
-import java.util.Properties;
-
-import au.org.ands.vocabs.toolkit.tasks.TaskInfo;
-import au.org.ands.vocabs.toolkit.utils.ToolkitProperties;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
+import au.org.ands.vocabs.toolkit.tasks.TaskInfo;
+
 /** Abstract class representing transform providers. */
 public abstract class TransformProvider {
-
-    /** Access to the Toolkit properties. */
-    protected static final Properties PROPS = ToolkitProperties.getProperties();
 
     /** Return information about the provider.
      * Currently the return type is String.
@@ -30,9 +25,9 @@ public abstract class TransformProvider {
      * @param results HashMap representing the result of the transform.
      * @return True, iff the transform succeeded.
      */
-    public abstract boolean transform(final TaskInfo taskInfo,
+    public abstract boolean transform(TaskInfo taskInfo,
             JsonNode subtask,
-            final HashMap<String, String> results);
+            HashMap<String, String> results);
 
     /** Undo a transform. Update the message parameter with the result
      * of the untransform. Note: not all transforms can be undone!
@@ -41,9 +36,9 @@ public abstract class TransformProvider {
      * @param results HashMap representing the result of the untransform.
      * @return True, iff the untransform succeeded.
      */
-    public abstract boolean untransform(final TaskInfo taskInfo,
+    public abstract boolean untransform(TaskInfo taskInfo,
             JsonNode subtask,
-            final HashMap<String, String> results);
+            HashMap<String, String> results);
 
 
 }

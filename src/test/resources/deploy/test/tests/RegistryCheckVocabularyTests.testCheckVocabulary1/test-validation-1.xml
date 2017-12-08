@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!DOCTYPE vocabulary>
+<vocabulary xmlns="http://vocabs.ands.org.au/registry/schema/2017/01/vocabulary"  status="published" owner="string" slug="string" title="string" acronym="string" description="string" note="string" revision-cycle="string" creation-date="2017-04-05" primary-language="en" licence="string">
+  <poolparty-project server-id="1" project-id="string"></poolparty-project>
+  <subject source="string" label="string" notation="string" iri="string"></subject>
+  <version xmlns="http://vocabs.ands.org.au/registry/schema/2017/01/vocabulary" id="1" status="current" title="string" slug="string" note="string" release-date="string" do-import="true" do-publish="true"></version>
+  <other-language>fr</other-language>
+  <top-concept>string</top-concept>
+  <related-entity-ref id="1" relation="publishedBy"></related-entity-ref>
+</vocabulary>

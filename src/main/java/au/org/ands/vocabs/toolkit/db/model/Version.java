@@ -18,7 +18,7 @@ import au.org.ands.vocabs.toolkit.db.TaskUtils;
  * Version model class.
  */
 @Entity
-@Table(name = "versions")
+@Table(name = Version.TABLE_NAME)
 /* Rather than including the text of the query directly in the
  * annotation, we use a constant defined in the class itself.
  * This way, it can be found in the generated Javadoc
@@ -27,6 +27,10 @@ import au.org.ands.vocabs.toolkit.db.TaskUtils;
         name = Version.GET_ALL_VERSIONS,
         query = Version.GET_ALL_VERSIONS_QUERY)
 public class Version {
+
+    /** The name of the underlying database table.
+     * Use this in the class's {@code @Table} annotation. */
+    public static final String TABLE_NAME = "versions";
 
     /** Name of getAllVersions query. */
     public static final String GET_ALL_VERSIONS = "getAllVersions";
@@ -45,8 +49,10 @@ public class Version {
     /** data. */
     private String data;
 
-    /** Key of the release date used in the data field. */
-    private static final String RELEASE_DATE_KEY = "release_date";
+    /** Key of the release date used in the data field.
+     * This is marked {@code public} <i>only</i> so that it can be used
+     * in tests. */
+    public static final String RELEASE_DATE_KEY = "release_date";
 
     /** Get the id.
      * @return The id

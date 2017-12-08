@@ -12,7 +12,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
-import java.util.Properties;
 
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
@@ -29,12 +28,11 @@ import org.openrdf.rio.helpers.RDFHandlerBase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.databind.JsonNode;
+
 import au.org.ands.vocabs.toolkit.tasks.TaskInfo;
 import au.org.ands.vocabs.toolkit.tasks.TaskStatus;
 import au.org.ands.vocabs.toolkit.utils.ToolkitFileUtils;
-import au.org.ands.vocabs.toolkit.utils.ToolkitProperties;
-
-import com.fasterxml.jackson.databind.JsonNode;
 
 /** Transform provider for generating Solr Index files as JSON from RDF. */
 public class SolrIndexTransformProvider extends TransformProvider {
@@ -43,12 +41,9 @@ public class SolrIndexTransformProvider extends TransformProvider {
     private final Logger logger = LoggerFactory.getLogger(
             MethodHandles.lookup().lookupClass());
 
-    /** Access to the Toolkit properties. */
-    protected static final Properties PROPS = ToolkitProperties.getProperties();
-
     @Override
     public final String getInfo() {
-        // TODO Auto-generated method stub
+        // Return null for now.
         return null;
     }
 
@@ -111,7 +106,7 @@ public class SolrIndexTransformProvider extends TransformProvider {
     }
 
     /** RDF Handler to extract prefLabels and concept count. */
-    class ConceptHandler extends RDFHandlerBase {
+    private static class ConceptHandler extends RDFHandlerBase {
         /** Number of prefLabel properties. */
         private int countedPrefLabels = 0;
         /** space separated String of all labels. */
@@ -125,14 +120,14 @@ public class SolrIndexTransformProvider extends TransformProvider {
             }
         }
 
-        /** Getter for prefLabel count. */
-        /** @return The number of prefLabel properties. */
+        /** Getter for prefLabel count.
+         * @return The number of prefLabel properties. */
         public int getCountedPrefLabels() {
             return countedPrefLabels;
         }
 
-        /** Getter for concepts text. */
-        /** @return The concatenation of the prefLabels. */
+        /** Getter for concepts text.
+         * @return The concatenation of the prefLabels. */
         public String getConceptText() {
             return conceptText;
         }

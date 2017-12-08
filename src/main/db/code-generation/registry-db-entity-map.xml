@@ -1,0 +1,977 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE db-entity-map>
+<db-entity-map>
+
+  <!-- Only need to specify column elements if the camelcasing
+       doesn't give the right result.
+  -->
+
+  <map tableName="vocabulary_ids"
+       entityName="VocabularyId"
+       serialVersionUID="-5030331935734628785L"
+       >
+    <!-- Column customization. Not needed for now.
+         <column db="" field="" />
+    -->
+  </map>
+  <map tableName="version_ids"
+       entityName="VersionId"
+       serialVersionUID="-8371217985547585670L"
+       >
+  </map>
+  <map tableName="version_artefact_ids"
+       entityName="VersionArtefactId"
+       serialVersionUID="8396225985093911526L"
+       >
+  </map>
+  <map tableName="access_point_ids"
+       entityName="AccessPointId"
+       serialVersionUID="-7135716758902970708L"
+       >
+  </map>
+  <map tableName="related_entity_ids"
+       entityName="RelatedEntityId"
+       serialVersionUID="7857590494290614252L"
+       >
+  </map>
+  <map tableName="related_entity_identifier_ids"
+       entityName="RelatedEntityIdentifierId"
+       serialVersionUID="664683346701966074L"
+       >
+  </map>
+  <map tableName="vocabularies"
+       entityName="Vocabulary"
+       serialVersionUID="2667395213718191086L"
+       >
+    <idKey keyColumn="vocabulary_id" entityName="VocabularyId" />
+    <column db="status" enum="VocabularyStatus" />
+    <extraQueries>
+      <extraQuery name="IS_SLUG_IN_USE">
+        <extraQueryParameter name="slug" />
+        <queryText temporal="true">
+          SELECT COUNT(entity) > 0 FROM Vocabulary entity WHERE
+          slug = :slug AND (
+          #TEMPORAL_QUERY_VALID_CLAUSE
+          OR
+          #TEMPORAL_QUERY_ALL_DRAFT_CLAUSE
+          )
+        </queryText>
+        <method>    /** Is a certain slug already in use, either for a
+       published or draft vocabulary?
+     * @param slug The slug to be looked up.
+     * @return true, if the slug is already in use by a published
+     *   or draft vocabulary.
+     */
+    public static boolean isSlugInUse(final String slug) {
+        EntityManager em = DBContext.getEntityManager();
+        TypedQuery&lt;Boolean&gt; q = em.createNamedQuery(
+                Vocabulary.IS_SLUG_IN_USE, Boolean.class)
+                .setParameter(Vocabulary.IS_SLUG_IN_USE_SLUG, slug);
+        q = TemporalUtils.setDatetimeConstantParameters(q);
+        Boolean slugInUse = q.getSingleResult();
+        em.close();
+        return slugInUse;
+    }
+
+</method>
+      </extraQuery>
+      <extraQuery name="GET_RELATED_VOC_LIST_FOR_VOCABULARY">
+        <extraQueryParameter name="vocabularyId" />
+        <queryText temporal="true">
+          SELECT entity FROM Vocabulary entity WHERE
+          vocabularyId IN (SELECT relatedVocabularyId FROM
+          VocabularyRelatedVocabulary WHERE vocabularyId = :vocabularyId
+          #AND_TEMPORAL_QUERY_VALID_SUFFIX
+          )
+          #AND_TEMPORAL_QUERY_VALID_SUFFIX
+        </queryText>
+        <method>    /** Get all current related Vocabulary instances for
+     * a vocabulary.
+     * @param vocabularyId The vocabulary id for which related
+     *     vocabularies are to be looked up.
+     * @return A list of all related Vocabulary instances for the vocabulary.
+     */
+    public static List&lt;Vocabulary&gt;
+        getCurrentRelatedVocabulariesForVocabulary(final int vocabularyId) {
+        EntityManager em = DBContext.getEntityManager();
+        TypedQuery&lt;Vocabulary&gt; q = em.createNamedQuery(
+                Vocabulary.
+                    GET_RELATED_VOC_LIST_FOR_VOCABULARY,
+                Vocabulary.class)
+                .setParameter(Vocabulary.
+                    GET_RELATED_VOC_LIST_FOR_VOCABULARY_VOCABULARYID,
+                    vocabularyId);
+        q = TemporalUtils.setDatetimeConstantParameters(q);
+        List&lt;Vocabulary&gt; entityList = q.getResultList();
+        em.close();
+        return entityList;
+    }
+
+</method>
+      </extraQuery>
+      <extraQuery name="GET_RELATED_VOC_LIST_FOR_RE">
+        <extraQueryParameter name="relatedEntityId" />
+        <queryText temporal="true">
+          SELECT e2, e1.relation FROM VocabularyRelatedEntity e1,
+          Vocabulary e2 WHERE
+          e1.relatedEntityId = :relatedEntityId
+          AND e1.vocabularyId = e2.vocabularyId
+          #AND_TEMPORAL_QUERY_VALID_SUFFIX_E1
+          #AND_TEMPORAL_QUERY_VALID_SUFFIX_E2
+        </queryText>
+        <method>    /** Get all current related Vocabulary instances
+     * that are related to a related entity.
+     * @param relatedEntityId The related entity id for which
+     *     vocabularies are to be looked up.
+     * @return A multi-valued map of all Vocabulary instances that are
+     *     related to the related entity, with their relations.
+     */
+    public static javax.ws.rs.core.MultivaluedMap&lt;
+            Vocabulary,
+            au.org.ands.vocabs.registry.enums.RelatedEntityRelation&gt;
+        getCurrentVocabulariesForRelatedEntity(final int relatedEntityId) {
+        EntityManager em = DBContext.getEntityManager();
+        javax.persistence.Query q = em.createNamedQuery(
+                Vocabulary.
+                    GET_RELATED_VOC_LIST_FOR_RE)
+                .setParameter(Vocabulary.
+                    GET_RELATED_VOC_LIST_FOR_RE_RELATEDENTITYID,
+                    relatedEntityId);
+        q = TemporalUtils.setDatetimeConstantParameters(q);
+        // We do casts of the elements of the lists later on.
+        @SuppressWarnings("unchecked")
+        List&lt;Object[]&gt; entityList = q.getResultList();
+        em.close();
+        javax.ws.rs.core.MultivaluedMap&lt;Vocabulary,
+            au.org.ands.vocabs.registry.enums.RelatedEntityRelation&gt;
+        result = new javax.ws.rs.core.MultivaluedHashMap&lt;&gt;();
+        for (Object[] objectList : entityList) {
+            // Unpack the results. Each is a pair
+            // (vocabulary,relation).
+            result.add((Vocabulary) objectList[0],
+                (au.org.ands.vocabs.registry.enums.RelatedEntityRelation)
+                    objectList[1]);
+        }
+        return result;
+    }
+
+</method>
+      </extraQuery>
+      <extraQuery name="GET_RELATED_VOC_LIST_FOR_VOC">
+        <extraQueryParameter name="relatedVocabularyId" />
+        <queryText temporal="true">
+          SELECT e2, e1.relation FROM VocabularyRelatedVocabulary e1,
+          Vocabulary e2 WHERE
+          e1.relatedVocabularyId = :relatedVocabularyId
+          AND e1.vocabularyId = e2.vocabularyId
+          #AND_TEMPORAL_QUERY_VALID_SUFFIX_E1
+          #AND_TEMPORAL_QUERY_VALID_SUFFIX_E2
+        </queryText>
+        <method>    /** Get all current related Vocabulary instances
+     * that are related to a vocabulary.
+     * @param relatedVocabularyId The id of the Vocabulary for which
+     *     vocabularies related to it are to be looked up.
+     * @return A multi-valued map of all Vocabulary instances that are
+     *     related to the vocabulary, with their relations.
+     */
+    public static javax.ws.rs.core.MultivaluedMap&lt;
+            Vocabulary,
+            au.org.ands.vocabs.registry.enums.RelatedVocabularyRelation&gt;
+        getCurrentVocabulariesForRelatedVocabulary(
+                final int relatedVocabularyId) {
+        EntityManager em = DBContext.getEntityManager();
+        javax.persistence.Query q = em.createNamedQuery(
+                Vocabulary.
+                    GET_RELATED_VOC_LIST_FOR_VOC)
+                .setParameter(Vocabulary.
+                    GET_RELATED_VOC_LIST_FOR_VOC_RELATEDVOCABULARYID,
+                    relatedVocabularyId);
+        q = TemporalUtils.setDatetimeConstantParameters(q);
+        // We do casts of the elements of the lists later on.
+        @SuppressWarnings("unchecked")
+        List&lt;Object[]&gt; entityList = q.getResultList();
+        em.close();
+        javax.ws.rs.core.MultivaluedMap&lt;Vocabulary,
+            au.org.ands.vocabs.registry.enums.RelatedVocabularyRelation&gt;
+        result = new javax.ws.rs.core.MultivaluedHashMap&lt;&gt;();
+        for (Object[] objectList : entityList) {
+            // Unpack the results. Each is a pair
+            // (vocabulary,relation).
+            result.add((Vocabulary) objectList[0],
+                (au.org.ands.vocabs.registry.enums.RelatedVocabularyRelation)
+                    objectList[1]);
+        }
+        return result;
+    }
+
+</method>
+      </extraQuery>
+    </extraQueries>
+  </map>
+  <map tableName="versions"
+       entityName="Version"
+       serialVersionUID="-9118585204277776513L"
+       entityListeners="VersionListener.class"
+       >
+    <idKey keyColumn="version_id" entityName="VersionId" />
+    <column db="status" enum="VersionStatus" />
+    <foreignKeyQueries>
+      <foreignKeyQuery keyColumn="vocabularyId" entityName="Vocabulary" />
+    </foreignKeyQueries>
+  </map>
+  <map tableName="version_artefacts"
+       entityName="VersionArtefact"
+       serialVersionUID="-1298821649186846122L"
+       >
+    <idKey keyColumn="version_artefact_id" entityName="VersionArtefactId" />
+    <column db="status" enum="VersionArtefactStatus" />
+    <column db="type" enum="VersionArtefactType" />
+    <foreignKeyQueries>
+      <foreignKeyQuery keyColumn="versionId" entityName="Version" />
+    </foreignKeyQueries>
+    <extraQueries>
+      <extraQuery name="GET_CURR_VA_LIST_FOR_VERSION_BY_TYPE">
+        <extraQueryParameter name="versionId" />
+        <extraQueryParameter name="vaType" />
+        <queryText temporal="true">
+          SELECT entity FROM VersionArtefact entity
+          WHERE entity.versionId = :versionId
+          AND entity.type = :vaType
+          #AND_TEMPORAL_QUERY_VALID_SUFFIX
+        </queryText>
+        <method>    /** Get all current VersionArtefact instances for a Version,
+         that are of a specified VersionArtefactType.
+     * @param id The Version.
+     * @param vaType The VersionArtefactType.
+     * @return The list of current VersionArtefact
+     *     instances for this Version, that are of type vaType.
+     */
+    public static List&lt;VersionArtefact&gt;
+    getCurrentVersionArtefactListForVersionByType(
+            final Integer id,
+            final au.org.ands.vocabs.registry.enums.VersionArtefactType
+                vaType) {
+        EntityManager em = DBContext.getEntityManager();
+        TypedQuery&lt;VersionArtefact&gt; q = em.createNamedQuery(
+                VersionArtefact.
+                    GET_CURR_VA_LIST_FOR_VERSION_BY_TYPE,
+                VersionArtefact.class).
+                setParameter(
+                        VersionArtefact.
+                            GET_CURR_VA_LIST_FOR_VERSION_BY_TYPE_VERSIONID,
+                        id).
+                setParameter(
+                        VersionArtefact.
+                            GET_CURR_VA_LIST_FOR_VERSION_BY_TYPE_VATYPE,
+                        vaType);
+        q = TemporalUtils.setDatetimeConstantParameters(q);
+        List&lt;VersionArtefact&gt; entityList = q.getResultList();
+        em.close();
+        return entityList;
+    }
+
+</method>
+      </extraQuery>
+    </extraQueries>
+  </map>
+  <map tableName="access_points"
+       entityName="AccessPoint"
+       serialVersionUID="6332868269699981887L"
+       >
+    <idKey keyColumn="access_point_id" entityName="AccessPointId" />
+    <column db="type" enum="AccessPointType" />
+    <foreignKeyQueries>
+      <foreignKeyQuery keyColumn="versionId" entityName="Version" />
+    </foreignKeyQueries>
+  </map>
+  <map tableName="related_entities"
+       entityName="RelatedEntity"
+       serialVersionUID="-4871628368369543812L"
+       >
+    <idKey keyColumn="related_entity_id" entityName="RelatedEntityId" />
+    <column db="type" enum="RelatedEntityType" />
+    <extraQueries>
+      <extraQuery name="GET_RELATED_ENTITY_LIST_FOR_VOCABULARY">
+        <extraQueryParameter name="vocabularyId" />
+        <queryText temporal="true">
+          SELECT entity FROM RelatedEntity entity WHERE
+          relatedEntityId IN (SELECT relatedEntityId FROM
+          VocabularyRelatedEntity WHERE vocabularyId = :vocabularyId
+          #AND_TEMPORAL_QUERY_VALID_SUFFIX
+          )
+          #AND_TEMPORAL_QUERY_VALID_SUFFIX
+        </queryText>
+        <method>    /** Get all current RelatedEntity instances for a vocabulary.
+     * @param vocabularyId The vocabulary id for which related
+     *     entities are to be looked up.
+     * @return An list of all RelatedEntity instances for the vocabulary.
+     */
+    public static List&lt;RelatedEntity&gt;
+        getCurrentRelatedEntitiesForVocabulary(final int vocabularyId) {
+        EntityManager em = DBContext.getEntityManager();
+        TypedQuery&lt;RelatedEntity&gt; q = em.createNamedQuery(
+                RelatedEntity.
+                    GET_RELATED_ENTITY_LIST_FOR_VOCABULARY,
+                RelatedEntity.class)
+                .setParameter(RelatedEntity.
+                    GET_RELATED_ENTITY_LIST_FOR_VOCABULARY_VOCABULARYID,
+                    vocabularyId);
+        q = TemporalUtils.setDatetimeConstantParameters(q);
+        List&lt;RelatedEntity&gt; entityList = q.getResultList();
+        em.close();
+        return entityList;
+    }
+
+</method>
+      </extraQuery>
+      <extraQuery name="GET_MATCHING_RELATED_ENTITIES">
+        <extraQueryParameter name="owner" />
+        <extraQueryParameter name="type" />
+        <extraQueryParameter name="title" />
+        <queryText temporal="true">
+          SELECT entity FROM RelatedEntity entity WHERE
+          owner = :owner AND type = :type AND title = :title
+          #AND_TEMPORAL_QUERY_VALID_SUFFIX
+        </queryText>
+        <method>    /** Get all current RelatedEntity instances that match
+     * the owner, type, and title of the given instance.
+     * This version of the method creates and uses its own EntityManager.
+     * @param relatedEntityToMatch The related entity to be matched.
+     * @return An list of all RelatedEntity instances that match the
+     *     values of the fields of relatedEntityToMatch.
+     */
+    public static List&lt;RelatedEntity&gt;
+        getMatchingRelatedEntities(final RelatedEntity relatedEntityToMatch) {
+        EntityManager em = DBContext.getEntityManager();
+        TypedQuery&lt;RelatedEntity&gt; q = em.createNamedQuery(
+                RelatedEntity.
+                    GET_MATCHING_RELATED_ENTITIES,
+                RelatedEntity.class)
+                .setParameter(RelatedEntity.
+                    GET_MATCHING_RELATED_ENTITIES_OWNER,
+                    relatedEntityToMatch.getOwner())
+                .setParameter(RelatedEntity.
+                    GET_MATCHING_RELATED_ENTITIES_TYPE,
+                    relatedEntityToMatch.getType())
+                .setParameter(RelatedEntity.
+                    GET_MATCHING_RELATED_ENTITIES_TITLE,
+                    relatedEntityToMatch.getTitle());
+        q = TemporalUtils.setDatetimeConstantParameters(q);
+        List&lt;RelatedEntity&gt; entityList = q.getResultList();
+        em.close();
+        return entityList;
+    }
+
+    /** Get all current RelatedEntity instances that match
+     * the owner, type, and title of the given instance.
+     * This version of the method uses an existing EntityManager
+     * provided as a parameter; transaction begin/end must be
+     * managed by the caller.
+     * @param em The EntityManager to be used.
+     * @param relatedEntityToMatch The related entity to be matched.
+     * @return An list of all RelatedEntity instances that match the
+     *     values of the fields of relatedEntityToMatch.
+     */
+    public static List&lt;RelatedEntity&gt;
+        getMatchingRelatedEntities(final EntityManager em,
+            final RelatedEntity relatedEntityToMatch) {
+        TypedQuery&lt;RelatedEntity&gt; q = em.createNamedQuery(
+                RelatedEntity.
+                    GET_MATCHING_RELATED_ENTITIES,
+                RelatedEntity.class)
+                .setParameter(RelatedEntity.
+                    GET_MATCHING_RELATED_ENTITIES_OWNER,
+                    relatedEntityToMatch.getOwner())
+                .setParameter(RelatedEntity.
+                    GET_MATCHING_RELATED_ENTITIES_TYPE,
+                    relatedEntityToMatch.getType())
+                .setParameter(RelatedEntity.
+                    GET_MATCHING_RELATED_ENTITIES_TITLE,
+                    relatedEntityToMatch.getTitle());
+        q = TemporalUtils.setDatetimeConstantParameters(q);
+        List&lt;RelatedEntity&gt; entityList = q.getResultList();
+        return entityList;
+    }
+
+        </method>
+      </extraQuery>
+      <extraQuery name="GET_RELATED_ENTITIES_MATCHING_IDENT">
+        <extraQueryParameter name="owner" />
+        <extraQueryParameter name="identifierType" />
+        <extraQueryParameter name="identifierValue" />
+        <queryText temporal="true">
+          SELECT e1 FROM RelatedEntity e1,
+            RelatedEntityIdentifier e2 WHERE
+          e1.relatedEntityId = e2.relatedEntityId
+          AND e1.owner = :owner
+          AND e2.identifierType = :identifierType
+          AND e2.identifierValue = :identifierValue
+          #AND_TEMPORAL_QUERY_VALID_SUFFIX_E1
+          #AND_TEMPORAL_QUERY_VALID_SUFFIX_E2
+        </queryText>
+        <method>    /** Get all current RelatedEntity instances that have
+     * the given owner, and have an identifier with the given type and
+     * value.
+     * This version of the method creates and uses its own EntityManager.
+     * @param owner The owner to be matched.
+     * @param identifierType The type of identfier to be matched.
+     * @param identifierValue The value of identifier to be matched.
+     * @return An list of all RelatedEntity instances that have the
+     *     given owner, and that have an identifier with the given
+     *     type and value.
+     */
+    public static List&lt;RelatedEntity&gt;
+        getRelatedEntitiesWithMatchingIdentifier(final String owner,
+            final au.org.ands.vocabs.registry.enums.
+            RelatedEntityIdentifierType identifierType,
+            final String identifierValue) {
+        EntityManager em = DBContext.getEntityManager();
+        TypedQuery&lt;RelatedEntity&gt; q = em.createNamedQuery(
+                RelatedEntity.
+                    GET_RELATED_ENTITIES_MATCHING_IDENT,
+                RelatedEntity.class)
+                .setParameter(RelatedEntity.
+                    GET_RELATED_ENTITIES_MATCHING_IDENT_OWNER, owner)
+                .setParameter(RelatedEntity.
+                    GET_RELATED_ENTITIES_MATCHING_IDENT_IDENTIFIERTYPE,
+                    identifierType)
+                .setParameter(RelatedEntity.
+                    GET_RELATED_ENTITIES_MATCHING_IDENT_IDENTIFIERVALUE,
+                    identifierValue);
+        q = TemporalUtils.setDatetimeConstantParameters(q);
+        List&lt;RelatedEntity&gt; entityList = q.getResultList();
+        em.close();
+        return entityList;
+    }
+
+    /** Get all current RelatedEntity instances that have
+     * the given owner, and have an identifier with the given type and
+     * value.
+     * This version of the method uses an existing EntityManager
+     * provided as a parameter; transaction begin/end must be
+     * managed by the caller.
+     * @param em The EntityManager to be used.
+     * @param owner The owner to be matched.
+     * @param identifierType The type of identfier to be matched.
+     * @param identifierValue The value of identifier to be matched.
+     * @return An list of all RelatedEntity instances that have the
+     *     given owner, and that have an identifier with the given
+     *     type and value.
+     */
+    public static List&lt;RelatedEntity&gt;
+        getRelatedEntitiesWithMatchingIdentifier(
+            final EntityManager em,
+            final String owner,
+            final au.org.ands.vocabs.registry.enums.
+            RelatedEntityIdentifierType identifierType,
+            final String identifierValue) {
+        TypedQuery&lt;RelatedEntity&gt; q = em.createNamedQuery(
+                RelatedEntity.
+                    GET_RELATED_ENTITIES_MATCHING_IDENT,
+                RelatedEntity.class)
+                .setParameter(RelatedEntity.
+                    GET_RELATED_ENTITIES_MATCHING_IDENT_OWNER, owner)
+                .setParameter(RelatedEntity.
+                    GET_RELATED_ENTITIES_MATCHING_IDENT_IDENTIFIERTYPE,
+                    identifierType)
+                .setParameter(RelatedEntity.
+                    GET_RELATED_ENTITIES_MATCHING_IDENT_IDENTIFIERVALUE,
+                    identifierValue);
+        q = TemporalUtils.setDatetimeConstantParameters(q);
+        List&lt;RelatedEntity&gt; entityList = q.getResultList();
+        return entityList;
+    }
+
+        </method>
+      </extraQuery>
+      <extraQuery name="GET_CURRENT_RELATED_ENTITY_BY_TYPE">
+        <extraQueryParameter name="type" />
+        <queryText temporal="true">
+          SELECT entity FROM RelatedEntity entity WHERE
+          type = :type
+          #AND_TEMPORAL_QUERY_VALID_SUFFIX
+        </queryText>
+        <method>    /** Get all current RelatedEntity instances of a
+     * specified related entity type.
+     * @param relatedEntityType The related entity type to filter against.
+     * @return An list of all current RelatedEntity instances
+     *     of the specified related entity type.
+     */
+    public static List&lt;RelatedEntity&gt;
+        getAllCurrentRelatedEntityByType(
+            final au.org.ands.vocabs.registry.enums.RelatedEntityType
+            relatedEntityType) {
+        EntityManager em = DBContext.getEntityManager();
+        TypedQuery&lt;RelatedEntity&gt; q = em.createNamedQuery(
+                RelatedEntity.
+                    GET_CURRENT_RELATED_ENTITY_BY_TYPE,
+                RelatedEntity.class)
+                .setParameter(RelatedEntity.
+                    GET_CURRENT_RELATED_ENTITY_BY_TYPE_TYPE,
+                    relatedEntityType);
+        q = TemporalUtils.setDatetimeConstantParameters(q);
+        List&lt;RelatedEntity&gt; entityList = q.getResultList();
+        em.close();
+        return entityList;
+    }
+
+        </method>
+      </extraQuery>
+    </extraQueries>
+  </map>
+  <map tableName="related_entity_identifiers"
+       entityName="RelatedEntityIdentifier"
+       serialVersionUID="-4092084965564024230L"
+       >
+    <idKey keyColumn="related_entity_identifier_id"
+           entityName="RelatedEntityIdentifierId" />
+    <column db="identifier_type" enum="RelatedEntityIdentifierType" />
+    <foreignKeyQueries>
+      <foreignKeyQuery keyColumn="relatedEntityId" entityName="RelatedEntity" />
+    </foreignKeyQueries>
+  </map>
+  <map tableName="vocabulary_related_entities"
+       entityName="VocabularyRelatedEntity"
+       serialVersionUID="-8491635774415411143L"
+       >
+    <column db="relation" enum="RelatedEntityRelation" />
+    <extraQueries>
+      <extraQuery name="GET_VOC_RELATED_ENTITY_LIST_FOR_VOC">
+        <extraQueryParameter name="vocabularyId" />
+        <queryText temporal="true">
+          SELECT entity FROM VocabularyRelatedEntity entity WHERE
+          vocabularyId = :vocabularyId
+          #AND_TEMPORAL_QUERY_VALID_SUFFIX
+        </queryText>
+        <method>    /** Get all current VocabularyRelatedEntity instances for
+     * a vocabulary. The results are grouped by relatedEntityId.
+     * @param vocabularyId The vocabulary id for which vocabulary related
+     *     entities are to be looked up.
+     * @return A multi-valued map of all VocabularyRelatedEntity instances for
+     *     the vocabulary.
+     */
+    public static javax.ws.rs.core.MultivaluedMap&lt;
+            Integer, VocabularyRelatedEntity&gt;
+        getCurrentVocabularyRelatedEntitiesForVocabulary(
+                final int vocabularyId) {
+        EntityManager em = DBContext.getEntityManager();
+        TypedQuery&lt;VocabularyRelatedEntity&gt; q = em.createNamedQuery(
+                VocabularyRelatedEntity.
+                    GET_VOC_RELATED_ENTITY_LIST_FOR_VOC,
+                VocabularyRelatedEntity.class)
+                .setParameter(VocabularyRelatedEntity.
+                    GET_VOC_RELATED_ENTITY_LIST_FOR_VOC_VOCABULARYID,
+                    vocabularyId);
+        q = TemporalUtils.setDatetimeConstantParameters(q);
+        List&lt;VocabularyRelatedEntity&gt; entityList = q.getResultList();
+        em.close();
+        javax.ws.rs.core.MultivaluedMap&lt;Integer, VocabularyRelatedEntity&gt;
+        result = new javax.ws.rs.core.MultivaluedHashMap&lt;&gt;();
+        for (VocabularyRelatedEntity vre : entityList) {
+            result.add(vre.getRelatedEntityId(), vre);
+        }
+        return result;
+    }
+
+    /** Get all current VocabularyRelatedEntity instances for
+     * a vocabulary. The results are grouped by relatedEntityId.
+     * This version of the method uses an existing EntityManager
+     * provided as a parameter; transaction begin/end must be
+     * managed by the caller.
+     * @param em The EntityManager to be used.
+     * @param vocabularyId The vocabulary id for which vocabulary related
+     *     entities are to be looked up.
+     * @return A multi-valued map of all VocabularyRelatedEntity instances for
+     *     the vocabulary.
+     */
+    public static javax.ws.rs.core.MultivaluedMap&lt;
+            Integer, VocabularyRelatedEntity&gt;
+        getCurrentVocabularyRelatedEntitiesForVocabulary(
+                final EntityManager em,
+                final int vocabularyId) {
+        TypedQuery&lt;VocabularyRelatedEntity&gt; q = em.createNamedQuery(
+                VocabularyRelatedEntity.
+                    GET_VOC_RELATED_ENTITY_LIST_FOR_VOC,
+                VocabularyRelatedEntity.class)
+                .setParameter(VocabularyRelatedEntity.
+                    GET_VOC_RELATED_ENTITY_LIST_FOR_VOC_VOCABULARYID,
+                    vocabularyId);
+        q = TemporalUtils.setDatetimeConstantParameters(q);
+        List&lt;VocabularyRelatedEntity&gt; entityList = q.getResultList();
+        javax.ws.rs.core.MultivaluedMap&lt;Integer, VocabularyRelatedEntity&gt;
+        result = new javax.ws.rs.core.MultivaluedHashMap&lt;&gt;();
+        for (VocabularyRelatedEntity vre : entityList) {
+            result.add(vre.getRelatedEntityId(), vre);
+        }
+        return result;
+    }
+
+</method>
+      </extraQuery>
+      <extraQuery name="GET_DRAFT_VOC_RE_LIST_FOR_VOC">
+        <extraQueryParameter name="vocabularyId" />
+        <queryText temporal="true">
+          SELECT entity FROM VocabularyRelatedEntity entity WHERE
+          vocabularyId = :vocabularyId
+          #AND_TEMPORAL_QUERY_ALL_DRAFT_SUFFIX
+        </queryText>
+        <method>    /** Get all draft VocabularyRelatedEntity instances for
+     * a vocabulary. The results are grouped by relatedEntityId.
+     * This version of the method uses an existing EntityManager
+     * provided as a parameter; transaction begin/end must be
+     * managed by the caller.
+     * @param em The EntityManager to be used.
+     * @param vocabularyId The vocabulary id for which vocabulary related
+     *     entities are to be looked up.
+     * @return A multi-valued map of all VocabularyRelatedEntity instances for
+     *     the vocabulary.
+     */
+    public static javax.ws.rs.core.MultivaluedMap&lt;
+            Integer, VocabularyRelatedEntity&gt;
+        getDraftVocabularyRelatedEntitiesForVocabulary(
+                final EntityManager em,
+                final int vocabularyId) {
+        TypedQuery&lt;VocabularyRelatedEntity&gt; q = em.createNamedQuery(
+                VocabularyRelatedEntity.
+                    GET_DRAFT_VOC_RE_LIST_FOR_VOC,
+                VocabularyRelatedEntity.class)
+                .setParameter(VocabularyRelatedEntity.
+                    GET_DRAFT_VOC_RE_LIST_FOR_VOC_VOCABULARYID,
+                    vocabularyId);
+        q = TemporalUtils.setDatetimeConstantParameters(q);
+        List&lt;VocabularyRelatedEntity&gt; entityList = q.getResultList();
+        javax.ws.rs.core.MultivaluedMap&lt;Integer, VocabularyRelatedEntity&gt;
+        result = new javax.ws.rs.core.MultivaluedHashMap&lt;&gt;();
+        for (VocabularyRelatedEntity vre : entityList) {
+            result.add(vre.getRelatedEntityId(), vre);
+        }
+        return result;
+    }
+
+</method>
+      </extraQuery>
+      <extraQuery name="GET_VOCABULARY_IDS_WITH_RELATED_ENTITY">
+        <extraQueryParameter name="relatedEntityId" />
+        <queryText temporal="true">
+          SELECT entity.vocabularyId FROM VocabularyRelatedEntity
+          entity WHERE relatedEntityId = :relatedEntityId
+          #AND_TEMPORAL_QUERY_VALID_SUFFIX
+        </queryText>
+        <method>    /** Get the vocabulary ids of all vocabularies currently
+     * related to the given related entity.
+     * @param relatedEntityId The related entity to be looked up.
+     * @return a list of vocabulary ids of vocabularies related to the
+     *   related entity.
+     */
+    public static List&lt;Integer&gt; getVocabularyIdsWithRelatedEntity(
+                final int relatedEntityId) {
+        EntityManager em = DBContext.getEntityManager();
+        TypedQuery&lt;Integer&gt; q = em.createNamedQuery(
+                VocabularyRelatedEntity.GET_VOCABULARY_IDS_WITH_RELATED_ENTITY,
+                Integer.class)
+                .setParameter(VocabularyRelatedEntity.
+                GET_VOCABULARY_IDS_WITH_RELATED_ENTITY_RELATEDENTITYID,
+                relatedEntityId);
+        q = TemporalUtils.setDatetimeConstantParameters(q);
+        List&lt;Integer&gt; entityList = q.getResultList();
+        em.close();
+        return entityList;
+    }
+
+</method>
+      </extraQuery>
+    </extraQueries>
+  </map>
+  <map tableName="vocabulary_related_vocabularies"
+       entityName="VocabularyRelatedVocabulary"
+       serialVersionUID="-9169766097390954402L"
+       >
+    <column db="relation" enum="RelatedVocabularyRelation" />
+    <extraQueries>
+      <extraQuery name="GET_VOC_RELATED_VOC_LIST_FOR_VOC">
+        <extraQueryParameter name="vocabularyId" />
+        <queryText temporal="true">
+          SELECT entity FROM VocabularyRelatedVocabulary entity WHERE
+          vocabularyId = :vocabularyId
+          #AND_TEMPORAL_QUERY_VALID_SUFFIX
+        </queryText>
+        <method>    /** Get all current VocabularyRelatedVocabulary
+     * instances for a vocabulary. The results are grouped by vocabularyId
+     * of the related vocabularies.
+     * @param vocabularyId The vocabulary id for which vocabulary related
+     *     vocabularies are to be looked up.
+     * @return An multi-valued map of all VocabularyRelatedVocabulary
+     *     instances for the vocabulary.
+     */
+    public static javax.ws.rs.core.MultivaluedMap&lt;
+            Integer, VocabularyRelatedVocabulary&gt;
+        getCurrentVocabularyRelatedVocabulariesForVocabulary(
+                final int vocabularyId) {
+        EntityManager em = DBContext.getEntityManager();
+        TypedQuery&lt;VocabularyRelatedVocabulary&gt; q = em.createNamedQuery(
+                VocabularyRelatedVocabulary.
+                    GET_VOC_RELATED_VOC_LIST_FOR_VOC,
+                VocabularyRelatedVocabulary.class)
+                .setParameter(VocabularyRelatedVocabulary.
+                    GET_VOC_RELATED_VOC_LIST_FOR_VOC_VOCABULARYID,
+                    vocabularyId);
+        q = TemporalUtils.setDatetimeConstantParameters(q);
+        List&lt;VocabularyRelatedVocabulary&gt; entityList = q.getResultList();
+        em.close();
+        javax.ws.rs.core.MultivaluedMap&lt;Integer,
+            VocabularyRelatedVocabulary&gt;
+        result = new javax.ws.rs.core.MultivaluedHashMap&lt;&gt;();
+        for (VocabularyRelatedVocabulary vrv : entityList) {
+            result.add(vrv.getRelatedVocabularyId(), vrv);
+        }
+        return result;
+    }
+
+    /** Get all current VocabularyRelatedVocabulary
+     * instances for a vocabulary. The results are grouped by vocabularyId
+     * of the related vocabularies.
+     * This version of the method uses an existing EntityManager
+     * provided as a parameter; transaction begin/end must be
+     * managed by the caller.
+     * @param em The EntityManager to be used.
+     * @param vocabularyId The vocabulary id for which vocabulary related
+     *     vocabularies are to be looked up.
+     * @return An multi-valued map of all VocabularyRelatedVocabulary
+     *     instances for the vocabulary.
+     */
+    public static javax.ws.rs.core.MultivaluedMap&lt;
+            Integer, VocabularyRelatedVocabulary&gt;
+        getCurrentVocabularyRelatedVocabulariesForVocabulary(
+                final EntityManager em,
+                final int vocabularyId) {
+        TypedQuery&lt;VocabularyRelatedVocabulary&gt; q = em.createNamedQuery(
+                VocabularyRelatedVocabulary.
+                    GET_VOC_RELATED_VOC_LIST_FOR_VOC,
+                VocabularyRelatedVocabulary.class)
+                .setParameter(VocabularyRelatedVocabulary.
+                    GET_VOC_RELATED_VOC_LIST_FOR_VOC_VOCABULARYID,
+                    vocabularyId);
+        q = TemporalUtils.setDatetimeConstantParameters(q);
+        List&lt;VocabularyRelatedVocabulary&gt; entityList = q.getResultList();
+        javax.ws.rs.core.MultivaluedMap&lt;Integer,
+            VocabularyRelatedVocabulary&gt;
+        result = new javax.ws.rs.core.MultivaluedHashMap&lt;&gt;();
+        for (VocabularyRelatedVocabulary vrv : entityList) {
+            result.add(vrv.getRelatedVocabularyId(), vrv);
+        }
+        return result;
+    }
+
+</method>
+      </extraQuery>
+      <extraQuery name="GET_DRAFT_VOC_RV_LIST_FOR_VOC">
+        <extraQueryParameter name="vocabularyId" />
+        <queryText temporal="true">
+          SELECT entity FROM VocabularyRelatedVocabulary entity WHERE
+          vocabularyId = :vocabularyId
+          #AND_TEMPORAL_QUERY_ALL_DRAFT_SUFFIX
+        </queryText>
+        <method>    /** Get all draft VocabularyRelatedVocabulary
+     * instances for a vocabulary. The results are grouped by vocabularyId
+     * of the related vocabularies.
+     * This version of the method uses an existing EntityManager
+     * provided as a parameter; transaction begin/end must be
+     * managed by the caller.
+     * @param em The EntityManager to be used.
+     * @param vocabularyId The vocabulary id for which vocabulary related
+     *     vocabularies are to be looked up.
+     * @return An multi-valued map of all VocabularyRelatedVocabulary
+     *     instances for the vocabulary.
+     */
+    public static javax.ws.rs.core.MultivaluedMap&lt;
+            Integer, VocabularyRelatedVocabulary&gt;
+        getDraftVocabularyRelatedVocabulariesForVocabulary(
+                final EntityManager em,
+                final int vocabularyId) {
+        TypedQuery&lt;VocabularyRelatedVocabulary&gt; q = em.createNamedQuery(
+                VocabularyRelatedVocabulary.
+                    GET_DRAFT_VOC_RV_LIST_FOR_VOC,
+                VocabularyRelatedVocabulary.class)
+                .setParameter(VocabularyRelatedVocabulary.
+                    GET_DRAFT_VOC_RV_LIST_FOR_VOC_VOCABULARYID,
+                    vocabularyId);
+        q = TemporalUtils.setDatetimeConstantParameters(q);
+        List&lt;VocabularyRelatedVocabulary&gt; entityList = q.getResultList();
+        javax.ws.rs.core.MultivaluedMap&lt;Integer,
+            VocabularyRelatedVocabulary&gt;
+        result = new javax.ws.rs.core.MultivaluedHashMap&lt;&gt;();
+        for (VocabularyRelatedVocabulary vrv : entityList) {
+            result.add(vrv.getRelatedVocabularyId(), vrv);
+        }
+        return result;
+    }
+
+</method>
+      </extraQuery>
+    </extraQueries>
+  </map>
+  <map tableName="tasks"
+       entityName="Task"
+       serialVersionUID="3258582216313958016L"
+       >
+    <column db="status" enum="TaskStatus" />
+  </map>
+  <map tableName="poolparty_servers"
+       entityName="PoolPartyServer"
+       serialVersionUID="8549740134610632315L"
+       >
+  </map>
+<!--
+  <map tableName="vocabulary_events"
+       entityName="VocabularyEvent"
+       serialVersionUID="5339415610349523516L"
+       >
+  </map>
+-->
+  <map tableName="registry_events"
+       entityName="RegistryEvent"
+       serialVersionUID="-2085702449839519639L"
+       >
+    <column db="element_type" enum="RegistryEventElementType" />
+    <column db="event_type" enum="RegistryEventEventType" />
+  </map>
+  <map tableName="resource_owner_hosts"
+       entityName="ResourceOwnerHost"
+       serialVersionUID="-2913007035002774527L"
+       >
+    <extraQueries>
+      <extraQuery name="GET_CURRENT_R_O_HS_FOR_OWNER">
+        <extraQueryParameter name="owner" />
+        <queryText>
+          SELECT entity FROM ResourceOwnerHost entity WHERE
+          owner = :owner
+          #AND_TEMPORAL_QUERY_VALID_SUFFIX
+        </queryText>
+        <method>    /** Get all resource owner hosts by owner.
+     * @param owner The owner to be looked up.
+     * @return A list of all current resource owner host entries
+     *     belonging to the owner.
+     */
+    public static List&lt;ResourceOwnerHost&gt;
+    getCurrentResourceOwnerHostsForOwner(
+            final String owner) {
+        EntityManager em = DBContext.getEntityManager();
+        TypedQuery&lt;ResourceOwnerHost&gt; q = em.createNamedQuery(
+                ResourceOwnerHost.GET_CURRENT_R_O_HS_FOR_OWNER,
+                ResourceOwnerHost.class).
+                setParameter(ResourceOwnerHost.
+                        GET_CURRENT_R_O_HS_FOR_OWNER_OWNER, owner);
+        q = TemporalUtils.setDatetimeConstantParameters(q);
+        List&lt;ResourceOwnerHost&gt; rohList = q.getResultList();
+        em.close();
+        return rohList;
+    }
+
+        </method>
+      </extraQuery>
+    </extraQueries>
+  </map>
+  <map tableName="resource_map"
+       entityName="ResourceMapEntry"
+       serialVersionUID="-7521129755199622960L"
+       >
+  </map>
+  <map tableName="subject_resolver_sources"
+       entityName="SubjectResolverSource"
+       serialVersionUID="-3935011431416885320L"
+       >
+  </map>
+  <map tableName="subject_resolver"
+       entityName="SubjectResolverEntry"
+       serialVersionUID="-7882031463978706641L"
+       >
+    <extraQueries>
+      <extraQuery name="DOES_SUBJECT_RESOLVE">
+        <extraQueryParameter name="source" />
+        <extraQueryParameter name="iri" />
+        <queryText>
+          SELECT COUNT(entity) > 0 FROM SubjectResolverEntry entity WHERE
+          source = :source AND iri = :iri
+        </queryText>
+        <method>    /** Does a subject resolve?
+     * @param source The vocabulary source for the subject.
+     * @param iri The IRI of the subject being looked up.
+     * @return true, if the source/IRI is valid.
+     */
+    public static boolean
+        doesSubjectResolve(final String source, final String iri) {
+        EntityManager em = DBContext.getEntityManager();
+        TypedQuery&lt;Boolean&gt; q = em.createNamedQuery(
+                SubjectResolverEntry.DOES_SUBJECT_RESOLVE,
+                Boolean.class)
+                .setParameter(SubjectResolverEntry.
+                    DOES_SUBJECT_RESOLVE_SOURCE, source)
+                    .setParameter(SubjectResolverEntry.
+                    DOES_SUBJECT_RESOLVE_IRI, iri);
+        Boolean subjectValid = q.getSingleResult();
+        em.close();
+        return subjectValid;
+    }
+
+</method>
+      </extraQuery>
+      <extraQuery name="GET_SUBJECT_RESOLVED">
+        <extraQueryParameter name="source" />
+        <extraQueryParameter name="iri" />
+        <queryText>
+          SELECT entity FROM SubjectResolverEntry entity WHERE
+          source = :source AND iri = :iri
+        </queryText>
+        <method>    /** Get the SubjectResolverEntry instances for a subject.
+     * @param source The vocabulary source for the subject.
+     * @param iri The IRI of the subject being looked up.
+     * @return An list of all SubjectResolverEntry instances for the subject.
+     */
+    public static List&lt;SubjectResolverEntry&gt;
+        getSubjectResolverEntries(final String source, final String iri) {
+        EntityManager em = DBContext.getEntityManager();
+        TypedQuery&lt;SubjectResolverEntry&gt; q = em.createNamedQuery(
+                SubjectResolverEntry.
+                    GET_SUBJECT_RESOLVED,
+                SubjectResolverEntry.class)
+                .setParameter(SubjectResolverEntry.
+                    GET_SUBJECT_RESOLVED_SOURCE,
+                    source)
+                .setParameter(SubjectResolverEntry.
+                    GET_SUBJECT_RESOLVED_IRI,
+                    iri);
+        List&lt;SubjectResolverEntry&gt; entityList = q.getResultList();
+        em.close();
+        return entityList;
+    }
+
+</method>
+      </extraQuery>
+      <extraQuery name="DELETE_ALL_ENTRIES" type="update">
+        <queryText>
+          DELETE FROM SubjectResolverEntry entity
+        </queryText>
+        <method>    /** Delete all resolver entries.
+     */
+    public static void deleteAllResolverEntries() {
+        EntityManager em = DBContext.getEntityManager();
+        em.getTransaction().begin();
+        Query q = em.createNamedQuery(SubjectResolverEntry.
+                    DELETE_ALL_ENTRIES);
+        q.executeUpdate();
+        em.getTransaction().commit();
+        em.close();
+    }
+
+</method>
+      </extraQuery>
+    </extraQueries>
+  </map>
+  <map tableName="uploads"
+       entityName="Upload"
+       serialVersionUID="-7712278075684748720L"
+       >
+  </map>
+
+
+</db-entity-map>

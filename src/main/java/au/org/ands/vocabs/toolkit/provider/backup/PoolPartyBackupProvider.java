@@ -11,6 +11,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 
 import javax.json.Json;
 import javax.json.JsonArray;
@@ -28,9 +29,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import au.org.ands.vocabs.toolkit.tasks.TaskStatus;
+import au.org.ands.vocabs.toolkit.utils.PoolPartyUtils;
 import au.org.ands.vocabs.toolkit.utils.PropertyConstants;
 import au.org.ands.vocabs.toolkit.utils.ToolkitFileUtils;
 import au.org.ands.vocabs.toolkit.utils.ToolkitNetUtils;
+import au.org.ands.vocabs.toolkit.utils.ToolkitProperties;
 import ch.qos.logback.classic.Level;
 
 /** Backup provider for PoolParty. */
@@ -44,17 +47,18 @@ public class PoolPartyBackupProvider extends BackupProvider {
      * @return An ArrayList of all IDs as Strings.
      */
     public final ArrayList<String> getProjectIDs() {
-        String remoteUrl = PROPS.getProperty(
-                PropertyConstants.POOLPARTYHARVESTER_REMOTEURL);
-        String username = PROPS.getProperty(
-                PropertyConstants.POOLPARTYHARVESTER_USERNAME);
-        String password = PROPS.getProperty(
-                PropertyConstants.POOLPARTYHARVESTER_PASSWORD);
+        String remoteUrl = ToolkitProperties.getProperty(
+                PropertyConstants.POOLPARTY_REMOTEURL);
+        String username = ToolkitProperties.getProperty(
+                PropertyConstants.POOLPARTY_USERNAME);
+        String password = ToolkitProperties.getProperty(
+                PropertyConstants.POOLPARTY_PASSWORD);
 
         logger.debug("Getting metadata from " + remoteUrl);
 
         Client client = ToolkitNetUtils.getClient();
-        WebTarget target = client.target(remoteUrl);
+        WebTarget target = client.target(remoteUrl)
+                .path(PoolPartyUtils.API_PROJECTS);
         HttpAuthenticationFeature feature =
                 HttpAuthenticationFeature.basic(username, password);
         target.register(feature);
@@ -98,30 +102,44 @@ public class PoolPartyBackupProvider extends BackupProvider {
             final String ppProjectId,
             final String outputPath) {
         HashMap<String, String> result = new HashMap<String, String>();
-        String remoteUrl = PROPS.getProperty(
-                PropertyConstants.POOLPARTYHARVESTER_REMOTEURL);
-        String username = PROPS.getProperty(
-                PropertyConstants.POOLPARTYHARVESTER_USERNAME);
-        String password = PROPS.getProperty(
-                PropertyConstants.POOLPARTYHARVESTER_PASSWORD);
+        String remoteUrl = ToolkitProperties.getProperty(
+                PropertyConstants.POOLPARTY_REMOTEURL);
+        String username = ToolkitProperties.getProperty(
+                PropertyConstants.POOLPARTY_USERNAME);
+        String password = ToolkitProperties.getProperty(
+                PropertyConstants.POOLPARTY_PASSWORD);
 
-        String format = PROPS.getProperty(
-                PropertyConstants.POOLPARTYHARVESTER_DEFAULTFORMAT);
+        // Has to be either TriG or TriX.
+        // We could do this as a Toolkit property (as we used to,
+        // though incorrectly piggy-backing the PP harvester setting),
+        // but there does not yet appear to be a gain.
+        String format = "TriG";
 
         List<String> exportModules = new ArrayList<String>();
 
+        // The following list of export modules comes from:
+        // https://help.poolparty.biz/doc/developer-guide/
+        //   basic-advanced-server-apis/poolparty-api-guide/
+        //   general-remarks-concerning-poolparty-api/
+        //   poolparty-project-modules
+        // If the list on the web page changes, change the following ...
         exportModules.add("concepts");
         exportModules.add("workflow");
         exportModules.add("history");
-        exportModules.add("freeConcepts");
+        exportModules.add("suggestedConcepts");
         exportModules.add("void");
         exportModules.add("adms");
-        exportModules.add("void");
+        exportModules.add("candidateConcepts");
+        exportModules.add("lists");
+        exportModules.add("deprecatedConcepts");
+        exportModules.add("skosnotes");
+        exportModules.add("linkedData");
 
         logger.debug("Getting project from " + remoteUrl);
 
         Client client = ToolkitNetUtils.getClient();
-        WebTarget target = client.target(remoteUrl);
+        WebTarget target = client.target(remoteUrl).
+                path(PoolPartyUtils.API_PROJECTS);
         HttpAuthenticationFeature feature =
                 HttpAuthenticationFeature.basic(username, password);
         WebTarget thisTarget = target.register(feature)
@@ -144,7 +162,7 @@ public class PoolPartyBackupProvider extends BackupProvider {
             String responseData = response.readEntity(String.class);
             Date date = new Date();
             SimpleDateFormat dateFormat = new SimpleDateFormat(
-                    "yyyy-MM-dd'T'HH:mm:ss");
+                    "yyyy-MM-dd'T'HH:mm:ss", Locale.ROOT);
             String fileName = dateFormat.format(date) + "-backup";
             String filePath = ToolkitFileUtils.saveFile(
                     outputPath,

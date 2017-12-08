@@ -9,7 +9,6 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.Properties;
 
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
@@ -25,7 +24,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 import au.org.ands.vocabs.toolkit.db.model.AccessPoint;
 import au.org.ands.vocabs.toolkit.db.model.Version;
-import au.org.ands.vocabs.toolkit.restlet.Download;
+import au.org.ands.vocabs.toolkit.rest.Download;
 import au.org.ands.vocabs.toolkit.utils.PropertyConstants;
 import au.org.ands.vocabs.toolkit.utils.ToolkitProperties;
 
@@ -36,22 +35,20 @@ public final class AccessPointUtils {
     private static final Logger LOGGER = LoggerFactory.getLogger(
             MethodHandles.lookup().lookupClass());
 
-    /** Access to the Toolkit properties. */
-    protected static final Properties PROPS = ToolkitProperties.getProperties();
-
     /** URL that is a prefix to download endpoints. */
     private static String downloadPrefixProperty =
-            PROPS.getProperty(PropertyConstants.TOOLKIT_DOWNLOADPREFIX);
+            ToolkitProperties.getProperty(
+                    PropertyConstants.TOOLKIT_DOWNLOADPREFIX);
 
     /** Mapping of file extensions to file formats. */
     public static final Hashtable<String, String>
     EXTENSION_TO_FILE_FORMAT_MAP =
-    new Hashtable<String, String>();
+    new Hashtable<>();
 
     /** Mapping of MIME types to file formats. */
     public static final Hashtable<String, String>
     MIMETYPE_TO_FILE_FORMAT_MAP =
-    new Hashtable<String, String>();
+    new Hashtable<>();
 
     // The values should match those in:
     // ANDS-Registry-Core/applications/portal/vocabs/assets/js/versionCtrl.js
@@ -295,6 +292,26 @@ public final class AccessPointUtils {
         return uri.asText();
     }
 
+    /** Get the portal's source setting for an apiSparql or sissvoc
+     * access point.
+     * @param ap the access point
+     * @return the access point's portal source setting, if it has one,
+     * or null otherwise.
+     */
+    public static String getPortalSource(final AccessPoint ap) {
+        if (!(AccessPoint.API_SPARQL_TYPE.equals(ap.getType())
+                || (AccessPoint.SISSVOC_TYPE.equals(ap.getType())))) {
+            // Not the right type.
+            return null;
+        }
+        JsonNode dataJson = TaskUtils.jsonStringToTree(ap.getPortalData());
+        JsonNode uri = dataJson.get("source");
+        if (uri == null) {
+            return null;
+        }
+        return uri.asText();
+    }
+
     /** Save a new access point to the database.
      * @param ap The access point to be saved.
      */
@@ -307,7 +324,7 @@ public final class AccessPointUtils {
     }
 
     /** Update an existing access point in the database.
-     * @param ap The access point to be update.
+     * @param ap The access point to be updated.
      */
     public static void updateAccessPoint(final AccessPoint ap) {
         EntityManager em = DBContext.getEntityManager();

@@ -4,13 +4,13 @@ package au.org.ands.vocabs.toolkit.provider.publish;
 import java.io.File;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map.Entry;
-import java.util.Properties;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.WebTarget;
@@ -44,24 +44,21 @@ public class SISSVocPublishProvider extends PublishProvider {
      */
     private static final String SPEC_SETTINGS_KEY = "spec_settings";
 
-    /** Access to the Toolkit properties. */
-    protected static final Properties PROPS = ToolkitProperties.getProperties();
-
     /** The location of the spec file template. */
-    private String sissvocSpecTemplatePath =
-            PROPS.getProperty(PropertyConstants.SISSVOC_SPECTEMPLATE);
+    private String sissvocSpecTemplatePath = ToolkitProperties.getProperty(
+            PropertyConstants.SISSVOC_SPECTEMPLATE);
 
     /** The directory in which to write generated spec files. */
-    private String sissvocSpecOutputPath =
-            PROPS.getProperty(PropertyConstants.SISSVOC_SPECSPATH);
+    private String sissvocSpecOutputPath = ToolkitProperties.getProperty(
+            PropertyConstants.SISSVOC_SPECSPATH);
 
     /** URL that is a prefix to all SISSVoc endpoints. */
-    private String sissvocEndpointsPrefix =
-            PROPS.getProperty(PropertyConstants.SISSVOC_ENDPOINTSPREFIX);
+    private String sissvocEndpointsPrefix = ToolkitProperties.getProperty(
+            PropertyConstants.SISSVOC_ENDPOINTSPREFIX);
 
     /** Values to be substituted in the spec file template. */
     private final HashMap<String, String> specProperties =
-            new HashMap<String, String>();
+            new HashMap<>();
 
     @Override
     public final String getInfo() {
@@ -74,7 +71,7 @@ public class SISSVocPublishProvider extends PublishProvider {
             final HashMap<String, String> results) {
         addBasicSpecProperties(taskInfo);
         addAdditionalSpecProperties(subtask);
-        if (!writeSpecFile(taskInfo, subtask, results)) {
+        if (!writeSpecFile(taskInfo, results)) {
             return false;
         }
 
@@ -103,7 +100,7 @@ public class SISSVocPublishProvider extends PublishProvider {
         // supports it.
         //        removeSpecFile(taskInfo, subtask, results);
         // For now, use the truncation method.
-        if (!truncateSpecFileIfExists(taskInfo, subtask, results)) {
+        if (!truncateSpecFileIfExists(taskInfo, results)) {
             return false;
         }
 
@@ -119,29 +116,29 @@ public class SISSVocPublishProvider extends PublishProvider {
     private void addBasicSpecProperties(final TaskInfo taskInfo) {
         // Top-level of deployment path
         specProperties.put("DEPLOYPATH",
-                PROPS.getProperty(
+                ToolkitProperties.getProperty(
                         PropertyConstants.SISSVOC_VARIABLE_DEPLOYPATH,
                         "/repository/api/lda"));
         // The name of the ANDS Vocabulary service
         specProperties.put("SERVICE_TITLE",
-                PROPS.getProperty(
+                ToolkitProperties.getProperty(
                         PropertyConstants.SISSVOC_VARIABLE_SERVICE_TITLE,
                         "ANDS Vocabularies LDA service"));
         // The name of the ANDS Vocabulary service owner
         specProperties.put("SERVICE_AUTHOR",
-                PROPS.getProperty(
+                ToolkitProperties.getProperty(
                         PropertyConstants.SISSVOC_VARIABLE_SERVICE_AUTHOR,
                         "ANDS Services"));
         // Contact email address for the ANDS Vocabulary service owner
         specProperties.put("SERVICE_AUTHOR_EMAIL",
-                PROPS.getProperty(
+                ToolkitProperties.getProperty(
                         PropertyConstants.SISSVOC_VARIABLE_SERVICE_AUTHOR_EMAIL,
                         "services@ands.org.au"));
         // Homepage of the ANDS Vocabulary service
         // ANDS home page for now; in future, could be
         // vocabs.ands.org.au itself.
         specProperties.put("SERVICE_HOMEPAGE",
-                PROPS.getProperty(
+                ToolkitProperties.getProperty(
                         PropertyConstants.SISSVOC_VARIABLE_SERVICE_HOMEPAGE,
                         "http://www.ands.org.au/"));
         // Vocabulary title
@@ -151,7 +148,7 @@ public class SISSVocPublishProvider extends PublishProvider {
         String repositoryId = ToolkitFileUtils.getSesameRepositoryId(taskInfo);
         // SPARQL endpoint to use for doing queries
         specProperties.put("SPARQL_ENDPOINT",
-                PROPS.getProperty(
+                ToolkitProperties.getProperty(
                     PropertyConstants.SISSVOC_VARIABLE_SPARQL_ENDPOINT_PREFIX,
                         "http://localhost:8080/repository/"
                                 + "openrdf-sesame/repositories/")
@@ -164,7 +161,7 @@ public class SISSVocPublishProvider extends PublishProvider {
         // Path to the XSL stylesheet that generates the HTML pages.
         // Path is relative to the SISSVoc webapp.
         specProperties.put("HTML_STYLESHEET",
-                PROPS.getProperty(
+                ToolkitProperties.getProperty(
                         PropertyConstants.SISSVOC_VARIABLE_HTML_STYLESHEET,
                         "resources/default/transform/ands-ashtml-sissvoc.xsl"));
         // Empty string for now
@@ -207,17 +204,16 @@ public class SISSVocPublishProvider extends PublishProvider {
 
     /** Write out the spec file for SISSVoc.
      * @param taskInfo The TaskInfo object for this task.
-     * @param subtask The specification of this publish subtask
      * @param results HashMap representing the result of the publish.
      * @return True iff success.
      */
     private boolean writeSpecFile(final TaskInfo taskInfo,
-            final JsonNode subtask,
             final HashMap<String, String> results) {
         File templateFile = new File(sissvocSpecTemplatePath);
         String specTemplate;
         try {
-            specTemplate = FileUtils.readFileToString(templateFile);
+            specTemplate = FileUtils.readFileToString(templateFile,
+                    StandardCharsets.UTF_8);
         } catch (IOException e) {
             results.put(TaskStatus.EXCEPTION,
                     "SISSVoc writeSpecFile: can't open template file");
@@ -233,7 +229,8 @@ public class SISSVocPublishProvider extends PublishProvider {
                 resolve(ToolkitFileUtils.getSesameRepositoryId(taskInfo)
                         + ".ttl").toString());
         try {
-            FileUtils.writeStringToFile(specFile, customSpec);
+            FileUtils.writeStringToFile(specFile, customSpec,
+                    StandardCharsets.UTF_8);
         } catch (IOException e) {
             results.put(TaskStatus.EXCEPTION,
                     "SISSVoc writeSpecFile: can't write spec file");
@@ -249,12 +246,10 @@ public class SISSVocPublishProvider extends PublishProvider {
      * for unpublication until the elda library supports detection
      * of deleted files.
      * @param taskInfo The TaskInfo object for this task.
-     * @param subtask The specification of this publish subtask
      * @param results HashMap representing the result of the unpublish.
      * @return True iff success.
      */
     private boolean truncateSpecFileIfExists(final TaskInfo taskInfo,
-            final JsonNode subtask,
             final HashMap<String, String> results) {
         try {
             Path specFilePath = Paths.get(sissvocSpecOutputPath).

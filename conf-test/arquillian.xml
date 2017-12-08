@@ -2,11 +2,62 @@
 <arquillian
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xmlns="http://jboss.org/schema/arquillian"
-  xsi:schemaLocation="http://jboss.org/schema/arquillian http://jboss.org/schema/arquillian/arquillian_1_0.xsd">
+  xsi:schemaLocation="http://jboss.org/schema/arquillian
+                      http://jboss.org/schema/arquillian/arquillian_1_0.xsd">
 
-   <container qualifier="tomcat" default="true">
-     <configuration>
-       <property name="bindHttpPort">8123</property>
-     </configuration>
-   </container>
+  <container qualifier="tomcat" default="true">
+    <configuration>
+      <!-- Ports -->
+      <property name="bindHttpPort">8123</property>
+      <property name="jmxPort">8089</property>
+
+      <!-- The values of PROPS_FILE, ROLES_PROPS_FILE,
+           and REGISTRY_PROPS_FILE must be provided as
+           system properties via the java command line
+           as -DPROPS_FILE=..., etc. So then here,
+           they are passed on to the child JVM which runs the
+           container.
+           The values of SESAME_BASEDIR and SESAME_LOGGING_DIR
+           are set in the method
+           au.org.ands.vocabs.toolkit.test.arquillian.SesameTests.
+           setupSesame(). The values that are set are derived
+           from the setting test.Tomcat.directory in the Toolkit
+           properties.
+           There _must_ be environment variables JACOCO_AGENT
+           and JACOCO_OUTPUT set; starting up the JVM fails
+           otherwise. See the testng/testng-bamboo targets in
+           build.xml.
+      -->
+      <property name="javaVmArguments">
+        -DPROPS_FILE=${PROPS_FILE}
+        -DROLES_PROPS_FILE=${ROLES_PROPS_FILE}
+        -DREGISTRY_PROPS_FILE=${REGISTRY_PROPS_FILE}
+        -DdumpProperties
+        -DdumpClasspath
+        -Dinfo.aduna.platform.appdata.basedir=${SESAME_BASEDIR}
+        -Dinfo.aduna.logging.dir=${SESAME_LOGGING_DIR}
+        -javaagent:${env.JACOCO_AGENT}=destfile=${env.JACOCO_OUTPUT}
+    </property>
+
+      <!-- Where to find Tomcat. NB: you "should" only have to specify
+           catalinaHome, but because of a defect in the version of
+           arquillian-container-tomcat we're using, you also have to
+           specify catalinaBase. -->
+      <property name="catalinaHome">
+        tomcatmanaged/apache-tomcat-7.0.69
+      </property>
+      <property name="catalinaBase">
+        tomcatmanaged/apache-tomcat-7.0.69
+      </property>
+
+      <!-- The location of server.xml within Tomcat's conf. -->
+      <property name="serverConfig">server.xml</property>
+
+      <!-- Username/password to use to script Tomcat. Must
+           match what's in tomcat-users.xml. -->
+      <property name="user">arquillian</property>
+      <property name="pass">arquillian</property>
+
+    </configuration>
+  </container>
 </arquillian>

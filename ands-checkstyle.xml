@@ -17,7 +17,9 @@
     </module>
     <module name="JavadocType"/>
     <module name="JavadocVariable"/>
-    <module name="JavadocStyle"/>
+    <module name="JavadocStyle">
+      <property name="checkEmptyJavadoc" value="true"/>
+    </module>
     <module name="ConstantName"/>
     <module name="LocalFinalVariableName"/>
     <module name="LocalVariableName"/>
@@ -31,7 +33,12 @@
     <module name="IllegalImport"/>
     <module name="RedundantImport"/>
     <module name="UnusedImports"/>
-    <module name="LineLength"/>
+    <module name="LineLength">
+      <!-- Ignore lines of Javadoc comments that can't be split,
+           and Eclipse-generated imports. -->
+      <property name="ignorePattern"
+                value="^ *\* *[^ ]+$|^import [^ ]+;$"/>
+    </module>
     <module name="MethodLength"/>
     <module name="ParameterNumber"/>
     <module name="EmptyForIteratorPad"/>
@@ -70,6 +77,7 @@
     <module name="FinalParameters"/>
     <module name="TodoComment"/>
     <module name="UpperEll"/>
+    <module name="SuppressWarningsHolder"/>
   </module>
   <module name="JavadocPackage"/>
   <module name="NewlineAtEndOfFile"/>
@@ -83,5 +91,10 @@
   <module name="SuppressionFilter">
     <property name="file" value="${samedir}/ands-checkstyle-suppress.xml"/>
   </module>
-  <module name="SuppressionCommentFilter"/>
+  <module name="SuppressionCommentFilter">
+    <property name="offCommentFormat" value="CHECKSTYLE\:OFF\: ([\w\|]+)"/>
+    <property name="onCommentFormat" value="CHECKSTYLE\:ON\: ([\w\|]+)"/>
+    <property name="checkFormat" value="$1"/>
+  </module>
+  <module name="SuppressWarningsFilter"/>
 </module>

@@ -4,15 +4,17 @@ package au.org.ands.vocabs.toolkit.utils;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.lang.invoke.MethodHandles;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Enumeration;
+import java.util.Locale;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
@@ -94,26 +96,23 @@ public final class ToolkitFileUtils {
     public static String saveFile(final String dirName, final String fileName,
             final String format, final String data) {
         String fileExtension =
-                ToolkitConfig.FORMAT_TO_FILEEXT_MAP.get(format.toLowerCase());
+                RDFUtils.FORMAT_TO_FILEEXT_MAP.get(
+                        format.toLowerCase(Locale.ROOT));
         String filePath = dirName
                 + File.separator + fileName + fileExtension;
-        FileWriter writer = null;
-        try {
-            requireDirectory(dirName);
-            File oFile = new File(filePath);
-            writer = new FileWriter(oFile);
+        requireDirectory(dirName);
+        File oFile = new File(filePath);
+        // See, e.g.,
+        // http://stackoverflow.com/questions/9852978/
+        //        write-a-file-in-utf-8-using-filewriter-java
+        try (OutputStreamWriter writer =
+                new OutputStreamWriter(new FileOutputStream(oFile),
+                        StandardCharsets.UTF_8)) {
             writer.write(data);
             writer.close();
         } catch (IOException e) {
+            logger.error("Exception in ToolkitFileUtils.saveFile(): ", e);
             return "Exception: " + e.toString();
-        } finally {
-            if (writer != null) {
-                try {
-                    writer.close();
-                } catch (IOException e) {
-                    return "Exception: " + e.toString();
-                }
-            }
         }
         return filePath;
     }
@@ -301,7 +300,7 @@ public final class ToolkitFileUtils {
                 UriComponent.encode(aString.
                 replaceAll("\\p{Punct}", "-").
                 replaceAll("\\s", "-").
-                toLowerCase(),
+                toLowerCase(Locale.ROOT),
                 UriComponent.Type.PATH_SEGMENT).
                 replaceAll("%", "-").
                 replaceAll("-+", "-"),
@@ -426,7 +425,7 @@ public final class ToolkitFileUtils {
         File[] files = dir.listFiles();
 
         for (File source : files) {
-            if (!source.getName().toLowerCase().endsWith(".zip")) {
+            if (!source.getName().toLowerCase(Locale.ROOT).endsWith(".zip")) {
                 logger.debug("compressBackupFolder compressing and "
                         + "deleting file: "
                         + source.toString());

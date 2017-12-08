@@ -85,9 +85,9 @@ public class SesameHarvestProvider extends HarvestProvider {
 
         // Future work: support accessing via basic authentication.
 //        String username = PROPS.getProperty(
-//                PropertyConstants.POOLPARTYHARVESTER_USERNAME);
+//                PropertyConstants.POOLPARTY_USERNAME);
 //        String password = PROPS.getProperty(
-//                PropertyConstants.POOLPARTYHARVESTER_PASSWORD);
+//                PropertyConstants.POOLPARTY_PASSWORD);
 
         logger.debug("Getting project from " + remoteBase
                 + ", repository id " + repositoryId);
@@ -152,7 +152,7 @@ public class SesameHarvestProvider extends HarvestProvider {
     }
 
     /** Extract the metadata for a given repository from a Sesame server.
-     * @param repositoryId.
+     * @param repositoryId The repository ID.
      * @return The metadata for the repository.
      */
     @Override

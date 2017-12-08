@@ -2,7 +2,6 @@
 package au.org.ands.vocabs.toolkit.provider.transform;
 
 import java.util.HashMap;
-import java.util.Properties;
 
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
@@ -12,7 +11,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 import au.org.ands.vocabs.toolkit.db.model.Version;
 import au.org.ands.vocabs.toolkit.tasks.TaskInfo;
-import au.org.ands.vocabs.toolkit.utils.ToolkitProperties;
 
 /**
  * Transform provider for inserting (version) metadata into a Sesame repository.
@@ -27,9 +25,6 @@ public class SesameInsertMetadataTransformProvider extends TransformProvider {
 //    /** Logger for this class. */
 //    private final Logger logger = LoggerFactory.getLogger(
 //            MethodHandles.lookup().lookupClass());
-
-    /** Access to the Toolkit properties. */
-    protected static final Properties PROPS = ToolkitProperties.getProperties();
 
     @Override
     public final String getInfo() {
@@ -118,7 +113,7 @@ public class SesameInsertMetadataTransformProvider extends TransformProvider {
     /** Map of our own version status indicators to the PURLs used
      * by ADMS 1.0. */
     private static HashMap<String, String> admsStatusMap =
-            new HashMap<String, String>();
+            new HashMap<>();
 
     static {
         admsStatusMap.put("current",
@@ -146,11 +141,11 @@ public class SesameInsertMetadataTransformProvider extends TransformProvider {
 
         // Construct bindings for SPARQL Update.
         ValueFactory factory = ValueFactoryImpl.getInstance();
-        HashMap<String, Value> bindings = new HashMap<String, Value>();
+        HashMap<String, Value> bindings = new HashMap<>();
 
         if (issuedDate != null) {
             bindings.put("issuedDate", factory.createLiteral(issuedDate));
-            result = SesameTransformUtils.runUpdate(taskInfo, subtask, results,
+            result = SesameTransformUtils.runUpdate(taskInfo, results,
                     INSERT_DCTERMS_ISSUED_METADATA_UPDATE, bindings);
             if (!result) {
                 // Failure applying the Update. Stop here.
@@ -162,7 +157,7 @@ public class SesameInsertMetadataTransformProvider extends TransformProvider {
             // Reset bindings and apply the version title Update.
             bindings.clear();
             bindings.put("versionTitle", factory.createLiteral(versionTitle));
-            result = SesameTransformUtils.runUpdate(taskInfo, subtask, results,
+            result = SesameTransformUtils.runUpdate(taskInfo, results,
                     INSERT_OWL_VERSIONINFO_METADATA_UPDATE, bindings);
             if (!result) {
                 // Failure applying the Update. Stop here.
@@ -193,7 +188,7 @@ public class SesameInsertMetadataTransformProvider extends TransformProvider {
     public final boolean untransform(final TaskInfo taskInfo,
             final JsonNode subtask,
             final HashMap<String, String> results) {
-        return SesameTransformUtils.runUpdate(taskInfo, subtask, results,
+        return SesameTransformUtils.runUpdate(taskInfo, results,
                 DELETE_METADATA_UPDATE, new HashMap<String, Value>());
     }
 

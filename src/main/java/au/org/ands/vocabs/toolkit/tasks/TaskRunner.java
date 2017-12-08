@@ -5,10 +5,15 @@ import java.lang.invoke.MethodHandles;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.TimeZone;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import au.org.ands.vocabs.toolkit.db.TaskUtils;
 import au.org.ands.vocabs.toolkit.db.model.Task;
@@ -21,10 +26,6 @@ import au.org.ands.vocabs.toolkit.provider.publish.PublishProviderUtils;
 import au.org.ands.vocabs.toolkit.provider.transform.TransformProvider;
 import au.org.ands.vocabs.toolkit.provider.transform.TransformProviderUtils;
 import au.org.ands.vocabs.toolkit.utils.ToolkitFileUtils;
-
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /** Top level runner for tasks. */
 public class TaskRunner {
@@ -147,15 +148,7 @@ public class TaskRunner {
         status = taskType + "ING";
         TaskUtils.updateMessageAndTaskStatus(logger, task, results,
                 status, "Harvest in progress");
-        try {
-            provider = HarvestProviderUtils.getProvider(providerName);
-        } catch (ClassNotFoundException
-                | InstantiationException
-                | IllegalAccessException e) {
-            logger.error("runHarvest exception: ", e);
-            results.put(TaskStatus.EXCEPTION, e.toString());
-            return false;
-        }
+        provider = HarvestProviderUtils.getProvider(providerName);
 
         if (provider == null) {
             status = TaskStatus.ERROR;
@@ -185,16 +178,8 @@ public class TaskRunner {
         String providerName = subtask.get("provider_type").textValue();
         status = "TRANSFORMING";
         TaskUtils.updateMessageAndTaskStatus(logger, task, results,
-                status, "Import in progress");
-         try {
-            provider = TransformProviderUtils.getProvider(providerName);
-        } catch (ClassNotFoundException
-                | InstantiationException
-                | IllegalAccessException e) {
-            logger.error("runTransform exception: ", e);
-            results.put(TaskStatus.EXCEPTION, e.toString());
-            return false;
-        }
+                status, "Transform in progress");
+        provider = TransformProviderUtils.getProvider(providerName);
 
         if (provider == null) {
             status = TaskStatus.ERROR;
@@ -225,15 +210,7 @@ public class TaskRunner {
         status = taskType + "ING";
         TaskUtils.updateMessageAndTaskStatus(logger, task, results,
                 status, "Import in progress");
-         try {
-            provider = ImporterProviderUtils.getProvider(providerName);
-        } catch (ClassNotFoundException
-                | InstantiationException
-                | IllegalAccessException e) {
-            logger.error("runImport exception: ", e);
-            results.put(TaskStatus.EXCEPTION, e.toString());
-            return false;
-        }
+         provider = ImporterProviderUtils.getProvider(providerName);
 
         if (provider == null) {
             status = TaskStatus.ERROR;
@@ -263,16 +240,8 @@ public class TaskRunner {
         logger.debug("runPublish, task type: " + taskType);
         status = taskType + "ING";
         TaskUtils.updateMessageAndTaskStatus(logger, task, results,
-                status, "Import in progress");
-         try {
-            provider = PublishProviderUtils.getProvider(providerName);
-        } catch (ClassNotFoundException
-                | InstantiationException
-                | IllegalAccessException e) {
-            logger.error("runPublish exception: ", e);
-            results.put(TaskStatus.EXCEPTION, e.toString());
-            return false;
-        }
+                status, "Publish in progress");
+        provider = PublishProviderUtils.getProvider(providerName);
 
         if (provider == null) {
             status = TaskStatus.ERROR;
@@ -309,7 +278,7 @@ public class TaskRunner {
      */
     public final void addTimestamp(final HashMap<String, String> resultsMap) {
         final SimpleDateFormat dateFormat =
-                new SimpleDateFormat(TIMESTAMP_FORMAT);
+                new SimpleDateFormat(TIMESTAMP_FORMAT, Locale.ROOT);
         dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
 
         // In case you need to undo the conversion in some other part
