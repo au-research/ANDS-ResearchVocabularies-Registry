@@ -59,6 +59,9 @@ public class VocabularyModel extends ModelBase {
     /** The model of the VocabularyRelatedVocabularies. */
     private VocabularyRelatedVocabulariesModel vrvModel;
 
+    /** The model of the Versions. */
+    private VersionsModel versionsModel;
+
     /** List of all sub-models. */
     private List<ModelBase> subModels = new ArrayList<>();
 
@@ -147,6 +150,8 @@ public class VocabularyModel extends ModelBase {
         subModels.add(vreModel);
         vrvModel = new VocabularyRelatedVocabulariesModel(em(), vocabularyId());
         subModels.add(vrvModel);
+        versionsModel = new VersionsModel(em(), vocabularyId());
+        subModels.add(versionsModel);
     }
 
     /** {@inheritDoc} */

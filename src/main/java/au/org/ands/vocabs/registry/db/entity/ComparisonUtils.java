@@ -4,6 +4,9 @@ package au.org.ands.vocabs.registry.db.entity;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 
+import au.org.ands.vocabs.registry.db.converter.JSONSerialization;
+import au.org.ands.vocabs.registry.db.internal.VersionJson;
+
 /** Utility methods for comparing two registry database entities
  * of the same type, and for comparing a registry database entity
  * with a registry schema entity.
@@ -24,6 +27,29 @@ public final class ComparisonUtils {
 
     /** Private constructor for a utility class. */
     private ComparisonUtils() {
+    }
+
+    /** Compare two versions to see if they should be considered
+     * "different" for the sake of the registry database.
+     * The fields that are compared are:
+     *
+     * @param v1 A version that is an existing database entity
+     * @param v2 A version in registry schema format
+     * @return true, if the two versions should be considered
+     *      to be the same.
+     */
+    public static boolean isEqualVersion(final Version v1,
+            final au.org.ands.vocabs.registry.schema.vocabulary201701.
+            Version v2) {
+        VersionJson versionJson =
+                JSONSerialization.deserializeStringAsJson(v1.getData(),
+                        VersionJson.class);
+        return new EqualsBuilder().
+                append(v1.getStatus(), v2.getStatus()).
+                append(v1.getSlug(), v2.getSlug()).
+                append(v1.getReleaseDate(), v2.getReleaseDate()).
+                append(versionJson.getTitle(), v2.getTitle()).
+                append(versionJson.getNote(), v2.getNote()).isEquals();
     }
 
     /** Compare two related entities to see if they should be considered

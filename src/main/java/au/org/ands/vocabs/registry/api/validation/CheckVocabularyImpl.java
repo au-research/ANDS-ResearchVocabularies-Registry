@@ -339,6 +339,9 @@ public class CheckVocabularyImpl
         // are duplicate titles, or, there is a version with a
         // title but no slug, where the generated slug matches another
         // version where the slug _is_ specified.
+        // For an update, we don't check _here_ that any version Ids
+        // provided do in fact belong to this vocabulary; this is done in
+        // the submethods of VersionModel.applyChanges().
         Set<String> versionSlugs = new HashSet<>();
         for (Iterator<Version> it =
                 newVocabulary.getVersion().iterator();
