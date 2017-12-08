@@ -1,22 +1,75 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://java.sun.com/xml/ns/javaee" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd" version="3.0">
   <display-name>ANDS-Vocabs-Toolkit</display-name>
+  <!-- Disable logback's auto-installation of its own
+       ServletContextListener, because its shutdown then seems to
+       happen before our own ApplicationContextListener.contextDestroyed()
+       (q.v.). -->
+  <context-param>
+    <param-name>logbackDisableServletContainerInitializer</param-name>
+    <param-value>true</param-value>
+  </context-param>
+  <!-- Install logback's ServletContextListener manually, so that it
+       takes priority: i.e., its shutdown happens last. -->
+  <listener>
+    <listener-class>ch.qos.logback.classic.servlet.LogbackServletContextListener</listener-class>
+  </listener>
+  <!-- Our own ServletContextListener has basic initialization, but
+       also important shutdown steps, to ensure (as far as possible)
+       that webapp stop/start cycles don't create memory leaks. -->
   <listener>
     <listener-class>au.org.ands.vocabs.toolkit.utils.ApplicationContextListener</listener-class>
   </listener>
   <servlet>
     <description>JAX-RS REST web services</description>
-    <servlet-name>javax.ws.rs.core.Application</servlet-name>
+    <!-- servlet-name>javax.ws.rs.core.Application</servlet-name -->
+    <servlet-name>au.org.ands.vocabs.toolkit.utils.ToolkitJerseyApplication</servlet-name>
     <init-param>
-    <param-name>jersey.config.server.mediaTypeMappings</param-name>
-    <param-value>txt : text/plain, xml : application/xml, json : application/json</param-value>
+      <param-name>jersey.config.server.mediaTypeMappings</param-name>
+      <param-value>txt : text/plain, xml : application/xml, json : application/json</param-value>
     </init-param>
     <load-on-startup>1</load-on-startup>
     <!-- async required because we use AsyncResponse. -->
     <async-supported>true</async-supported>
   </servlet>
+
+  <!-- Swagger API. -->
+  <servlet>
+    <servlet-name>Jersey2Config</servlet-name>
+    <servlet-class>au.org.ands.vocabs.registry.api.context.SwaggerBootstrapper</servlet-class>
+    <load-on-startup>2</load-on-startup>
+  </servlet>
+
+  <!-- Filter to implement CORS settings for swagger.json
+       and the API itself. -->
+  <filter>
+    <filter-name>ApiOriginFilter</filter-name>
+    <filter-class>au.org.ands.vocabs.registry.api.context.ApiOriginFilter</filter-class>
+  </filter>
+  <filter-mapping>
+    <filter-name>ApiOriginFilter</filter-name>
+    <url-pattern>/swagger.json</url-pattern>
+  </filter-mapping>
+  <filter-mapping>
+    <filter-name>ApiOriginFilter</filter-name>
+    <url-pattern>/api/resource/*</url-pattern>
+  </filter-mapping>
+  <filter-mapping>
+    <filter-name>ApiOriginFilter</filter-name>
+    <url-pattern>/api/services/*</url-pattern>
+  </filter-mapping>
+  <filter-mapping>
+    <filter-name>ApiOriginFilter</filter-name>
+    <url-pattern>/api/user/*</url-pattern>
+  </filter-mapping>
+  <filter-mapping>
+    <filter-name>ApiOriginFilter</filter-name>
+    <url-pattern>/api/utilities/*</url-pattern>
+  </filter-mapping>
+
   <servlet-mapping>
-    <servlet-name>javax.ws.rs.core.Application</servlet-name>
+    <!-- servlet-name>javax.ws.rs.core.Application</servlet-name -->
+    <servlet-name>au.org.ands.vocabs.toolkit.utils.ToolkitJerseyApplication</servlet-name>
     <url-pattern>/*</url-pattern>
   </servlet-mapping>
 </web-app>

@@ -42,9 +42,12 @@ public class JsonListTransformProvider extends TransformProvider {
     private final Logger logger = LoggerFactory.getLogger(
             MethodHandles.lookup().lookupClass());
 
+    /** Key used for storing a SKOS prefLabel. */
+    public static final String PREF_LABEL = "prefLabel";
+
     @Override
     public final String getInfo() {
-        // TODO Auto-generated method stub
+        // Return null for now.
         return null;
     }
 
@@ -106,7 +109,7 @@ public class JsonListTransformProvider extends TransformProvider {
         /** Map from concept IRI to a map that maps
          * property name to the property value(s). */
         private HashMap<String, HashMap<String, Object>> conceptMap =
-                new HashMap<String, HashMap<String, Object>>();
+                new HashMap<>();
 
         @Override
         public void handleStatement(final Statement st) {
@@ -117,7 +120,8 @@ public class JsonListTransformProvider extends TransformProvider {
             HashMap<String, Object> concept =
                     conceptMap.get(st.getSubject().stringValue());
             if (st.getPredicate().equals(SKOS.PREF_LABEL)) {
-                concept.put("prefLabel", st.getObject().stringValue());
+                concept.put(JsonListTransformProvider.PREF_LABEL,
+                        st.getObject().stringValue());
             }
             if (st.getPredicate().equals(SKOS.NOTATION)) {
                 concept.put("notation", st.getObject().stringValue());
@@ -144,8 +148,8 @@ public class JsonListTransformProvider extends TransformProvider {
             }
         }
 
-        /** Getter for concepts list. */
-        /** @return The completed concept map. */
+        /** Getter for concepts list.
+         * @return The completed concept map. */
         public HashMap<String, HashMap<String, Object>> getConceptMap() {
             return conceptMap;
         }

@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory;
 import com.mchange.v2.c3p0.C3P0Registry;
 import com.mchange.v2.c3p0.PooledDataSource;
 
+import au.org.ands.vocabs.registry.utils.SlugGenerator;
 import au.org.ands.vocabs.toolkit.db.DBContext;
 
 /** Context listener for the Toolkit web application.
@@ -68,7 +69,6 @@ public class ApplicationContextListener implements ServletContextListener {
         /** Logger for this class. */
         Logger logger = LoggerFactory.getLogger(
                 MethodHandles.lookup().lookupClass());
-
         logger.info("In Toolkit contextDestroyed()");
         // Code inspired by:
         //   http://stackoverflow.com/questions/3320400/to-prevent-
@@ -122,6 +122,8 @@ public class ApplicationContextListener implements ServletContextListener {
 
         // Invoke any remaining shutdown methods.
         ToolkitNetUtils.doShutdown();
+        SlugGenerator.shutdown();
+        solrShutdown();
 
         // When running tests, log4j may have started a thread;
         // shut it down. However, note that if Arquillian uses
@@ -250,6 +252,58 @@ public class ApplicationContextListener implements ServletContextListener {
                 | InvocationTargetException | ClassNotFoundException e) {
             logger.error("Exception while attempting to find "
                     + "log4j Manager class during context shutdown", e);
+        }
+    }
+
+    /** Shut down Solr. */
+    private void solrShutdown() {
+        Logger logger = LoggerFactory.getLogger(
+                MethodHandles.lookup().lookupClass());
+        try {
+            // See http://stackoverflow.com/questions/482633/
+            //            in-java-is-it-possible-to-know-whether-a-
+            //            class-has-already-been-loaded
+            // But note that the approved answer uses
+            // ClassLoader.getSystemClassLoader(), but this
+            // is wrong in a servlet context. Use
+            // getClass().getClassLoader() instead.
+            // Use reflection to get the protected method findLoadedClass()
+            // that otherwise can't be invoked directly.
+            Method fLC = ClassLoader.class.getDeclaredMethod(
+                    "findLoadedClass", new Class[] {String.class});
+            fLC.setAccessible(true);
+            ClassLoader classLoader = getClass().getClassLoader();
+            // A version of the previous line that uses the Thread
+            // ClassLoader. This doesn't seem to help the problem
+            // identified in the method comment.
+            // ClassLoader classLoader =
+            //        Thread.currentThread().getContextClassLoader();
+            // Now see if the LogManager class has been loaded
+            Object log4jContextClass =
+                    fLC.invoke(classLoader,
+                            "au.org.ands.vocabs.registry.solr.SolrUtils");
+            if (log4jContextClass != null) {
+                // The class has indeed been loaded already.
+                logger.info("Calling SolrUtils.shutdownSolrClient()");
+                // Use SuppressWarnings because we are not
+                // importing the LogManager class, and so can't
+                // provide the generic type parameter.
+                @SuppressWarnings("rawtypes")
+                Class solrUtilsClass = Class.forName(
+                        "au.org.ands.vocabs.registry.solr.SolrUtils");
+                // Ditto.
+                @SuppressWarnings("unchecked")
+                Method shutdown = solrUtilsClass.getMethod(
+                        "shutdownSolrClient");
+                shutdown.invoke(null);
+            } else {
+                logger.info("SolrUtils not loaded; no shutdown required");
+            }
+        } catch (NoSuchMethodException | SecurityException
+                | IllegalAccessException | IllegalArgumentException
+                | InvocationTargetException | ClassNotFoundException e) {
+            logger.error("Exception while attempting to find "
+                    + "SolrUtils class during context shutdown", e);
         }
     }
 

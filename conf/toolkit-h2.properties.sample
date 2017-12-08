@@ -3,8 +3,10 @@
 # Testing parameters
 
 # Tomcat for Sesame
-# Tomcat Port
-test.Tomcat.port=8125
+# Tomcat Port: because we deploy Sesame inside the same container
+# as the webapp under test, this must match the port number of the container
+# as specified in arquillian.xml!
+test.Tomcat.port=8123
 # Directory to use for Tomcat work area. Beware: any existing directory
 # of this name will be wiped during test!
 # NB: This directory is excluded from Eclipse's view of the project
@@ -13,8 +15,6 @@ test.Tomcat.port=8125
 test.Tomcat.directory=tomcattest
 # Sesame context path
 test.Tomcat.sesame.context=openrdf-sesame
-# path to Sesame WAR
-test.Tomcat.sesame.war=wartest/openrdf-sesame-2.8.3/openrdf-sesame.war
 
 # Full path needed by H2. For example, replace these instances
 # of PUT-SOMETHING-HERE with the full path to the top-level
@@ -44,6 +44,13 @@ hibernate.c3p0.testConnectionOnCheckout=true
 # to the database externally (i.e., by the portal) are immediately
 # visible to JPA queries.
 hibernate.connection.isolation=2
+
+# Absolutely necessary to force instances of java.sql.Timestamp
+# to be sent back and forth to the database using UTC.
+# Unfortunately, this is Hibernate-specific; there doesn't
+# seem to be a way to do this in "pure" JPA.
+# See http://in.relation.to/2016/09/12/jdbc-time-zone-configuration-property/
+hibernate.jdbc.time_zone=UTC
 
 ## FILE STORAGE
 

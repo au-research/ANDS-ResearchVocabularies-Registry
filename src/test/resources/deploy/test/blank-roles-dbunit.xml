@@ -1,0 +1,9 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE dataset SYSTEM "dbunit-roles-export-choice.dtd" >
+<!-- Used to blank out the roles database. -->
+<dataset>
+  <ROLES />
+  <ROLE_RELATIONS />
+  <AUTHENTICATION_BUILT_IN />
+</dataset>
+

@@ -1,0 +1,134 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE dataset SYSTEM "dbunit-registry-export-choice.dtd" >
+<!-- Used to blank out the Registry database. -->
+<dataset>
+  <POOLPARTY_SERVERS
+      API_URL=""
+      PASSWORD=""
+      USERNAME="" />
+
+  <UPLOADS
+      FILENAME=""
+      FORMAT=""
+      MODIFIED_BY=""
+      OWNER="" />
+
+  <RELATED_ENTITY_IDENTIFIER_IDS />
+  <RELATED_ENTITY_IDENTIFIERS
+      END_DATE=""
+      IDENTIFIER_TYPE=""
+      IDENTIFIER_VALUE=""
+      MODIFIED_BY=""
+      RELATED_ENTITY_ID=""
+      RELATED_ENTITY_IDENTIFIER_ID=""
+      START_DATE="" />
+
+  <RELATED_ENTITY_IDS />
+  <RELATED_ENTITIES
+      DATA=""
+      END_DATE=""
+      MODIFIED_BY=""
+      OWNER=""
+      RELATED_ENTITY_ID=""
+      START_DATE=""
+      TITLE=""
+      TYPE="" />
+
+  <SUBJECT_RESOLVER_SOURCES
+      IRI=""
+      SOURCE="" />
+  <SUBJECT_RESOLVER 
+      IRI=""
+      LABEL=""
+      NOTATION=""
+      SOURCE="" />
+
+  <VOCABULARY_IDS />
+  <VOCABULARIES
+      DATA=""
+      END_DATE=""
+      MODIFIED_BY=""
+      OWNER=""
+      SLUG=""
+      START_DATE=""
+      STATUS=""
+      VOCABULARY_ID="" />
+
+  <VOCABULARY_RELATED_ENTITIES
+      END_DATE=""
+      MODIFIED_BY=""
+      RELATED_ENTITY_ID=""
+      RELATION=""
+      START_DATE=""
+      VOCABULARY_ID="" />
+  <VOCABULARY_RELATED_VOCABULARIES
+      END_DATE=""
+      MODIFIED_BY=""
+      RELATED_VOCABULARY_ID=""
+      RELATION=""
+      START_DATE=""
+      VOCABULARY_ID="" />
+
+  <VERSION_IDS />
+  <VERSIONS
+      DATA=""
+      END_DATE=""
+      MODIFIED_BY=""
+      RELEASE_DATE=""
+      SLUG=""
+      START_DATE=""
+      STATUS=""
+      VERSION_ID=""
+      VOCABULARY_ID="" />
+
+  <VERSION_ARTEFACT_IDS />
+  <VERSION_ARTEFACTS
+      DATA=""
+      END_DATE=""
+      MODIFIED_BY=""
+      START_DATE=""
+      STATUS=""
+      TYPE=""
+      VERSION_ARTEFACT_ID=""
+      VERSION_ID="" />
+
+  <ACCESS_POINT_IDS />
+  <ACCESS_POINTS
+      ACCESS_POINT_ID=""
+      DATA=""
+      END_DATE=""
+      MODIFIED_BY=""
+      START_DATE=""
+      TYPE=""
+      VERSION_ID="" />
+
+  <REGISTRY_EVENTS
+      ELEMENT_ID=""
+      ELEMENT_TYPE=""
+      EVENT_DATE=""
+      EVENT_DETAILS=""
+      EVENT_TYPE=""
+      EVENT_USER="" />
+
+  <RESOURCE_MAP
+      ACCESS_POINT_ID=""
+      DEPRECATED=""
+      IRI=""
+      OWNED=""
+      RESOURCE_TYPE="" />
+  <RESOURCE_OWNER_HOSTS
+      END_DATE=""
+      HOST=""
+      OWNER=""
+      START_DATE="" />
+
+  <TASKS
+      PARAMS=""
+      RESPONSE=""
+      STATUS=""
+      VERSION_ID=""
+      VOCABULARY_ID="" />
+
+
+</dataset>
+

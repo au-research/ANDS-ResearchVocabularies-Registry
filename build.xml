@@ -4,7 +4,10 @@
   basedir="."
   default="war"
   name="ANDS-Vocabs-Toolkit"
+  xmlns:if="ant:if"
+  xmlns:unless="ant:unless"
   xmlns:jacoco="antlib:org.jacoco.ant"
+  xmlns:liquibase="antlib:liquibase.integration.ant"
   >
   <property environment="env" />
   <property name="debuglevel" value="source,lines,vars" />
@@ -12,21 +15,58 @@
   <property name="source" value="1.8" />
 
   <property name="build" value="build" />
+  <property name="build-jar" value="build-jar" />
+  <property name="build-liquibase" value="build-liquibase" />
   <property name="build-test" value="build-test" />
+  <property name="build-tools" value="tools/build" />
   <!-- Configuration files: toolkit.properties, logback.xml -->
   <property name="conf" value="conf" />
   <property name="conf-test" value="conf-test" />
+  <!-- Generated source code -->
+  <property name="src-db-gen" value="src/db-gen" />
+  <property name="src-jaxb-gen" value="src/jaxb-gen" />
+  <property name="src-bot-detection" value="src/CrawlerDetect" />
+  <property name="src-bot-detection-gen"
+            value="src/main/java/au/org/ands/vocabs/registry/utils/BotDetector.java" />
+  <!-- Generated test code/data -->
+  <property name="src-test-dbunit-registry-dtd"
+            value="src/test/resources/deploy/test/dbunit-registry-export-choice.dtd" />
+  <!-- Generated PHP Client API -->
+  <property name="php-client-dir" value="php-client" />
+  <!-- Generated JavaScript Client API -->
+  <property name="js-client-dir" value="js-client" />
+
+  <!-- mapstruct -->
+  <property name="mapstruct-processor"
+        value="libdev/mapstruct-1.1.0/mapstruct-processor-1.1.0.Final.jar" />
+  <property name="mapstruct-sources" value="src/mapstruct/java" />
+
+  <!-- JAR files that contain a JPA persistence unit. -->
+  <property name="toolkit-db-model-jar"
+            value="${build-jar}/toolkit-db-model.jar" />
+  <property name="registry-db-model-jar"
+            value="${build-jar}/registry-db-model.jar" />
+  <property name="roles-db-model-jar"
+            value="${build-jar}/roles-db-model.jar" />
+
   <property name="jar" value="vocabtoolkit.jar" />
   <property name="war" value="vocabtoolkit.war" />
   <property name="javadoc-output" value="doc/javadoc" />
-  <property name="swagger-output" value="doc/api" />
   <property name="test-output" value="test-output" />
+  <!-- JaCoCo -->
+  <property name="jacoco-agent"
+            value="libdev/jacoco-0.7.6.201602180812/jacocoagent.jar" />
   <property name="jacoco-output" value="jacoco.exec" />
   <property name="jacoco-report" value="jacoco-report" />
 
+  <property name="tomcat-managed"
+            value="tomcatmanaged/apache-tomcat-7.0.69/" />
+
+  <!-- Task definitions -->
+
   <taskdef
     resource="com/puppycrawl/tools/checkstyle/ant/checkstyle-ant-task.properties"
-    classpath="libdev/checkstyle-6.19/checkstyle-6.19-all.jar" />
+    classpath="libdev/checkstyle-7.6/checkstyle-7.6-all.jar" />
 
   <taskdef
       name="forbiddenapis"
@@ -42,17 +82,271 @@
     <classpath path="libdev/jacoco-0.7.6.201602180812/jacocoant.jar" />
   </taskdef>
 
+  <taskdef
+      resource="liquibase/integration/ant/antlib.xml"
+      uri="antlib:liquibase.integration.ant">
+    <classpath>
+      <fileset dir="tools/dist/liquibase-3.5.3">
+        <include name="**/*.jar"/>
+      </fileset>
+      <!-- Include MySQL JDBC driver -->
+      <fileset dir="lib/mysql-connector-java-5.1.35">
+        <include name="**/*.jar"/>
+      </fileset>
+      <!-- Include H2 JDBC driver -->
+      <fileset dir="libtest/h2-1.4.191">
+        <include name="**/*.jar"/>
+      </fileset>
+    </classpath>
+  </taskdef>
+
+  <!-- JAXB RI classpath, and xjc taskdef -->
+
+  <path id="jaxb-ri.classpath">
+    <fileset dir="tools/dist/jaxb-ri-2.2.11" includes="**/*.jar" />
+  </path>
+
+  <taskdef name="xjc" classname="com.sun.tools.xjc.XJCTask">
+    <classpath refid="jaxb-ri.classpath" />
+  </taskdef>
+
+  <!-- Cleanup -->
+
   <target name="clean">
+    <delete dir="${src-db-gen}" />
+    <delete dir="${src-jaxb-gen}" />
+    <delete file="${src-bot-detection-gen}" />
     <delete dir="${build}" />
+    <delete dir="${build-jar}" />
     <delete dir="${build-test}" />
+    <delete dir="${build-liquibase}" />
+    <delete dir="${build-tools}" />
+    <delete dir="${mapstruct-sources}" />
+    <delete dir="${build-xjc-private-fields-plugin}" />
+    <delete file="${xjc-private-fields-plugin-jar}" />
+    <!-- Delete tools-bin iff it is empty.
+         Need failonerror="false", otherwise "ant clean"
+         would not be an idempotent operation: if you run it twice
+         in succession, it would fail the second time at this point.
+    -->
+    <delete includeemptydirs="true" failonerror="false">
+      <fileset dir="${tools-bin}" excludes="**/*" />
+    </delete>
     <delete file="${jar}" />
     <delete file="${war}" />
     <delete dir="${javadoc-output}" />
-    <delete dir="${swagger-output}" />
     <delete dir="${test-output}" />
     <delete file="${jacoco-output}" />
     <delete dir="${jacoco-report}" />
+    <!-- Files created for testing -->
+    <delete file="${src-test-dbunit-registry-dtd}" />
+    <!-- Files created by testng-bamboo target -->
+    <delete file="conf/toolkit-h2-bamboo.properties" />
+    <delete file="conf/registry-h2-bamboo.properties" />
+    <delete file="conf/roles-h2-bamboo.properties" />
+    <!-- Work files and log files within managed Tomcat -->
+    <delete dir="${tomcat-managed}/conf/Catalina" />
+    <delete dir="${tomcat-managed}/work/Catalina" />
+    <!-- Need failonerror="false", otherwise "ant clean"
+         fails on a fresh checkout. -->
+    <delete failonerror="false">
+      <fileset dir="${tomcat-managed}/logs" includes="*"/>
+    </delete>
+    <delete dir="${tomcat-managed}/webapps/openrdf-sesame" />
+    <delete file="swagger.json" />
+    <delete dir="${php-client-dir}" />
+    <delete dir="${js-client-dir}" />
   </target>
+
+  <!-- xjc plugin to make generated fields private -->
+
+  <property name="tools-bin"
+            value="tools/bin" />
+  <property name="xjc-private-fields-plugin-jar"
+            value="${tools-bin}/xjc-private-fields-plugin.jar" />
+  <property name="build-xjc-private-fields-plugin"
+            value="${build-tools}/build-xjc-plugin" />
+  <target name="xjc-private-fields-plugin-jar">
+    <mkdir dir="${build-xjc-private-fields-plugin}" />
+    <javac debug="true" debuglevel="${debuglevel}"
+           destdir="${build-xjc-private-fields-plugin}"
+           includeantruntime="false" source="${source}" target="${target}">
+      <src path="tools/src/jaxb-utils/java" />
+      <classpath refid="jaxb-ri.classpath" />
+    </javac>
+    <jar destfile="${xjc-private-fields-plugin-jar}">
+      <fileset dir="${build-xjc-private-fields-plugin}"
+               includes="au/org/ands/vocabs/registry/schema/utils/*.class" />
+      <service type="com.sun.tools.xjc.Plugin"
+               provider="au.org.ands.vocabs.registry.schema.utils.JaxbPrivateMemberPlugin"/>
+    </jar>
+  </target>
+
+  <!-- Database code generation -->
+
+  <!-- The source, human-edited registry database specification. -->
+  <property name="registry-database-master-changelog"
+            value="src/main/db/changelog/registry-master.xml" />
+  <property name="flattened-registry-database-changelog"
+            value="${build-liquibase}/flattened-registry.xml" />
+
+  <!-- Generated a "flattened" view of the registry database,
+       i.e., by processing all of the Liquibase changesets,
+       and getting the final result. This is then used by
+       target generate-registry-db-entity-dao-source. -->
+  <liquibase:database
+      id="flattened-registry-database"
+      driver="org.h2.Driver"
+      url="jdbc:h2:./${build-liquibase}/flatregistry;AUTO_SERVER=TRUE"
+      user="any"
+      password="any" />
+  <target name="generate-flattened-registry-db-spec">
+    <!-- Start with an empty directory -->
+    <delete dir="${build-liquibase}" />
+    <liquibase:updateDatabase
+        databaseref="flattened-registry-database"
+        changelogfile="${registry-database-master-changelog}">
+    </liquibase:updateDatabase>
+    <liquibase:generateChangeLog
+        databaseref="flattened-registry-database">
+      <liquibase:xml
+          outputfile="${flattened-registry-database-changelog}"
+          encoding="UTF-8" />
+    </liquibase:generateChangeLog>
+  </target>
+
+  <!-- Check if generated registry DB source code is up-to-date. -->
+  <target name="check-registry-db-entity-dao-source">
+    <uptodate property="registry-db-entity-dao-source.uptodate"
+              targetfile="${src-db-gen}/timestamp">
+      <srcfiles dir="src/main/db">
+        <include name="*/*.xml" />
+        <include name="*/*.xsl" />
+      </srcfiles>
+    </uptodate>
+  </target>
+
+  <!-- Generate Registry DB Java source code. Note the
+       "unless" attribute. -->
+  <target name="generate-registry-db-entity-dao-source"
+          depends="check-registry-db-entity-dao-source"
+          unless="registry-db-entity-dao-source.uptodate">
+
+    <!-- First, generate the changeLog XML file. -->
+    <antcall target="generate-flattened-registry-db-spec" />
+
+    <!-- Now, transform it with XSLT. -->
+    <property name="xslt-stdout"
+              value="${src-db-gen}/java/xslt-stdout.txt" />
+    <xslt
+        style="src/main/db/code-generation/generate-jpa-entities-daos.xsl"
+        in="${flattened-registry-database-changelog}"
+        out="${xslt-stdout}"
+        destdir="${src-db-gen}/java"
+        >
+      <!-- Use Saxon, as the stylesheet is XSLT 2.0. -->
+      <classpath location="tools/dist/SaxonHE9-7-0-14J/saxon9he.jar" />
+      <factory name="net.sf.saxon.TransformerFactoryImpl" />
+    </xslt>
+    <!-- Fail, if the XSLT generated output on standard output.
+         All of the output should have gone to the various
+         generated .java files. -->
+    <fail message="Unexpected output generated by XSLT.">
+      <condition>
+        <length file="${xslt-stdout}"
+                when="greater"
+                length="0" />
+      </condition>
+    </fail>
+    <delete file="${xslt-stdout}" />
+    <touch file="${src-db-gen}/timestamp" />
+  </target>
+
+  <!-- JAXB Code generation -->
+
+  <!-- Check if generated JAXB source code is up-to-date. -->
+  <target name="check-jaxb-source">
+    <uptodate property="jaxb-source.uptodate"
+              targetfile="src/jaxb-gen/timestamp">
+      <srcfiles dir="src/main/jaxb">
+        <include name="*/*.xsd" />
+        <include name="*/*.xjb" />
+      </srcfiles>
+    </uptodate>
+  </target>
+
+  <target name="generate-jaxb-source"
+          depends="xjc-private-fields-plugin-jar"
+          unless="jaxb-source.uptodate">
+    <!-- Common classes: enums -->
+    <mkdir dir="src/jaxb-gen/java" />
+    <xjc destdir="src/jaxb-gen/java"
+         readonly="true"
+         removeOldOutput="true"
+         >
+      <!-- Option -Xpf to use our xjc plugin for private fields,
+           and classpath element to tell xjc how to find it.
+           Option -npa to move the namespace property down to
+           the class level, where Swagger processing can find them.
+           Unfortunately, swagger-core does not (yet) support
+           reading package-level annotations.
+      -->
+      <classpath location="${xjc-private-fields-plugin-jar}" />
+      <arg line="-Xpf -npa"/>
+      <binding dir="src/main/jaxb">
+        <include name="**/*.xjb"/>
+      </binding>
+      <schema dir="src/main/jaxb">
+        <include name="**/*.xsd"/>
+      </schema>
+      <produces dir="src/jaxb-gen/java"
+                includes="**/*.java" />
+    </xjc>
+    <!-- Remove all trailing whitespace from generated files. -->
+    <replaceregexp match="\s+$" replace="" byline="true">
+      <fileset dir="src/jaxb-gen/java"
+               includes="**/*.java" />
+    </replaceregexp>
+    <!-- Copy in hand-written package-info.java files, since
+         we had to suppress the auto-generated ones with the "-npa"
+         option.
+    -->
+    <copy
+      file="src/main/jaxb/au.org.ands.vocabs.registry.db.internal.package-info.java"
+      tofile="src/jaxb-gen/java/au/org/ands/vocabs/registry/db/internal/package-info.java" />
+    <copy
+      file="src/main/jaxb/au.org.ands.vocabs.registry.schema.vocabulary201701.package-info.java"
+      tofile="src/jaxb-gen/java/au/org/ands/vocabs/registry/schema/vocabulary201701/package-info.java" />
+        <touch file="src/jaxb-gen/timestamp" />
+  </target>
+
+  <!-- Generation of utility class for bot detection. -->
+  <!-- Check if generated bot detection source code is up-to-date. -->
+  <target name="check-bot-detection-source">
+    <uptodate property="bot-detection-source.uptodate"
+              targetfile="${src-bot-detection-gen}">
+      <srcfiles dir="${src-bot-detection}/orig">
+        <include name="*.php" />
+      </srcfiles>
+    </uptodate>
+  </target>
+  <!-- Generated bot detection Java source code. Note the
+       "unless" attribute. -->
+  <target name="generate-bot-detection-source"
+          depends="check-bot-detection-source"
+          unless="bot-detection-source.uptodate">
+    <exec executable="sh"
+          output="${src-bot-detection-gen}"
+          resultproperty="awk-status">
+      <arg value="${src-bot-detection}/generate-matcher.sh"/>
+    </exec>
+    <condition property="awk-succeeded">
+      <equals arg1="${awk-status}" arg2="0"/>
+    </condition>
+    <delete unless:set="awk-succeeded" file="${src-bot-detection-gen}" />
+  </target>
+
+  <!-- Compilation of source code -->
 
   <path id="compile-main.classpath">
     <fileset dir="lib" includes="**/*.jar" />
@@ -72,15 +366,28 @@
     <fileset dir="tomcatlib" includes="**/*.jar" />
   </path>
 
-  <target name="compile-main">
+  <target name="compile-main"
+          depends="generate-registry-db-entity-dao-source,generate-jaxb-source,generate-bot-detection-source">
     <mkdir dir="${build}" />
-    <javac debug="true" debuglevel="${debuglevel}" destdir="${build}" includeantruntime="false" source="${source}" target="${target}">
+    <mkdir dir="${mapstruct-sources}" />
+    <javac debug="true" debuglevel="${debuglevel}" destdir="${build}"
+           includeantruntime="false" source="${source}" target="${target}">
       <src path="src/main/java" />
+      <src path="src/db-gen/java" />
+      <src path="src/jaxb-gen/java" />
       <!-- Don't include test classes. For now, if you want to use
            the test classes, use the project in Eclipse.
       <src path="src/test/java" />
       -->
       <classpath refid="compile-main.classpath" />
+      <!-- Add -parameters for use by Hibernate Validator's
+           ReflectionParameterNameProvider, which we mention
+           in validation.xml. -->
+      <compilerarg line="-parameters" />
+      <!-- Options for MapStruct. -->
+      <compilerarg
+          line="-processorpath ${mapstruct-processor}"/>
+      <compilerarg line="-s ${mapstruct-sources}"/>
     </javac>
   </target>
 
@@ -108,7 +415,9 @@
 
   <target name="compile-test" depends="compile-main">
     <mkdir dir="${build-test}" />
-    <javac debug="true" debuglevel="${debuglevel}" destdir="${build-test}" includeantruntime="false" source="${source}" target="${target}">
+    <javac debug="true" debuglevel="${debuglevel}"
+           destdir="${build-test}"
+           includeantruntime="false" source="${source}" target="${target}">
       <src path="src/test/java" />
       <classpath refid="compile-test.classpath" />
     </javac>
@@ -123,15 +432,78 @@
         </jar>
     </target>
    -->
-  <target name="war" depends="compile-main,update-version-string">
+
+  <!-- JAR files containing persistence units -->
+
+  <target name="toolkit-db-model-jar" depends="compile-main">
+    <jar destfile="${toolkit-db-model-jar}">
+      <!-- Generated JAR file has META-INF directory first anyway, so it's
+           neater to include persistence.xml first ... -->
+      <mappedresources>
+        <fileset
+            dir="src/main/java/au/org/ands/vocabs/toolkit/db/model/META-INF"
+            />
+        <globmapper from="*" to="META-INF/*" />
+      </mappedresources>
+      <!-- ... and then the class files. -->
+      <fileset
+        dir="${build}"
+        includes ="au/org/ands/vocabs/toolkit/db/model/*.class"
+      />
+    </jar>
+  </target>
+
+  <target name="registry-db-model-jar" depends="compile-main">
+    <jar destfile="${registry-db-model-jar}">
+      <!-- Generated JAR file has META-INF directory first anyway, so it's
+           neater to include persistence.xml first ... -->
+      <mappedresources>
+        <fileset
+            dir="src/main/java/au/org/ands/vocabs/registry/db/entity/META-INF"
+            />
+        <globmapper from="*" to="META-INF/*" />
+      </mappedresources>
+      <!-- ... and then the class files. -->
+      <fileset
+        dir="${build}"
+        includes="au/org/ands/vocabs/registry/db/entity/*.class"
+      />
+      <fileset
+        dir="${build}"
+        includes="au/org/ands/vocabs/registry/db/context/converter/*.class"
+      />
+    </jar>
+  </target>
+
+  <target name="roles-db-model-jar" depends="compile-main">
+    <jar destfile="${roles-db-model-jar}">
+      <!-- Generated JAR file has META-INF directory first anyway, so it's
+           neater to include persistence.xml first ... -->
+      <mappedresources>
+        <fileset
+            dir="src/main/java/au/org/ands/vocabs/roles/db/entity/META-INF"
+            />
+        <globmapper from="*" to="META-INF/*" />
+      </mappedresources>
+      <!-- ... and then the class files. -->
+      <fileset
+        dir="${build}"
+        includes="au/org/ands/vocabs/roles/db/entity/*.class"
+      />
+      <fileset
+        dir="${build}"
+        includes="au/org/ands/vocabs/roles/db/context/converter/*.class"
+      />
+    </jar>
+  </target>
+
+  <!-- Deployable objects -->
+
+  <target name="war"
+          depends="compile-main,update-version-string,toolkit-db-model-jar,registry-db-model-jar,roles-db-model-jar">
     <war destfile="${war}">
       <metainf dir="WebContent/META-INF" />
       <webinf dir="WebContent/WEB-INF" />
-      <!-- Copy persistence.xml -->
-      <mappedresources>
-        <fileset dir="src/main/java/META-INF" />
-        <globmapper from="*" to="WEB-INF/classes/META-INF/*" />
-      </mappedresources>
       <!-- Need to use this trick instead of a lib element because
            the JAR files are stored in subdirectories.
            See http://stackoverflow.com/questions/2802671/how-to-perform-ant-path-mapping-in-a-war-task -->
@@ -142,16 +514,44 @@
           <globmapper from="*" to="WEB-INF/lib/*" />
         </chainedmapper>
       </mappedresources>
-      <!-- Can't use JAR; see above. -->
-      <!-- <lib file="${jar}" /> -->
-      <!-- Include raw classes instead. -->
-      <classes dir="${build}" />
+      <lib file="${toolkit-db-model-jar}" />
+      <lib file="${registry-db-model-jar}" />
+      <lib file="${roles-db-model-jar}" />
+      <!-- Include other raw classes. -->
+      <classes dir="${build}">
+        <!-- Exclude the classes put into the JARs. -->
+        <exclude name="au/org/ands/vocabs/toolkit/db/model/*.class" />
+        <exclude name="au/org/ands/vocabs/registry/db/entity/*.class" />
+        <exclude name="au/org/ands/vocabs/roles/db/entity/*.class" />
+      </classes>
       <mappedresources>
         <fileset dir="${conf}" />
         <globmapper from="*" to="WEB-INF/classes/*" />
       </mappedresources>
     </war>
   </target>
+
+  <!-- Database generation -->
+  <!-- To use this, specify this on the command line:
+      -Dregistrydb-properties=path/to/registrydb.properties \
+  -->
+  <property
+      file="${registrydb-properties}"
+      prefix="registrydb" />
+  <liquibase:database
+      id="registry-database"
+      driver="${registrydb.driver}"
+      url="${registrydb.url}"
+      user="${registrydb.username}"
+      password="${registrydb.password}" />
+
+  <target name="registry-database-update">
+    <liquibase:updateDatabase
+        databaseref="registry-database"
+        changelogfile="${registry-database-master-changelog}"/>
+  </target>
+
+  <!-- Configuration management -->
 
   <!-- The following targets are based on:
        http://llbit.se/?p=1876 -->
@@ -169,10 +569,12 @@
        inhibits the update-version-string target.) -->
 
   <!-- this target is only run if the 'version' property is undefined -->
-  <target name="update-version-string" depends="-timestamp" unless="Toolkit.version">
+  <target name="update-version-string" depends="-timestamp"
+          unless="Toolkit.version">
     <!-- get a new version string using git describe if possible -->
     <echo message="Updating version string..." />
-    <exec executable="git" outputproperty="Toolkit.version" failifexecutionfails="false">
+    <exec executable="git" outputproperty="Toolkit.version"
+          failifexecutionfails="false">
       <arg value="describe" />
     </exec>
     <antcall target="-store-version-string" />
@@ -182,17 +584,21 @@
 
   <target name="-timestamp">
     <tstamp>
-      <format property="Toolkit.versionTimestamp" timezone="UTC" pattern="yyyy-MM-dd'T'HH:mm'Z'" />
-      <format property="Toolkit.buildDate" timezone="UTC" pattern="yyyy-MM-dd" />
+      <format property="Toolkit.versionTimestamp" timezone="UTC"
+              pattern="yyyy-MM-dd'T'HH:mm'Z'" />
+      <format property="Toolkit.buildDate" timezone="UTC"
+              pattern="yyyy-MM-dd" />
     </tstamp>
   </target>
 
-  <target name="-store-version-string" depends="-timestamp" if="Toolkit.version">
+  <target name="-store-version-string" depends="-timestamp"
+          if="Toolkit.version">
     <!-- store the new  version string in the correct property file -->
     <echo message="version=${Toolkit.version}" />
     <propertyfile file="${conf}/version.properties">
       <entry key="Toolkit.version" value="${Toolkit.version}" />
-      <entry key="Toolkit.versionTimestamp" value="${Toolkit.versionTimestamp}" />
+      <entry key="Toolkit.versionTimestamp"
+             value="${Toolkit.versionTimestamp}" />
       <entry key="Toolkit.buildDate" value="${Toolkit.buildDate}" />
     </propertyfile>
     <exec executable="git">
@@ -202,43 +608,49 @@
     </exec>
   </target>
 
+  <!-- Documentation generation -->
+
   <target name="javadoc">
-    <javadoc sourcepath="src/main/java;src/test/java"
+    <javadoc sourcepath="src/main/java;src/db-gen/java;src/jaxb-gen/java;src/test/java"
              destdir="${javadoc-output}"
              classpathref="dev-compile-main.classpath"
              linksource="true"
              includenosourcepackages="true"
              private="true"
              >
-      <tag name="responseMessage" description="HTTP Response Status:" />
-      <tag name="paramsAllowableValues"
-        description="Allowable Values for Parameters:" />
-      <tag name="responseType" description="Response Type:" />
     </javadoc>
   </target>
 
-  <target name="swagger">
-    <javadoc sourcepath="src/main/java"
-             destdir="${swagger-output}"
-             classpathref="dev-compile-main.classpath"
-             linksource="true"
-             includenosourcepackages="true"
-             private="true"
-             >
-      <doclet
-        name="com.tenxerconsulting.swagger.doclet.ServiceDoclet"
-        path="libdev/swagger-doclet-1.1.3/swagger-doclet-1.1.3.jar"
-        >
-        <param name="-apiVersion" value="1"/>
-        <param name="-docBasePath" value="."/>
-        <param name="-apiBasePath"
-          value="http://devl.ands.org.au/repository/api/toolkit"/>
-      </doclet>
-    </javadoc>
+  <!-- Install the Solr schema. The Collection must already have been
+       created! -->
+  <path id="create-solr-schema.classpath">
+    <pathelement path="${build}" />
+    <fileset dir="lib">
+      <include name="**/*.jar" />
+      <exclude name="javamelody*/*.jar" />
+      <exclude name="mysql*/*.jar" />
+      <exclude name="**/*javadoc*.jar" />
+      <exclude name="**/*sources*.jar" />
+    </fileset>
+  </path>
+  <target name="create-solr-schema"
+          depends="compile-main">
+    <property file="conf/registry.properties" />
+    <java
+        fork="true"
+        failonerror="true"
+        classname="au.org.ands.vocabs.registry.solr.admin.CreateSchema"
+        classpathref="create-solr-schema.classpath"
+      >
+      <arg value="${Registry.Solr.collectionURL}" />
+    </java>
   </target>
+
+  <!-- Coding conventions, style, static analysis -->
 
   <target name="checkstyle"
-          description="Generates a report of code convention violations.">
+          description="Generates a report of code convention violations."
+          depends="generate-registry-db-entity-dao-source,generate-jaxb-source,generate-bot-detection-source">
 
     <!-- Be very picky: fail even on a single warning. -->
     <checkstyle config="ands-checkstyle.xml"
@@ -253,8 +665,10 @@
       <!-- Define "samedir" property as used in the config. (The
            "samedir" property is an Eclipse-CS thing. -->
       <property key="samedir" value="." />
-      <fileset dir="src/main" includes="**/*.java"/>
-      <fileset dir="src/test" includes="**/*.java"/>
+      <fileset dir="src/main/java" includes="**/*.java"/>
+      <fileset dir="src/db-gen/java" includes="**/*.java"/>
+      <fileset dir="src/jaxb-gen/java" includes="**/*.java"/>
+      <fileset dir="src/test/java" includes="**/*.java"/>
     </checkstyle>
 
     <!-- Possible future work: if generating a report, make a pretty
@@ -304,6 +718,230 @@
     </forbiddenapis>
   </target>
 
+  <!-- Support for automated testing: generate DbUnit DTD files. -->
+  <path id="generate-DTD.classpath">
+    <pathelement path="${build}" />
+    <pathelement path="${build-test}" />
+    <fileset dir="lib">
+      <include name="**/*.jar" />
+      <exclude name="javamelody*/*.jar" />
+      <exclude name="mysql*/*.jar" />
+      <exclude name="**/*javadoc*.jar" />
+      <exclude name="**/*sources*.jar" />
+    </fileset>
+    <fileset dir="libtest">
+      <include name="**/*.jar" />
+      <exclude name="**/*javadoc*.jar" />
+      <exclude name="**/*sources*.jar" />
+    </fileset>
+    <fileset dir="libdev">
+      <include name="**/*.jar" />
+      <exclude name="**/*javadoc*.jar" />
+      <exclude name="**/*sources*.jar" />
+      <exclude name="arquillian-notyet/**/*.jar" />
+    </fileset>
+    <fileset dir="tomcatlib" includes="**/*.jar" />
+    <!-- This is the main difference from testng.classpath:
+         for a standalone app, we need the database model JARs. -->
+    <pathelement location="${toolkit-db-model-jar}" />
+    <pathelement location="${registry-db-model-jar}" />
+    <pathelement location="${roles-db-model-jar}" />
+  </path>
+
+  <!-- Generate the DbUnit DTD for one database.
+       Note that this used as part of test builds, to generate
+       the DTD for the registry database, but you have to
+       call it manually for the roles and toolkit databases,
+       and commit the results.
+       Specify two required parameters:
+       database parameter, with, e.g., -Ddbs=TOOLKIT
+       output file, with, e.g.,
+         -Ddtd-output=src/test/resources/deploy/test/dbunit-toolkit-export-choice.dtd
+  -->
+  <target name="generate-DTD"
+          depends="compile-test,toolkit-db-model-jar,registry-db-model-jar,roles-db-model-jar">
+    <fail unless="dbs" message="No dbs specified" />
+    <fail unless="dtd-output" message="No dtd-output specified" />
+    <java
+        fork="true"
+        failonerror="true"
+        output="${dtd-output}"
+        logError="true"
+        classname="au.org.ands.vocabs.toolkit.test.arquillian.GenerateDbUnitDTD"
+        classpathref="generate-DTD.classpath"
+      >
+      <jvmarg
+          value="-DPROPS_FILE=conf/toolkit-h2.properties" />
+      <jvmarg
+          value="-DREGISTRY_PROPS_FILE=conf/registry-h2.properties" />
+      <jvmarg
+          value="-DROLES_PROPS_FILE=conf/roles-h2.properties" />
+      <jvmarg
+          value="-DVERSION_PROPS_FILE=conf/version.properties" />
+      <arg value="${dbs}" />
+    </java>
+  </target>
+
+  <!-- Check if generated registry DbUnit DTD is up-to-date. -->
+  <target name="check-registry-dbunit-DTD">
+    <uptodate property="registry-dbunit-dtd.uptodate"
+              targetfile="${src-test-dbunit-registry-dtd}">
+      <srcfiles dir="src/main/db">
+        <include name="*/*.xml" />
+        <include name="*/*.xsl" />
+      </srcfiles>
+    </uptodate>
+  </target>
+
+  <!-- Generate Registry DbUnit DTD. Note the
+       "unless" attribute. -->
+  <target name="generate-registry-dbunit-dtd"
+          depends="check-registry-dbunit-DTD"
+          unless="registry-dbunit-dtd.uptodate">
+    <antcall target="generate-DTD">
+      <param name="dbs" value="REGISTRY" />
+      <param name="dtd-output" value="${src-test-dbunit-registry-dtd}" />
+    </antcall>
+  </target>
+
+  <!-- Check if generated swagger.json is up-to-date. -->
+  <target name="check-swagger-json">
+    <uptodate property="swagger-json.uptodate"
+              targetfile="swagger.json">
+      <srcfiles dir="src">
+        <include name="*/*.java" />
+        <include name="*/*.xml" />
+        <include name="*/*.xsl" />
+      </srcfiles>
+      <srcfiles dir="build">
+        <include name="*/*" />
+      </srcfiles>
+      <srcfiles dir="build-test">
+        <include name="*/*" />
+      </srcfiles>
+      <srcfiles dir="build-jar">
+        <include name="*/*.jar" />
+      </srcfiles>
+    </uptodate>
+  </target>
+
+  <!-- Generation of swagger.json.
+       We reuse the core of the testng-bamboo task for this purpose. -->
+  <target name="swagger-json"
+          depends="compile-test,toolkit-db-model-jar,registry-db-model-jar,roles-db-model-jar,check-swagger-json"
+          unless="swagger-json.uptodate">
+    <copy
+      file="conf/toolkit-h2-bamboo-template.properties"
+      tofile="conf/toolkit-h2-bamboo.properties">
+      <filterset>
+        <filter
+          token="bambooBuildWorkingDirectory"
+          value="${user.dir}" />
+        <filter
+          token="bambooPoolPartyHarvesterRemoteUrl"
+          value="http://pp.url/" />
+        <filter
+          token="bambooPoolPartyHarvesterUsername"
+          value="username-splat" />
+        <filter
+          token="bambooPoolPartyHarvesterPassword"
+          value="password-splat" />
+      </filterset>
+    </copy>
+    <copy
+      file="conf/registry-h2-bamboo-template.properties"
+      tofile="conf/registry-h2-bamboo.properties">
+      <filterset>
+        <filter
+          token="bambooBuildWorkingDirectory"
+          value="${bambooBuildWorkingDirectory}" />
+      </filterset>
+    </copy>
+    <copy
+      file="conf/roles-h2-bamboo-template.properties"
+      tofile="conf/roles-h2-bamboo.properties">
+      <filterset>
+        <filter
+          token="bambooBuildWorkingDirectory"
+          value="${bambooBuildWorkingDirectory}" />
+      </filterset>
+    </copy>
+    <testng
+        classpathref="testng.classpath"
+        >
+      <env key="JACOCO_AGENT" value="${basedir}/${jacoco-agent}" />
+      <env key="JACOCO_OUTPUT" value="${basedir}/${jacoco-output}" />
+      <jvmarg value=
+              "-DPROPS_FILE=WEB-INF/classes/toolkit-h2-bamboo.properties" />
+      <jvmarg
+          value="-DPROPS_FILE_CLIENT_MODE=conf/toolkit-h2-bamboo.properties" />
+      <jvmarg
+          value="-DREGISTRY_PROPS_FILE=WEB-INF/classes/registry-h2-bamboo.properties" />
+      <jvmarg
+          value="-DROLES_PROPS_FILE=WEB-INF/classes/roles-h2-bamboo.properties" />
+      <jvmarg
+          value="-DVERSION_PROPS_FILE=conf/version.properties" />
+      <xmlfileset dir="src/test/resources" includes="arquillian-generate-swagger.xml"/>
+    </testng>
+  </target>
+
+  <!-- Generation of PHP Client API based on swagger.json. -->
+  <target name="check-php-client">
+    <uptodate property="php-client.uptodate"
+              targetfile="${php-client-dir}/.swagger-codegen/VERSION"
+              srcfile="swagger.json" />
+  </target>
+
+  <target name="php-client"
+          depends="swagger-json,check-php-client"
+          unless="php-client.uptodate">
+    <java
+        fork="true"
+        failonerror="true"
+        jar="libdev/swagger-codegen-2.2.3/swagger-codegen-cli.jar"
+      >
+      <arg value="generate" />
+      <arg value="-i" />
+      <arg value="swagger.json" />
+      <arg value="-l" />
+      <arg value="php" />
+      <arg value="-o" />
+      <arg value="${php-client-dir}" />
+      <arg value="-DpackagePath=vocabs-registry-client" />
+      <arg value="-DinvokerPackage=ANDS\VocabsRegistry" />
+    </java>
+  </target>
+
+  <!-- Generation of JavaScript Client API based on swagger.json. -->
+  <target name="check-js-client">
+    <uptodate property="js-client.uptodate"
+              targetfile="${js-client-dir}/.swagger-codegen/VERSION"
+              srcfile="swagger.json" />
+  </target>
+
+  <target name="js-client"
+          depends="swagger-json,check-js-client"
+          unless="js-client.uptodate">
+    <java
+        fork="true"
+        failonerror="true"
+        jar="libdev/swagger-codegen-2.2.3/swagger-codegen-cli.jar"
+      >
+      <arg value="generate" />
+      <arg value="-i" />
+      <arg value="swagger.json" />
+      <arg value="-l" />
+      <arg value="javascript" />
+      <arg value="-o" />
+      <arg value="${js-client-dir}" />
+      <arg value="-DusePromises=true" />
+      <arg value="-DemitModelMethods=true" />
+    </java>
+
+  </target>
+
+  <!-- Automated testing, with test coverage -->
+
   <property name="resources-test-input" value="src/test/resources/deploy" />
 
   <path id="testng.classpath">
@@ -338,28 +976,38 @@
     <pathelement path="${resources-test-input}" />
   </path>
 
-  <target name="testng" depends="compile-test">
-    <jacoco:coverage
-      destfile="${jacoco-output}">
-      <testng
+  <!-- Run the Arquillian TestNG test suite. -->
+  <target name="testng"
+          depends="compile-test,toolkit-db-model-jar,registry-db-model-jar,roles-db-model-jar,generate-registry-dbunit-dtd">
+    <testng
         classpathref="testng.classpath"
-      >
-        <jvmarg
+        >
+      <env key="JACOCO_AGENT" value="${basedir}/${jacoco-agent}" />
+      <env key="JACOCO_OUTPUT" value="${basedir}/${jacoco-output}" />
+      <jvmarg
           value="-DPROPS_FILE=WEB-INF/classes/toolkit-h2.properties" />
-        <jvmarg
+      <jvmarg
           value="-DPROPS_FILE_CLIENT_MODE=conf/toolkit-h2.properties" />
-        <jvmarg
+      <jvmarg
+          value="-DREGISTRY_PROPS_FILE=WEB-INF/classes/registry-h2.properties" />
+      <jvmarg
+          value="-DROLES_PROPS_FILE=WEB-INF/classes/roles-h2.properties" />
+      <jvmarg
           value="-DVERSION_PROPS_FILE=conf/version.properties" />
-        <jvmarg
+      <jvmarg
           value="-DdumpClasspath" />
-        <jvmarg
+      <jvmarg
           value="-DdumpProperties" />
-        <xmlfileset dir="src/test/resources" includes="arquillian-tests.xml"/>
-      </testng>
-    </jacoco:coverage>
+      <!-- Uncomment to allow Hibernate logging to be configured
+           using our logback.xml.
+         <jvmarg
+           value="-Dorg.jboss.logging.provider=slf4j" />
+      -->
+      <xmlfileset dir="src/test/resources" includes="arquillian-tests.xml"/>
+    </testng>
     <jacoco:report>
       <executiondata>
-        <file file="jacoco.exec"/>
+        <file file="${jacoco-output}"/>
       </executiondata>
       <structure name="ANDS-Vocabs-Toolkit">
         <classfiles>
@@ -390,7 +1038,8 @@
       -DbambooPoolPartyHarvesterPassword=password-splat \
       testng-bamboo
   -->
-  <target name="testng-bamboo" depends="compile-test">
+  <target name="testng-bamboo"
+          depends="compile-test,toolkit-db-model-jar,registry-db-model-jar,roles-db-model-jar,generate-registry-dbunit-dtd">
     <copy
       file="conf/toolkit-h2-bamboo-template.properties"
       tofile="conf/toolkit-h2-bamboo.properties">
@@ -409,27 +1058,48 @@
           value="${bambooPoolPartyHarvesterPassword}" />
       </filterset>
     </copy>
-    <jacoco:coverage
-      destfile="${jacoco-output}">
-      <testng
+    <copy
+      file="conf/registry-h2-bamboo-template.properties"
+      tofile="conf/registry-h2-bamboo.properties">
+      <filterset>
+        <filter
+          token="bambooBuildWorkingDirectory"
+          value="${bambooBuildWorkingDirectory}" />
+      </filterset>
+    </copy>
+    <copy
+      file="conf/roles-h2-bamboo-template.properties"
+      tofile="conf/roles-h2-bamboo.properties">
+      <filterset>
+        <filter
+          token="bambooBuildWorkingDirectory"
+          value="${bambooBuildWorkingDirectory}" />
+      </filterset>
+    </copy>
+    <testng
         classpathref="testng.classpath"
-      >
-        <jvmarg value=
-          "-DPROPS_FILE=WEB-INF/classes/toolkit-h2-bamboo.properties" />
-        <jvmarg
+        >
+      <env key="JACOCO_AGENT" value="${basedir}/${jacoco-agent}" />
+      <env key="JACOCO_OUTPUT" value="${basedir}/${jacoco-output}" />
+      <jvmarg value=
+              "-DPROPS_FILE=WEB-INF/classes/toolkit-h2-bamboo.properties" />
+      <jvmarg
           value="-DPROPS_FILE_CLIENT_MODE=conf/toolkit-h2-bamboo.properties" />
-        <jvmarg
+      <jvmarg
+          value="-DREGISTRY_PROPS_FILE=WEB-INF/classes/registry-h2-bamboo.properties" />
+      <jvmarg
+          value="-DROLES_PROPS_FILE=WEB-INF/classes/roles-h2-bamboo.properties" />
+      <jvmarg
           value="-DVERSION_PROPS_FILE=conf/version.properties" />
-        <jvmarg
+      <jvmarg
           value="-DdumpClasspath" />
-        <jvmarg
+      <jvmarg
           value="-DdumpProperties" />
-        <xmlfileset dir="src/test/resources" includes="arquillian-tests.xml"/>
-      </testng>
-    </jacoco:coverage>
+      <xmlfileset dir="src/test/resources" includes="arquillian-tests.xml"/>
+    </testng>
     <jacoco:report>
       <executiondata>
-        <file file="jacoco.exec"/>
+        <file file="${jacoco-output}"/>
       </executiondata>
       <structure name="ANDS-Vocabs-Toolkit">
         <classfiles>
