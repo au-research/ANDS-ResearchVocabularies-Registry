@@ -102,7 +102,7 @@ public class RegistryModelTests extends ArquillianBaseTest {
         }
     }
 
-    /** Test of deleting the current version of a vocabulary that has only
+    /** Test of deleting the current instance of a vocabulary that has only
      * a current instance, with Vocabulary and VocabularyRelatedEntity
      * model elements.
      * @throws DatabaseUnitException If a problem with DbUnit.
@@ -144,7 +144,7 @@ public class RegistryModelTests extends ArquillianBaseTest {
                 + "test-registry-results.xml");
     }
 
-    /** Test of deleting the current version of a vocabulary that has only
+    /** Test of deleting the current instance of a vocabulary that has only
      * a current instance, with Vocabulary, VocabularyRelatedEntity,
      * and VocabularyRelatedVocabulary model elements.
      * @throws DatabaseUnitException If a problem with DbUnit.
@@ -186,7 +186,7 @@ public class RegistryModelTests extends ArquillianBaseTest {
                 + "test-registry-results.xml");
     }
 
-    /** Test of deleting the current version of a vocabulary that has only
+    /** Test of deleting the current instance of a vocabulary that has only
      * a draft instance, with Vocabulary and VocabularyRelatedEntity
      * model elements.
      * @throws DatabaseUnitException If a problem with DbUnit.
@@ -223,7 +223,7 @@ public class RegistryModelTests extends ArquillianBaseTest {
                 + "test-registry-results.xml");
     }
 
-    /** Test of deleting the current version of a vocabulary that has only
+    /** Test of deleting the current instance of a vocabulary that has only
      * a draft instance, with Vocabulary, VocabularyRelatedEntity, and
      * VocabularyRelatedVocabulary model elements.
      * @throws DatabaseUnitException If a problem with DbUnit.
@@ -344,7 +344,7 @@ public class RegistryModelTests extends ArquillianBaseTest {
                 + "test-registry-results.xml");
     }
 
-    /** Test of deleting the draft version of a vocabulary that also has
+    /** Test of deleting the draft instance of a vocabulary that also has
      * a current instance, with Vocabulary and VocabularyRelatedEntity
      * model elements.
      * @throws DatabaseUnitException If a problem with DbUnit.
@@ -385,7 +385,7 @@ public class RegistryModelTests extends ArquillianBaseTest {
                 + "test-registry-results.xml");
     }
 
-    /** Test of deleting the draft version of a vocabulary that also has
+    /** Test of deleting the draft instance of a vocabulary that also has
      * a current instance, with Vocabulary VocabularyRelatedEntity,
      * and VocabularyRelatedVocabulary model elements.
      * @throws DatabaseUnitException If a problem with DbUnit.
@@ -426,7 +426,7 @@ public class RegistryModelTests extends ArquillianBaseTest {
                 + "test-registry-results.xml");
     }
 
-    /** Test of deleting the current version of a vocabulary that also has
+    /** Test of deleting the current instance of a vocabulary that also has
      * a draft instance, with Vocabulary and VocabularyRelatedEntity
      * model elements.
      * @throws DatabaseUnitException If a problem with DbUnit.
@@ -467,7 +467,7 @@ public class RegistryModelTests extends ArquillianBaseTest {
                 + "test-registry-results.xml");
     }
 
-    /** Test of deleting the current version of a vocabulary that also has
+    /** Test of deleting the current instance of a vocabulary that also has
      * a draft instance, with Vocabulary, VocabularyRelatedEntity, and
      * VocabularyRelatedVocabulary model elements.
      * @throws DatabaseUnitException If a problem with DbUnit.
@@ -508,7 +508,7 @@ public class RegistryModelTests extends ArquillianBaseTest {
                 + "test-registry-results.xml");
     }
 
-    /** Test of applying changes to the current version of a vocabulary
+    /** Test of applying changes to the current instance of a vocabulary
      * that does not have a draft instance.
      * Only Vocabulary and VocabularyRelatedEntity
      * model elements are used.
@@ -606,7 +606,7 @@ public class RegistryModelTests extends ArquillianBaseTest {
                 + "test-registry-results.xml");
     }
 
-    /** Test of applying changes to the current version of a vocabulary
+    /** Test of applying changes to the current instance of a vocabulary
      * that does not have a draft instance.
      * Only Vocabulary, VocabularyRelatedEntity, and
      * VocabularyRelatedVocabulary model elements are used.
