@@ -2,7 +2,7 @@
 <!DOCTYPE ant>
 <project
   basedir="."
-  name="ANDS-Vocabs-Toolkit"
+  name="vocabs-registry"
   >
   <property environment="env" />
   <property name="debuglevel" value="source,lines,vars" />

@@ -47,7 +47,7 @@ hibernate.jdbc.time_zone=UTC
 # Location headers of responses of type 201.
 Registry.swagger.defaultScheme=http
 Registry.swagger.host=localhost:8080
-Registry.swagger.basePath=/ANDS-Vocabs-Toolkit
+Registry.swagger.basePath=/vocabs-registry
 
 # Properties for logging
 

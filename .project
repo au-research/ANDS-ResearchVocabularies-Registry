@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>ANDS-Vocabs-Toolkit</name>
+	<name>vocabs-registry</name>
 	<comment></comment>
 	<projects>
 	</projects>
@@ -40,7 +40,7 @@
 			<arguments>
 				<dictionary>
 					<key>LaunchConfigHandle</key>
-					<value>&lt;project&gt;/.externalToolBuilders/ANDS-Vocabs-Toolkit build.xml [Builder].launch</value>
+					<value>&lt;project&gt;/.externalToolBuilders/vocabs-registry build.xml [Builder].launch</value>
 				</dictionary>
 			</arguments>
 		</buildCommand>

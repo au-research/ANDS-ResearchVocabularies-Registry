@@ -5,7 +5,7 @@
     This configuration file was written by the eclipse-cs plugin configuration editor
 -->
 <!--
-    Checkstyle-Configuration: ANDS-Vocabs-Toolkit
+    Checkstyle-Configuration: vocabs-registry
     Description: none
 -->
 <module name="Checker">

@@ -3,7 +3,7 @@
 <project
   basedir="."
   default="war"
-  name="ANDS-Vocabs-Toolkit"
+  name="vocabs-registry"
   xmlns:if="ant:if"
   xmlns:unless="ant:unless"
   xmlns:jacoco="antlib:org.jacoco.ant"
@@ -1009,7 +1009,7 @@
       <executiondata>
         <file file="${jacoco-output}"/>
       </executiondata>
-      <structure name="ANDS-Vocabs-Toolkit">
+      <structure name="vocabs-registry">
         <classfiles>
           <fileset dir="${build}"/>
         </classfiles>
@@ -1101,7 +1101,7 @@
       <executiondata>
         <file file="${jacoco-output}"/>
       </executiondata>
-      <structure name="ANDS-Vocabs-Toolkit">
+      <structure name="vocabs-registry">
         <classfiles>
           <fileset dir="${build}"/>
         </classfiles>

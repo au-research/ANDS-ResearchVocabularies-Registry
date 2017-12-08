@@ -1,0 +1,4 @@
+<factorypath>
+    <factorypathentry kind="PLUGIN" id="org.eclipse.jst.ws.annotations.core" enabled="true" runInBatchMode="false"/>
+    <factorypathentry kind="WKSPJAR" id="/vocabs-registry/libdev/mapstruct-1.1.0/mapstruct-processor-1.1.0.Final.jar" enabled="true" runInBatchMode="false"/>
+</factorypath>
