@@ -200,7 +200,6 @@
     </xs:element>
     <xs:element name="related-vocabulary">
         <xs:complexType>
-            <xs:sequence> </xs:sequence>
             <xs:attribute name="id" type="id-type"> </xs:attribute>
             <xs:attribute name="status" use="required" type="common:vocabulary-status"> </xs:attribute>
             <xs:attribute name="owner" use="required" type="xs:token"/>
@@ -225,6 +224,21 @@
                 <xs:element maxOccurs="unbounded" minOccurs="0" name="related-vocabulary-relation"
                     type="common:related-vocabulary-relation"/>
                 <xs:element ref="related-vocabulary"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="owned-vocabulary">
+        <xs:complexType>
+            <xs:attribute name="id" type="id-type"> </xs:attribute>
+            <xs:attribute name="status" use="required" type="common:vocabulary-status"> </xs:attribute>
+            <xs:attribute name="hasDraft" type="xs:boolean"/>
+            <xs:attribute name="title" use="required" type="xs:token"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="owned-vocabulary-list">
+        <xs:complexType>
+            <xs:sequence maxOccurs="unbounded" minOccurs="0">
+                <xs:element ref="owned-vocabulary"/>
             </xs:sequence>
         </xs:complexType>
     </xs:element>

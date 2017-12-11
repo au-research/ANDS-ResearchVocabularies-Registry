@@ -206,6 +206,39 @@
 
 </method>
       </extraQuery>
+      <extraQuery name="GET_OWNED_VOC_LIST">
+        <extraQueryParameter name="roles" />
+        <queryText temporal="true">
+          SELECT entity FROM Vocabulary entity
+          WHERE entity.owner IN :roles
+          AND (
+          #TEMPORAL_QUERY_VALID_CLAUSE
+          OR
+          #TEMPORAL_QUERY_ALL_DRAFT_CLAUSE
+          )
+          ORDER BY entity.startDate
+        </queryText>
+        <method>    /** Get all current and draft Vocabulary instances
+     * that are owned by a user.
+     * @param roles The roles of the user for which
+     *     owned vocabularies are to be looked up.
+     * @return A list of all Vocabulary instances that are
+     *     "owned" by the user. They are ordered by their startDate values.
+     */
+    public static List&lt;Vocabulary&gt;
+        getOwnedVocabularies(final List&lt;String&gt; roles) {
+        EntityManager em = DBContext.getEntityManager();
+        TypedQuery&lt;Vocabulary&gt; q = em.createNamedQuery(
+                Vocabulary.GET_OWNED_VOC_LIST, Vocabulary.class).
+                setParameter(Vocabulary.GET_OWNED_VOC_LIST_ROLES, roles);
+        q = TemporalUtils.setDatetimeConstantParameters(q);
+        List&lt;Vocabulary&gt; entityList = q.getResultList();
+        em.close();
+        return entityList;
+    }
+
+</method>
+      </extraQuery>
     </extraQueries>
   </map>
   <map tableName="versions"
