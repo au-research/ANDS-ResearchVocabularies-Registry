@@ -66,7 +66,15 @@ public class GetOwnedVocabularies {
     @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     @Pac4JSecurity
     @GET
-    @ApiOperation(value = "Get a list of vocabularies owned by the caller.")
+    @ApiOperation(value = "Get a list of vocabularies owned by the caller.",
+        notes = "The result list contains one element for each vocabulary "
+                + "owned by the caller. "
+                + "The status attribute will be \"draft\" if there is only "
+                + "a draft instance of the vocabulary; in this case, "
+                + "hasDraft will be true. "
+                + "Otherwise, status will be either "
+                + "\"published\" or \"deprecated\", and hasDraft will be "
+                + "true if there is also a draft instance.")
     @ApiResponses(value = {
             @ApiResponse(code = HttpStatus.SC_UNAUTHORIZED,
                     message = "Not authenticated",

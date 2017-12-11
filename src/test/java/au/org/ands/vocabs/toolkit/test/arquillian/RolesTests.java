@@ -199,7 +199,6 @@ public class RolesTests extends ArquillianBaseTest {
                 "Response status");
 
         String result = response.readEntity(String.class);
-        logger.info("Result: " + result);
         response.close();
 
         Assert.assertEquals(result,
