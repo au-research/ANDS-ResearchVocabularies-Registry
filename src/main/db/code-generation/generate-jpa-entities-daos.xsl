@@ -720,7 +720,12 @@ public final class <xsl:value-of select="$entityName" />DAO {
             name = <xsl:value-of select="$entityName" />.
                 GET_CURRENT_<xsl:value-of select="upper-case($entityName)" />_LIST_FOR_<xsl:value-of select="upper-case(@entityName)" />,
             query = <xsl:value-of select="$entityName" />.
-                GET_CURRENT_<xsl:value-of select="upper-case($entityName)" />_LIST_FOR_<xsl:value-of select="upper-case(@entityName)" />_QUERY)</xsl:when></xsl:choose></xsl:template>
+                GET_CURRENT_<xsl:value-of select="upper-case($entityName)" />_LIST_FOR_<xsl:value-of select="upper-case(@entityName)" />_QUERY),
+    @NamedQuery(
+            name = <xsl:value-of select="$entityName" />.
+                GET_DRAFT_<xsl:value-of select="upper-case($entityName)" />_LIST_FOR_<xsl:value-of select="upper-case(@entityName)" />,
+            query = <xsl:value-of select="$entityName" />.
+                GET_DRAFT_<xsl:value-of select="upper-case($entityName)" />_LIST_FOR_<xsl:value-of select="upper-case(@entityName)" />_QUERY)</xsl:when></xsl:choose></xsl:template>
 
 
   <!-- Generate constant definitions for a query to get a list of
@@ -767,6 +772,19 @@ public final class <xsl:value-of select="$entityName" />DAO {
             + "WHERE entity.<xsl:value-of select="@keyColumn" /> = :"
             + GET_<xsl:value-of select="upper-case($entityName)" />_LIST_FOR_<xsl:value-of select="upper-case(@entityName)" />_<xsl:value-of select="upper-case(@keyColumn)" />
             + TemporalUtils.AND_TEMPORAL_QUERY_VALID_SUFFIX;
+
+    /** Name of getDraft<xsl:value-of select="$entityName" />ListFor<xsl:value-of select="@entityName" /> query. */
+    public static final String
+    GET_DRAFT_<xsl:value-of select="upper-case($entityName)" />_LIST_FOR_<xsl:value-of select="upper-case(@entityName)" /> =
+            "getDraft<xsl:value-of select="$entityName" />ListFor<xsl:value-of select="@entityName" />";
+    /** Query of get<xsl:value-of select="$entityName" />ListFor<xsl:value-of select="@entityName" />
+     * query. */
+    protected static final String
+        GET_DRAFT_<xsl:value-of select="upper-case($entityName)" />_LIST_FOR_<xsl:value-of select="upper-case(@entityName)" />_QUERY =
+            "SELECT entity FROM <xsl:value-of select="$entityName" /> entity "
+            + "WHERE entity.<xsl:value-of select="@keyColumn" /> = :"
+            + GET_<xsl:value-of select="upper-case($entityName)" />_LIST_FOR_<xsl:value-of select="upper-case(@entityName)" />_<xsl:value-of select="upper-case(@keyColumn)" />
+            + TemporalUtils.AND_TEMPORAL_QUERY_ALL_DRAFT_SUFFIX;
 
 </xsl:if>
 </xsl:template>
@@ -856,6 +874,58 @@ public final class <xsl:value-of select="$entityName" />DAO {
         TypedQuery&lt;<xsl:value-of select="$entityName" />&gt; q = em.createNamedQuery(
                 <xsl:value-of select="$entityName" />.
                     GET_CURRENT_<xsl:value-of select="upper-case($entityName)" />_LIST_FOR_<xsl:value-of select="upper-case(@entityName)" />,
+                <xsl:value-of select="$entityName" />.class).
+                setParameter(
+                        <xsl:value-of select="$entityName" />.
+                            GET_<xsl:value-of select="upper-case($entityName)" />_LIST_FOR_<xsl:value-of select="upper-case(@entityName)" />_<xsl:value-of select="upper-case(@keyColumn)" />,
+                        id);
+        q = TemporalUtils.setDatetimeConstantParameters(q);
+        List&lt;<xsl:value-of select="$entityName" />&gt; entityList = q.getResultList();
+        return entityList;
+    }
+
+    /** Get all draft <xsl:value-of select="$entityName" /> instances for a <xsl:value-of select="@entityName" />.
+     * This version of the method creates and uses its own EntityManager.
+     * @param id The <xsl:value-of select="@entityName" />.
+     * @return The list of draft <xsl:value-of select="$entityName" />
+     *     instances for this <xsl:value-of select="@entityName" />.
+     */
+    @SuppressWarnings("checkstyle:LineLength")
+    public static List&lt;<xsl:value-of select="$entityName" />&gt;
+    getDraft<xsl:value-of select="$entityName" />ListFor<xsl:value-of select="@entityName" />(
+            final Integer id) {
+        EntityManager em = DBContext.getEntityManager();
+        TypedQuery&lt;<xsl:value-of select="$entityName" />&gt; q = em.createNamedQuery(
+                <xsl:value-of select="$entityName" />.
+                    GET_DRAFT_<xsl:value-of select="upper-case($entityName)" />_LIST_FOR_<xsl:value-of select="upper-case(@entityName)" />,
+                <xsl:value-of select="$entityName" />.class).
+                setParameter(
+                        <xsl:value-of select="$entityName" />.
+                            GET_<xsl:value-of select="upper-case($entityName)" />_LIST_FOR_<xsl:value-of select="upper-case(@entityName)" />_<xsl:value-of select="upper-case(@keyColumn)" />,
+                        id);
+        q = TemporalUtils.setDatetimeConstantParameters(q);
+        List&lt;<xsl:value-of select="$entityName" />&gt; entityList = q.getResultList();
+        em.close();
+        return entityList;
+    }
+
+    /** Get all draft <xsl:value-of select="$entityName" /> instances for a <xsl:value-of select="@entityName" />.
+     * This version of the method uses an existing EntityManager
+     * provided as a parameter; transaction begin/end must be
+     * managed by the caller.
+     * @param em The EntityManager to be used.
+     * @param id The <xsl:value-of select="@entityName" />.
+     * @return The list of draft <xsl:value-of select="$entityName" />
+     *     instances for this <xsl:value-of select="@entityName" />.
+     */
+    @SuppressWarnings("checkstyle:LineLength")
+    public static List&lt;<xsl:value-of select="$entityName" />&gt;
+    getDraft<xsl:value-of select="$entityName" />ListFor<xsl:value-of select="@entityName" />(
+            final EntityManager em,
+            final Integer id) {
+        TypedQuery&lt;<xsl:value-of select="$entityName" />&gt; q = em.createNamedQuery(
+                <xsl:value-of select="$entityName" />.
+                    GET_DRAFT_<xsl:value-of select="upper-case($entityName)" />_LIST_FOR_<xsl:value-of select="upper-case(@entityName)" />,
                 <xsl:value-of select="$entityName" />.class).
                 setParameter(
                         <xsl:value-of select="$entityName" />.
