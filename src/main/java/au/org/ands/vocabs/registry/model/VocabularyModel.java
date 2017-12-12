@@ -8,8 +8,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.persistence.EntityManager;
-import javax.ws.rs.core.MultivaluedHashMap;
-import javax.ws.rs.core.MultivaluedMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,12 +15,8 @@ import org.slf4j.LoggerFactory;
 import au.org.ands.vocabs.registry.api.converter.VocabularyRegistrySchemaMapper;
 import au.org.ands.vocabs.registry.db.context.TemporalUtils;
 import au.org.ands.vocabs.registry.db.converter.VocabularyDbSchemaMapper;
-import au.org.ands.vocabs.registry.db.dao.AccessPointDAO;
-import au.org.ands.vocabs.registry.db.dao.VersionDAO;
 import au.org.ands.vocabs.registry.db.dao.VocabularyDAO;
 import au.org.ands.vocabs.registry.db.dao.VocabularyIdDAO;
-import au.org.ands.vocabs.registry.db.entity.AccessPoint;
-import au.org.ands.vocabs.registry.db.entity.Version;
 import au.org.ands.vocabs.registry.db.entity.Vocabulary;
 import au.org.ands.vocabs.registry.db.entity.clone.VocabularyClone;
 import au.org.ands.vocabs.registry.enums.VocabularyStatus;
@@ -64,14 +58,6 @@ public class VocabularyModel extends ModelBase {
 
     /** List of all sub-models. */
     private List<ModelBase> subModels = new ArrayList<>();
-
-    /** Map of the current versions and their access points. */
-    private MultivaluedMap<Version, AccessPoint> currentVersionsAndAPs =
-            new MultivaluedHashMap<>();
-
-    /** Map of the draft versions and their access points. */
-    private MultivaluedMap<Version, AccessPoint> draftVersionsAndAPs =
-            new MultivaluedHashMap<>();
 
     /** Construct vocabulary model for a vocabulary.
      * @param anEm The EntityManager to be used to fetch and update
@@ -117,16 +103,6 @@ public class VocabularyModel extends ModelBase {
         currentVocabulary =
                 VocabularyDAO.getCurrentVocabularyByVocabularyId(em(),
                         vocabularyId());
-        List<Version> currentVersions =
-                VersionDAO.getCurrentVersionListForVocabulary(em(),
-                        vocabularyId());
-        for (Version version : currentVersions) {
-            List<AccessPoint> currentAPs =
-                    AccessPointDAO.getCurrentAccessPointListForVersion(em(),
-                            version.getVersionId());
-            currentVersionsAndAPs.addAll(version, currentAPs);
-        }
-
         // Draft
         List<Vocabulary> draftVocabularyList =
                 VocabularyDAO.getDraftVocabularyByVocabularyId(em(),
@@ -134,15 +110,6 @@ public class VocabularyModel extends ModelBase {
         if (!draftVocabularyList.isEmpty()) {
             // There can be at most one draft vocabulary row.
             draftVocabulary = draftVocabularyList.get(0);
-            List<Version> draftVersions =
-                    VersionDAO.getCurrentVersionListForVocabulary(em(),
-                            vocabularyId());
-            for (Version version : draftVersions) {
-                List<AccessPoint> draftAPs =
-                        AccessPointDAO.getCurrentAccessPointListForVersion(
-                                em(), version.getVersionId());
-                draftVersionsAndAPs.addAll(version, draftAPs);
-            }
         }
 
         // Sub-models
@@ -166,39 +133,10 @@ public class VocabularyModel extends ModelBase {
         if (currentVocabulary != null) {
             description.add("Has current vocabulary; Id: "
                     + currentVocabulary.getId());
-            for (Version version : currentVersionsAndAPs.keySet()) {
-                description.add("Current vocabulary has current version; "
-                        + "version Id, Id: " + version.getVersionId()
-                        + "," + version.getId());
-                for (AccessPoint ap : currentVersionsAndAPs.get(version)) {
-                    description.add("Current version has current AP; "
-                            + "version Id, AP Id, Id: "
-                            + version.getVersionId() + " ,"
-                            + ap.getAccessPointId() + ","
-                            + ap.getId());
-                }
-            }
         }
         if (draftVocabulary != null) {
             description.add("Has draft vocabulary; Id: "
                     + draftVocabulary.getId());
-            for (Version version : draftVersionsAndAPs.keySet()) {
-                description.add("Draft vocabulary has draft version; "
-                        + "version Id, Id, meaning: "
-                        + version.getVersionId() + ","
-                        + version.getId() + ","
-                        + TemporalUtils.getTemporalDescription(
-                                version).getValue());
-                for (AccessPoint ap : draftVersionsAndAPs.get(version)) {
-                    description.add("Draft version has draft AP; "
-                            + "version Id, AP Id, Id, meaning"
-                            + version.getVersionId() + ","
-                            + ap.getAccessPointId() + ","
-                            + ap.getId() + ","
-                            + TemporalUtils.getTemporalDescription(
-                                    ap).getValue());
-                }
-            }
         }
 
         // Sub-models.

@@ -54,6 +54,9 @@ public class VersionsModel extends ModelBase {
      * The keys are version Ids. */
     private Map<Integer, Version> draftVersions = new HashMap<>();
 
+    /** The model of the AccessPoints. */
+    private AccessPointsModel apModel;
+
     /** List of all sub-models. */
     private List<ModelBase> subModels = new ArrayList<>();
 
@@ -101,13 +104,17 @@ public class VersionsModel extends ModelBase {
 
         // Draft
         versionList =
-                VersionDAO.getCurrentVersionListForVocabulary(
+                VersionDAO.getDraftVersionListForVocabulary(
                         em(), vocabularyId());
         for (Version version : versionList) {
             draftVersions.put(version.getVersionId(), version);
         }
 
         // Sub-models
+        apModel = new AccessPointsModel(em(), vocabularyId(),
+                currentVersions, draftVersions);
+        subModels.add(apModel);
+
 //        subModels.add(vreModel);
 //        subModels.add(vrvModel);
     }
@@ -308,8 +315,7 @@ public class VersionsModel extends ModelBase {
             sm.applyChanges(updatedVocabulary));
     }
 
-    /** Make the database's draft view of the
-     * Versions match updatedVocabulary.
+    /** Make the database's draft view of the Versions match updatedVocabulary.
      * @param updatedVocabulary The updated vocabulary.
      */
     private void applyChangesDraft(
@@ -400,6 +406,9 @@ public class VersionsModel extends ModelBase {
         public void visitDeleteCommand(
                 final VersionElement ve) {
             Version versionToDelete = ve.getDbVersion();
+            // Notify submodels first.
+            subModels.forEach(sm -> sm.notifyDeleteDraftVersion(
+                    versionToDelete.getId()));
             em().remove(versionToDelete);
             draftVersions.remove(ve.getVersionId());
             // And that's all, since we are updating a draft.
@@ -412,6 +421,8 @@ public class VersionsModel extends ModelBase {
             VersionRegistrySchemaMapper mapper =
                     VersionRegistrySchemaMapper.INSTANCE;
             Integer versionId = ve.getVersionId();
+            au.org.ands.vocabs.registry.schema.vocabulary201701.Version
+            schemaVersion = ve.getSchemaVersion();
             if (versionId != null) {
                 // There's a version Id, so check if it's in the
                 // set of current instances.
@@ -419,7 +430,7 @@ public class VersionsModel extends ModelBase {
                     // We don't need to create a new version Id, but
                     // we do need to add a draft row for it.
                     Version newVersion = mapper.sourceToTarget(
-                            ve.getSchemaVersion(), nowTime());
+                            schemaVersion, nowTime());
                     newVersion.setVersionId(versionId);
                     TemporalUtils.makeDraft(newVersion);
                     newVersion.setModifiedBy(modifiedBy());
@@ -439,7 +450,11 @@ public class VersionsModel extends ModelBase {
                 TemporalUtils.makeDraft(newVersion);
                 newVersion.setModifiedBy(modifiedBy());
                 VersionDAO.saveVersionWithId(em(), newVersion);
-                draftVersions.put(newVersion.getVersionId(), newVersion);
+                Integer newVersionId = newVersion.getVersionId();
+                draftVersions.put(newVersionId, newVersion);
+                // And this is a tricky bit: we modify the input data
+                // so that the version Id can be seen by submodels.
+                schemaVersion.setId(newVersionId);
                 // And that's all, because this is a draft.
             }
         }
@@ -544,8 +559,11 @@ public class VersionsModel extends ModelBase {
         /** {@inheritDoc} */
         @Override
         public void visitDeleteCommand(final VersionElement ve) {
-            // Make the existing row historical.
             Version versionToDelete = ve.getDbVersion();
+            // Notify submodels first.
+            subModels.forEach(sm -> sm.notifyDeleteCurrentVersion(
+                    versionToDelete.getId()));
+            // Make the existing row historical.
             TemporalUtils.makeHistorical(versionToDelete, nowTime());
             versionToDelete.setModifiedBy(modifiedBy());
             VersionDAO.updateVersion(em(), versionToDelete);
@@ -559,13 +577,15 @@ public class VersionsModel extends ModelBase {
             VersionRegistrySchemaMapper mapper =
                     VersionRegistrySchemaMapper.INSTANCE;
             Integer versionId = ve.getVersionId();
+            au.org.ands.vocabs.registry.schema.vocabulary201701.Version
+            schemaVersion = ve.getSchemaVersion();
             if (versionId != null) {
                 // There's a version Id, so check if it's in the
                 // set of draft instances.
                 if (draftVersions.containsKey(versionId)) {
                     // Reuse this draft row, making it no longer a draft.
                     Version existingDraft = draftVersions.remove(versionId);
-                    mapper.updateTargetFromSource(ve.getSchemaVersion(),
+                    mapper.updateTargetFromSource(schemaVersion,
                             existingDraft);
                     TemporalUtils.makeCurrentlyValid(existingDraft, nowTime());
                     existingDraft.setModifiedBy(modifiedBy());
@@ -586,10 +606,14 @@ public class VersionsModel extends ModelBase {
                 TemporalUtils.makeCurrentlyValid(newCurrentVersion, nowTime());
                 newCurrentVersion.setModifiedBy(modifiedBy());
                 VersionDAO.saveVersionWithId(em(), newCurrentVersion);
+                Integer newVersionId = newCurrentVersion.getVersionId();
                 // Update our records (i.e., in this case, adding
                 // a new entry).
-                currentVersions.put(newCurrentVersion.getVersionId(),
-                        newCurrentVersion);
+                currentVersions.put(newVersionId, newCurrentVersion);
+                // And this is a tricky bit: we modify the input data
+                // so that the version Id can be seen by submodels.
+                schemaVersion.setId(newVersionId);
+
                 // TO DO: mark this as requiring workflow processing.
             }
         }

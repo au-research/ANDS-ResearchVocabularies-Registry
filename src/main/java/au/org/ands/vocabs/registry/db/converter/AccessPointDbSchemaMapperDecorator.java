@@ -187,6 +187,4 @@ public abstract class AccessPointDbSchemaMapperDecorator
         }
     }
 
-
-
 }
