@@ -17,12 +17,12 @@ import javax.ws.rs.core.MediaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import au.org.ands.vocabs.registry.workflow.provider.harvest.HarvestProvider;
+import au.org.ands.vocabs.registry.workflow.provider.harvest.HarvestProviderUtils;
+import au.org.ands.vocabs.registry.workflow.provider.importer.ImporterProvider;
+import au.org.ands.vocabs.registry.workflow.provider.importer.ImporterProviderUtils;
 import au.org.ands.vocabs.toolkit.db.TaskUtils;
 import au.org.ands.vocabs.toolkit.db.model.Task;
-import au.org.ands.vocabs.toolkit.provider.harvest.HarvestProvider;
-import au.org.ands.vocabs.toolkit.provider.harvest.HarvestProviderUtils;
-import au.org.ands.vocabs.toolkit.provider.importer.ImporterProvider;
-import au.org.ands.vocabs.toolkit.provider.importer.ImporterProviderUtils;
 import au.org.ands.vocabs.toolkit.utils.PropertyConstants;
 import au.org.ands.vocabs.toolkit.utils.ToolkitProperties;
 

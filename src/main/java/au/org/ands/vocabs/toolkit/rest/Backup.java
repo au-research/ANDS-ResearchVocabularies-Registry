@@ -13,7 +13,7 @@ import javax.ws.rs.core.MediaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import au.org.ands.vocabs.toolkit.provider.backup.PoolPartyBackupProvider;
+import au.org.ands.vocabs.registry.workflow.provider.backup.PoolPartyBackupProvider;
 
 /** REST web services for doing backups. */
 @Path("doBackup")

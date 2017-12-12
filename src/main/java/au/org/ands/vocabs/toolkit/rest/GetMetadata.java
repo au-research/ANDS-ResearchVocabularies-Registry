@@ -15,8 +15,8 @@ import javax.ws.rs.core.MediaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import au.org.ands.vocabs.toolkit.provider.harvest.PoolPartyHarvestProvider;
-import au.org.ands.vocabs.toolkit.provider.transform.GetMetadataTransformProvider;
+import au.org.ands.vocabs.registry.workflow.provider.harvest.PoolPartyHarvestProvider;
+import au.org.ands.vocabs.registry.workflow.provider.transform.GetMetadataTransformProvider;
 import au.org.ands.vocabs.toolkit.tasks.TaskStatus;
 
 /** REST web services for getting vocabulary metadata. */

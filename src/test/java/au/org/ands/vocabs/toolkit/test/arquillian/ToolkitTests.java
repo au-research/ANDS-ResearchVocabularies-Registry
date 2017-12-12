@@ -35,6 +35,11 @@ import org.slf4j.LoggerFactory;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+import au.org.ands.vocabs.registry.workflow.provider.backup.BackupProviderUtils;
+import au.org.ands.vocabs.registry.workflow.provider.harvest.HarvestProviderUtils;
+import au.org.ands.vocabs.registry.workflow.provider.importer.ImporterProviderUtils;
+import au.org.ands.vocabs.registry.workflow.provider.publish.PublishProviderUtils;
+import au.org.ands.vocabs.registry.workflow.provider.transform.TransformProviderUtils;
 import au.org.ands.vocabs.toolkit.db.ResourceOwnerHostUtils;
 import au.org.ands.vocabs.toolkit.db.TaskUtils;
 import au.org.ands.vocabs.toolkit.db.model.AccessPoint;
@@ -43,11 +48,6 @@ import au.org.ands.vocabs.toolkit.db.model.ResourceOwnerHost;
 import au.org.ands.vocabs.toolkit.db.model.Task;
 import au.org.ands.vocabs.toolkit.db.model.Version;
 import au.org.ands.vocabs.toolkit.db.model.Vocabulary;
-import au.org.ands.vocabs.toolkit.provider.backup.BackupProviderUtils;
-import au.org.ands.vocabs.toolkit.provider.harvest.HarvestProviderUtils;
-import au.org.ands.vocabs.toolkit.provider.importer.ImporterProviderUtils;
-import au.org.ands.vocabs.toolkit.provider.publish.PublishProviderUtils;
-import au.org.ands.vocabs.toolkit.provider.transform.TransformProviderUtils;
 import au.org.ands.vocabs.toolkit.rest.ResolveIRI;
 import au.org.ands.vocabs.toolkit.tasks.TaskInfo;
 import au.org.ands.vocabs.toolkit.tasks.TaskRunner;
@@ -147,7 +147,8 @@ public class ToolkitTests extends ArquillianBaseTest {
     }
 
     // Tests of class
-    // au.org.ands.vocabs.toolkit.provider.transform.JsonTreeTransformProvider.
+    // au.org.ands.vocabs.registry.workflow.provider.transform.
+    //   JsonTreeTransformProvider.
 
     // Task numbers 3 and 4 generate magic number warnings.
     /** Server-side test of {@code JsonTreeTransformProvider}.
