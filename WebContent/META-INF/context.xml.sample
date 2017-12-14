@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Context>
+<Context>
+
+  <!-- This is an example setting of the location to look for
+       toolkit.properties. The point is:
+       (a) This setting can be made in a file _external_ to the WAR
+           file: specifically, in the application-specific context file
+           ~tomcat/conf/Catalina/localhost/vocabs-registry.xml.
+       (b) The setting can in turn point to a properties file that
+           is _either_ internal or external to the WAR file.
+       This means, for example, that the WAR file can be created and deployed
+       without having included a toolkit.properties file inside.
+       Copy the setting below, uncomment, and modify as needed.
+  -->
+
+  <!-- The value of the environment variable toolkit.properties can be
+       either an absolute path or a relative path.
+       If an absolute path, note that variables are expanded within
+       context files in ~tomcat/conf/Catalina/localhost, so, for example,
+       you could use ${catalina.base} in the pathname. So a good place to
+       put the properties file might be
+       ${catalina.base}/conf-ands/toolkit.properties.
+       Or, you can use a relative path, in which case, the path is resolved
+       relative to the _root_ of the webapp. So, a value such as
+       "WEB-INF/classes/toolkit.properties" is possible.
+
+       The code for all this is in the class
+         au.org.ands.vocabs.toolkit.utils.ToolkitProperties.
+
+       Sample values for testing:
+       value="/Users/rwalker/Desktop/test-loading-from-elsewhere-toolkit-jndi.properties"
+       value="WEB-INF/classes/test-loading-from-toolkit-jndi-relative.properties"
+  -->
+
+  <Environment name="toolkit.properties"
+    value="Put/the/path/here"
+    type="java.lang.String"
+    override="false"
+  />
+
+  <!-- You can do the same for registry.properties. -->
+
+
+</Context>
