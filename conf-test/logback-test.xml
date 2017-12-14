@@ -8,10 +8,10 @@
 
   <appender name="FILE"
     class="ch.qos.logback.core.rolling.RollingFileAppender">
-    <file>${catalina.base}/logs/ands-vocabs-toolkit.log</file>
+    <file>${catalina.base}/logs/ands-vocabs-registry.log</file>
     <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
       <!-- daily rollover -->
-      <fileNamePattern>${catalina.base}/logs/ands-vocabs-toolkit.%d{yyyy-MM-dd}.log</fileNamePattern>
+      <fileNamePattern>${catalina.base}/logs/ands-vocabs-registry.%d{yyyy-MM-dd}.log</fileNamePattern>
       <!-- Optional: uncomment the following setting to limit the number 
         of log files kept. -->
       <!-- Keep 31 days' worth of history -->
