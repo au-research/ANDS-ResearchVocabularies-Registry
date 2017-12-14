@@ -3,10 +3,10 @@
 
   <appender name="FILE"
     class="ch.qos.logback.core.rolling.RollingFileAppender">
-    <file>/var/log/tomcat/ands-vocabs-toolkit-backup-poolparty.log</file>
+    <file>/var/log/tomcat/ands-vocabs-registry-backup-poolparty.log</file>
     <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
       <!-- monthly rollover -->
-      <fileNamePattern>/var/log/tomcat/ands-vocabs-toolkit-backup-poolparty.%d{yyyy-MM}.log</fileNamePattern>
+      <fileNamePattern>/var/log/tomcat/ands-vocabs-registry-backup-poolparty.%d{yyyy-MM}.log</fileNamePattern>
       <!-- Optional: uncomment the following setting to limit the number
         of log files kept. -->
       <!-- Keep 12 months' worth of history -->

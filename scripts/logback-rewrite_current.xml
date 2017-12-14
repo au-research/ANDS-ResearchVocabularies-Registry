@@ -3,10 +3,10 @@
 
   <appender name="FILE"
     class="ch.qos.logback.core.rolling.RollingFileAppender">
-    <file>/var/log/apache/ands-vocabs-toolkit-rewrite-current.log</file>
+    <file>/var/log/apache/ands-vocabs-registry-rewrite-current.log</file>
     <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
       <!-- daily rollover -->
-      <fileNamePattern>/var/log/apache/ands-vocabs-toolkit-rewrite-current.%d{yyyy-MM-dd}.log</fileNamePattern>
+      <fileNamePattern>/var/log/apache/ands-vocabs-registry-rewrite-current.%d{yyyy-MM-dd}.log</fileNamePattern>
       <!-- Optional: uncomment the following setting to limit the number 
         of log files kept. -->
       <!-- Keep 31 days' worth of history -->
