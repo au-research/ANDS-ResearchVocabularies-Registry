@@ -11,7 +11,7 @@
            is _either_ internal or external to the WAR file.
        This means, for example, that the WAR file can be created and deployed
        without having included a toolkit.properties file inside.
-       Copy the setting below, uncomment, and modify as needed.
+       Modify the setting below as needed.
   -->
 
   <!-- The value of the environment variable toolkit.properties can be
