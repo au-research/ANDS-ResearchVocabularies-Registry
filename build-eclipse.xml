@@ -20,8 +20,8 @@
   <property name="roles-db-model-jar"
             value="${build-jar}/roles-db-model.jar" />
 
-  <property name="jar" value="vocabtoolkit.jar" />
-  <property name="war" value="vocabtoolkit.war" />
+  <property name="jar" value="vocabs-registry.jar" />
+  <property name="war" value="vocabs-registry.war" />
 
   <target name="clean-build-jar">
     <!-- Used to delete the entire ${build-jar} directory,

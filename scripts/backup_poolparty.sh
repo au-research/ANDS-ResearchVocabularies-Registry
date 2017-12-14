@@ -6,7 +6,7 @@
 # TOOLKIT_ROOT to point to it.
 
 : ${catalina_base:=~tomcat}
-: ${TOOLKIT_ROOT:=~tomcat/webapps-ands/vocabtoolkit}
+: ${TOOLKIT_ROOT:=~tomcat/webapps-ands/vocabs-registry}
 
 # NB, note use of custom logback configuration.
 # It must not allow any logging to go to the normal Toolkit log!

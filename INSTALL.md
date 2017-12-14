@@ -121,7 +121,7 @@ tools/dist/liquibase-3.5.3/liquibase --defaultsFile=registry-liquibase-superuser
 
 # Deploy and start the Toolkit/Registry web application
 
-Deploy the resulting `vocabtoolkit.war` into Tomcat.
+Deploy the resulting `vocabs-registry.war` into Tomcat.
 
 You may choose to deploy it using a Tomcat context file in order to
 select a convenient context path.

@@ -49,8 +49,8 @@
   <property name="roles-db-model-jar"
             value="${build-jar}/roles-db-model.jar" />
 
-  <property name="jar" value="vocabtoolkit.jar" />
-  <property name="war" value="vocabtoolkit.war" />
+  <property name="jar" value="vocabs-registry.jar" />
+  <property name="war" value="vocabs-registry.war" />
   <property name="javadoc-output" value="doc/javadoc" />
   <property name="test-output" value="test-output" />
   <!-- JaCoCo -->

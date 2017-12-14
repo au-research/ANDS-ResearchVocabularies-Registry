@@ -4,7 +4,7 @@
 # Either edit this script to set the directory below,
 # or set the environment variable TOOLKIT_ROOT to point to it.
 
-: ${TOOLKIT_ROOT:=~tomcat/webapps-ands/vocabtoolkit}
+: ${TOOLKIT_ROOT:=~tomcat/webapps-ands/vocabs-registry}
 
 # NB, note use of custom logback configuration.
 # It must not allow any logging to go to stdout.
