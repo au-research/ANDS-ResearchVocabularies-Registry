@@ -53,6 +53,25 @@ conf.
 Create `conf/toolkit.properties`. You may base it on
 `conf/toolkit.properties.sample`.
 
+### Elda/SISSVoc Config template
+
+The Toolkit property `SISSVoc.specTemplate` must point to a file that
+contains a template which will be used in the generation of
+configuration ('spec') files as used by the Elda library.  Please
+refer to `conf/ANDS-ELDAConfig-template.ttl.sample` for an example.
+
+### Elda/SISSVoc XSL transform
+
+The Toolkit property `SISSVoc.variable.HTML_STYLESHEET` must point to
+an XSL transform used by Elda/SISSVoc to generate HTML pages.  Either,
+copy `lda/resources/default/transform/ands-ashtml-sissvoc.xsl` into
+the `resources/default/transform` directory of your deployed instance
+of SISSVoc, or make use of the file(s) provided in the repository
+https://github.com/au-research/ANDS-ResearchVocabularies-LDA.  (There
+is a version of `ands-ashtml-sissvoc.xsl` contained in the directory
+`common/resources/default/transform`.)
+
+
 ## Create Registry configuration
 
 ### Web application properties
@@ -87,6 +106,12 @@ collection. In the following, we have chosen `vocabs-registry`.
 
 Create `conf/roles.properties`. You may base it on
 `conf/roles.properties.sample`.
+
+## Configure logging
+
+The file `conf/logback.xml` is the logging configuration for the
+Registry. You may modify it to suit your needs.
+
 
 # Create the Registry database
 

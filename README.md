@@ -1,76 +1,29 @@
-# ANDS Vocabulary Services Toolkit
+# ANDS Vocabulary Services Registry
 
-## What the toolkit does
+## What the Registry does
 
-The Toolkit implements a vocabulary repository, and provides an
-interface to a vocabulary portal.
+The Registry implements a vocabulary metadata catalogue and
+repository, and provides an API interface for a vocabulary portal and
+for machine-to-machine clients.
 
 ## Installation
 
-### Configuration files
-
-#### conf/toolkit.properties
-
-This is the main configuration file for the Toolkit.
-
-Make a copy of `conf/toolkit.properties.sample` and modify it to suit.
-
-You will find another file `conf/version.properties` containing
-version information. Do not modify this file. It will be updated when
-you do an Ant build and copied into the generated WAR file.
-
-#### logback.xml
-
-This is the logging configuration for the Toolkit.
-
-#### metadatarewritemap.conf
-
-This is the configuration file for metadata rewriting.
-It is in Windows INI format.
-The supported sections are defined in
-`src/main/java/au/org/ands/vocabs/toolkit/provider/transform/PropertyRewriterTransformProvider.java`,
-where the values are put into the field `metadataToLookFor` in a
-static initializer. For example, `dcterms:title`, `dcterms:description`.
-
-#### ELDA Config template
-
-This is the template used in the generation of configuration ('spec')
-files as used by the ELDA library.
-Please refer to `conf/ANDS-ELDAConfig-template.ttl.sample` for an
-example.
-
-#### ELDA XSL transform
-
-This is the XSL transform used by SISSVoc to generate HTML pages.
-Copy lda/resources/default/transform/ands-ashtml-sissvoc.xsl into
-the resources/default/transform directory of your deployed instance
-of SISSVoc.
-
-
-### ant war
-
-You need to use the Ant build script `build.xml` to build the WAR file.
-
-The script assumes the existence of a directory `tomcatlib` containing
-a JAR file for the Servlet API.
-
-    mkdir tomcatlib
-    cd tomcatlib
-    cp /path/to/servlet/api/servlet-api.jar .
-    cd ..
-    ant war
-
+Please refer to `INSTALL.md` for detailed installation instructions.
 
 ### Tomcat deployment
 
-The Toolkit should be deployed in Tomcat. (Deployment to other
+The Registry should be deployed in Tomcat. (Deployment to other
 containers may be possible; it has not been tested.)
 
-TODO
+## Registry functionality
+
+The Registry combines the functions of a metadata catalogue and a
+repository. The repository functions are known as the Vocabulary
+Toolkit.
 
 ## Toolkit functionality
 
-The Toolkit provides the following functions:
+The Toolkit part of the Registry provides the following functions:
 
 * Get Toolkit information
   * System "health check"
@@ -94,24 +47,24 @@ The Toolkit provides the following functions:
 * Backup
   * Download project exports from PoolParty
 
-## Toolkit API
+## Registry API
 
-The API is accessed via HTTP.
+The API is accessed via HTTP(S).
 
 ## Technology
 
 This section provides some background information on the technology
-used to implement the Toolkit.
+used to implement the Registry.
 
 ### Java
 
-The Toolkit has been developed using Java 7, and a Java 7 Runtime
-Environment is required. Specifically, the code uses try-with-resource
-blocks, multi-catch exception blocks, and the new File IO API.
+The Registry has been developed using Java 8, and a Java 8 Runtime
+Environment is required. Specifically, the code uses lambda
+expressions.
 
 ### JPA and Hibernate
 
-The Toolkit uses JPA for database access.  Hibernate is used as the
+The Registry uses JPA for database access.  Hibernate is used as the
 implementation provider for JPA.  The JPA layer provides database
 independence. Nevertheless, because ANDS software has for a long time
 used MySQL, the MySQL JDBC driver is included, and the software has
@@ -126,15 +79,15 @@ Jersey is used as the implementation provider for JAX-RS.
 ### Sesame
 
 The OpenRDF Sesame libraries are used extensively to implement the
-Toolkit features.
+Registry features.
 
 ### Apache Commons
 
-The Toolkit uses Apache Commons components. Currently, Configuration,
+The Registry uses Apache Commons components. Currently, Configuration,
 IO, and Lang (both versions 2 and 3) are used. (Commons IO is required
-by Sesame, but it is also invoked directly from the Toolkit code.)
+by Sesame, but it is also invoked directly from the Registry code.)
 
 ## Licence
 
-The Toolkit is licensed under the Apache License, version 2.0. See
-`LICENSE` for details.
+The Vocabulary Registry is licensed under the Apache License,
+version 2.0. See `LICENSE` for details.
