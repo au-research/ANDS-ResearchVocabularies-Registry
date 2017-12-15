@@ -343,6 +343,10 @@
               remarks="Enumerated type.">
         <constraints nullable="false"/>
       </column>
+      <column name="source" type="VARCHAR(45)"
+              remarks="Enumerated type.">
+        <constraints nullable="false"/>
+      </column>
       <column name="data" type="TEXT"
               remarks="JSON object.">
         <constraints nullable="false"/>

@@ -1882,13 +1882,14 @@ public final class MigrateToolkitToRegistry {
         case "apiSparql":
             registryAccessPoint.setType(AccessPointType.API_SPARQL);
             ApApiSparql apApiSparql = new ApApiSparql();
-            apApiSparql.setSource(ApSource.fromValue(
+            registryAccessPoint.setSource(ApSource.fromValue(
                     portalDataJson.get("source").asText()));
             apApiSparql.setUrl(portalDataJson.get("uri").asText());
             apData = apApiSparql;
             break;
         case "file":
             registryAccessPoint.setType(AccessPointType.FILE);
+            registryAccessPoint.setSource(ApSource.USER);
             ApFile apFile = new ApFile();
             apFile.setFormat(portalDataJson.get("format").asText());
             apFile.setUrl(portalDataJson.get("uri").asText());
@@ -1897,6 +1898,7 @@ public final class MigrateToolkitToRegistry {
             break;
         case "sesameDownload":
             registryAccessPoint.setType(AccessPointType.SESAME_DOWNLOAD);
+            registryAccessPoint.setSource(ApSource.SYSTEM);
             ApSesameDownload apSesameDownload = new ApSesameDownload();
             String internalUrl = toolkitDataJson.get("uri").asText();
             // The last slash goes into the server base.
@@ -1911,13 +1913,14 @@ public final class MigrateToolkitToRegistry {
         case "sissvoc":
             registryAccessPoint.setType(AccessPointType.SISSVOC);
             ApSissvoc apSissvoc = new ApSissvoc();
-            apSissvoc.setSource(ApSource.fromValue(
+            registryAccessPoint.setSource(ApSource.fromValue(
                     portalDataJson.get("source").asText()));
             apSissvoc.setUrlPrefix(portalDataJson.get("uri").asText());
             apData = apSissvoc;
             break;
         case "webPage":
             registryAccessPoint.setType(AccessPointType.WEB_PAGE);
+            registryAccessPoint.setSource(ApSource.USER);
             ApWebPage apWebPage = new ApWebPage();
             apWebPage.setUrl(portalDataJson.get("uri").asText());
             apData = apWebPage;

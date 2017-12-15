@@ -795,6 +795,10 @@ public class CheckVocabularyImpl
         // doPublish
 
         // accessPoint
+        // TO DO: for updates, check that any AP Ids do in fact
+        // belong to this version. (Including: check that if an AP Id
+        // is specified, so was the version Id!) Hmm, perhaps do this in
+        // the model classes.
         int accessPointIndex = 0;
         for (Iterator<AccessPoint> it =
                 newVersion.getAccessPoint().iterator();
@@ -899,7 +903,7 @@ public class CheckVocabularyImpl
                 // In this case, we can't go any further.
                 break;
             }
-            if (apApiSparql.getSource() != ApSource.USER) {
+            if (newAccessPoint.getSource() != ApSource.USER) {
                 valid = false;
                 constraintContext.buildConstraintViolationWithTemplate(
                         "{" + INTERFACE_NAME
@@ -942,7 +946,7 @@ public class CheckVocabularyImpl
                 // In this case, we can't go any further.
                 break;
             }
-            if (apSissvoc.getSource() != ApSource.USER) {
+            if (newAccessPoint.getSource() != ApSource.USER) {
                 valid = false;
                 constraintContext.buildConstraintViolationWithTemplate(
                         "{" + INTERFACE_NAME

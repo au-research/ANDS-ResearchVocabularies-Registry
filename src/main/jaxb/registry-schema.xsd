@@ -106,6 +106,7 @@
                 <xs:element name="ap-web-page" type="ap-web-page"/>
             </xs:choice>
             <xs:attribute name="id" type="id-type" use="optional"/>
+            <xs:attribute name="source" type="common:ap-source"/>
             <xs:attribute name="discriminator" type="common:access-point-discriminator"
                 use="required"/>
         </xs:complexType>
@@ -121,7 +122,6 @@
     <xs:complexType name="ap-api-sparql">
         <xs:complexContent>
             <xs:extension base="ap-common">
-                <xs:attribute name="source" type="common:ap-source"/>
                 <xs:attribute name="url" type="xs:anyURI" use="required"/>
             </xs:extension>
         </xs:complexContent>
@@ -144,7 +144,6 @@
     <xs:complexType name="ap-sissvoc">
         <xs:complexContent>
             <xs:extension base="ap-common">
-                <xs:attribute name="source" type="common:ap-source"/>
                 <xs:attribute name="urlPrefix" type="xs:anyURI"/>
             </xs:extension>
         </xs:complexContent>

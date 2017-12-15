@@ -313,6 +313,7 @@
        >
     <idKey keyColumn="access_point_id" entityName="AccessPointId" />
     <column db="type" enum="AccessPointType" />
+    <column db="source" enum="ApSource" />
     <foreignKeyQueries>
       <foreignKeyQuery keyColumn="versionId" entityName="Version" />
     </foreignKeyQueries>
