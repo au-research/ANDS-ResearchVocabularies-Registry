@@ -23,6 +23,9 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
+import au.org.ands.vocabs.registry.enums.SubtaskOperationType;
+import au.org.ands.vocabs.registry.workflow.provider.WorkflowProvider;
+import au.org.ands.vocabs.registry.workflow.tasks.Subtask;
 import au.org.ands.vocabs.toolkit.db.AccessPointUtils;
 import au.org.ands.vocabs.toolkit.db.model.AccessPoint;
 import au.org.ands.vocabs.toolkit.tasks.TaskInfo;
@@ -33,7 +36,8 @@ import au.org.ands.vocabs.toolkit.utils.ToolkitNetUtils;
 import au.org.ands.vocabs.toolkit.utils.ToolkitProperties;
 
 /** SISSVoc publish provider. */
-public class SISSVocPublishProvider extends PublishProvider {
+public class SISSVocPublishProvider extends PublishProvider
+    implements WorkflowProvider {
 
     /** Logger for this class. */
     private final Logger logger = LoggerFactory.getLogger(
@@ -291,6 +295,20 @@ public class SISSVocPublishProvider extends PublishProvider {
             return false;
         }
         return true;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public Integer defaultPriority(final SubtaskOperationType operationType) {
+        // TO DO
+        return null;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void doSubtask(final Subtask subtask) {
+        // TO DO
+
     }
 
 }

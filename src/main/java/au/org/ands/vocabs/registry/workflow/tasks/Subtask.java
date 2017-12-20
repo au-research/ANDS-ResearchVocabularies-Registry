@@ -9,7 +9,10 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-import au.org.ands.vocabs.registry.enums.SubtaskType;
+import au.org.ands.vocabs.registry.enums.SubtaskOperationType;
+import au.org.ands.vocabs.registry.enums.SubtaskProviderType;
+import au.org.ands.vocabs.registry.workflow.provider.ProviderUtils;
+import au.org.ands.vocabs.registry.workflow.provider.WorkflowProvider;
 
 /** Representation of one workflow subtask. */
 @XmlRootElement(name = "subtask")
@@ -18,21 +21,39 @@ import au.org.ands.vocabs.registry.enums.SubtaskType;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Subtask implements Comparable<Subtask> {
 
-    /** The type of the subtask. */
-    private SubtaskType subtaskType;
+    /** The provider type of the subtask. */
+    private SubtaskProviderType subtaskProviderType;
 
-    /** Set the subtask type.
-     * @param aSubtaskType The subtask type to be set.
+    /** Set the subtask provider type.
+     * @param aSubtaskProviderType The subtask provider type to be set.
      */
-    public void setSubtaskType(final SubtaskType aSubtaskType) {
-        subtaskType = aSubtaskType;
+    public void setSubtaskProviderType(
+            final SubtaskProviderType aSubtaskProviderType) {
+        subtaskProviderType = aSubtaskProviderType;
     }
 
-    /** Get the subtask type.
+    /** Get the subtask provider type.
      * @return The subtask type.
      */
-    public SubtaskType getSubtaskType() {
-        return subtaskType;
+    public SubtaskProviderType getSubtaskProviderType() {
+        return subtaskProviderType;
+    }
+
+    /** The operation to be performed. */
+    private SubtaskOperationType operation;
+
+    /** Set the subtask operation.
+     * @param anOperation The operation to be set.
+     */
+    public void setOperation(final SubtaskOperationType anOperation) {
+        operation = anOperation;
+    }
+
+    /** Get the subtask operation.
+     * @return The operation.
+     */
+    public SubtaskOperationType getOperation() {
+        return operation;
     }
 
     /** The priority of the subtask. Lower values are higher priorities. */
@@ -55,12 +76,25 @@ public class Subtask implements Comparable<Subtask> {
     /** The name of the subtask provider. */
     private String provider;
 
-    /** Set the subtask provider.
+    /** Set the subtask provider. This method takes
+     * a String parameter.
      * @param aProvider The subtask provider to be set.
      */
     public void setProvider(final String aProvider) {
         provider = aProvider;
     }
+
+    /** Set the subtask provider. This method takes a parameter
+     * that is a class object that implements the {@link WorkflowProvider}
+     * class.
+     * @param aProviderClass The class object of the subtask provider
+     *      to be set.
+     */
+    public void setProvider(
+            final Class<? extends WorkflowProvider> aProviderClass) {
+        provider = ProviderUtils.providerName(aProviderClass);
+    }
+
 
     /** Get the subtask provider.
      * @return The subtask provider.
@@ -85,6 +119,16 @@ public class Subtask implements Comparable<Subtask> {
      */
     public Map<String, String> getSubtaskProperties() {
         return subtaskProperties;
+    }
+
+    /** Set the priority based on what the provider says to use.
+     * Precondition: the provider type, provider name, and operation must
+     * have been set.
+     */
+    public void determinePriority() {
+        WorkflowProvider workflowProvider = ProviderUtils.getProvider(
+                subtaskProviderType, provider);
+        priority = workflowProvider.defaultPriority(operation);
     }
 
     /** {@inheritDoc}

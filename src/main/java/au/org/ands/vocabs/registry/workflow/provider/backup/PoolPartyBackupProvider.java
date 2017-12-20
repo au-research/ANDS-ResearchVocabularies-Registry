@@ -28,6 +28,9 @@ import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import au.org.ands.vocabs.registry.enums.SubtaskOperationType;
+import au.org.ands.vocabs.registry.workflow.provider.WorkflowProvider;
+import au.org.ands.vocabs.registry.workflow.tasks.Subtask;
 import au.org.ands.vocabs.toolkit.tasks.TaskStatus;
 import au.org.ands.vocabs.toolkit.utils.PoolPartyUtils;
 import au.org.ands.vocabs.toolkit.utils.PropertyConstants;
@@ -37,7 +40,8 @@ import au.org.ands.vocabs.toolkit.utils.ToolkitProperties;
 import ch.qos.logback.classic.Level;
 
 /** Backup provider for PoolParty. */
-public class PoolPartyBackupProvider extends BackupProvider {
+public class PoolPartyBackupProvider extends BackupProvider
+    implements WorkflowProvider {
 
     /** The logger for this class. */
     private final Logger logger = LoggerFactory.getLogger(
@@ -74,7 +78,7 @@ public class PoolPartyBackupProvider extends BackupProvider {
         // in the ArrayList that will be returned.
         JsonReader jsonReader = Json.createReader(is);
         JsonArray jsonStructure = jsonReader.readArray();
-        ArrayList<String> pList = new ArrayList<String>();
+        ArrayList<String> pList = new ArrayList<>();
         Iterator<JsonValue> iter = jsonStructure.iterator();
         while (iter.hasNext()) {
             JsonObject entry = (JsonObject) iter.next();
@@ -101,7 +105,7 @@ public class PoolPartyBackupProvider extends BackupProvider {
     public final HashMap<String, String> getBackupFiles(
             final String ppProjectId,
             final String outputPath) {
-        HashMap<String, String> result = new HashMap<String, String>();
+        HashMap<String, String> result = new HashMap<>();
         String remoteUrl = ToolkitProperties.getProperty(
                 PropertyConstants.POOLPARTY_REMOTEURL);
         String username = ToolkitProperties.getProperty(
@@ -115,7 +119,7 @@ public class PoolPartyBackupProvider extends BackupProvider {
         // but there does not yet appear to be a gain.
         String format = "TriG";
 
-        List<String> exportModules = new ArrayList<String>();
+        List<String> exportModules = new ArrayList<>();
 
         // The following list of export modules comes from:
         // https://help.poolparty.biz/doc/developer-guide/
@@ -195,12 +199,12 @@ public class PoolPartyBackupProvider extends BackupProvider {
     public final HashMap<String, Object> backup(final String pPProjectId) {
 
         ArrayList<String> pList;
-        HashMap<String, Object> results = new HashMap<String, Object>();
+        HashMap<String, Object> results = new HashMap<>();
 
         if (pPProjectId == null || pPProjectId.isEmpty()) {
             pList = getProjectIDs();
         } else {
-            pList = new ArrayList<String>();
+            pList = new ArrayList<>();
             pList.add(pPProjectId);
         }
 
@@ -217,6 +221,30 @@ public class PoolPartyBackupProvider extends BackupProvider {
         }
 
         return results;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public Integer defaultPriority(final SubtaskOperationType operationType) {
+        // Don't care.
+        return null;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void doSubtask(final Subtask subtask) {
+        switch (subtask.getOperation()) {
+        case INSERT:
+        case PERFORM:
+            // TO DO: do a backup.
+            break;
+        case DELETE:
+            // Not implemented.
+            break;
+        default:
+            // Unknown operation.
+            break;
+        }
     }
 
     /**
@@ -238,7 +266,7 @@ public class PoolPartyBackupProvider extends BackupProvider {
         // Put command-line arguments into an ArrayList to make them
         // easier to process. (I.e., as one would use "shift" in
         // Bourne shell.)
-        ArrayList<String> argsList = new ArrayList<String>(Arrays.asList(args));
+        ArrayList<String> argsList = new ArrayList<>(Arrays.asList(args));
         if (argsList.size() > 0 && "-d".equals(argsList.get(0))) {
             rootLogger.setLevel(Level.DEBUG);
             argsList.remove(0);
