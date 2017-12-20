@@ -27,6 +27,7 @@ import au.org.ands.vocabs.registry.db.entity.Version;
 import au.org.ands.vocabs.registry.db.entity.clone.VersionClone;
 import au.org.ands.vocabs.registry.enums.VocabularyStatus;
 import au.org.ands.vocabs.registry.model.sequence.VersionElement;
+import au.org.ands.vocabs.registry.workflow.tasks.Task;
 
 /** Versions domain model.
  * This is a representation of the versions of a vocabulary,
@@ -59,6 +60,10 @@ public class VersionsModel extends ModelBase {
 
     /** List of all sub-models. */
     private List<ModelBase> subModels = new ArrayList<>();
+
+    /** The tasks to be performed for versions, if there are any.
+     * The keys are version Ids. */
+    private Map<Integer, Task> versionTasks = new HashMap<>();
 
     /** Construct versions model for a vocabulary.
      * @param anEm The EntityManager to be used to fetch and update
@@ -553,6 +558,7 @@ public class VersionsModel extends ModelBase {
                 // the previous value).
                 currentVersions.put(versionId, newCurrentVersion);
                 // TO DO: mark this as requiring workflow processing.
+                workflowRequired(versionId);
             }
         }
 
@@ -567,8 +573,10 @@ public class VersionsModel extends ModelBase {
             TemporalUtils.makeHistorical(versionToDelete, nowTime());
             versionToDelete.setModifiedBy(modifiedBy());
             VersionDAO.updateVersion(em(), versionToDelete);
-            currentVersions.remove(ve.getVersionId());
+            Integer versionId = ve.getVersionId();
+            currentVersions.remove(versionId);
             // TO DO: workflow deletion processing.
+            workflowRequired(versionId);
         }
 
         /** {@inheritDoc} */
@@ -615,7 +623,31 @@ public class VersionsModel extends ModelBase {
                 schemaVersion.setId(newVersionId);
 
                 // TO DO: mark this as requiring workflow processing.
+                workflowRequired(newVersionId);
             }
+        }
+    }
+
+    /** Mark a version as requiring workflow processing. This associates
+     * a new Task instance to the version, if there is not one already
+     * assigned.
+     * @param versionId The version Id of the version to be marked as
+     *      requiring workflow processing.
+     */
+    private void workflowRequired(final Integer versionId) {
+        Task task = versionTasks.get(versionId);
+        if (task == null) {
+            task = new Task();
+            task.setVocabularyId(vocabularyId());
+            task.setVersionId(versionId);
+            versionTasks.put(versionId, task);
+        }
+    }
+
+    /** Process all of the tasks that have been accumulated. */
+    private void processRequiredTasks() {
+        for (Task task : versionTasks.values()) {
+            task.persistAndProcess(em());
         }
     }
 

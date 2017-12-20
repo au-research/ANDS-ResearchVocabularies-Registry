@@ -178,8 +178,18 @@ http://viaf.org/</xs:documentation>
             <xs:enumeration value="isPartOf"/>
         </xs:restriction>
     </xs:simpleType>
+    <xs:simpleType name="subtask-type">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="backup"/>
+            <xs:enumeration value="harvest"/>
+            <xs:enumeration value="importer"/>
+            <xs:enumeration value="publish"/>
+            <xs:enumeration value="transform"/>
+        </xs:restriction>
+    </xs:simpleType>
     <xs:simpleType name="task-status">
         <xs:restriction base="xs:token">
+            <xs:enumeration value="new"/>
             <xs:enumeration value="success"/>
             <xs:enumeration value="error"/>
             <xs:enumeration value="harvesting"/>
