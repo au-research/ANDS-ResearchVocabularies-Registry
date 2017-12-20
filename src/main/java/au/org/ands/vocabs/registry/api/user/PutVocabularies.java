@@ -134,7 +134,10 @@ public class PutVocabularies {
             VocabularyIdDAO.saveVocabularyId(em, vocabularyId);
             // That needs to be visible to subsequent queries, so that
             // ModelMethods.createVocabularyModel() will find it.
-//            em.flush();
+            // Because it has an auto-increment column, it _is_
+            // flushed ... within the current transaction.
+            // So need to make sure that all subsequent database access
+            // is done using the _same_ EntityManager.
             Integer newVocabularyId = vocabularyId.getId();
             logger.info("Created new vocabulary Id: " + newVocabularyId);
 
