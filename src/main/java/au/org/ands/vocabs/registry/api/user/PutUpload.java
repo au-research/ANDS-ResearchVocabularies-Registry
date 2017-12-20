@@ -62,6 +62,8 @@ public class PutUpload {
     private Logger logger = LoggerFactory.getLogger(
             MethodHandles.lookup().lookupClass());
 
+    // TO DO: make use of allowedExtensions!
+
     /** A set containing the extensions permitted on the filenames
      * of uploaded files. */
     private static Set<String> allowedExtensions;
@@ -153,6 +155,12 @@ public class PutUpload {
             @FormDataParam("file") final FormDataContentDisposition
                     fileDisposition) {
         logger.debug("called createUpload");
+
+        // TO DO: make use of allowedExtensions!
+        // And otherwise, do validation, e.g., of the format parameter
+
+        // TO DO: normalize the filename, e.g., to remove characters
+        // that could be dodgy when included in HTML, e.g., "<",.
 
         logger.debug("upload format: " + format);
         logger.debug("filename: " + fileDisposition.getFileName());
