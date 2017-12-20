@@ -18,6 +18,8 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
 
+import javax.persistence.EntityManager;
+
 import org.apache.commons.io.FileUtils;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Statement;
@@ -38,6 +40,9 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.JsonNode;
 
+import au.org.ands.vocabs.registry.enums.SubtaskOperationType;
+import au.org.ands.vocabs.registry.workflow.provider.WorkflowProvider;
+import au.org.ands.vocabs.registry.workflow.tasks.Subtask;
 import au.org.ands.vocabs.toolkit.db.TaskUtils;
 import au.org.ands.vocabs.toolkit.tasks.TaskInfo;
 import au.org.ands.vocabs.toolkit.tasks.TaskStatus;
@@ -146,7 +151,8 @@ import au.org.ands.vocabs.toolkit.utils.ToolkitFileUtils;
  *   remove node from NodesActive
  * </pre>
  */
-public class JsonTreeTransformProvider extends TransformProvider {
+public class JsonTreeTransformProvider extends TransformProvider
+    implements WorkflowProvider {
 
     /** Logger for this class. */
     private final Logger logger = LoggerFactory.getLogger(
@@ -882,6 +888,31 @@ public class JsonTreeTransformProvider extends TransformProvider {
             final HashMap<String, String> results) {
         // Oops, this should remove the concepts tree file!
         return false;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public Integer defaultPriority(final SubtaskOperationType operationType) {
+        // TO DO
+        return null;
+    }
+
+    /** The EntityManager to use for database access. */
+    private EntityManager em;
+
+    /** Set the EntityManager to be used for database access.
+     * @param anEntityManager The EntityManager to be used for database access.
+     */
+    @Override
+    public void setEntityManager(final EntityManager anEntityManager) {
+        em = anEntityManager;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void doSubtask(final Subtask subtask) {
+        // TO DO
+
     }
 
 }

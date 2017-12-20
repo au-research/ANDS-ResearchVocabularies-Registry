@@ -21,6 +21,8 @@ import au.org.ands.vocabs.registry.enums.SubtaskOperationType;
 import au.org.ands.vocabs.registry.enums.SubtaskProviderType;
 import au.org.ands.vocabs.registry.workflow.provider.importer.SesameImporterProvider;
 import au.org.ands.vocabs.registry.workflow.provider.publish.SISSVocPublishProvider;
+import au.org.ands.vocabs.registry.workflow.provider.transform.JsonListTransformProvider;
+import au.org.ands.vocabs.registry.workflow.provider.transform.JsonTreeTransformProvider;
 import au.org.ands.vocabs.registry.workflow.tasks.Subtask;
 
 /** The interface provided by the workflow package. API and methods
@@ -39,14 +41,13 @@ public final class WorkflowMethods {
     }
 
     /** Apply workflow deletion to an access point.
-     * One of two situations applies: either, the access point is
-     * deleted immediately, or, a list of subtasks must be performed.
-     * Determine workflow subtasks required for deletion of an access point.
-     * NB: in either case, it is the responsibility of the caller to update
-     * (make historical) or delete the database row.
+     * One of two situations applies: either, the access point can be, and is,
+     * deleted immediately, or, a list of workflow subtasks must be performed.
+     * NB: in either case, this method does <i>not</i> delete (or mark as
+     * historical) the database row for the access point.
      * @param ap The access point to be deleted.
      * @return null, if the deletion has been completed, or a non-empty
-     *      list of required subtasks that need to be performed.
+     *      list of required workflow subtasks that need to be performed.
      */
     public static List<Subtask> deleteAccessPoint(final AccessPoint ap) {
         List<Subtask> subtaskList = new ArrayList<>();
@@ -85,7 +86,8 @@ public final class WorkflowMethods {
             // access points, and where there is one, there will also be
             // the other. So we do nothing here.
             // And since there's nothing to be done if source=USER,
-            // we do nothing for that case either.
+            // we do nothing for that case either. Below is the sort of
+            // code that would be required if this assumption should change.
             /*
             if (ap.getSource() == ApSource.USER) {
                 // No further action required.
@@ -109,7 +111,8 @@ public final class WorkflowMethods {
             subtask.determinePriority();
             break;
         case WEB_PAGE:
-            break;
+            // These are all source=USER, and no further action is required.
+            return null;
         default:
             // Oops, a type we don't know about.
             throw new IllegalArgumentException(
@@ -119,11 +122,14 @@ public final class WorkflowMethods {
     }
 
     /** Apply workflow deletion to a version artefact.
-     * NB: in either case, it is the responsibility of the caller to update
-     * (make historical) or delete the database row.
+     * One of two situations applies: either, the version artefact can be,
+     * and is, deleted immediately, or, a list of workflow subtasks must
+     * be performed.
+     * NB: in either case, this method does <i>not</i> delete (or mark
+     * as historical) the database row for the version artefact.
      * @param va The version artefact to be deleted.
      * @return null, if the deletion has been completed, or a non-empty
-     *      list of required subtasks that need to be performed.
+     *      list of required workflow subtasks that need to be performed.
      */
     public static List<Subtask> deleteVersionArtefact(
             final VersionArtefact va) {
@@ -132,8 +138,16 @@ public final class WorkflowMethods {
         subtaskList.add(subtask);
         switch (va.getType()) {
         case CONCEPT_LIST:
+            subtask.setSubtaskProviderType(SubtaskProviderType.TRANSFORM);
+            subtask.setProvider(JsonListTransformProvider.class);
+            subtask.setOperation(SubtaskOperationType.DELETE);
+            subtask.determinePriority();
             break;
         case CONCEPT_TREE:
+            subtask.setSubtaskProviderType(SubtaskProviderType.TRANSFORM);
+            subtask.setProvider(JsonTreeTransformProvider.class);
+            subtask.setOperation(SubtaskOperationType.DELETE);
+            subtask.determinePriority();
             break;
         default:
             // Oops, a type we don't know about.

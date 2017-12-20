@@ -12,6 +12,7 @@ import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.HashMap;
 
+import javax.persistence.EntityManager;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.WebTarget;
 
@@ -329,6 +330,17 @@ public class SesameImporterProvider extends ImporterProvider
     public Integer defaultPriority(final SubtaskOperationType operationType) {
         // TO DO
         return null;
+    }
+
+    /** The EntityManager to use for database access. */
+    private EntityManager em;
+
+    /** Set the EntityManager to be used for database access.
+     * @param anEntityManager The EntityManager to be used for database access.
+     */
+    @Override
+    public void setEntityManager(final EntityManager anEntityManager) {
+        em = anEntityManager;
     }
 
     /** {@inheritDoc} */

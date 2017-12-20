@@ -76,8 +76,7 @@ public class Subtask implements Comparable<Subtask> {
     /** The name of the subtask provider. */
     private String provider;
 
-    /** Set the subtask provider. This method takes
-     * a String parameter.
+    /** Set the subtask provider. This method takes a String parameter.
      * @param aProvider The subtask provider to be set.
      */
     public void setProvider(final String aProvider) {
@@ -86,7 +85,7 @@ public class Subtask implements Comparable<Subtask> {
 
     /** Set the subtask provider. This method takes a parameter
      * that is a class object that implements the {@link WorkflowProvider}
-     * class.
+     * interface.
      * @param aProviderClass The class object of the subtask provider
      *      to be set.
      */
@@ -94,7 +93,6 @@ public class Subtask implements Comparable<Subtask> {
             final Class<? extends WorkflowProvider> aProviderClass) {
         provider = ProviderUtils.providerName(aProviderClass);
     }
-
 
     /** Get the subtask provider.
      * @return The subtask provider.
@@ -121,7 +119,7 @@ public class Subtask implements Comparable<Subtask> {
         return subtaskProperties;
     }
 
-    /** Set the priority based on what the provider says to use.
+    /** Set the priority based on the default priority set by the provider.
      * Precondition: the provider type, provider name, and operation must
      * have been set.
      */

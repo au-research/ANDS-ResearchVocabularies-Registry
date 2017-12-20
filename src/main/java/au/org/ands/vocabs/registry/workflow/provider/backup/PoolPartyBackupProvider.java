@@ -28,7 +28,6 @@ import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import au.org.ands.vocabs.registry.enums.SubtaskOperationType;
 import au.org.ands.vocabs.registry.workflow.provider.WorkflowProvider;
 import au.org.ands.vocabs.registry.workflow.tasks.Subtask;
 import au.org.ands.vocabs.toolkit.tasks.TaskStatus;
@@ -221,13 +220,6 @@ public class PoolPartyBackupProvider extends BackupProvider
         }
 
         return results;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public Integer defaultPriority(final SubtaskOperationType operationType) {
-        // Don't care.
-        return null;
     }
 
     /** {@inheritDoc} */
