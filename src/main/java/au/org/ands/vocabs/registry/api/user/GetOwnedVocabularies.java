@@ -25,10 +25,10 @@ import org.slf4j.LoggerFactory;
 
 import au.org.ands.vocabs.registry.api.context.ApiPaths;
 import au.org.ands.vocabs.registry.api.context.SwaggerInterface;
+import au.org.ands.vocabs.registry.db.context.TemporalUtils;
 import au.org.ands.vocabs.registry.db.converter.JSONSerialization;
 import au.org.ands.vocabs.registry.db.dao.VocabularyDAO;
 import au.org.ands.vocabs.registry.db.internal.VocabularyJson;
-import au.org.ands.vocabs.registry.enums.VocabularyStatus;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.OwnedVocabulary;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.OwnedVocabularyList;
 import io.swagger.annotations.Api;
@@ -128,7 +128,7 @@ public class GetOwnedVocabularies {
                 // to false by the "else" branch in a later iteration
                 // of the loop.
                 newOwnedVocabulary.setHasDraft(
-                        vocabulary.getStatus() == VocabularyStatus.DRAFT);
+                        TemporalUtils.isDraft(vocabulary));
                 ownedVocabulariesMap.put(vocabularyId, newOwnedVocabulary);
             } else {
                 // We've already seen it, so this must be a draft row
