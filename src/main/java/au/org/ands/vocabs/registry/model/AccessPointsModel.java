@@ -32,12 +32,16 @@ public class AccessPointsModel extends ModelBase {
     private Logger logger = LoggerFactory.getLogger(
             MethodHandles.lookup().lookupClass());
 
+    /** The parent VersionsModel of this instance. Passed down
+     * by VersionsModel. */
+    private VersionsModel versionsModel;
+
     /** The current instances of versions, if there are any.
-     * The keys are version Ids. Passed down by VersionModel. */
+     * The keys are version Ids. Passed down by VersionsModel. */
     private Map<Integer, Version> currentVersions;
 
     /** The draft instances of versions, if there are any.
-     * The keys are version Ids. Passed down by VersionModel. */
+     * The keys are version Ids. Passed down by VersionsModel. */
     private Map<Integer, Version> draftVersions;
 
     /** The current instances of access points, if there are any.
@@ -55,12 +59,14 @@ public class AccessPointsModel extends ModelBase {
      *      database data.
      * @param aVocabularyId The Id of the vocabulary for which the model
      *      is to be constructed.
+     * @param aVersionsModel The parent versionsModel of this instance.
      * @param aCurrentVersions The current version instances of the vocabulary.
      * @param aDraftVersions The draft version instances of the vocabulary.
      * @throws IllegalArgumentException If aVocabularyId is null.
      */
     public AccessPointsModel(final EntityManager anEm,
             final Integer aVocabularyId,
+            final VersionsModel aVersionsModel,
             final Map<Integer, Version> aCurrentVersions,
             final Map<Integer, Version> aDraftVersions) {
         if (aVocabularyId == null) {
@@ -70,6 +76,7 @@ public class AccessPointsModel extends ModelBase {
         }
         setEm(anEm);
         setVocabularyId(aVocabularyId);
+        versionsModel = aVersionsModel;
         currentVersions = aCurrentVersions;
         draftVersions = aDraftVersions;
         populateModel();
@@ -290,7 +297,7 @@ public class AccessPointsModel extends ModelBase {
 
     /** {@inheritDoc}
      * Before invoking this method, fill in all version Ids for new versions:
-     * refer to the two visitInsertCommand methods in VersionModel.
+     * refer to the two visitInsertCommand methods in VersionsModel.
      * Before invoking this method, apply all requested deletion of versions,
      * using the notifyDeleteCurrentVersion and notifyDeleteDraftVersion
      * methods.

@@ -112,7 +112,7 @@ public class VersionsModel extends ModelBase {
 
         // Sub-models
         apModel = new AccessPointsModel(em(), vocabularyId(),
-                currentVersions, draftVersions);
+                this, currentVersions, draftVersions);
         subModels.add(apModel);
 
 //        subModels.add(vreModel);

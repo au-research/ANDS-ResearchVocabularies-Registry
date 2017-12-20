@@ -196,7 +196,7 @@ public abstract class ModelBase {
             Vocabulary updatedVocabulary);
 
     /** Receive notification of the deletion of the current instance
-     * of a version. This method is used by VersionModel to notify
+     * of a version. This method is used by VersionsModel to notify
      * its submodels.
      * @param versionId The version Id of the version whose current instance
      *      is being deleted.
@@ -207,7 +207,7 @@ public abstract class ModelBase {
     }
 
     /** Receive notification of the deletion of the draft instance of a version.
-     * This method is used by VersionModel to notify its submodels.
+     * This method is used by VersionsModel to notify its submodels.
      * @param versionId The version Id of the version whose draft instance
      *      is being deleted.
      */
