@@ -4,8 +4,10 @@ package au.org.ands.vocabs.registry.model;
 
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.persistence.EntityManager;
 import javax.ws.rs.core.MultivaluedHashMap;
@@ -20,7 +22,10 @@ import au.org.ands.vocabs.registry.db.dao.AccessPointDAO;
 import au.org.ands.vocabs.registry.db.entity.AccessPoint;
 import au.org.ands.vocabs.registry.db.entity.Version;
 import au.org.ands.vocabs.registry.enums.VocabularyStatus;
+import au.org.ands.vocabs.registry.model.sequence.AccessPointElement;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.Vocabulary;
+import au.org.ands.vocabs.registry.workflow.WorkflowMethods;
+import au.org.ands.vocabs.registry.workflow.tasks.Subtask;
 
 /** Access points domain model.
  * This is a representation of the access points of a vocabulary,
@@ -212,12 +217,27 @@ public class AccessPointsModel extends ModelBase {
         for (Integer vId : currentAPs.keySet()) {
             for (AccessPoint ap : currentAPs.get(vId)) {
                 // TO DO: make sure delete workflow has been done!
+                accumulateSubtasks(vId, WorkflowMethods.deleteAccessPoint(ap));
                 TemporalUtils.makeHistorical(ap, nowTime());
                 ap.setModifiedBy(modifiedBy());
                 AccessPointDAO.updateAccessPoint(em(), ap);
             }
         }
         currentAPs.clear();
+    }
+
+    /** Add workflow subtasks required for a version.
+     * @param versionId The version Id.
+     * @param subtaskList The list of subtasks to be applied for the version.
+     */
+    private void accumulateSubtasks(final Integer versionId,
+            final List<Subtask> subtaskList) {
+        if (subtaskList.isEmpty()) {
+            // No subtasks required.
+            return;
+        }
+        versionsModel.workflowRequired(versionId);
+        versionsModel.getTaskForVersion(versionId).addSubtasks(subtaskList);
     }
 
     /** {@inheritDoc} */
@@ -232,6 +252,7 @@ public class AccessPointsModel extends ModelBase {
             throw new IllegalArgumentException(
                     "Existing draft; you must delete it first");
         }
+        // TO DO: workflow processing.
         for (Integer vId : currentAPs.keySet()) {
             for (AccessPoint ap : currentAPs.get(vId)) {
                 TemporalUtils.makeHistorical(ap, nowTime());
@@ -320,7 +341,21 @@ public class AccessPointsModel extends ModelBase {
     private void applyChangesDraft(final Vocabulary updatedVocabulary) {
         // TO DO: finish this method.
         // Create sequences.
-        // First, any existing draft values.
+        // First, any existing draft values. All of these have AP Ids.
+        List<AccessPointElement> existingDraftSequence = new ArrayList<>();
+        for (Entry<Integer, List<AccessPoint>> apList : draftAPs.entrySet()) {
+            Integer versionId = apList.getKey();
+            for (AccessPoint ap : apList.getValue()) {
+                existingDraftSequence.add(new AccessPointElement(
+                    versionId, ap.getAccessPointId(), ap, null));
+            }
+        }
+        Collections.sort(existingDraftSequence);
+
+
+
+
+
     }
 
     /** Make the database's currently-valid view of the
