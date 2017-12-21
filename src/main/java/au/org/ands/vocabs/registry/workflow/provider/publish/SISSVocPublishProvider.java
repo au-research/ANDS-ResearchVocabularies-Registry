@@ -25,6 +25,7 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import au.org.ands.vocabs.registry.enums.SubtaskOperationType;
+import au.org.ands.vocabs.registry.workflow.provider.DefaultPriorities;
 import au.org.ands.vocabs.registry.workflow.provider.WorkflowProvider;
 import au.org.ands.vocabs.registry.workflow.tasks.Subtask;
 import au.org.ands.vocabs.toolkit.db.AccessPointUtils;
@@ -301,8 +302,16 @@ public class SISSVocPublishProvider extends PublishProvider
     /** {@inheritDoc} */
     @Override
     public Integer defaultPriority(final SubtaskOperationType operationType) {
-        // TO DO
-        return null;
+        switch (operationType) {
+        case INSERT:
+        case PERFORM:
+            return DefaultPriorities.DEFAULT_PUBLISH_INSERT_PRIORITY;
+        case DELETE:
+            return DefaultPriorities.DEFAULT_PUBLISH_DELETE_PRIORITY;
+        default:
+            // Unknown operation type!
+            return null;
+        }
     }
 
     /** The EntityManager to use for database access. */

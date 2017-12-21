@@ -41,6 +41,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import au.org.ands.vocabs.registry.enums.SubtaskOperationType;
+import au.org.ands.vocabs.registry.workflow.provider.DefaultPriorities;
 import au.org.ands.vocabs.registry.workflow.provider.WorkflowProvider;
 import au.org.ands.vocabs.registry.workflow.tasks.Subtask;
 import au.org.ands.vocabs.toolkit.db.TaskUtils;
@@ -887,14 +888,23 @@ public class JsonTreeTransformProvider extends TransformProvider
             final JsonNode subtask,
             final HashMap<String, String> results) {
         // Oops, this should remove the concepts tree file!
+        // TO DO: remove it!
         return false;
     }
 
     /** {@inheritDoc} */
     @Override
     public Integer defaultPriority(final SubtaskOperationType operationType) {
-        // TO DO
-        return null;
+        switch (operationType) {
+        case INSERT:
+        case PERFORM:
+            return DefaultPriorities.DEFAULT_TRANSFORM_INSERT_PRIORITY;
+        case DELETE:
+            return DefaultPriorities.DEFAULT_TRANSFORM_DELETE_PRIORITY;
+        default:
+            // Unknown operation type!
+            return null;
+        }
     }
 
     /** The EntityManager to use for database access. */
