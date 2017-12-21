@@ -15,7 +15,7 @@ import au.org.ands.vocabs.registry.db.entity.Version;
 public class VersionElement
     implements Comparable<VersionElement> {
 
-    /** The dbVersion Id. */
+    /** The Version Id. */
     private Integer versionId;
 
     /** The database Version entity, if there is such an existing row
@@ -75,7 +75,7 @@ public class VersionElement
     @Override
     public boolean equals(final Object other) {
         if (other == null
-                || !(other instanceof VocabularyRelatedEntityElement)) {
+                || !(other instanceof VersionElement)) {
             return false;
         }
         if (versionId == null) {

@@ -239,6 +239,7 @@ public class VersionsModel extends ModelBase {
             // Oops, nothing to do!
             return;
         }
+        // TO DO: workflow processing.
         // Sub-models first.
         subModels.forEach(sm -> sm.deleteOnlyCurrent());
 
@@ -262,6 +263,7 @@ public class VersionsModel extends ModelBase {
             throw new IllegalArgumentException(
                     "Existing draft; you must delete it first");
         }
+        // TO DO: workflow processing.
         // Sub-models first.
         subModels.forEach(sm -> sm.makeCurrentIntoDraft());
 
@@ -318,6 +320,9 @@ public class VersionsModel extends ModelBase {
         // Sub-models.
         subModels.forEach(sm ->
             sm.applyChanges(updatedVocabulary));
+
+        // And now run any tasks that have been accumulated along the way.
+        processRequiredTasks();
     }
 
     /** Make the database's draft view of the Versions match updatedVocabulary.
@@ -536,7 +541,6 @@ public class VersionsModel extends ModelBase {
         public void visitKeepCommand(final VersionElement ve) {
             // This could contain metadata updates. If so, make the
             // existing current row historical, and add a new current row.
-            // to the existing current row.
             Integer versionId = ve.getVersionId();
             Version existingVersion = ve.getDbVersion();
             au.org.ands.vocabs.registry.schema.vocabulary201701.Version
@@ -628,13 +632,22 @@ public class VersionsModel extends ModelBase {
         }
     }
 
+    /** Get the workflow task associated with a version, if there is one.
+     * @param versionId The version Id of the version.
+     * @return The Task instance associated with the version, or null,
+     *      if there is not (yet) such an instance.
+     */
+    protected Task getTaskForVersion(final Integer versionId) {
+        return versionTasks.get(versionId);
+    }
+
     /** Mark a version as requiring workflow processing. This associates
      * a new Task instance to the version, if there is not one already
      * assigned.
      * @param versionId The version Id of the version to be marked as
      *      requiring workflow processing.
      */
-    private void workflowRequired(final Integer versionId) {
+    protected void workflowRequired(final Integer versionId) {
         Task task = versionTasks.get(versionId);
         if (task == null) {
             task = new Task();
