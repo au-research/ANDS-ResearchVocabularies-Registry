@@ -7,6 +7,8 @@ import java.util.Map;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import au.org.ands.vocabs.registry.enums.SubtaskOperationType;
@@ -160,6 +162,37 @@ public class Subtask implements Comparable<Subtask> {
         }
         // Both this and other have priorities. Compare them.
         return priority.compareTo(other.priority);
+    }
+
+    /** {@inheritDoc}
+     * Equality test based on all properties.
+     */
+    @Override
+    public boolean equals(final Object other) {
+        if (other == null
+                || !(other instanceof Subtask)) {
+            return false;
+        }
+        Subtask otherSubtask = (Subtask) other;
+        // Note comparison of subtaskProperties, which is a HashMap.
+        // This works correctly, because the keys/values are Strings (and not
+        // arrays).
+        return new EqualsBuilder().
+                append(subtaskProviderType,
+                        otherSubtask.getSubtaskProviderType()).
+                append(operation, otherSubtask.getOperation()).
+                append(priority, otherSubtask.getPriority()).
+                append(provider, otherSubtask.getProvider()).
+                append(subtaskProperties, otherSubtask.getSubtaskProperties()).
+                isEquals();
+    }
+
+    /** {@inheritDoc}
+     * The hash code returned is that of the subtaskProviderType.
+     */
+    @Override
+    public int hashCode() {
+        return subtaskProviderType.hashCode();
     }
 
 }

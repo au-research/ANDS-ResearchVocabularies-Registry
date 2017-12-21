@@ -4,6 +4,8 @@ package au.org.ands.vocabs.registry.workflow.tasks;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import javax.persistence.EntityManager;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -50,15 +52,20 @@ public class Task {
     }
 
     /** The queue of subtasks to be performed. Initialized to an empty
-     * list, so that {@link #addSubtask(Subtask)} may be invoked
-     * immediately after the constructor. */
-    private List<Subtask> subtasks = new ArrayList<>();
+     * set, so that {@link #addSubtask(Subtask)} may be invoked
+     * immediately after the constructor.
+     * The queue is implemented as a SortedSet. This means that (a)
+     * duplicates are eliminated, (b) the subtasks are ordered by
+     * priority.
+     */
+    private SortedSet<Subtask> subtasks = new TreeSet<>();
 
     /** Set the list of subtasks to be performed.
      * @param aSubtasks The list of subtasks to be performed.
      */
     public void setSubtasks(final List<Subtask> aSubtasks) {
-        subtasks = aSubtasks;
+        subtasks.clear();
+        subtasks.addAll(aSubtasks);
     }
 
     /** Add a subtask.
@@ -68,14 +75,20 @@ public class Task {
         subtasks.add(aSubtask);
     }
 
+    /** Add a list of subtasks.
+     * @param subtaskList The list of subtasks to be added.
+     */
+    public void addSubtasks(final List<Subtask> subtaskList) {
+        subtasks.addAll(subtaskList);
+    }
+
     /** Get the list of subtasks to be performed, sorted by
      * priority.
      *
      * @return The list of subtasks to be performed, sorted by priority.
      */
     public List<Subtask> getSubtasks() {
-        subtasks.sort(null);
-        return subtasks;
+        return new ArrayList<>(subtasks);
     }
 
     /** Persist and process this task.
