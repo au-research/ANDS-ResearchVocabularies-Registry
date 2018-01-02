@@ -300,7 +300,7 @@ public class VersionsModel extends ModelBase {
             // For now, it is OK just to delete the database rows.
             // In future, if the publication workflow is applied to
             // drafts, more work will have be done here.
-            em().remove(version);
+            VersionDAO.deleteVersion(em(), version);
         }
         draftVersions.clear();
     }
@@ -419,7 +419,7 @@ public class VersionsModel extends ModelBase {
             // Notify submodels first.
             subModels.forEach(sm -> sm.notifyDeleteDraftVersion(
                     versionToDelete.getId()));
-            em().remove(versionToDelete);
+            VersionDAO.deleteVersion(em(), versionToDelete);
             draftVersions.remove(ve.getVersionId());
             // And that's all, since we are updating a draft.
         }

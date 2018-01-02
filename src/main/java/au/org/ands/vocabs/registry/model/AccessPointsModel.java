@@ -284,7 +284,7 @@ public class AccessPointsModel extends ModelBase {
     protected void deleteDraftDatabaseRows() {
         for (Integer vId : draftAPs.keySet()) {
             for (AccessPoint ap : draftAPs.get(vId)) {
-                em().remove(ap);
+                AccessPointDAO.deleteAccessPoint(em(), ap);
             }
         }
         draftAPs.clear();
@@ -310,7 +310,7 @@ public class AccessPointsModel extends ModelBase {
         for (AccessPoint ap : currentAPs.get(versionId)) {
             // Just delete the row;
             // for a draft instance, no workflow is applied.
-            em().remove(ap);
+            AccessPointDAO.deleteAccessPoint(em(), ap);
         }
         // Remove from our own records.
         draftAPs.remove(versionId);

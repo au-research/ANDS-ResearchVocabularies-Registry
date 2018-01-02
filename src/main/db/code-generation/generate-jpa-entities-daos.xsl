@@ -685,6 +685,34 @@ public final class <xsl:value-of select="$entityName" />DAO {
         em.merge(entity);
     }
 
+    /** Delete an existing <xsl:value-of select="$entityName" />
+     * from the database.
+     * This version of the method creates and uses its own EntityManager.
+     * @param entity The <xsl:value-of select="$entityName" /> to be deleted.
+     */
+    public static void delete<xsl:value-of select="$entityName" />(
+        final <xsl:value-of select="$entityName" /> entity) {
+        EntityManager em = DBContext.getEntityManager();
+        em.getTransaction().begin();
+        em.remove(entity);
+        em.getTransaction().commit();
+        em.close();
+    }
+
+    /** Delete an existing <xsl:value-of select="$entityName" />
+     * from the database.
+     * This version of the method uses an existing EntityManager
+     * provided as a parameter; transaction begin/end must be
+     * managed by the caller.
+     * @param em The EntityManager to be used.
+     * @param entity The <xsl:value-of select="$entityName" /> to be deleted.
+     */
+    public static void delete<xsl:value-of select="$entityName" />(
+        final EntityManager em,
+        final <xsl:value-of select="$entityName" /> entity) {
+        em.remove(entity);
+    }
+
 <xsl:text>}
 </xsl:text>
 </xsl:result-document>

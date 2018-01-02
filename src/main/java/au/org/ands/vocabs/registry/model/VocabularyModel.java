@@ -312,7 +312,7 @@ public class VocabularyModel extends ModelBase {
     @Override
     protected void deleteDraftDatabaseRows() {
         if (draftVocabulary != null) {
-            em().remove(draftVocabulary);
+            VocabularyDAO.deleteVocabulary(em(), draftVocabulary);
             draftVocabulary = null;
         }
     }
