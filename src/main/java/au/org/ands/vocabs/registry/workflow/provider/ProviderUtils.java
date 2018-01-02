@@ -5,6 +5,7 @@ package au.org.ands.vocabs.registry.workflow.provider;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.InvocationTargetException;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,11 +28,17 @@ public final class ProviderUtils {
      *  String)}.
      * @param classObject The class of the provider.
      * @return The name of the provider. It is the "simple name" of the class,
-     *      with any final "Provider" removed.
+     *      with any final "Provider" removed, and with the subtask
+     *      provider type also removed. For example,
+     *      the JsonListTransformProvider class becomes "JsonList".
      */
     public static String providerName(
             final Class<? extends WorkflowProvider> classObject) {
-        return classObject.getSimpleName().replaceAll("Provider$", "");
+        String packageName = classObject.getPackage().getName();
+        packageName = StringUtils.capitalize(
+                packageName.substring(packageName.lastIndexOf('.') + 1));
+        return classObject.getSimpleName().replaceAll("Provider$", "").
+                replaceAll(packageName + "$", "");
     }
 
     /** Get an instance of the provider based on the provider type and
@@ -46,7 +53,8 @@ public final class ProviderUtils {
             final String providerName) {
         String s = "au.org.ands.vocabs.registry.workflow.provider."
                 + providerType.value() + "."
-                + providerName + "Provider";
+                + providerName + StringUtils.capitalize(providerType.value())
+                + "Provider";
         Class<?> c;
         try {
             c = Class.forName(s);
