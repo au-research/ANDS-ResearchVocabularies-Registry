@@ -888,7 +888,7 @@ public class CheckVocabularyImpl
         }
 
         switch (newAccessPoint.getDiscriminator()) {
-        case AP_API_SPARQL:
+        case API_SPARQL:
             ApApiSparql apApiSparql = newAccessPoint.getApApiSparql();
             if (apApiSparql == null) {
                 valid = false;
@@ -931,7 +931,7 @@ public class CheckVocabularyImpl
                     addConstraintViolation(),
                     valid);
             break;
-        case AP_SISSVOC:
+        case SISSVOC:
             ApSissvoc apSissvoc = newAccessPoint.getApSissvoc();
             if (apSissvoc == null) {
                 valid = false;
@@ -974,7 +974,7 @@ public class CheckVocabularyImpl
                     addConstraintViolation(),
                     valid);
             break;
-        case AP_WEB_PAGE:
+        case WEB_PAGE:
             ApWebPage apWebPage = newAccessPoint.getApWebPage();
             if (apWebPage == null) {
                 valid = false;

@@ -107,8 +107,7 @@
             </xs:choice>
             <xs:attribute name="id" type="id-type" use="optional"/>
             <xs:attribute name="source" type="common:ap-source"/>
-            <xs:attribute name="discriminator" type="common:access-point-discriminator"
-                use="required"/>
+            <xs:attribute name="discriminator" type="common:access-point-type" use="required"/>
         </xs:complexType>
     </xs:element>
     <xs:element name="access-point-list">

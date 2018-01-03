@@ -30,15 +30,6 @@
             <xs:enumeration value="webPage"/>
         </xs:restriction>
     </xs:simpleType>
-    <xs:simpleType name="access-point-discriminator">
-        <xs:restriction base="xs:token">
-            <xs:enumeration value="ApApiSparql"/>
-            <xs:enumeration value="ApFile"/>
-            <xs:enumeration value="ApSesameDownload"/>
-            <xs:enumeration value="ApSissvoc"/>
-            <xs:enumeration value="ApWebPage"/>
-        </xs:restriction>
-    </xs:simpleType>
     <xs:simpleType name="version-artefact-status">
         <xs:restriction base="xs:token">
             <xs:enumeration value="current"/>
