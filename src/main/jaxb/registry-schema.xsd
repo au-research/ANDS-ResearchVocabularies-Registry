@@ -129,6 +129,7 @@
         <xs:complexContent>
             <xs:extension base="ap-common">
                 <xs:attribute name="format" type="xs:token"/>
+                <xs:attribute name="upload-id" type="xs:int"/>
                 <xs:attribute name="url" type="xs:anyURI"/>
             </xs:extension>
         </xs:complexContent>

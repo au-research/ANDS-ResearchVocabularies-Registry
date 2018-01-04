@@ -168,6 +168,15 @@ Registry database:
 wget -O - http://localhost:8080/registry-context/registry/admin/database/migrateToolkitToRegistry
 ```
 
+It is crucial to check the log file of the Registry to see if there
+are any log messages related to migration that have priority
+"ERROR". If there are, an error has occurred during migration that
+needs to be addressed. Note that the migration may have continued
+anyway, and reported completion, in order to migrate as much data as
+possible; nevertheless, the errors need to be addressed. When that has
+been done, you will need to clear out the database (see "Create
+Registry database tables" above) and run the migration again.
+
 # Define PoolParty server for the Registry
 
 Connect to the MySQL Registry database as the `registry-user` user.
