@@ -86,6 +86,7 @@ import au.org.ands.vocabs.registry.enums.VersionArtefactStatus;
 import au.org.ands.vocabs.registry.enums.VersionArtefactType;
 import au.org.ands.vocabs.registry.enums.VersionStatus;
 import au.org.ands.vocabs.registry.enums.VocabularyStatus;
+import au.org.ands.vocabs.registry.utils.RegistryFileUtils;
 import au.org.ands.vocabs.registry.utils.RegistryProperties;
 import au.org.ands.vocabs.toolkit.db.AccessPointUtils;
 import au.org.ands.vocabs.toolkit.db.DBContext;
@@ -230,6 +231,9 @@ public final class MigrateToolkitToRegistry {
                 ZoneOffset.UTC);
     }
 
+    /** The Path to the directory in which registry uploads are stored. */
+    private java.nio.file.Path uploadsPath;
+
     /** Get the published or deprecated verion of a migrated Vocabulary
      * by its slug, if there is one. Otherwise, return null. This method can be
      * used after all the published/deprecated Vocabulary instances
@@ -318,6 +322,12 @@ public final class MigrateToolkitToRegistry {
         SimpleDateFormat formatter =
                 new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         EntityManager toolkitEm = DBContext.getEntityManager();
+
+        String uploadsDirectoryName = RegistryProperties.getProperty(
+                au.org.ands.vocabs.registry.utils.PropertyConstants.
+                REGISTRY_UPLOADSPATH);
+        RegistryFileUtils.requireDirectory(uploadsDirectoryName);
+        uploadsPath = java.nio.file.Paths.get(uploadsDirectoryName);
 
         migratePublishedAndDeprecatedVocabularies(formatter, toolkitEm);
         migrateDraftVocabularies(formatter, toolkitEm);
@@ -2049,10 +2059,8 @@ public final class MigrateToolkitToRegistry {
         upload.setFilename(sourcePath.getFileName().toString());
         UploadDAO.saveUpload(upload);
         // Now we can copy the file.
-        java.nio.file.Path destPath = java.nio.file.Paths.get(
-                RegistryProperties.getProperty(
-                au.org.ands.vocabs.registry.utils.PropertyConstants.
-                REGISTRY_UPLOADSPATH), upload.getId().toString());
+        java.nio.file.Path destPath =
+                uploadsPath.resolve(upload.getId().toString());
         try {
             Files.copy(sourcePath, destPath,
                     StandardCopyOption.COPY_ATTRIBUTES,
