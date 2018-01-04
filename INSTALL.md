@@ -225,6 +225,23 @@ chosen for the collection and assigned in `registry.properties` above.
 ant create-solr-schema
 ```
 
+## Force indexing of the vocabularies into Solr
+
+Run:
+
+```
+wget -O - http://localhost:8080/registry-context/registry/admin/solr/index
+```
+
+Once again, it is crucial to check the log file of the Registry to see
+if there are any log messages related to indexing. If Solr is not
+responding, you will see an error message of priority "SEVERE".
+In this case, restart Solr and try again.
+
 # Create PHP Client API
 
 `ant php-client`
+
+# Create JavaScript Client API
+
+`ant js-client`
