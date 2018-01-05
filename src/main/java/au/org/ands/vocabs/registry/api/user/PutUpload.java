@@ -9,6 +9,7 @@ import java.lang.invoke.MethodHandles;
 import java.net.URL;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityTransaction;
@@ -24,6 +25,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
@@ -90,6 +92,16 @@ public class PutUpload {
         allowedExtensions.add("zip");
     }
 
+    /** Regular expression that specifies what is a valid filename,
+     * after the sanitization process has been applied. It specifies
+     * a format in which there is exactly one period, with at least
+     * one other character before and after it. No begin/end anchors
+     * need to be included in the regular expression, as this is to be
+     * used with {@link java.util.regex.Matcher#matches()}.
+     * This pattern has unit tests in
+     * {@link TestPutUpload#testFilenamePattern()}. */
+    public static final Pattern FILENAME_PATTERN =
+            Pattern.compile("[^.]+\\.[^.]+");
 
     /** Create a new upload.
      * The size of allowed uploads should be locked down in the
@@ -159,11 +171,10 @@ public class PutUpload {
         // TO DO: make use of allowedExtensions!
         // And otherwise, do validation, e.g., of the format parameter
 
-        // TO DO: normalize the filename, e.g., to remove characters
-        // that could be dodgy when included in HTML, e.g., "<",.
+        String filename = fileDisposition.getFileName();
 
         logger.debug("upload format: " + format);
-        logger.debug("filename: " + fileDisposition.getFileName());
+        logger.debug("filename: " + filename);
         logger.debug("name: " + fileDisposition.getName());
         logger.debug("size: " + fileDisposition.getSize());
         logger.debug("type: " + fileDisposition.getType());
@@ -177,11 +188,21 @@ public class PutUpload {
             return ResponseUtils.generateForbiddenResponseForOwner();
         }
 
+        // Validate and normalize the filename.
+        if (StringUtils.isEmpty(filename)) {
+            return ErrorResultUtils.badRequest("Filename not specified.");
+        }
+        filename = sanitizeFilename(filename);
+        if (!FILENAME_PATTERN.matcher(filename).matches()) {
+            return ErrorResultUtils.badRequest(
+                    "Filename not in the correct format, e.g., myfile.xml.");
+        }
+
         Upload upload = new Upload();
         upload.setModifiedBy(profile.getUsername());
         upload.setOwner(owner);
         upload.setFormat(format);
-        upload.setFilename(fileDisposition.getFileName());
+        upload.setFilename(filename);
 
         EntityManager em = null;
         EntityTransaction txn = null;
@@ -232,6 +253,77 @@ public class PutUpload {
 
         // If we fell through to here: ouch.
         return ErrorResultUtils.internalServerError();
+    }
+
+    // Optimize search/replace by compiling regular expressions.
+
+    /** Pattern that matches everything up to and including the last
+     * slash and/or backslash. Use with
+     * {@link java.util.regex.Matcher#replaceFirst(String)}. */
+    private static final Pattern SLASH_BACKSLASH_PATTERN =
+            Pattern.compile("^.*[/\\\\]");
+
+    /** Pattern that matches any period that is not the last period. Use with
+     * {@link java.util.regex.Matcher#replaceAll(String)}. */
+    private static final Pattern ONE_EXTENSION_PATTERN =
+            Pattern.compile("\\.(?![^.]+$)");
+
+    /** Pattern that matches characters that are considered reserved
+     * for the purposes of filenames. See the section
+     * "Reserved characters and words" listed at the <a
+     * href="https://en.wikipedia.org/wiki/Filename#Reserved_characters_and_words">Wikipedia
+     * entry for Filename</a>.
+     * However, slash and backslash are not matched, as all instances
+     * will already have been removed using {@link #SLASH_BACKSLASH_PATTERN}.
+     * And, we also match all Unicode whitespace and control characters.
+     * Use with
+     * {@link java.util.regex.Matcher#replaceAll(String)}.
+     */
+    private static final Pattern RESERVED_CHARACTERS_PATTERN =
+            Pattern.compile("\\?|%|\\*|:|\\||\"|<|>|\\p{Space}|\\p{Cntrl}");
+
+    /** Pattern that matches contiguous sequences of underscores. Use with
+     * {@link java.util.regex.Matcher#replaceAll(String)}. */
+    private static final Pattern UNDERSCORES_PATTERN =
+            Pattern.compile("_+");
+
+    /** Sanitize a filename.
+     * Remove any prefixed path, i.e., everything up to the last slash
+     * and/or backslash. (Most/all browsers don't include the path,
+     * but who knows?)
+     * Enforce at most one extension, by replacing all but the last period
+     * with an underscore.
+     * Replace all occurrences of ?, %, *, :, |, &quot;, &lt;, &gt;,
+     * Unicode whitespace, and Unicode control characters with an underscore.
+     * (Any slashes and backslashes were already removed in the first step.)
+     * The list of characters to be replaced is based on the
+     * "Reserved characters and words" listed at the <a
+     * href="https://en.wikipedia.org/wiki/Filename#Reserved_characters_and_words">Wikipedia
+     * entry for Filename</a>.
+     * Contiguous underscores are then coalesced.
+     * This method has unit tests in
+     * {@link TestPutUpload#testSanitizeFilename()}.
+     * @param filename The filename to be sanitized.
+     * @return The sanitized filename.
+     */
+    public static String sanitizeFilename(final String filename) {
+        // Implementation inspired by FCKeditor's Utils class.
+        // Remove any beginning path, i.e. everything up to the last slash
+        // and/or backslash.
+        String name = SLASH_BACKSLASH_PATTERN.matcher(filename).
+                replaceFirst("");
+        // Ensure at most one extension,
+        // by replacing all but the last period with an underscore.
+        name = ONE_EXTENSION_PATTERN.matcher(name).replaceAll("_");
+        // Replace any remaining "Reserved characters and words" as per
+        // https://en.wikipedia.org/wiki/Filename#Reserved_characters_and_words
+        // (but not periods, and we already removed slashes and backslashes),
+        // and Unicode whitespace and control characters, with underscores.
+        name = RESERVED_CHARACTERS_PATTERN.matcher(name).replaceAll("_");
+        // Coalesce contiguous underscores. We live with the fact that
+        // the user might actually have provided a filename with contiguous
+        // underscores.
+        return UNDERSCORES_PATTERN.matcher(name).replaceAll("_");
     }
 
 }
