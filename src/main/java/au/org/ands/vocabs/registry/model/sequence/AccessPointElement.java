@@ -31,7 +31,7 @@ public class AccessPointElement
 
     /** The schema AccessPoint entity, if there is one; null, otherwise. */
     private au.org.ands.vocabs.registry.schema.vocabulary201701.AccessPoint
-        schemaVersion;
+        schemaAP;
 
     /** Constructor.
      * @param aVersionId The version Id. This can't be null; for a
@@ -39,21 +39,28 @@ public class AccessPointElement
      *      already have been added by VersionsModel.
      * @param anAPId The access point Id. This can be null, for a
      *      not-yet-existent version. In this case, aDbAP should
-     *      be null, and aSchemaVersion must not be null.
+     *      be null, and aSchemaAP must not be null.
      * @param aDbAP The database AccessPoint, if there is such an
      *      existing row of the database; null, otherwise.
-     * @param aSchemaVersion The schema version, if there is one;
+     * @param aSchemaAP The schema access point entity, if there is one;
      *      null, otherwise.
      */
     public AccessPointElement(final Integer aVersionId,
             final Integer anAPId,
             final AccessPoint aDbAP,
             final au.org.ands.vocabs.registry.schema.vocabulary201701.
-                AccessPoint aSchemaVersion) {
+                AccessPoint aSchemaAP) {
         versionId = aVersionId;
         apId = anAPId;
         dbAP = aDbAP;
-        schemaVersion = aSchemaVersion;
+        schemaAP = aSchemaAP;
+    }
+
+    /** Get the value of versionId.
+     * @return The value of versionId.
+     */
+    public Integer getVersionId() {
+        return versionId;
     }
 
     /** Get the value of apId.
@@ -70,12 +77,12 @@ public class AccessPointElement
         return dbAP;
     }
 
-    /** Get the value of schemaVersion.
-     * @return The value of schemaVersion.
+    /** Get the value of schemaAP.
+     * @return The value of schemaAP.
      */
     public au.org.ands.vocabs.registry.schema.vocabulary201701.AccessPoint
-    getSchemaVersion() {
-        return schemaVersion;
+    getSchemaAP() {
+        return schemaAP;
     }
 
     /** {@inheritDoc}
@@ -130,39 +137,39 @@ public class AccessPointElement
                 // Both access points have null apIds, so
                 // sort by source and the remaining elements.
                 return new CompareToBuilder().
-                        append(schemaVersion.getSource(),
-                                other.getSchemaVersion().getSource()).
-                        append(schemaVersion.getDiscriminator(),
-                                other.getSchemaVersion().getDiscriminator()).
+                        append(schemaAP.getSource(),
+                                other.getSchemaAP().getSource()).
+                        append(schemaAP.getDiscriminator(),
+                                other.getSchemaAP().getDiscriminator()).
                         append(ToStringBuilder.reflectionToString(
-                                schemaVersion.getApApiSparql(),
+                                schemaAP.getApApiSparql(),
                                 ToStringStyle.SHORT_PREFIX_STYLE),
                                 ToStringBuilder.reflectionToString(
-                                other.getSchemaVersion().getApApiSparql(),
+                                other.getSchemaAP().getApApiSparql(),
                                 ToStringStyle.SHORT_PREFIX_STYLE)).
                         append(ToStringBuilder.reflectionToString(
-                                schemaVersion.getApFile(),
+                                schemaAP.getApFile(),
                                 ToStringStyle.SHORT_PREFIX_STYLE),
                                 ToStringBuilder.reflectionToString(
-                                other.getSchemaVersion().getApFile(),
+                                other.getSchemaAP().getApFile(),
                                 ToStringStyle.SHORT_PREFIX_STYLE)).
                         append(ToStringBuilder.reflectionToString(
-                                schemaVersion.getApSesameDownload(),
+                                schemaAP.getApSesameDownload(),
                                 ToStringStyle.SHORT_PREFIX_STYLE),
                                 ToStringBuilder.reflectionToString(
-                                other.getSchemaVersion().getApSesameDownload(),
+                                other.getSchemaAP().getApSesameDownload(),
                                 ToStringStyle.SHORT_PREFIX_STYLE)).
                         append(ToStringBuilder.reflectionToString(
-                                schemaVersion.getApSissvoc(),
+                                schemaAP.getApSissvoc(),
                                 ToStringStyle.SHORT_PREFIX_STYLE),
                                 ToStringBuilder.reflectionToString(
-                                other.getSchemaVersion().getApSissvoc(),
+                                other.getSchemaAP().getApSissvoc(),
                                 ToStringStyle.SHORT_PREFIX_STYLE)).
                         append(ToStringBuilder.reflectionToString(
-                                schemaVersion.getApWebPage(),
+                                schemaAP.getApWebPage(),
                                 ToStringStyle.SHORT_PREFIX_STYLE),
                                 ToStringBuilder.reflectionToString(
-                                other.getSchemaVersion().getApWebPage(),
+                                other.getSchemaAP().getApWebPage(),
                                 ToStringStyle.SHORT_PREFIX_STYLE)).
                         toComparison();
             }

@@ -273,7 +273,7 @@
           #AND_TEMPORAL_QUERY_VALID_SUFFIX
         </queryText>
         <method>    /** Get all current VersionArtefact instances for a Version,
-         that are of a specified VersionArtefactType.
+     * that are of a specified VersionArtefactType.
      * @param id The Version.
      * @param vaType The VersionArtefactType.
      * @return The list of current VersionArtefact
@@ -317,6 +317,87 @@
     <foreignKeyQueries>
       <foreignKeyQuery keyColumn="versionId" entityName="Version" />
     </foreignKeyQueries>
+    <extraQueries>
+      <extraQuery name="GET_CURR_AP_LIST_FOR_VERSION_BY_TYPE">
+        <extraQueryParameter name="versionId" />
+        <extraQueryParameter name="apType" />
+        <queryText temporal="true">
+          SELECT entity FROM AccessPoint entity
+          WHERE entity.versionId = :versionId
+          AND entity.type = :apType
+          #AND_TEMPORAL_QUERY_VALID_SUFFIX
+        </queryText>
+        <method>    /** Get all current AccessPoint instances for a Version,
+     * that are of a specified AccessPointType.
+     * @param versionId The version Id.
+     * @param apType The type of access point to look for.
+     * @param em The EntityManager to be used.
+     * @return The list of current AccessPoint instances for this Version,
+     *     that are of type apType.
+     */
+    public static List&lt;AccessPoint&gt;
+    getCurrentAccessPointListForVersionByType(
+            final Integer versionId,
+            final au.org.ands.vocabs.registry.enums.VersionArtefactType
+                apType,
+            final EntityManager em) {
+        TypedQuery&lt;AccessPoint&gt; q = em.createNamedQuery(
+                AccessPoint.GET_CURR_AP_LIST_FOR_VERSION_BY_TYPE,
+                AccessPoint.class).
+                setParameter(AccessPoint.
+                            GET_CURR_AP_LIST_FOR_VERSION_BY_TYPE_VERSIONID,
+                            versionId).
+                setParameter(AccessPoint.
+                            GET_CURR_AP_LIST_FOR_VERSION_BY_TYPE_APTYPE,
+                            apType);
+        q = TemporalUtils.setDatetimeConstantParameters(q);
+        List&lt;AccessPoint&gt; entityList = q.getResultList();
+        return entityList;
+    }
+
+</method>
+      </extraQuery>
+
+      <extraQuery name="GET_DRAFT_AP_LIST_FOR_VERSION_BY_TYPE">
+        <extraQueryParameter name="versionId" />
+        <extraQueryParameter name="apType" />
+        <queryText temporal="true">
+          SELECT entity FROM AccessPoint entity
+          WHERE entity.versionId = :versionId
+          AND entity.type = :apType
+          #AND_TEMPORAL_QUERY_ALL_DRAFT_SUFFIX
+        </queryText>
+        <method>    /** Get all draft AccessPoint instances for a Version,
+     * that are of a specified AccessPointType.
+     * @param versionId The version Id.
+     * @param apType The type of access point to look for.
+     * @param em The EntityManager to be used.
+     * @return The list of draft AccessPoint instances for this Version,
+     *     that are of type apType.
+     */
+    public static List&lt;AccessPoint&gt;
+    getDraftAccessPointListForVersionByType(
+            final Integer versionId,
+            final au.org.ands.vocabs.registry.enums.VersionArtefactType
+                apType,
+            final EntityManager em) {
+        TypedQuery&lt;AccessPoint&gt; q = em.createNamedQuery(
+                AccessPoint.GET_DRAFT_AP_LIST_FOR_VERSION_BY_TYPE,
+                AccessPoint.class).
+                setParameter(AccessPoint.
+                            GET_DRAFT_AP_LIST_FOR_VERSION_BY_TYPE_VERSIONID,
+                            versionId).
+                setParameter(AccessPoint.
+                            GET_DRAFT_AP_LIST_FOR_VERSION_BY_TYPE_APTYPE,
+                            apType);
+        q = TemporalUtils.setDatetimeConstantParameters(q);
+        List&lt;AccessPoint&gt; entityList = q.getResultList();
+        return entityList;
+    }
+
+</method>
+      </extraQuery>
+    </extraQueries>
   </map>
   <map tableName="related_entities"
        entityName="RelatedEntity"
@@ -427,7 +508,7 @@
         return entityList;
     }
 
-        </method>
+</method>
       </extraQuery>
       <extraQuery name="GET_RELATED_ENTITIES_MATCHING_IDENT">
         <extraQueryParameter name="owner" />
