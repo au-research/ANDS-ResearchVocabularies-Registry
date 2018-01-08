@@ -98,6 +98,7 @@
       DATA=""
       END_DATE=""
       MODIFIED_BY=""
+      SOURCE=""
       START_DATE=""
       TYPE=""
       VERSION_ID="" />
