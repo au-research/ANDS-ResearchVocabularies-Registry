@@ -36,6 +36,7 @@ import au.org.ands.vocabs.registry.api.context.ApiPaths;
 import au.org.ands.vocabs.registry.api.context.EntityPaths;
 import au.org.ands.vocabs.registry.api.context.ResponseUtils;
 import au.org.ands.vocabs.registry.api.context.SwaggerInterface;
+import au.org.ands.vocabs.registry.api.validation.AuthorizationValidationUtils;
 import au.org.ands.vocabs.registry.api.validation.CheckVocabulary;
 import au.org.ands.vocabs.registry.api.validation.ValidationMode;
 import au.org.ands.vocabs.registry.db.context.DBContext;
@@ -119,6 +120,17 @@ public class PutVocabularies {
         if (!AuthUtils.ownerIsAuthorizedByOrganisationOrUsername(profile,
                 newVocabulary.getOwner())) {
             return ResponseUtils.generateForbiddenResponseForOwner();
+        }
+
+        List<ValidationError> validationErrors =
+                AuthorizationValidationUtils.checkAuthorizationForContent(
+                        profile, newVocabulary);
+        if (!validationErrors.isEmpty()) {
+            ErrorResult errorResult =
+                    new ErrorResult("Won't create vocabulary.");
+            errorResult.setConstraintViolation(validationErrors);
+            return Response.status(Response.Status.BAD_REQUEST).
+                    entity(errorResult).build();
         }
 
         EntityManager em = null;
@@ -293,6 +305,17 @@ public class PutVocabularies {
                 ownerIsAuthorizedByOrganisationOrUsername(profile,
                 dbVocabulary.getOwner())) {
             return ResponseUtils.generateForbiddenResponseForOwner();
+        }
+
+        List<ValidationError> validationErrors =
+                AuthorizationValidationUtils.checkAuthorizationForContent(
+                        profile, updatedVocabulary);
+        if (!validationErrors.isEmpty()) {
+            ErrorResult errorResult =
+                    new ErrorResult("Won't update vocabulary.");
+            errorResult.setConstraintViolation(validationErrors);
+            return Response.status(Response.Status.BAD_REQUEST).
+                    entity(errorResult).build();
         }
 
         EntityManager em = null;
