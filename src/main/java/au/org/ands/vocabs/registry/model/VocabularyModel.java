@@ -84,6 +84,26 @@ public class VocabularyModel extends ModelBase {
         populateModel();
     }
 
+    // Getters for currentVocabulary and draftVocabulary that are
+    // available to sub-models. They may need them in order to construct
+    // TaskInfo objects.
+
+    /** Get the current instance of the vocabulary, or null, if there
+     * isn't one.
+     * @return The current instance of the vocabulary, or null.
+     */
+    protected Vocabulary getCurrentVocabulary() {
+        return currentVocabulary;
+    }
+
+    /** Get the draft instance of the vocabulary, or null, if there
+     * isn't one.
+     * @return The draft instance of the vocabulary, or null.
+     */
+    protected Vocabulary getDraftVocabulary() {
+        return draftVocabulary;
+    }
+
     /** Notify sub-models. */
     @Override
     protected void notifySetNowTime(final LocalDateTime aNowTime) {
@@ -117,7 +137,7 @@ public class VocabularyModel extends ModelBase {
         subModels.add(vreModel);
         vrvModel = new VocabularyRelatedVocabulariesModel(em(), vocabularyId());
         subModels.add(vrvModel);
-        versionsModel = new VersionsModel(em(), vocabularyId());
+        versionsModel = new VersionsModel(em(), vocabularyId(), this);
         subModels.add(versionsModel);
     }
 
@@ -322,16 +342,19 @@ public class VocabularyModel extends ModelBase {
     protected void applyChanges(
             final au.org.ands.vocabs.registry.schema.vocabulary201701.
             Vocabulary updatedVocabulary) {
+        // First this model, so that the Vocabulary entity is available
+        // to sub-models.
         prepareUpdatedVocabulary(updatedVocabulary);
-        // Sub-models first.
-        subModels.forEach(sm ->
-            sm.applyChanges(updatedVocabulary));
         VocabularyStatus status = updatedVocabulary.getStatus();
         if (status == VocabularyStatus.DRAFT) {
             applyChangesDraft(updatedVocabulary);
         } else {
             applyChangesCurrent(updatedVocabulary);
         }
+        // Now the Vocabulary entity is ready to be accessed by sub-models,
+        // in case they need it to make a TaskInfo object.
+        subModels.forEach(sm ->
+            sm.applyChanges(updatedVocabulary));
     }
 
     /** Incoming vocabulary metadata in registry schema may be incomplete.

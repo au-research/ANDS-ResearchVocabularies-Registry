@@ -31,6 +31,7 @@ import au.org.ands.vocabs.registry.model.sequence.AccessPointElement;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.Vocabulary;
 import au.org.ands.vocabs.registry.workflow.WorkflowMethods;
 import au.org.ands.vocabs.registry.workflow.tasks.Subtask;
+import au.org.ands.vocabs.registry.workflow.tasks.TaskInfo;
 
 /** Access points domain model.
  * This is a representation of the access points of a vocabulary,
@@ -41,6 +42,10 @@ public class AccessPointsModel extends ModelBase {
     /** Logger for this class. */
     private Logger logger = LoggerFactory.getLogger(
             MethodHandles.lookup().lookupClass());
+
+    /** The parent VocabularyModel of this instance. Passed down
+     * by VersionsModel. */
+    private VocabularyModel vocabularyModel;
 
     /** The parent VersionsModel of this instance. Passed down
      * by VersionsModel. */
@@ -69,13 +74,15 @@ public class AccessPointsModel extends ModelBase {
      *      database data.
      * @param aVocabularyId The Id of the vocabulary for which the model
      *      is to be constructed.
-     * @param aVersionsModel The parent versionsModel of this instance.
+     * @param aVocabularyModel The parent VocabularyModel of this instance.
+     * @param aVersionsModel The parent VersionsModel of this instance.
      * @param aCurrentVersions The current version instances of the vocabulary.
      * @param aDraftVersions The draft version instances of the vocabulary.
      * @throws IllegalArgumentException If aVocabularyId is null.
      */
     public AccessPointsModel(final EntityManager anEm,
             final Integer aVocabularyId,
+            final VocabularyModel aVocabularyModel,
             final VersionsModel aVersionsModel,
             final Map<Integer, Version> aCurrentVersions,
             final Map<Integer, Version> aDraftVersions) {
@@ -481,8 +488,11 @@ public class AccessPointsModel extends ModelBase {
                     }
                     // We don't need to create a new version Id, but
                     // we do need to add a draft row for it.
+                    TaskInfo taskInfo = new TaskInfo(null,
+                            vocabularyModel.getDraftVocabulary(),
+                            draftVersions.get(versionId));
                     Pair<AccessPoint, List<Subtask>> insertResult =
-                    WorkflowMethods.insertAccessPoint(em(), null, versionId,
+                    WorkflowMethods.insertAccessPoint(em(), null, taskInfo,
                             true, modifiedBy(), nowTime(), schemaAP);
                     AccessPoint insertedAP = insertResult.getLeft();
                     if (insertedAP != null) {
@@ -498,8 +508,11 @@ public class AccessPointsModel extends ModelBase {
                 }
             } else {
                 // This is a new access point.
+                TaskInfo taskInfo = new TaskInfo(null,
+                        vocabularyModel.getDraftVocabulary(),
+                        draftVersions.get(versionId));
                 Pair<AccessPoint, List<Subtask>> insertResult =
-                WorkflowMethods.insertAccessPoint(em(), null, versionId, true,
+                WorkflowMethods.insertAccessPoint(em(), null, taskInfo, true,
                         modifiedBy(), nowTime(), schemaAP);
                 AccessPoint insertedAP = insertResult.getLeft();
                 if (insertedAP != null) {
@@ -667,8 +680,11 @@ public class AccessPointsModel extends ModelBase {
                                 + "is not supported");
                     }
                     // Reuse this draft row, making it no longer a draft.
+                    TaskInfo taskInfo = new TaskInfo(null,
+                            vocabularyModel.getCurrentVocabulary(),
+                            currentVersions.get(versionId));
                     Pair<AccessPoint, List<Subtask>> insertResult =
-                    WorkflowMethods.insertAccessPoint(em(), draftAP, versionId,
+                    WorkflowMethods.insertAccessPoint(em(), draftAP, taskInfo,
                             false, modifiedBy(), nowTime(), schemaAP);
                     draftAPs.get(versionId).remove(draftAP);
                     currentAPs.add(versionId, draftAP);
@@ -684,8 +700,11 @@ public class AccessPointsModel extends ModelBase {
                 }
             } else {
                 // This is a new access point.
+                TaskInfo taskInfo = new TaskInfo(null,
+                        vocabularyModel.getCurrentVocabulary(),
+                        currentVersions.get(versionId));
                 Pair<AccessPoint, List<Subtask>> insertResult =
-                WorkflowMethods.insertAccessPoint(em(), null, versionId, false,
+                WorkflowMethods.insertAccessPoint(em(), null, taskInfo, false,
                         modifiedBy(), nowTime(), schemaAP);
                 AccessPoint insertedAP = insertResult.getLeft();
                 if (insertedAP != null) {

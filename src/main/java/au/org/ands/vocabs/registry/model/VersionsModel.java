@@ -47,6 +47,10 @@ public class VersionsModel extends ModelBase {
     private Logger logger = LoggerFactory.getLogger(
             MethodHandles.lookup().lookupClass());
 
+    /** The parent VocabularyModel of this instance. Passed down
+     * by VersionsModel. */
+    private VocabularyModel vocabularyModel;
+
     /** The current instances of versions, if there are any.
      * The keys are version Ids. */
     private Map<Integer, Version> currentVersions = new HashMap<>();
@@ -73,10 +77,12 @@ public class VersionsModel extends ModelBase {
      *      database data.
      * @param aVocabularyId The Id of the vocabulary for which the model
      *      is to be constructed.
+     * @param aVocabularyModel The parent VocabularyModel of this instance.
      * @throws IllegalArgumentException If aVocabularyId is null.
      */
     public VersionsModel(final EntityManager anEm,
-            final Integer aVocabularyId) {
+            final Integer aVocabularyId,
+            final VocabularyModel aVocabularyModel) {
         if (aVocabularyId == null) {
             logger.error("Attempt to construct versions model with no Id");
             throw new IllegalArgumentException(
@@ -84,6 +90,7 @@ public class VersionsModel extends ModelBase {
         }
         setEm(anEm);
         setVocabularyId(aVocabularyId);
+        vocabularyModel = aVocabularyModel;
         populateModel();
     }
 
@@ -120,7 +127,7 @@ public class VersionsModel extends ModelBase {
 
         // Sub-models
         apModel = new AccessPointsModel(em(), vocabularyId(),
-                this, currentVersions, draftVersions);
+                vocabularyModel, this, currentVersions, draftVersions);
         subModels.add(apModel);
         vaModel = new VersionArtefactsModel(em(), vocabularyId(),
                 this, currentVersions, draftVersions);

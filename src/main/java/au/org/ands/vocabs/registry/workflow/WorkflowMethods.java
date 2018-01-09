@@ -5,6 +5,7 @@ package au.org.ands.vocabs.registry.workflow;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -19,7 +20,10 @@ import org.slf4j.LoggerFactory;
 import au.org.ands.vocabs.registry.db.context.TemporalUtils;
 import au.org.ands.vocabs.registry.db.converter.JSONSerialization;
 import au.org.ands.vocabs.registry.db.dao.AccessPointDAO;
+import au.org.ands.vocabs.registry.db.dao.UploadDAO;
 import au.org.ands.vocabs.registry.db.entity.AccessPoint;
+import au.org.ands.vocabs.registry.db.entity.Upload;
+import au.org.ands.vocabs.registry.db.entity.Version;
 import au.org.ands.vocabs.registry.db.entity.VersionArtefact;
 import au.org.ands.vocabs.registry.db.internal.ApApiSparql;
 import au.org.ands.vocabs.registry.db.internal.ApFile;
@@ -28,11 +32,15 @@ import au.org.ands.vocabs.registry.db.internal.ApWebPage;
 import au.org.ands.vocabs.registry.enums.ApSource;
 import au.org.ands.vocabs.registry.enums.SubtaskOperationType;
 import au.org.ands.vocabs.registry.enums.SubtaskProviderType;
+import au.org.ands.vocabs.registry.utils.RegistryFileUtils;
 import au.org.ands.vocabs.registry.workflow.provider.importer.SesameImporterProvider;
 import au.org.ands.vocabs.registry.workflow.provider.publish.SISSVocPublishProvider;
 import au.org.ands.vocabs.registry.workflow.provider.transform.JsonListTransformProvider;
 import au.org.ands.vocabs.registry.workflow.provider.transform.JsonTreeTransformProvider;
+import au.org.ands.vocabs.registry.workflow.tasks.AccessPointUtils;
 import au.org.ands.vocabs.registry.workflow.tasks.Subtask;
+import au.org.ands.vocabs.registry.workflow.tasks.TaskInfo;
+import au.org.ands.vocabs.registry.workflow.tasks.TaskUtils;
 
 /** The interface provided by the workflow package. API and methods
  * in other parts of the registry should invoke the methods of this class,
@@ -64,7 +72,9 @@ public final class WorkflowMethods {
      * @param existingAccessPoint Optionally, an existing AccessPoint
      *      database entity may be provided. If so, it is reused,
      *      rather than creating a new entity.
-     * @param versionId The version Id.
+     * @param taskInfo A TaskInfo object that encapsulates the
+     *      vocabulary and version entities, for which the access point
+     *      is to be added.
      * @param isDraft True, if this a request for insertion of a draft
      *      instance.
      * @param modifiedBy The value to use for "modifiedBy" when adding
@@ -80,7 +90,7 @@ public final class WorkflowMethods {
     public static Pair<AccessPoint, List<Subtask>> insertAccessPoint(
             final EntityManager em,
             final AccessPoint existingAccessPoint,
-            final Integer versionId,
+            final TaskInfo taskInfo,
             final boolean isDraft,
             final String modifiedBy,
             final LocalDateTime nowTime,
@@ -90,6 +100,8 @@ public final class WorkflowMethods {
             // Not needed/supported.
             return Pair.of(null, null);
         }
+        Version version = taskInfo.getVersion();
+        Integer versionId = version.getVersionId();
         AccessPoint ap;
         if (existingAccessPoint == null) {
             ap = new AccessPoint();
@@ -125,7 +137,8 @@ public final class WorkflowMethods {
             ap.setSource(ApSource.USER);
             ApFile apFile = new ApFile();
             apFile.setFormat(schemaAP.getApFile().getFormat());
-            apFile.setUploadId(schemaAP.getApFile().getUploadId());
+            Integer uploadId = schemaAP.getApFile().getUploadId();
+            apFile.setUploadId(uploadId);
             if (isDraft) {
                 TemporalUtils.makeDraft(ap);
                 apFile.setDraftCreatedDate(nowTime.toString());
@@ -147,13 +160,22 @@ public final class WorkflowMethods {
                 } else {
                     AccessPointDAO.updateAccessPoint(em, ap);
                 }
-
-                // TO DO: copy/"harvest" the previously-uploaded file.
-//                FileUtils.copyFileToDirectory(srcFile, destDir);
-//                String url = "";
-
-                apFile.setPath("TODO");
-                apFile.setUrl("TODO");
+                String harvestOutputPath =
+                        TaskUtils.getTaskHarvestOutputPath(taskInfo);
+                RegistryFileUtils.requireDirectory(harvestOutputPath);
+                Upload upload = UploadDAO.getUploadById(em, uploadId);
+                String filename = upload.getFilename();
+                Path destPath = Paths.get(harvestOutputPath, filename);
+                try {
+                    Files.copy(RegistryFileUtils.getUploadPath(uploadId),
+                            destPath);
+                } catch (IOException e) {
+                    logger.error("Error attempting to copy uploaded file", e);
+                }
+                apFile.setPath(destPath.toString());
+                apFile.setUrl(AccessPointUtils.
+                        getDownloadUrlForFileAccessPoint(ap.getAccessPointId(),
+                                filename));
                 ap.setData(JSONSerialization.serializeObjectAsJsonString(
                         apFile));
                 AccessPointDAO.updateAccessPoint(em, ap);

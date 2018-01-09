@@ -40,15 +40,25 @@ public final class RegistryFileUtils {
     }
 
     /** Get the full path of the file used to store an uploaded
-     * file.
+     * file, as a String.
      * @param uploadId The ID of the uploaded file.
      * @return The full path of the file used to store the
-     * vocabulary data.
+     * vocabulary data, as a String.
      */
     public static String getUploadFilename(final int uploadId) {
         Path path = Paths.get(RegistryConfig.UPLOAD_FILES_PATH)
                 .resolve(Integer.toString(uploadId));
         return path.toString();
+    }
+
+    /** Get the full path of the file used to store an uploaded file.
+     * @param uploadId The ID of the uploaded file.
+     * @return The Path of the file used to store the
+     * vocabulary data.
+     */
+    public static Path getUploadPath(final int uploadId) {
+        return Paths.get(RegistryConfig.UPLOAD_FILES_PATH)
+                .resolve(Integer.toString(uploadId));
     }
 
     /** Save an upload input stream to a file.
