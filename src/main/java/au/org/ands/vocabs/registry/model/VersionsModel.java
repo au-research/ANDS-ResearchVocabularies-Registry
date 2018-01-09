@@ -58,6 +58,9 @@ public class VersionsModel extends ModelBase {
     /** The model of the AccessPoints. */
     private AccessPointsModel apModel;
 
+    /** The model of the VersionArtefacts. */
+    private VersionArtefactsModel vaModel;
+
     /** List of all sub-models. */
     private List<ModelBase> subModels = new ArrayList<>();
 
@@ -119,9 +122,9 @@ public class VersionsModel extends ModelBase {
         apModel = new AccessPointsModel(em(), vocabularyId(),
                 this, currentVersions, draftVersions);
         subModels.add(apModel);
-
-//        subModels.add(vreModel);
-//        subModels.add(vrvModel);
+        vaModel = new VersionArtefactsModel(em(), vocabularyId(),
+                this, currentVersions, draftVersions);
+        subModels.add(vaModel);
     }
 
     /** {@inheritDoc} */
