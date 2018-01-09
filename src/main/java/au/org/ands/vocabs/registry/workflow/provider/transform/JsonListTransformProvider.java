@@ -198,7 +198,9 @@ public class JsonListTransformProvider extends TransformProvider
 
     /** {@inheritDoc} */
     @Override
-    public void doSubtask(final Subtask subtask) {
+    public void doSubtask(
+            final au.org.ands.vocabs.registry.workflow.tasks.TaskInfo taskInfo,
+            final Subtask subtask) {
         // TO DO
 
     }

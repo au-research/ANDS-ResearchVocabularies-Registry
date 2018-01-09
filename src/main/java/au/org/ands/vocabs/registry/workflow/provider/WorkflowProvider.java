@@ -6,6 +6,7 @@ import javax.persistence.EntityManager;
 
 import au.org.ands.vocabs.registry.enums.SubtaskOperationType;
 import au.org.ands.vocabs.registry.workflow.tasks.Subtask;
+import au.org.ands.vocabs.registry.workflow.tasks.TaskInfo;
 
 /** Interface that defines methods common to all workflow providers. */
 public interface WorkflowProvider {
@@ -32,8 +33,9 @@ public interface WorkflowProvider {
         final EntityManager em) { }
 
     /** Perform a subtask.
+     * @param taskInfo The top-level TaskInfo for the subtask.
      * @param subtask The subtask to be performed.
      */
-    void doSubtask(Subtask subtask);
+    void doSubtask(TaskInfo taskInfo, Subtask subtask);
 
 }
