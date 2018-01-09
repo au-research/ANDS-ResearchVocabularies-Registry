@@ -389,8 +389,7 @@ public class VersionsModel extends ModelBase {
 
         /** {@inheritDoc} */
         @Override
-        public void visitKeepCommand(
-                final VersionElement ve) {
+        public void visitKeepCommand(final VersionElement ve) {
             // This could contain metadata updates, so apply them
             // to the existing draft row.
             Integer versionId = ve.getVersionId();
@@ -413,8 +412,7 @@ public class VersionsModel extends ModelBase {
 
         /** {@inheritDoc} */
         @Override
-        public void visitDeleteCommand(
-                final VersionElement ve) {
+        public void visitDeleteCommand(final VersionElement ve) {
             Version versionToDelete = ve.getDbVersion();
             // Notify submodels first.
             subModels.forEach(sm -> sm.notifyDeleteDraftVersion(
@@ -426,8 +424,7 @@ public class VersionsModel extends ModelBase {
 
         /** {@inheritDoc} */
         @Override
-        public void visitInsertCommand(
-                final VersionElement ve) {
+        public void visitInsertCommand(final VersionElement ve) {
             VersionRegistrySchemaMapper mapper =
                     VersionRegistrySchemaMapper.INSTANCE;
             Integer versionId = ve.getVersionId();

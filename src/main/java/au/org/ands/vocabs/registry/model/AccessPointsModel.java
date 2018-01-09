@@ -5,6 +5,7 @@ package au.org.ands.vocabs.registry.model;
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -13,6 +14,9 @@ import javax.persistence.EntityManager;
 import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
 
+import org.apache.commons.collections4.sequence.CommandVisitor;
+import org.apache.commons.collections4.sequence.SequencesComparator;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,6 +24,7 @@ import au.org.ands.vocabs.registry.db.context.TemporalUtils;
 import au.org.ands.vocabs.registry.db.converter.AccessPointDbSchemaMapper;
 import au.org.ands.vocabs.registry.db.dao.AccessPointDAO;
 import au.org.ands.vocabs.registry.db.entity.AccessPoint;
+import au.org.ands.vocabs.registry.db.entity.ComparisonUtils;
 import au.org.ands.vocabs.registry.db.entity.Version;
 import au.org.ands.vocabs.registry.enums.VocabularyStatus;
 import au.org.ands.vocabs.registry.model.sequence.AccessPointElement;
@@ -75,9 +80,9 @@ public class AccessPointsModel extends ModelBase {
             final Map<Integer, Version> aCurrentVersions,
             final Map<Integer, Version> aDraftVersions) {
         if (aVocabularyId == null) {
-            logger.error("Attempt to construct versions model with no Id");
+            logger.error("Attempt to construct access points model with no Id");
             throw new IllegalArgumentException(
-                    "Attempt to construct versions model with no Id");
+                    "Attempt to construct access points model with no Id");
         }
         setEm(anEm);
         setVocabularyId(aVocabularyId);
@@ -129,7 +134,7 @@ public class AccessPointsModel extends ModelBase {
                 for (AccessPoint ap
                         : draftAPs.get(vId)) {
                     description.add("AP | Draft version has AP; "
-                            + "V Id, relation, meaning: " + vId + ","
+                            + "V Id, AP Id: " + vId + ","
                             + ap.getAccessPointId());
                 }
             }
@@ -352,10 +357,157 @@ public class AccessPointsModel extends ModelBase {
         }
         Collections.sort(existingDraftSequence);
 
+        // And now, the updated draft values. Note the comment for
+        // applyChanges() above: each version _does_ have a version Id,
+        // because any missing ones were supplied by VersionsModel.
+        List<AccessPointElement> updatedSequence = new ArrayList<>();
+        // Also, put the access points that have access point Ids into a map,
+        // so that they can be found later by visitKeepCommand().
+        Map<Integer,
+        au.org.ands.vocabs.registry.schema.vocabulary201701.AccessPoint>
+        updatedAPs = new HashMap<>();
+        updatedVocabulary.getVersion().forEach(
+                version -> {
+                    Integer versionId = version.getId();
+                    version.getAccessPoint().forEach(
+                            ap -> {
+                                updatedSequence.add(new AccessPointElement(
+                                        versionId, ap.getId(), null, ap));
+                                if (ap.getId() != null) {
+                                    updatedAPs.put(ap.getId(), ap);
+                                }
+                            });
+                });
+        Collections.sort(updatedSequence);
 
+        // Compute difference.
+        final SequencesComparator<AccessPointElement> comparator =
+                new SequencesComparator<>(
+                        existingDraftSequence, updatedSequence);
+        // Apply the changes.
+        comparator.getScript().visit(new UpdateDraftVisitor(updatedAPs));
 
+    }
 
+    /** See if there is an existing, current AccessPoint with
+     * a given version Id and access point Id.
+     * @param versionId The version Id.
+     * @param apId The access point Id.
+     * @return The current AccessPoint, if it exists, or null, if there
+     *      is no such existing, current access point.
+     */
+    private AccessPoint getExistingAPByIds(final Integer versionId,
+            final Integer apId) {
+        List<AccessPoint> aps = currentAPs.get(versionId);
+        if (aps == null) {
+            return null;
+        }
+        for (AccessPoint ap : aps) {
+            if (ap.getAccessPointId().equals(apId)) {
+                return ap;
+            }
+        }
+        return null;
+    }
 
+    /** Visitor class that applies a sequence of updates to the
+     * draft view of the database. */
+    private class UpdateDraftVisitor
+        implements CommandVisitor<AccessPointElement> {
+
+        /** The map of updated access points. Keys are access point Ids; values
+         * are the access points in registry schema format. */
+        private Map<Integer,
+        au.org.ands.vocabs.registry.schema.vocabulary201701.AccessPoint>
+        updatedAPs;
+
+        /** Constructor that accepts the map of updated versions.
+         * @param anUpdatedAPs The map of updated access points.
+         */
+        UpdateDraftVisitor(final Map<Integer,
+                au.org.ands.vocabs.registry.schema.vocabulary201701.
+                AccessPoint> anUpdatedAPs) {
+            updatedAPs = anUpdatedAPs;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public void visitKeepCommand(final AccessPointElement ape) {
+            // Possible future work: support metadata updates.
+            Integer apId = ape.getAPId();
+            AccessPoint existingAP = ape.getDbAP();
+            au.org.ands.vocabs.registry.schema.vocabulary201701.AccessPoint
+            schemaAP = updatedAPs.get(apId);
+
+            if (!ComparisonUtils.isEqualAP(existingAP,
+                    schemaAP)) {
+                throw new IllegalArgumentException(
+                        "Changing details of an existing access point "
+                        + "is not supported");
+            }
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public void visitDeleteCommand(final AccessPointElement ape) {
+            AccessPoint draftAp = ape.getDbAP();
+            AccessPointDAO.deleteAccessPoint(em(), draftAp);
+            draftAPs.get(ape.getVersionId()).remove(draftAp);
+            // And that's all, since we are updating a draft.
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public void visitInsertCommand(final AccessPointElement ape) {
+            // See if there's an AP Id. We normally expect
+            // there _not_ to be. But if there is,
+            // it had better belong to the version already.
+            Integer versionId = ape.getVersionId();
+            Integer apId = ape.getAPId();
+            au.org.ands.vocabs.registry.schema.vocabulary201701.AccessPoint
+            schemaAP = ape.getSchemaAP();
+            if (apId != null) {
+                // There's an AP Id, so check if it's in the
+                // set of current instances.
+                AccessPoint currentAP = getExistingAPByIds(versionId, apId);
+                // Possible future work: support metadata updates.
+                // For now, we don't support changes.
+                if (currentAP != null) {
+                    if (!ComparisonUtils.isEqualAP(currentAP,
+                            schemaAP)) {
+                        throw new IllegalArgumentException(
+                                "Changing details of an existing access point "
+                                + "is not supported");
+                    }
+                    // We don't need to create a new version Id, but
+                    // we do need to add a draft row for it.
+                    Pair<AccessPoint, List<Subtask>> insertResult =
+                    WorkflowMethods.insertAccessPoint(em(), versionId, true,
+                            modifiedBy(), nowTime(), schemaAP);
+                    AccessPoint insertedAP = insertResult.getLeft();
+                    if (insertedAP != null) {
+                        draftAPs.add(versionId, insertedAP);
+                    }
+                } else {
+                    // Error: we don't know about this AP Id.
+                    // (Well, it might be a historical version that
+                    // the user wanted to restore, but we don't support that.)
+                    throw new IllegalArgumentException(
+                            "Attempt to update access point that does not "
+                            + "belong to this version");
+                }
+            } else {
+                // This is a new access point.
+                Pair<AccessPoint, List<Subtask>> insertResult =
+                WorkflowMethods.insertAccessPoint(em(), versionId, true,
+                        modifiedBy(), nowTime(), schemaAP);
+                AccessPoint insertedAP = insertResult.getLeft();
+                if (insertedAP != null) {
+                    draftAPs.add(versionId, insertedAP);
+                }
+                // And that's all, because this is a draft.
+            }
+        }
     }
 
     /** Make the database's currently-valid view of the

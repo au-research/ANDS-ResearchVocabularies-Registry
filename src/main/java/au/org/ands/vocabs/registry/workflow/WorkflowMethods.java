@@ -2,20 +2,29 @@
 
 package au.org.ands.vocabs.registry.workflow;
 
-import java.io.File;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.io.FileUtils;
+import javax.persistence.EntityManager;
+
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import au.org.ands.vocabs.registry.db.context.TemporalUtils;
 import au.org.ands.vocabs.registry.db.converter.JSONSerialization;
+import au.org.ands.vocabs.registry.db.dao.AccessPointDAO;
 import au.org.ands.vocabs.registry.db.entity.AccessPoint;
 import au.org.ands.vocabs.registry.db.entity.VersionArtefact;
+import au.org.ands.vocabs.registry.db.internal.ApApiSparql;
 import au.org.ands.vocabs.registry.db.internal.ApFile;
+import au.org.ands.vocabs.registry.db.internal.ApSissvoc;
+import au.org.ands.vocabs.registry.db.internal.ApWebPage;
 import au.org.ands.vocabs.registry.enums.ApSource;
 import au.org.ands.vocabs.registry.enums.SubtaskOperationType;
 import au.org.ands.vocabs.registry.enums.SubtaskProviderType;
@@ -38,6 +47,147 @@ public final class WorkflowMethods {
 
     /** Private constructor for a utility class. */
     private WorkflowMethods() {
+    }
+
+    // TO DO: add method to run a task.
+
+    /** Apply workflow insertion to an access point specified in registry
+     * schema format.
+     * It may be that the access point can be created immediately as
+     * a database entity. In this case, the AccessPoint component of
+     * the returned Pair is a newly-created, and persisted AccessPoint object.
+     * If the access point requires workflow processing, the right-hand
+     * component of the returned Pair is a list of workflow subtasks
+     * that must be performed.
+     * @param em The EntityManager to use to persist any newly-created
+     *      AccessPoint entity.
+     * @param versionId The version Id.
+     * @param isDraft True, if this a request for insertion of a draft
+     *      instance.
+     * @param modifiedBy The value to use for "modifiedBy" when adding
+     *      rows of the database.
+     * @param nowTime The date/time being used for this insertion.
+     * @param schemaAP The registry schema description of the access point
+     *      to be added.
+     * @return A Pair of values. The left element is a non-null AccessPoint,
+     *      if this is should be persisted directly. The right element
+     *      is a non-empty list of subtasks, if workflow processing
+     *      is required.
+     */
+    public static Pair<AccessPoint, List<Subtask>> insertAccessPoint(
+            final EntityManager em,
+            final Integer versionId,
+            final boolean isDraft,
+            final String modifiedBy,
+            final LocalDateTime nowTime,
+            final au.org.ands.vocabs.registry.schema.vocabulary201701.
+            AccessPoint schemaAP) {
+        if (schemaAP.getSource() == ApSource.SYSTEM) {
+            // Not needed/supported.
+            return Pair.of(null, null);
+        }
+        AccessPoint ap;
+        switch (schemaAP.getDiscriminator()) {
+        case API_SPARQL:
+            ap = new AccessPoint();
+            ap.setVersionId(versionId);
+            ap.setSource(ApSource.USER);
+            ApApiSparql apApiSparql = new ApApiSparql();
+            apApiSparql.setUrl(schemaAP.getApApiSparql().getUrl());
+            if (isDraft) {
+                TemporalUtils.makeDraft(ap);
+                apApiSparql.setDraftCreatedDate(nowTime.toString());
+                apApiSparql.setDraftModifiedDate(nowTime.toString());
+            } else {
+                TemporalUtils.makeCurrentlyValid(ap, nowTime);
+            }
+            ap.setData(JSONSerialization.serializeObjectAsJsonString(
+                    apApiSparql));
+            ap.setModifiedBy(modifiedBy);
+            AccessPointDAO.saveAccessPoint(em, ap);
+            return Pair.of(ap, null);
+        case FILE:
+            // In this case, there is something to be done apart from adding
+            // to the database.
+            ap = new AccessPoint();
+            ap.setVersionId(versionId);
+            ap.setSource(ApSource.USER);
+            ApFile apFile = new ApFile();
+            apFile.setFormat(schemaAP.getApFile().getFormat());
+            apFile.setUploadId(schemaAP.getApFile().getUploadId());
+            if (isDraft) {
+                TemporalUtils.makeDraft(ap);
+                apFile.setDraftCreatedDate(nowTime.toString());
+                apFile.setDraftModifiedDate(nowTime.toString());
+                ap.setData(JSONSerialization.serializeObjectAsJsonString(
+                        apFile));
+                ap.setModifiedBy(modifiedBy);
+                AccessPointDAO.saveAccessPoint(em, ap);
+            } else {
+                TemporalUtils.makeCurrentlyValid(ap, nowTime);
+                // We make the access point visible, by "harvesting"
+                // the upload.
+                // Temporarily set the data to an empty value, so that
+                // the entity can be persisted.
+                ap.setData("{}");
+                ap.setModifiedBy(modifiedBy);
+                AccessPointDAO.saveAccessPoint(em, ap);
+
+                // TO DO: copy/"harvest" the previously-uploaded file.
+//                FileUtils.copyFileToDirectory(srcFile, destDir);
+//                String url = "";
+
+                apFile.setPath("TODO");
+                apFile.setUrl("TODO");
+                ap.setData(JSONSerialization.serializeObjectAsJsonString(
+                        apFile));
+                AccessPointDAO.updateAccessPoint(em, ap);
+            }
+            return Pair.of(ap, null);
+        case SESAME_DOWNLOAD:
+            // Nuh, you can't do this ... yet.
+            logger.error("Attempt to add sesameDownload with source=USER");
+            return Pair.of(null, null);
+        case SISSVOC:
+            ap = new AccessPoint();
+            ap.setVersionId(versionId);
+            ap.setSource(ApSource.USER);
+            ApSissvoc apSissvoc = new ApSissvoc();
+            apSissvoc.setUrlPrefix(schemaAP.getApSissvoc().getUrlPrefix());
+            if (isDraft) {
+                TemporalUtils.makeDraft(ap);
+                apSissvoc.setDraftCreatedDate(nowTime.toString());
+                apSissvoc.setDraftModifiedDate(nowTime.toString());
+            } else {
+                TemporalUtils.makeCurrentlyValid(ap, nowTime);
+            }
+            ap.setData(JSONSerialization.serializeObjectAsJsonString(
+                    apSissvoc));
+            ap.setModifiedBy(modifiedBy);
+            AccessPointDAO.saveAccessPoint(em, ap);
+            return Pair.of(ap, null);
+        case WEB_PAGE:
+            ap = new AccessPoint();
+            ap.setVersionId(versionId);
+            ap.setSource(ApSource.USER);
+            ApWebPage apWebPage = new ApWebPage();
+            apWebPage.setUrl(schemaAP.getApWebPage().getUrl());
+            if (isDraft) {
+                TemporalUtils.makeDraft(ap);
+                apWebPage.setDraftCreatedDate(nowTime.toString());
+                apWebPage.setDraftModifiedDate(nowTime.toString());
+            } else {
+                TemporalUtils.makeCurrentlyValid(ap, nowTime);
+            }
+            ap.setData(JSONSerialization.serializeObjectAsJsonString(
+                    apWebPage));
+            ap.setModifiedBy(modifiedBy);
+            AccessPointDAO.saveAccessPoint(em, ap);
+            return Pair.of(ap, null);
+        default:
+            break;
+        }
+        return null;
     }
 
     /** Apply workflow deletion to an access point.
@@ -74,7 +224,7 @@ public final class WorkflowMethods {
             ApFile apFile = JSONSerialization.deserializeStringAsJson(
                     ap.getData(), ApFile.class);
             try {
-                FileUtils.deleteDirectory(new File(apFile.getPath()));
+                Files.delete(Paths.get(apFile.getPath()));
             } catch (IOException e) {
                 logger.error("Error deleting file: " + apFile.getPath(), e);
             }
