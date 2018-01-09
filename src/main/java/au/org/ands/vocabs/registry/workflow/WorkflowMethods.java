@@ -61,6 +61,9 @@ public final class WorkflowMethods {
      * that must be performed.
      * @param em The EntityManager to use to persist any newly-created
      *      AccessPoint entity.
+     * @param existingAccessPoint Optionally, an existing AccessPoint
+     *      database entity may be provided. If so, it is reused,
+     *      rather than creating a new entity.
      * @param versionId The version Id.
      * @param isDraft True, if this a request for insertion of a draft
      *      instance.
@@ -76,6 +79,7 @@ public final class WorkflowMethods {
      */
     public static Pair<AccessPoint, List<Subtask>> insertAccessPoint(
             final EntityManager em,
+            final AccessPoint existingAccessPoint,
             final Integer versionId,
             final boolean isDraft,
             final String modifiedBy,
@@ -87,9 +91,13 @@ public final class WorkflowMethods {
             return Pair.of(null, null);
         }
         AccessPoint ap;
+        if (existingAccessPoint == null) {
+            ap = new AccessPoint();
+        } else {
+            ap = existingAccessPoint;
+        }
         switch (schemaAP.getDiscriminator()) {
         case API_SPARQL:
-            ap = new AccessPoint();
             ap.setVersionId(versionId);
             ap.setSource(ApSource.USER);
             ApApiSparql apApiSparql = new ApApiSparql();
@@ -104,12 +112,15 @@ public final class WorkflowMethods {
             ap.setData(JSONSerialization.serializeObjectAsJsonString(
                     apApiSparql));
             ap.setModifiedBy(modifiedBy);
-            AccessPointDAO.saveAccessPoint(em, ap);
+            if (existingAccessPoint == null) {
+                AccessPointDAO.saveAccessPoint(em, ap);
+            } else {
+                AccessPointDAO.updateAccessPoint(em, ap);
+            }
             return Pair.of(ap, null);
         case FILE:
             // In this case, there is something to be done apart from adding
             // to the database.
-            ap = new AccessPoint();
             ap.setVersionId(versionId);
             ap.setSource(ApSource.USER);
             ApFile apFile = new ApFile();
@@ -131,7 +142,11 @@ public final class WorkflowMethods {
                 // the entity can be persisted.
                 ap.setData("{}");
                 ap.setModifiedBy(modifiedBy);
-                AccessPointDAO.saveAccessPoint(em, ap);
+                if (existingAccessPoint == null) {
+                    AccessPointDAO.saveAccessPoint(em, ap);
+                } else {
+                    AccessPointDAO.updateAccessPoint(em, ap);
+                }
 
                 // TO DO: copy/"harvest" the previously-uploaded file.
 //                FileUtils.copyFileToDirectory(srcFile, destDir);
@@ -149,7 +164,6 @@ public final class WorkflowMethods {
             logger.error("Attempt to add sesameDownload with source=USER");
             return Pair.of(null, null);
         case SISSVOC:
-            ap = new AccessPoint();
             ap.setVersionId(versionId);
             ap.setSource(ApSource.USER);
             ApSissvoc apSissvoc = new ApSissvoc();
@@ -164,10 +178,13 @@ public final class WorkflowMethods {
             ap.setData(JSONSerialization.serializeObjectAsJsonString(
                     apSissvoc));
             ap.setModifiedBy(modifiedBy);
-            AccessPointDAO.saveAccessPoint(em, ap);
+            if (existingAccessPoint == null) {
+                AccessPointDAO.saveAccessPoint(em, ap);
+            } else {
+                AccessPointDAO.updateAccessPoint(em, ap);
+            }
             return Pair.of(ap, null);
         case WEB_PAGE:
-            ap = new AccessPoint();
             ap.setVersionId(versionId);
             ap.setSource(ApSource.USER);
             ApWebPage apWebPage = new ApWebPage();
@@ -182,7 +199,11 @@ public final class WorkflowMethods {
             ap.setData(JSONSerialization.serializeObjectAsJsonString(
                     apWebPage));
             ap.setModifiedBy(modifiedBy);
-            AccessPointDAO.saveAccessPoint(em, ap);
+            if (existingAccessPoint == null) {
+                AccessPointDAO.saveAccessPoint(em, ap);
+            } else {
+                AccessPointDAO.updateAccessPoint(em, ap);
+            }
             return Pair.of(ap, null);
         default:
             break;
