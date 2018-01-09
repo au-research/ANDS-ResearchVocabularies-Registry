@@ -268,6 +268,7 @@ public class AccessPointsModel extends ModelBase {
                 newAP.setVersionId(vId);
                 newAP.setAccessPointId(ap.getAccessPointId());
                 newAP.setType(ap.getType());
+                newAP.setSource(ap.getSource());
                 newAP.setData(ap.getData());
                 newAP.setModifiedBy(modifiedBy());
                 TemporalUtils.makeDraft(newAP);
@@ -312,7 +313,7 @@ public class AccessPointsModel extends ModelBase {
     /** {@inheritDoc} */
     @Override
     protected void notifyDeleteDraftVersion(final Integer versionId) {
-        for (AccessPoint ap : currentAPs.get(versionId)) {
+        for (AccessPoint ap : draftAPs.get(versionId)) {
             // Just delete the row;
             // for a draft instance, no workflow is applied.
             AccessPointDAO.deleteAccessPoint(em(), ap);
@@ -638,9 +639,7 @@ public class AccessPointsModel extends ModelBase {
                 AccessPointDAO.updateAccessPoint(em(), apToDelete);
                 currentAPs.get(versionId).remove(apToDelete);
             } else {
-                versionsModel.workflowRequired(versionId);
-                versionsModel.getTaskForVersion(versionId).
-                    addSubtasks(subtaskList);
+                accumulateSubtasks(versionId, subtaskList);
             }
         }
 
