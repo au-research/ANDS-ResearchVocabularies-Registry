@@ -7,6 +7,7 @@ import java.lang.invoke.MethodHandles;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -133,6 +134,7 @@ public final class WorkflowMethods {
         case FILE:
             // In this case, there is something to be done apart from adding
             // to the database.
+            List<Subtask> subtaskList = null;
             ap.setVersionId(versionId);
             ap.setSource(ApSource.USER);
             ApFile apFile = new ApFile();
@@ -167,8 +169,10 @@ public final class WorkflowMethods {
                 String filename = upload.getFilename();
                 Path destPath = Paths.get(harvestOutputPath, filename);
                 try {
+                    // We currently copy, but this could (maybe?) be
+                    // done as a symbolic link.
                     Files.copy(RegistryFileUtils.getUploadPath(uploadId),
-                            destPath);
+                            destPath, StandardCopyOption.REPLACE_EXISTING);
                 } catch (IOException e) {
                     logger.error("Error attempting to copy uploaded file", e);
                 }
@@ -179,8 +183,10 @@ public final class WorkflowMethods {
                 ap.setData(JSONSerialization.serializeObjectAsJsonString(
                         apFile));
                 AccessPointDAO.updateAccessPoint(em, ap);
+                subtaskList = new ArrayList<>();
+                addConceptTransformSubtasks(subtaskList);
             }
-            return Pair.of(ap, null);
+            return Pair.of(ap, subtaskList);
         case SESAME_DOWNLOAD:
             // Nuh, you can't do this ... yet.
             logger.error("Attempt to add sesameDownload with source=USER");
@@ -348,6 +354,27 @@ public final class WorkflowMethods {
                     "Unknown version artefact type: " + va.getType());
         }
         return subtaskList;
+    }
+
+    /** To a given subtask list, add subtask insert operations
+     * for the JsonList and JsonTree transform providers.
+     * @param subtaskList An existing list of subtasks. It must not be null,
+     *      but it may be empty.
+     */
+    private static void addConceptTransformSubtasks(
+            final List<Subtask> subtaskList) {
+        Subtask subtask = new Subtask();
+        subtask.setSubtaskProviderType(SubtaskProviderType.TRANSFORM);
+        subtask.setProvider(JsonListTransformProvider.class);
+        subtask.setOperation(SubtaskOperationType.INSERT);
+        subtask.determinePriority();
+        subtaskList.add(subtask);
+        subtask = new Subtask();
+        subtask.setSubtaskProviderType(SubtaskProviderType.TRANSFORM);
+        subtask.setProvider(JsonTreeTransformProvider.class);
+        subtask.setOperation(SubtaskOperationType.INSERT);
+        subtask.determinePriority();
+        subtaskList.add(subtask);
     }
 
 }

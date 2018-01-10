@@ -18,7 +18,7 @@ import au.org.ands.vocabs.registry.db.context.TemporalUtils;
 import au.org.ands.vocabs.registry.db.dao.VersionArtefactDAO;
 import au.org.ands.vocabs.registry.db.entity.Version;
 import au.org.ands.vocabs.registry.db.entity.VersionArtefact;
-import au.org.ands.vocabs.registry.schema.vocabulary201701.Vocabulary;
+import au.org.ands.vocabs.registry.db.entity.Vocabulary;
 import au.org.ands.vocabs.registry.workflow.WorkflowMethods;
 import au.org.ands.vocabs.registry.workflow.tasks.Subtask;
 
@@ -31,6 +31,10 @@ public class VersionArtefactsModel extends ModelBase {
     /** Logger for this class. */
     private Logger logger = LoggerFactory.getLogger(
             MethodHandles.lookup().lookupClass());
+
+    /** The parent VocabularyModel of this instance. Passed down
+     * by VersionsModel. */
+    private VocabularyModel vocabularyModel;
 
     /** The parent VersionsModel of this instance. Passed down
      * by VersionsModel. */
@@ -59,6 +63,7 @@ public class VersionArtefactsModel extends ModelBase {
      *      database data.
      * @param aVocabularyId The Id of the vocabulary for which the model
      *      is to be constructed.
+     * @param aVocabularyModel The parent VocabularyModel of this instance.
      * @param aVersionsModel The parent versionsModel of this instance.
      * @param aCurrentVersions The current version instances of the vocabulary.
      * @param aDraftVersions The draft version instances of the vocabulary.
@@ -66,6 +71,7 @@ public class VersionArtefactsModel extends ModelBase {
      */
     public VersionArtefactsModel(final EntityManager anEm,
             final Integer aVocabularyId,
+            final VocabularyModel aVocabularyModel,
             final VersionsModel aVersionsModel,
             final Map<Integer, Version> aCurrentVersions,
             final Map<Integer, Version> aDraftVersions) {
@@ -77,6 +83,7 @@ public class VersionArtefactsModel extends ModelBase {
         }
         setEm(anEm);
         setVocabularyId(aVocabularyId);
+        vocabularyModel = aVocabularyModel;
         versionsModel = aVersionsModel;
         currentVersions = aCurrentVersions;
         draftVersions = aDraftVersions;
@@ -171,7 +178,8 @@ public class VersionArtefactsModel extends ModelBase {
         for (Integer vId : currentVAs.keySet()) {
             for (VersionArtefact va : currentVAs.get(vId)) {
                 // TO DO: make sure delete workflow has been done!
-                accumulateSubtasks(vId,
+                accumulateSubtasks(vocabularyModel.getCurrentVocabulary(),
+                        currentVersions.get(vId),
                         WorkflowMethods.deleteVersionArtefact(va));
                 TemporalUtils.makeHistorical(va, nowTime());
                 va.setModifiedBy(modifiedBy());
@@ -182,16 +190,21 @@ public class VersionArtefactsModel extends ModelBase {
     }
 
     /** Add workflow subtasks required for a version.
-     * @param versionId The version Id.
+     * @param vocabulary The vocabulary instance for which workflow
+     *      subtasks are to be added.
+     * @param version The version instance for which workflow
+     *      subtasks are to be added.
      * @param subtaskList The list of subtasks to be applied for the version.
      */
-    private void accumulateSubtasks(final Integer versionId,
+    private void accumulateSubtasks(final Vocabulary vocabulary,
+            final Version version,
             final List<Subtask> subtaskList) {
-        if (subtaskList.isEmpty()) {
+        if (subtaskList == null || subtaskList.isEmpty()) {
             // No subtasks required.
             return;
         }
-        versionsModel.workflowRequired(versionId);
+        Integer versionId = version.getVersionId();
+        versionsModel.workflowRequired(vocabulary, version);
         versionsModel.getTaskForVersion(versionId).addSubtasks(subtaskList);
     }
 
@@ -208,6 +221,10 @@ public class VersionArtefactsModel extends ModelBase {
                     "Existing draft; you must delete it first");
         }
         // TO DO: workflow processing.
+        // What follows really isn't right; we shouldn't have/don't have VAs
+        // for drafts. We need to use
+        // WorkflowMethods.deleteVersionArtefact() to create subtasks
+        // to be done to delete the rows.
         for (Integer vId : currentVAs.keySet()) {
             for (VersionArtefact va : currentVAs.get(vId)) {
                 TemporalUtils.makeHistorical(va, nowTime());
@@ -231,12 +248,19 @@ public class VersionArtefactsModel extends ModelBase {
     /** {@inheritDoc} */
     @Override
     protected void deleteOnlyDraft() {
+        // TO DO: since we really shouldn't have any draft VAs,
+        // once we have correctly applied workflow processing in this
+        // class, there should be nothing more to do, so delete
+        // the following row (and the body of the deleteDraftDatabaseRows()
+        // method itself).
         deleteDraftDatabaseRows();
     }
 
     /** {@inheritDoc} */
     @Override
     protected void deleteDraftDatabaseRows() {
+        // Hmm, this isn't right. VAs are system-generated, so
+        // we shouldn't have database deletion in this class.
         for (Integer vId : draftVAs.keySet()) {
             for (VersionArtefact va : draftVAs.get(vId)) {
                 VersionArtefactDAO.deleteVersionArtefact(em(), va);
@@ -265,6 +289,8 @@ public class VersionArtefactsModel extends ModelBase {
         for (VersionArtefact ap : draftVAs.get(versionId)) {
             // Just delete the row;
             // for a draft instance, no workflow is applied.
+            // Hmm, this isn't right. VAs are system-generated, so
+            // we shouldn't have database deletion in this class.
             VersionArtefactDAO.deleteVersionArtefact(em(), ap);
         }
         // Remove from our own records.
@@ -276,7 +302,9 @@ public class VersionArtefactsModel extends ModelBase {
      * there's nothing to be done here!
      */
     @Override
-    protected void applyChanges(final Vocabulary updatedVocabulary) {
+    protected void applyChanges(
+            final au.org.ands.vocabs.registry.schema.vocabulary201701.
+            Vocabulary updatedVocabulary) {
     }
 
 }

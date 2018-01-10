@@ -26,9 +26,9 @@ import au.org.ands.vocabs.registry.db.dao.AccessPointDAO;
 import au.org.ands.vocabs.registry.db.entity.AccessPoint;
 import au.org.ands.vocabs.registry.db.entity.ComparisonUtils;
 import au.org.ands.vocabs.registry.db.entity.Version;
+import au.org.ands.vocabs.registry.db.entity.Vocabulary;
 import au.org.ands.vocabs.registry.enums.VocabularyStatus;
 import au.org.ands.vocabs.registry.model.sequence.AccessPointElement;
-import au.org.ands.vocabs.registry.schema.vocabulary201701.Vocabulary;
 import au.org.ands.vocabs.registry.workflow.WorkflowMethods;
 import au.org.ands.vocabs.registry.workflow.tasks.Subtask;
 import au.org.ands.vocabs.registry.workflow.tasks.TaskInfo;
@@ -93,6 +93,7 @@ public class AccessPointsModel extends ModelBase {
         }
         setEm(anEm);
         setVocabularyId(aVocabularyId);
+        vocabularyModel = aVocabularyModel;
         versionsModel = aVersionsModel;
         currentVersions = aCurrentVersions;
         draftVersions = aDraftVersions;
@@ -229,7 +230,9 @@ public class AccessPointsModel extends ModelBase {
         for (Integer vId : currentAPs.keySet()) {
             for (AccessPoint ap : currentAPs.get(vId)) {
                 // TO DO: make sure delete workflow has been done!
-                accumulateSubtasks(vId, WorkflowMethods.deleteAccessPoint(ap));
+                accumulateSubtasks(vocabularyModel.getCurrentVocabulary(),
+                        currentVersions.get(vId),
+                        WorkflowMethods.deleteAccessPoint(ap));
                 TemporalUtils.makeHistorical(ap, nowTime());
                 ap.setModifiedBy(modifiedBy());
                 AccessPointDAO.updateAccessPoint(em(), ap);
@@ -238,17 +241,41 @@ public class AccessPointsModel extends ModelBase {
         currentAPs.clear();
     }
 
-    /** Add workflow subtasks required for a version.
-     * @param versionId The version Id.
+    /** Add workflow subtasks required for a version. Use this version
+     * of the method to ensure that the workflowRequired() method
+     * is called.
+     * @param vocabulary The vocabulary instance for which workflow
+     *      subtasks are to be added.
+     * @param version The version instance for which workflow
+     *      subtasks are to be added.
      * @param subtaskList The list of subtasks to be applied for the version.
      */
-    private void accumulateSubtasks(final Integer versionId,
+    private void accumulateSubtasks(final Vocabulary vocabulary,
+            final Version version,
             final List<Subtask> subtaskList) {
-        if (subtaskList.isEmpty()) {
+        if (subtaskList == null || subtaskList.isEmpty()) {
             // No subtasks required.
             return;
         }
-        versionsModel.workflowRequired(versionId);
+        Integer versionId = version.getVersionId();
+        versionsModel.workflowRequired(vocabulary, version);
+        versionsModel.getTaskForVersion(versionId).addSubtasks(subtaskList);
+    }
+
+    /** Add workflow subtasks required for a version. Use this version
+     * of the method only if you are sure that the workflowRequired() method
+     * has already been called.
+     * @param version The version instance for which workflow
+     *      subtasks are to be added.
+     * @param subtaskList The list of subtasks to be applied for the version.
+     */
+    private void accumulateSubtasks(final Version version,
+            final List<Subtask> subtaskList) {
+        if (subtaskList == null || subtaskList.isEmpty()) {
+            // No subtasks required.
+            return;
+        }
+        Integer versionId = version.getVersionId();
         versionsModel.getTaskForVersion(versionId).addSubtasks(subtaskList);
     }
 
@@ -338,7 +365,9 @@ public class AccessPointsModel extends ModelBase {
      * This method deals only with access points of new and updated versions.
      */
     @Override
-    protected void applyChanges(final Vocabulary updatedVocabulary) {
+    protected void applyChanges(
+            final au.org.ands.vocabs.registry.schema.vocabulary201701.
+            Vocabulary updatedVocabulary) {
         VocabularyStatus status = updatedVocabulary.getStatus();
         if (status == VocabularyStatus.DRAFT) {
             applyChangesDraft(updatedVocabulary);
@@ -351,7 +380,9 @@ public class AccessPointsModel extends ModelBase {
      * VocabularyRelatedEntities match updatedVocabulary.
      * @param updatedVocabulary The updated vocabulary.
      */
-    private void applyChangesDraft(final Vocabulary updatedVocabulary) {
+    private void applyChangesDraft(
+            final au.org.ands.vocabs.registry.schema.vocabulary201701.
+            Vocabulary updatedVocabulary) {
         // Create sequences.
         // First, any existing draft values. All of these have AP Ids.
         List<AccessPointElement> existingDraftSequence = new ArrayList<>();
@@ -488,9 +519,11 @@ public class AccessPointsModel extends ModelBase {
                     }
                     // We don't need to create a new version Id, but
                     // we do need to add a draft row for it.
-                    TaskInfo taskInfo = new TaskInfo(null,
-                            vocabularyModel.getDraftVocabulary(),
-                            draftVersions.get(versionId));
+                    Version draftVersion = draftVersions.get(versionId);
+                    versionsModel.workflowRequired(
+                            vocabularyModel.getDraftVocabulary(), draftVersion);
+                    TaskInfo taskInfo =
+                            versionsModel.getTaskInfoForVersion(versionId);
                     Pair<AccessPoint, List<Subtask>> insertResult =
                     WorkflowMethods.insertAccessPoint(em(), null, taskInfo,
                             true, modifiedBy(), nowTime(), schemaAP);
@@ -498,6 +531,7 @@ public class AccessPointsModel extends ModelBase {
                     if (insertedAP != null) {
                         draftAPs.add(versionId, insertedAP);
                     }
+                    accumulateSubtasks(draftVersion, insertResult.getRight());
                 } else {
                     // Error: we don't know about this AP Id.
                     // (Well, it might be a historical version that
@@ -508,9 +542,11 @@ public class AccessPointsModel extends ModelBase {
                 }
             } else {
                 // This is a new access point.
-                TaskInfo taskInfo = new TaskInfo(null,
-                        vocabularyModel.getDraftVocabulary(),
-                        draftVersions.get(versionId));
+                Version draftVersion = draftVersions.get(versionId);
+                versionsModel.workflowRequired(
+                        vocabularyModel.getDraftVocabulary(), draftVersion);
+                TaskInfo taskInfo =
+                        versionsModel.getTaskInfoForVersion(versionId);
                 Pair<AccessPoint, List<Subtask>> insertResult =
                 WorkflowMethods.insertAccessPoint(em(), null, taskInfo, true,
                         modifiedBy(), nowTime(), schemaAP);
@@ -518,6 +554,7 @@ public class AccessPointsModel extends ModelBase {
                 if (insertedAP != null) {
                     draftAPs.add(versionId, insertedAP);
                 }
+                accumulateSubtasks(draftVersion, insertResult.getRight());
                 // And that's all, because this is a draft.
             }
         }
@@ -527,7 +564,9 @@ public class AccessPointsModel extends ModelBase {
      * VocabularyRelatedEntities match updatedVocabulary.
      * @param updatedVocabulary The updated vocabulary.
      */
-    private void applyChangesCurrent(final Vocabulary updatedVocabulary) {
+    private void applyChangesCurrent(
+            final au.org.ands.vocabs.registry.schema.vocabulary201701.
+            Vocabulary updatedVocabulary) {
         // TO DO: finish this method.
         // Create sequences.
         // First, the current values. All of these have AP Ids.
@@ -652,7 +691,8 @@ public class AccessPointsModel extends ModelBase {
                 AccessPointDAO.updateAccessPoint(em(), apToDelete);
                 currentAPs.get(versionId).remove(apToDelete);
             } else {
-                accumulateSubtasks(versionId, subtaskList);
+                accumulateSubtasks(vocabularyModel.getCurrentVocabulary(),
+                        currentVersions.get(versionId), subtaskList);
             }
         }
 
@@ -680,16 +720,20 @@ public class AccessPointsModel extends ModelBase {
                                 + "is not supported");
                     }
                     // Reuse this draft row, making it no longer a draft.
-                    TaskInfo taskInfo = new TaskInfo(null,
+                    Version currentVersion = currentVersions.get(versionId);
+                    versionsModel.workflowRequired(
                             vocabularyModel.getCurrentVocabulary(),
-                            currentVersions.get(versionId));
+                            currentVersion);
+                    TaskInfo taskInfo =
+                            versionsModel.getTaskInfoForVersion(versionId);
                     Pair<AccessPoint, List<Subtask>> insertResult =
                     WorkflowMethods.insertAccessPoint(em(), draftAP, taskInfo,
                             false, modifiedBy(), nowTime(), schemaAP);
                     draftAPs.get(versionId).remove(draftAP);
                     currentAPs.add(versionId, draftAP);
+                    accumulateSubtasks(currentVersion, insertResult.getRight());
                     // Possible future work required: check if there is
-                    // a subtask to be done.
+                    // any other subtask to be done.
                 } else {
                     // Error: we don't know about this version Id.
                     // (Well, it might be a historical version that
@@ -700,9 +744,12 @@ public class AccessPointsModel extends ModelBase {
                 }
             } else {
                 // This is a new access point.
-                TaskInfo taskInfo = new TaskInfo(null,
+                Version currentVersion = currentVersions.get(versionId);
+                versionsModel.workflowRequired(
                         vocabularyModel.getCurrentVocabulary(),
-                        currentVersions.get(versionId));
+                        currentVersion);
+                TaskInfo taskInfo =
+                        versionsModel.getTaskInfoForVersion(versionId);
                 Pair<AccessPoint, List<Subtask>> insertResult =
                 WorkflowMethods.insertAccessPoint(em(), null, taskInfo, false,
                         modifiedBy(), nowTime(), schemaAP);
@@ -710,12 +757,9 @@ public class AccessPointsModel extends ModelBase {
                 if (insertedAP != null) {
                     currentAPs.add(versionId, insertedAP);
                 }
-                // TO DO: work out if this means the version requires
-                // workflow processing. Something like this:
-//                versionsModel.workflowRequired(versionId);
-//                versionsModel.getTaskForVersion(versionId).
-//                    addSubtasks(subtaskList);
-
+                accumulateSubtasks(currentVersion, insertResult.getRight());
+                // Possible future work required: check if there is
+                // any other subtask to be done.
             }
         }
     }

@@ -24,10 +24,12 @@ import au.org.ands.vocabs.registry.db.converter.VersionDbSchemaMapper;
 import au.org.ands.vocabs.registry.db.dao.VersionDAO;
 import au.org.ands.vocabs.registry.db.entity.ComparisonUtils;
 import au.org.ands.vocabs.registry.db.entity.Version;
+import au.org.ands.vocabs.registry.db.entity.Vocabulary;
 import au.org.ands.vocabs.registry.db.entity.clone.VersionClone;
 import au.org.ands.vocabs.registry.enums.VocabularyStatus;
 import au.org.ands.vocabs.registry.model.sequence.VersionElement;
 import au.org.ands.vocabs.registry.workflow.tasks.Task;
+import au.org.ands.vocabs.registry.workflow.tasks.TaskInfo;
 
 /** Versions domain model.
  * This is a representation of the versions of a vocabulary,
@@ -67,6 +69,11 @@ public class VersionsModel extends ModelBase {
 
     /** List of all sub-models. */
     private List<ModelBase> subModels = new ArrayList<>();
+
+    /** The TaskInfo objects containing the tasks to be performed
+     * for versions, if there are any.
+     * The keys are version Ids. */
+    private Map<Integer, TaskInfo> versionTaskInfos = new HashMap<>();
 
     /** The tasks to be performed for versions, if there are any.
      * The keys are version Ids. */
@@ -130,7 +137,7 @@ public class VersionsModel extends ModelBase {
                 vocabularyModel, this, currentVersions, draftVersions);
         subModels.add(apModel);
         vaModel = new VersionArtefactsModel(em(), vocabularyId(),
-                this, currentVersions, draftVersions);
+                vocabularyModel, this, currentVersions, draftVersions);
         subModels.add(vaModel);
     }
 
@@ -569,7 +576,8 @@ public class VersionsModel extends ModelBase {
                 // the previous value).
                 currentVersions.put(versionId, newCurrentVersion);
                 // TO DO: mark this as requiring workflow processing.
-                workflowRequired(versionId);
+                workflowRequired(vocabularyModel.getCurrentVocabulary(),
+                        newCurrentVersion);
             }
         }
 
@@ -587,7 +595,8 @@ public class VersionsModel extends ModelBase {
             Integer versionId = ve.getVersionId();
             currentVersions.remove(versionId);
             // TO DO: workflow deletion processing.
-            workflowRequired(versionId);
+            workflowRequired(vocabularyModel.getCurrentVocabulary(),
+                    versionToDelete);
         }
 
         /** {@inheritDoc} */
@@ -634,9 +643,19 @@ public class VersionsModel extends ModelBase {
                 schemaVersion.setId(newVersionId);
 
                 // TO DO: mark this as requiring workflow processing.
-                workflowRequired(newVersionId);
+                workflowRequired(vocabularyModel.getCurrentVocabulary(),
+                        newCurrentVersion);
             }
         }
+    }
+
+    /** Get the workflow TaskInfo associated with a version, if there is one.
+     * @param versionId The version Id of the version.
+     * @return The TaskInfo instance associated with the version, or null,
+     *      if there is not (yet) such an instance.
+     */
+    protected TaskInfo getTaskInfoForVersion(final Integer versionId) {
+        return versionTaskInfos.get(versionId);
     }
 
     /** Get the workflow task associated with a version, if there is one.
@@ -649,18 +668,24 @@ public class VersionsModel extends ModelBase {
     }
 
     /** Mark a version as requiring workflow processing. This associates
-     * a new Task instance to the version, if there is not one already
-     * assigned.
-     * @param versionId The version Id of the version to be marked as
-     *      requiring workflow processing.
+     * new TaskInfo and Task instances to the version, if there are not already
+     * such instances assigned.
+     * @param vocabulary The vocabulary instance to be marked as requiring
+     *      workflow processing.
+     * @param version The version instance to be marked as requiring
+     *      workflow processing.
      */
-    protected void workflowRequired(final Integer versionId) {
-        Task task = versionTasks.get(versionId);
-        if (task == null) {
-            task = new Task();
+    protected void workflowRequired(final Vocabulary vocabulary,
+            final Version version) {
+        Integer versionId = version.getVersionId();
+        TaskInfo taskInfo = versionTaskInfos.get(versionId);
+        if (taskInfo == null) {
+            Task task = new Task();
             task.setVocabularyId(vocabularyId());
             task.setVersionId(versionId);
+            taskInfo = new TaskInfo(task, vocabulary, version);
             versionTasks.put(versionId, task);
+            versionTaskInfos.put(versionId, taskInfo);
         }
     }
 
