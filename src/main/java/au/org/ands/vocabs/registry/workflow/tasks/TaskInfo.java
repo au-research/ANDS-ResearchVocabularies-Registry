@@ -1,9 +1,16 @@
 /** See the file "LICENSE" for the full license governing this code. */
 package au.org.ands.vocabs.registry.workflow.tasks;
 
+import java.util.List;
+
+import javax.persistence.EntityManager;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+
 import au.org.ands.vocabs.registry.db.converter.JSONSerialization;
 import au.org.ands.vocabs.registry.db.entity.Version;
 import au.org.ands.vocabs.registry.db.entity.Vocabulary;
+import au.org.ands.vocabs.registry.enums.TaskStatus;
 
 /** Class encapsulating all information about a task. */
 public class TaskInfo {
@@ -45,7 +52,7 @@ public class TaskInfo {
         task.setVocabularyId(dbTask.getVocabularyId());
         task.setVersionId(dbTask.getVersionId());
         task.setSubtasks(JSONSerialization.deserializeStringAsJson(
-                dbTask.getParams(), Task.class).getSubtasks());
+                dbTask.getParams(), new TypeReference<List<Subtask>>() { }));
     }
 
     /** Constructor.
@@ -94,6 +101,23 @@ public class TaskInfo {
      */
     public final Version getVersion() {
         return version;
+    }
+
+    /** Persist and process this task.
+     * @param em The EntityManager to use to persist the task.
+     */
+    public void persistAndProcess(final EntityManager em) {
+        dbTask = new au.org.ands.vocabs.registry.db.entity.Task();
+        dbTask.setVocabularyId(vocabulary.getVocabularyId());
+        dbTask.setVersionId(version.getVersionId());
+        dbTask.setStatus(TaskStatus.NEW);
+        dbTask.setResponse("");
+        dbTask.setParams(JSONSerialization.serializeObjectAsJsonString(
+                task.getSubtasks()));
+        /* TO DO: uncomment when we're ready.
+        TaskDAO.saveTask(em, dbTask);
+        */
+        // TO DO: now process it.
     }
 
 }

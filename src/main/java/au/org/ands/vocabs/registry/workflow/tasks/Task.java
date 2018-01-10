@@ -7,11 +7,7 @@ import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import javax.persistence.EntityManager;
 import javax.xml.bind.annotation.XmlRootElement;
-
-import au.org.ands.vocabs.registry.db.converter.JSONSerialization;
-import au.org.ands.vocabs.registry.enums.TaskStatus;
 
 /** Representation of one workflow task. */
 @XmlRootElement(name = "task")
@@ -89,24 +85,6 @@ public class Task {
      */
     public List<Subtask> getSubtasks() {
         return new ArrayList<>(subtasks);
-    }
-
-    /** Persist and process this task.
-     * @param em The EntityManager to use to persist the task.
-     */
-    public void persistAndProcess(final EntityManager em) {
-        au.org.ands.vocabs.registry.db.entity.Task dbTask =
-                new au.org.ands.vocabs.registry.db.entity.Task();
-        dbTask.setVocabularyId(vocabularyId);
-        dbTask.setVersionId(versionId);
-        dbTask.setStatus(TaskStatus.NEW);
-        dbTask.setResponse("");
-        dbTask.setParams(JSONSerialization.serializeObjectAsJsonString(
-                subtasks));
-        /* TO DO: uncomment when we're ready.
-        TaskDAO.saveTask(em, dbTask);
-        */
-        // TO DO: now process it.
     }
 
 }
