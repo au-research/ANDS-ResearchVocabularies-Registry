@@ -34,6 +34,7 @@ import au.org.ands.vocabs.registry.enums.ApSource;
 import au.org.ands.vocabs.registry.enums.SubtaskOperationType;
 import au.org.ands.vocabs.registry.enums.SubtaskProviderType;
 import au.org.ands.vocabs.registry.utils.RegistryFileUtils;
+import au.org.ands.vocabs.registry.workflow.provider.harvest.PoolPartyHarvestProvider;
 import au.org.ands.vocabs.registry.workflow.provider.importer.SesameImporterProvider;
 import au.org.ands.vocabs.registry.workflow.provider.publish.SISSVocPublishProvider;
 import au.org.ands.vocabs.registry.workflow.provider.transform.JsonListTransformProvider;
@@ -345,6 +346,12 @@ public final class WorkflowMethods {
         case CONCEPT_TREE:
             subtask.setSubtaskProviderType(SubtaskProviderType.TRANSFORM);
             subtask.setProvider(JsonTreeTransformProvider.class);
+            subtask.setOperation(SubtaskOperationType.DELETE);
+            subtask.determinePriority();
+            break;
+        case HARVEST_POOLPARTY:
+            subtask.setSubtaskProviderType(SubtaskProviderType.HARVEST);
+            subtask.setProvider(PoolPartyHarvestProvider.class);
             subtask.setOperation(SubtaskOperationType.DELETE);
             subtask.determinePriority();
             break;

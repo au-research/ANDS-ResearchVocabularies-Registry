@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 
+import javax.persistence.EntityManager;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.Invocation;
 import javax.ws.rs.client.WebTarget;
@@ -29,7 +30,11 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import au.org.ands.vocabs.editor.admin.model.PoolPartyProject;
+import au.org.ands.vocabs.registry.enums.SubtaskOperationType;
+import au.org.ands.vocabs.registry.workflow.provider.DefaultPriorities;
+import au.org.ands.vocabs.registry.workflow.provider.WorkflowProvider;
 import au.org.ands.vocabs.registry.workflow.provider.transform.GetMetadataTransformProvider;
+import au.org.ands.vocabs.registry.workflow.tasks.Subtask;
 import au.org.ands.vocabs.toolkit.db.TaskUtils;
 import au.org.ands.vocabs.toolkit.tasks.TaskInfo;
 import au.org.ands.vocabs.toolkit.tasks.TaskStatus;
@@ -41,7 +46,8 @@ import au.org.ands.vocabs.toolkit.utils.ToolkitNetUtils;
 import au.org.ands.vocabs.toolkit.utils.ToolkitProperties;
 
 /** Harvest provider for PoolParty. */
-public class PoolPartyHarvestProvider extends HarvestProvider {
+public class PoolPartyHarvestProvider extends HarvestProvider
+    implements WorkflowProvider {
 
     /** The logger for this class. */
     private final Logger logger = LoggerFactory.getLogger(
@@ -149,7 +155,7 @@ public class PoolPartyHarvestProvider extends HarvestProvider {
 // Possible future work: support specifying particular modules.
 //        List<String> exportModules =
 //                info.getQueryParameters().get("exportModules");
-        List<String> exportModules = new ArrayList<String>();
+        List<String> exportModules = new ArrayList<>();
         exportModules.add(ToolkitProperties.getProperty(
                 PropertyConstants.POOLPARTYHARVESTER_DEFAULTEXPORTMODULE));
         if (getMetadata) {
@@ -386,12 +392,46 @@ public class PoolPartyHarvestProvider extends HarvestProvider {
     public final HashMap<String, String> getMetadata(final String projectId) {
 
         HashMap<String, String> result =
-                new HashMap<String, String>();
+                new HashMap<>();
 
         getHarvestFiles(projectId,
                 ToolkitFileUtils.getMetadataOutputPath(projectId),
                 true, false, result);
         return result;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public Integer defaultPriority(final SubtaskOperationType operationType) {
+        switch (operationType) {
+        case INSERT:
+            return DefaultPriorities.DEFAULT_HARVEST_INSERT_PRIORITY;
+        case DELETE:
+            return DefaultPriorities.DEFAULT_HARVEST_DELETE_PRIORITY;
+        default:
+            // Unknown operation type!
+            return null;
+        }
+    }
+
+    /** The EntityManager to use for database access. */
+    private EntityManager em;
+
+    /** Set the EntityManager to be used for database access.
+     * @param anEntityManager The EntityManager to be used for database access.
+     */
+    @Override
+    public void setEntityManager(final EntityManager anEntityManager) {
+        em = anEntityManager;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void doSubtask(
+            final au.org.ands.vocabs.registry.workflow.tasks.TaskInfo taskInfo,
+            final Subtask subtask) {
+        // TO DO
+
     }
 
 }

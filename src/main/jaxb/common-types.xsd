@@ -40,6 +40,7 @@
         <xs:restriction base="xs:token">
             <xs:enumeration value="conceptList"/>
             <xs:enumeration value="conceptTree"/>
+            <xs:enumeration value="harvestPoolparty"/>
         </xs:restriction>
     </xs:simpleType>
     <xs:simpleType name="related-entity-type">

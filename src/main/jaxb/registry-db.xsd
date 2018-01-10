@@ -150,4 +150,11 @@
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>
+    <xs:complexType name="va-harvest-poolparty">
+        <xs:complexContent>
+            <xs:extension base="va-common">
+                <xs:attribute name="path" type="xs:string"/>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
 </xs:schema>
