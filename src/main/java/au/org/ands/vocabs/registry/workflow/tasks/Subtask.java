@@ -13,6 +13,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import au.org.ands.vocabs.registry.enums.SubtaskOperationType;
 import au.org.ands.vocabs.registry.enums.SubtaskProviderType;
+import au.org.ands.vocabs.registry.enums.TaskStatus;
 import au.org.ands.vocabs.registry.workflow.provider.ProviderUtils;
 import au.org.ands.vocabs.registry.workflow.provider.WorkflowProvider;
 
@@ -129,6 +130,52 @@ public class Subtask implements Comparable<Subtask> {
         WorkflowProvider workflowProvider = ProviderUtils.getProvider(
                 subtaskProviderType, provider);
         priority = workflowProvider.defaultPriority(operation);
+    }
+
+    /** Execution status of the subtask, initialized to
+     * {@link TaskStatus#NEW}. */
+    private TaskStatus status = TaskStatus.NEW;
+
+    /** Get the subtask execution status.
+     * @return The execution status.
+     */
+    public TaskStatus getStatus() {
+        return status;
+    }
+
+    /** Set the subtask execution status.
+     * @param aStatus The execution status to set.
+     */
+    public void setStatus(final TaskStatus aStatus) {
+        status = aStatus;
+    }
+
+    /** Results of the subtask. A map of String keys/values. */
+    private Map<String, String> results;
+
+    /** Get the subtask execution status.
+     * @return The execution status.
+     */
+    public TaskStatus getResults() {
+        return status;
+    }
+
+    /** Set the subtask execution results.
+     * @param aResults The execution results to set.
+     */
+    public void setResults(final Map<String, String> aResults) {
+        results = aResults;
+    }
+
+    /** Add one subtask execution result.
+     * @param key The key of the result to be added.
+     * @param value The value of the result to be added.
+     */
+    public void addResult(final String key, final String value) {
+        if (results == null) {
+            results = new HashMap<>();
+        }
+        results.put(key, value);
     }
 
     /** {@inheritDoc}
