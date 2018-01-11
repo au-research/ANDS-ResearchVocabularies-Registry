@@ -24,6 +24,26 @@ import au.org.ands.vocabs.registry.workflow.provider.WorkflowProvider;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Subtask implements Comparable<Subtask> {
 
+    /** Default constructor. */
+    public Subtask() {
+    }
+
+    /** Convenience constructor. The priority is assigned by invoking
+     * {@link #determinePriority()}.
+     * @param aSubtaskProviderType The subtask provider type to be set.
+     * @param anOperation The operation to be set.
+     * @param aProviderClass The class object of the subtask provider
+     *      to be set.
+     */
+    public Subtask(final SubtaskProviderType aSubtaskProviderType,
+            final SubtaskOperationType anOperation,
+            final Class<? extends WorkflowProvider> aProviderClass) {
+        subtaskProviderType = aSubtaskProviderType;
+        operation = anOperation;
+        provider = ProviderUtils.providerName(aProviderClass);
+        determinePriority();
+    }
+
     /** The provider type of the subtask. */
     private SubtaskProviderType subtaskProviderType;
 
@@ -120,6 +140,17 @@ public class Subtask implements Comparable<Subtask> {
      */
     public Map<String, String> getSubtaskProperties() {
         return subtaskProperties;
+    }
+
+    /** Add an additional subtask property.
+     * @param key The name of the property.
+     * @param value The value of the property.
+     */
+    public void addSubtaskProperty(final String key, final String value) {
+        if (subtaskProperties == null) {
+            subtaskProperties = new HashMap<>();
+        }
+        subtaskProperties.put(key, value);
     }
 
     /** Set the priority based on the default priority set by the provider.

@@ -49,6 +49,14 @@ import au.org.ands.vocabs.toolkit.utils.ToolkitProperties;
 public class PoolPartyHarvestProvider extends HarvestProvider
     implements WorkflowProvider {
 
+    /** The name of the subtask property in which to provide the
+     * PoolParty server Id. */
+    public static final String SERVER_ID = "serverId";
+
+    /** The name of the subtask property in which to provide the
+     * PoolParty project Id. */
+    public static final String PROJECT_ID = "projectId";
+
     /** The logger for this class. */
     private final Logger logger = LoggerFactory.getLogger(
             MethodHandles.lookup().lookupClass());
@@ -370,15 +378,15 @@ public class PoolPartyHarvestProvider extends HarvestProvider
     public final boolean harvest(final TaskInfo taskInfo,
             final JsonNode subtask,
             final HashMap<String, String> results) {
-        if (subtask.get("project_id") == null
-                || subtask.get("project_id").textValue().isEmpty()) {
+        if (subtask.get(PROJECT_ID) == null
+                || subtask.get(PROJECT_ID).textValue().isEmpty()) {
             TaskUtils.updateMessageAndTaskStatus(logger, taskInfo.getTask(),
                     results, TaskStatus.ERROR,
                     "No PoolParty id specified. Nothing to do.");
             return false;
         }
 
-        String projectId = subtask.get("project_id").textValue();
+        String projectId = subtask.get(PROJECT_ID).textValue();
         return getHarvestFiles(projectId,
                 ToolkitFileUtils.getTaskHarvestOutputPath(taskInfo),
                 false, true, results);

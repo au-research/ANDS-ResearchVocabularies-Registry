@@ -26,10 +26,13 @@ import au.org.ands.vocabs.registry.db.entity.AccessPoint;
 import au.org.ands.vocabs.registry.db.entity.Upload;
 import au.org.ands.vocabs.registry.db.entity.Version;
 import au.org.ands.vocabs.registry.db.entity.VersionArtefact;
+import au.org.ands.vocabs.registry.db.entity.Vocabulary;
 import au.org.ands.vocabs.registry.db.internal.ApApiSparql;
 import au.org.ands.vocabs.registry.db.internal.ApFile;
 import au.org.ands.vocabs.registry.db.internal.ApSissvoc;
 import au.org.ands.vocabs.registry.db.internal.ApWebPage;
+import au.org.ands.vocabs.registry.db.internal.VocabularyJson;
+import au.org.ands.vocabs.registry.db.internal.VocabularyJson.PoolpartyProject;
 import au.org.ands.vocabs.registry.enums.ApSource;
 import au.org.ands.vocabs.registry.enums.SubtaskOperationType;
 import au.org.ands.vocabs.registry.enums.SubtaskProviderType;
@@ -382,6 +385,54 @@ public final class WorkflowMethods {
         subtask.setOperation(SubtaskOperationType.INSERT);
         subtask.determinePriority();
         subtaskList.add(subtask);
+    }
+
+    // Utility methods for "quickly" creating a subtask of a particular
+    // provider type.
+
+    /** Create a new Subtask to represent harvesting from PoolParty.
+     * @param operation The operation to be performed; either INSERT or DELETE.
+     * @param vocabulary The Vocabulary entity which holds the details
+     *      of the PoolParty project.
+     * @return The newly-created Subtask.
+     */
+    public static Subtask createHarvestPoolPartySubtask(
+            final SubtaskOperationType operation,
+            final Vocabulary vocabulary) {
+        Subtask subtask = new Subtask(SubtaskProviderType.HARVEST,
+                operation, PoolPartyHarvestProvider.class);
+        VocabularyJson vocabularyJson =
+                JSONSerialization.deserializeStringAsJson(
+                        vocabulary.getData(), VocabularyJson.class);
+        PoolpartyProject poolpartyProject =
+                vocabularyJson.getPoolpartyProject();
+        subtask.addSubtaskProperty(PoolPartyHarvestProvider.SERVER_ID,
+                poolpartyProject.getServerId().toString());
+        subtask.addSubtaskProperty(PoolPartyHarvestProvider.PROJECT_ID,
+                poolpartyProject.getProjectId());
+        return subtask;
+    }
+
+    /** Create a new Subtask to represent importing into Sesame.
+     * @param operation The operation to be performed; either INSERT or DELETE.
+     * @return The newly-created Subtask.
+     */
+    public static Subtask createImporterSesameSubtask(
+            final SubtaskOperationType operation) {
+        Subtask subtask = new Subtask(SubtaskProviderType.IMPORTER,
+                operation, SesameImporterProvider.class);
+        return subtask;
+    }
+
+    /** Create a new Subtask to represent publishing into SISSVoc.
+     * @param operation The operation to be performed; either INSERT or DELETE.
+     * @return The newly-created Subtask.
+     */
+    public static Subtask createPublishSissvocSubtask(
+            final SubtaskOperationType operation) {
+        Subtask subtask = new Subtask(SubtaskProviderType.PUBLISH,
+                operation, SISSVocPublishProvider.class);
+        return subtask;
     }
 
 }

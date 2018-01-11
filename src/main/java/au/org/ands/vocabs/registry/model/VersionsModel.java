@@ -26,8 +26,10 @@ import au.org.ands.vocabs.registry.db.entity.ComparisonUtils;
 import au.org.ands.vocabs.registry.db.entity.Version;
 import au.org.ands.vocabs.registry.db.entity.Vocabulary;
 import au.org.ands.vocabs.registry.db.entity.clone.VersionClone;
+import au.org.ands.vocabs.registry.enums.SubtaskOperationType;
 import au.org.ands.vocabs.registry.enums.VocabularyStatus;
 import au.org.ands.vocabs.registry.model.sequence.VersionElement;
+import au.org.ands.vocabs.registry.workflow.WorkflowMethods;
 import au.org.ands.vocabs.registry.workflow.tasks.Task;
 import au.org.ands.vocabs.registry.workflow.tasks.TaskInfo;
 
@@ -619,6 +621,8 @@ public class VersionsModel extends ModelBase {
                     existingDraft.setModifiedBy(modifiedBy());
                     VersionDAO.updateVersion(em(), existingDraft);
                     currentVersions.put(versionId, existingDraft);
+                    workflowRequired(vocabularyModel.getCurrentVocabulary(),
+                            existingDraft);
                 } else {
                     // Error: we don't know about this version Id.
                     // (Well, it might be a historical version that
@@ -630,7 +634,7 @@ public class VersionsModel extends ModelBase {
             } else {
                 // New row required.
                 Version newCurrentVersion = mapper.sourceToTarget(
-                        ve.getSchemaVersion());
+                        schemaVersion);
                 TemporalUtils.makeCurrentlyValid(newCurrentVersion, nowTime());
                 newCurrentVersion.setModifiedBy(modifiedBy());
                 VersionDAO.saveVersionWithId(em(), newCurrentVersion);
@@ -645,6 +649,23 @@ public class VersionsModel extends ModelBase {
                 // TO DO: mark this as requiring workflow processing.
                 workflowRequired(vocabularyModel.getCurrentVocabulary(),
                         newCurrentVersion);
+            }
+            // Join paths: what follows applies both when reusing
+            // an existing database row and when adding a new database row.
+            Task task = getTaskForVersion(versionId);
+            // Apply the settings for the three version-level flags.
+            if (schemaVersion.isDoPoolpartyHarvest()) {
+                task.addSubtask(WorkflowMethods.createHarvestPoolPartySubtask(
+                        SubtaskOperationType.INSERT,
+                        vocabularyModel.getCurrentVocabulary()));
+            }
+            if (schemaVersion.isDoImport()) {
+                task.addSubtask(WorkflowMethods.createImporterSesameSubtask(
+                        SubtaskOperationType.INSERT));
+            }
+            if (ve.getSchemaVersion().isDoPublish()) {
+                task.addSubtask(WorkflowMethods.createPublishSissvocSubtask(
+                        SubtaskOperationType.INSERT));
             }
         }
     }
