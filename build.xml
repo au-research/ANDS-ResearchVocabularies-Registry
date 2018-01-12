@@ -809,15 +809,15 @@
     <uptodate property="swagger-json.uptodate"
               targetfile="swagger.json">
       <srcfiles dir="src">
-        <include name="*/*.java" />
-        <include name="*/*.xml" />
-        <include name="*/*.xsl" />
+        <include name="**/*.java" />
+        <include name="**/*.xml" />
+        <include name="**/*.xsl" />
       </srcfiles>
       <srcfiles dir="build">
-        <include name="*/*" />
+        <include name="**/*" />
       </srcfiles>
       <srcfiles dir="build-test">
-        <include name="*/*" />
+        <include name="**/*" />
       </srcfiles>
       <srcfiles dir="build-jar">
         <include name="*/*.jar" />
