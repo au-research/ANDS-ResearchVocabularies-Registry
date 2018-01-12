@@ -84,6 +84,19 @@ here, and you will need them in subsequent steps. They are referred to
 in subsequent steps as `registry-url`, `registry-user`, and
 `registry-password`.
 
+The setting `Registry.storagePath` points to a directory in the file
+system where the Registry stores all of the vocabulary data. This
+directory must exist, and be writable by the user that runs
+Tomcat. For example, if you are using
+`/var/vocab-files/registry-data`, you might do something like this to
+create it:
+```
+sudo sh
+mkdir -p /var/vocab-files/registry-data
+chown 644 /var/vocab-files/registry-data
+chown tomcat.tomcat /var/vocab-files/registry-data
+```
+
 ### Liquibase properties
 
 Create `conf/registry-liquibase.properties`. You may base it on
