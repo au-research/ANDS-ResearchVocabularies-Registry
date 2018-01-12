@@ -245,3 +245,44 @@ In this case, restart Solr and try again.
 # Create JavaScript Client API
 
 `ant js-client`
+
+# Optional: use automated webapp deploy/start/stop
+
+If you want to be able to script the deployment of the Registry webapp
+to Tomcat, and/or to script starting/stopping the webapp, please see
+the section in `build.xml` that begins with the comment
+"Support deployment to Tomcat".
+
+It's easiest if you have a local installation of Tomcat, so that you
+have the file `catalina-tasks.xml` that is part of the Tomcat
+distribution. Otherwise, you will need, at least, to download a copy
+of the Tomcat distribution and unpack it. Then, edit `build.xml` and
+change the file attribute of the `include` statement:
+```
+<include optional="true" file="/usr/share/tomcat/bin/catalina-tasks.xml"/>
+```
+so that it points to the correct location of `catalina-tasks.xml`.
+
+Here is a summary of the steps involved to configure deployment:
+
+* In the Tomcat installation to which you will be deploying, ensure
+  that in Tomcat's `tomcat-users.xml`, you have a suitable user
+  defined that has the `manager-script` role. For example:
+  ```
+  <user name="deploy" password="my-password" roles="manager-script" />
+  ```
+* If you add a username/password in this way, you need to restart
+  Tomcat so that it loads `tomcat-users.xml` afresh.
+* In the top-level of your checkout of the Registry code, create
+  a file `deployer.properties` containing the URL of the target
+  Tomcat, the username/password you specified, and the context
+  path. For example (following the running example used in these
+  instructions), the file might look like this:
+  ```
+  tomcat.url=http://localhost:8080/manager/text
+  tomcat.username=deploy
+  tomcat.password=my-password
+  tomcat.context=/registry-context
+  ```
+
+Now you can run `ant deploy`, `ant stop`, and `ant start`.

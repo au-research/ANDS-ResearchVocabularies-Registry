@@ -1115,4 +1115,56 @@
     </jacoco:report>
   </target>
 
+  <!-- Support deployment to Tomcat. -->
+
+  <!-- If you want to deploy to Tomcat, create deployer.properties
+       containing settings for tomcat.url, username, password, and path.
+       Sample content for deployer.properties:
+
+       tomcat.url=http://localhost:8080/manager/text
+       tomcat.username=deploy
+       tomcat.password=my-password
+       tomcat.context=/repository/api/registry
+
+       You need to have add the username/password to Tomcat's tomcat-users.xml
+       and assign that user the "manager-script" role:
+       <user name="deploy" password="my-password" roles="manager-script" />
+  -->
+  <property file="deployer.properties"/>
+
+  <!-- Change the value of the file attribute as necessary. -->
+  <include optional="true" file="/usr/share/tomcat/bin/catalina-tasks.xml"/>
+
+  <target name="deploy" description="Deploy web application"
+          depends="war">
+    <deploy url="${tomcat.url}"
+            username="${tomcat.username}" password="${tomcat.password}"
+            path="${tomcat.context}" war="${war}" update="true" />
+  </target>
+
+  <target name="undeploy" description="Undeploy web application">
+    <undeploy url="${tomcat.url}"
+              username="${tomcat.username}" password="${tomcat.password}"
+              path="${tomcat.context}"/>
+  </target>
+
+  <!-- Webapp lifecycle control -->
+  <target name="start" description="Start web application">
+    <start url="${tomcat.url}"
+           username="${tomcat.username}" password="${tomcat.password}"
+           path="${tomcat.context}"/>
+  </target>
+
+  <target name="reload" description="Reload web application">
+    <reload url="${tomcat.url}"
+            username="${tomcat.username}" password="${tomcat.password}"
+            path="${tomcat.context}"/>
+  </target>
+
+  <target name="stop" description="Stop web application">
+    <stop url="${tomcat.url}"
+          username="${tomcat.username}" password="${tomcat.password}"
+          path="${tomcat.context}"/>
+  </target>
+
 </project>
