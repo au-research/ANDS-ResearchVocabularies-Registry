@@ -93,7 +93,7 @@ create it:
 ```
 sudo sh
 mkdir -p /var/vocab-files/registry-data
-chown 644 /var/vocab-files/registry-data
+chown 755 /var/vocab-files/registry-data
 chown tomcat.tomcat /var/vocab-files/registry-data
 ```
 
