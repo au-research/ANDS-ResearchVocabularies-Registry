@@ -27,6 +27,9 @@ public class TaskInfo {
     /** Version object for this task. */
     private Version version;
 
+    /** EntityManager to use for this task. */
+    private EntityManager em;
+
     /** Constructor.
      * @param aVocabulary The Vocabulary object.
      * @param aVersion The Version object.
@@ -103,10 +106,26 @@ public class TaskInfo {
         return version;
     }
 
-    /** Persist and process this task.
-     * @param em The EntityManager to use to persist the task.
+    /** Get the EntityManager to use to process this task.
+     * @return The EntityManager to use.
      */
-    public void persistAndProcess(final EntityManager em) {
+    public EntityManager getEm() {
+        return em;
+    }
+
+    /** Set the EntityManager to use to process this task.
+     * @param anEm The EntityManager to set.
+     */
+    public void setEm(final EntityManager anEm) {
+        em = anEm;
+    }
+
+    /** Persist and process this task.
+     */
+    public void persistAndProcess() {
+        if (em == null) {
+            throw new IllegalArgumentException("EntityManager not set");
+        }
         dbTask = new au.org.ands.vocabs.registry.db.entity.Task();
         dbTask.setVocabularyId(vocabulary.getVocabularyId());
         dbTask.setVersionId(version.getVersionId());
@@ -116,6 +135,7 @@ public class TaskInfo {
                 task.getSubtasks()));
         /* TO DO: uncomment when we're ready.
         TaskDAO.saveTask(em, dbTask);
+        logger.info("Persisted task with task Id: " + dbTask.getId());
         */
         // TO DO: now process it.
     }

@@ -14,8 +14,6 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import javax.persistence.EntityManager;
-
 import org.apache.commons.io.FileUtils;
 import org.openrdf.model.Statement;
 import org.openrdf.model.vocabulary.SKOS;
@@ -183,17 +181,6 @@ public class JsonListTransformProvider extends TransformProvider
             // Unknown operation type!
             return null;
         }
-    }
-
-    /** The EntityManager to use for database access. */
-    private EntityManager em;
-
-    /** Set the EntityManager to be used for database access.
-     * @param anEntityManager The EntityManager to be used for database access.
-     */
-    @Override
-    public void setEntityManager(final EntityManager anEntityManager) {
-        em = anEntityManager;
     }
 
     /** {@inheritDoc} */

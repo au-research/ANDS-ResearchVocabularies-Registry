@@ -2,8 +2,6 @@
 
 package au.org.ands.vocabs.registry.workflow.provider;
 
-import javax.persistence.EntityManager;
-
 import au.org.ands.vocabs.registry.enums.SubtaskOperationType;
 import au.org.ands.vocabs.registry.workflow.tasks.Subtask;
 import au.org.ands.vocabs.registry.workflow.tasks.TaskInfo;
@@ -22,15 +20,6 @@ public interface WorkflowProvider {
         final SubtaskOperationType operationType) {
         return null;
     }
-
-    /** Set the EntityManager to be used for database access.
-     * A default, empty implementation is provided, in case the
-     * provider does not need to use the database. But most providers
-     * will need to provide their own implementation.
-     * @param em The EntityManager to be used for database access.
-     */
-    default void setEntityManager(@SuppressWarnings("unused")
-        final EntityManager em) { }
 
     /** Perform a subtask.
      * @param taskInfo The top-level TaskInfo for the subtask.

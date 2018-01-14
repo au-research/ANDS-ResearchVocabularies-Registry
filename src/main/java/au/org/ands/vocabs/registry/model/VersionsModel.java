@@ -713,7 +713,8 @@ public class VersionsModel extends ModelBase {
     /** Process all of the tasks that have been accumulated. */
     private void processRequiredTasks() {
         for (TaskInfo taskInfo : versionTaskInfos.values()) {
-            taskInfo.persistAndProcess(em());
+            taskInfo.setEm(em());
+            taskInfo.persistAndProcess();
         }
     }
 

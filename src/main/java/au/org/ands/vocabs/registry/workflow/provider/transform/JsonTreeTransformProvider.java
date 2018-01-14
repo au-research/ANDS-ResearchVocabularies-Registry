@@ -18,8 +18,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
 
-import javax.persistence.EntityManager;
-
 import org.apache.commons.io.FileUtils;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Statement;
@@ -907,23 +905,22 @@ public class JsonTreeTransformProvider extends TransformProvider
         }
     }
 
-    /** The EntityManager to use for database access. */
-    private EntityManager em;
-
-    /** Set the EntityManager to be used for database access.
-     * @param anEntityManager The EntityManager to be used for database access.
-     */
-    @Override
-    public void setEntityManager(final EntityManager anEntityManager) {
-        em = anEntityManager;
-    }
-
     /** {@inheritDoc} */
     @Override
     public void doSubtask(
             final au.org.ands.vocabs.registry.workflow.tasks.TaskInfo taskInfo,
             final Subtask subtask) {
         // TO DO
+        switch (subtask.getOperation()) {
+        case INSERT:
+            //
+            break;
+        case DELETE:
+            //
+            break;
+        default:
+            break;
+        }
 
     }
 
