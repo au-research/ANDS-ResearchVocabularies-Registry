@@ -714,6 +714,8 @@ public class VersionsModel extends ModelBase {
     private void processRequiredTasks() {
         for (TaskInfo taskInfo : versionTaskInfos.values()) {
             taskInfo.setEm(em());
+            taskInfo.setNowTime(nowTime());
+            taskInfo.setModifiedBy(modifiedBy());
             taskInfo.persistAndProcess();
         }
     }

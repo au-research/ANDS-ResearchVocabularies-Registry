@@ -1,6 +1,7 @@
 /** See the file "LICENSE" for the full license governing this code. */
 package au.org.ands.vocabs.registry.workflow.tasks;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import javax.persistence.EntityManager;
@@ -29,6 +30,14 @@ public class TaskInfo {
 
     /** EntityManager to use for this task. */
     private EntityManager em;
+
+    /** The time to use as the value of "now" when applying changes
+     * to rows of the database. */
+    private LocalDateTime nowTime;
+
+    /** The value to use for "modifiedBy" when adding or updating
+     * rows of the database. */
+    private String modifiedBy;
 
     /** Constructor.
      * @param aVocabulary The Vocabulary object.
@@ -118,6 +127,34 @@ public class TaskInfo {
      */
     public void setEm(final EntityManager anEm) {
         em = anEm;
+    }
+
+    /** Set the value of nowTime.
+     * @param aNowTime The value of nowTime to set.
+     */
+    public final void setNowTime(final LocalDateTime aNowTime) {
+        nowTime = aNowTime;
+    }
+
+    /** Get the value of nowTime.
+     * @return The value of nowTime.
+     */
+    public final LocalDateTime nowTime() {
+        return nowTime;
+    }
+
+    /** Set the value of modifiedBy.
+     * @param aModifiedBy The value of modifiedBy to set.
+     */
+    public final void setModifiedBy(final String aModifiedBy) {
+        modifiedBy = aModifiedBy;
+    }
+
+    /** Get the value of modifiedBy.
+     * @return The value of modifiedBy.
+     */
+    public final String modifiedBy() {
+        return modifiedBy;
     }
 
     /** Persist and process this task.
