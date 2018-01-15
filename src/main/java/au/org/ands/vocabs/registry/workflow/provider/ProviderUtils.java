@@ -41,6 +41,31 @@ public final class ProviderUtils {
                 replaceAll(packageName + "$", "");
     }
 
+    /** Get the class instance of the provider based on the provider type and
+     * name.
+     * @param providerType The provider type.
+     * @param providerName The name of the provider.
+     * @return The class instance of the provider, or null if there is an
+     *      error fetching it.
+     */
+    public static Class<? extends WorkflowProvider> getProviderClass(
+            final SubtaskProviderType providerType,
+            final String providerName) {
+        String s = "au.org.ands.vocabs.registry.workflow.provider."
+                + providerType.value() + "."
+                + providerName + StringUtils.capitalize(providerType.value())
+                + "Provider";
+        Class<? extends WorkflowProvider> c;
+        try {
+            c = Class.forName(s).asSubclass(WorkflowProvider.class);
+            return c;
+        } catch (ClassNotFoundException e) {
+            LOGGER.error("ProviderUtils.getProvider(): "
+                    + "no such provider class: " + s);
+            return null;
+        }
+    }
+
     /** Get an instance of the provider based on the provider type and
      * name.
      * @param providerType The provider type.
@@ -55,9 +80,9 @@ public final class ProviderUtils {
                 + providerType.value() + "."
                 + providerName + StringUtils.capitalize(providerType.value())
                 + "Provider";
-        Class<?> c;
+        Class<? extends WorkflowProvider> c;
         try {
-            c = Class.forName(s);
+            c = Class.forName(s).asSubclass(WorkflowProvider.class);
         } catch (ClassNotFoundException e) {
             LOGGER.error("ProviderUtils.getProvider(): "
                     + "no such provider class: " + s);
@@ -65,8 +90,7 @@ public final class ProviderUtils {
         }
         WorkflowProvider workflowProvider = null;
         try {
-            workflowProvider = (WorkflowProvider) c.getConstructor().
-                    newInstance();
+            workflowProvider = c.getConstructor().newInstance();
         } catch (InstantiationException | IllegalAccessException
                 | IllegalArgumentException | InvocationTargetException
                 | NoSuchMethodException | SecurityException e) {

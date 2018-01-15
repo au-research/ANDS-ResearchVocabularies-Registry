@@ -29,9 +29,14 @@ import au.org.ands.vocabs.registry.db.entity.Vocabulary;
 import au.org.ands.vocabs.registry.db.entity.clone.VersionClone;
 import au.org.ands.vocabs.registry.db.internal.VersionJson;
 import au.org.ands.vocabs.registry.enums.SubtaskOperationType;
+import au.org.ands.vocabs.registry.enums.SubtaskProviderType;
 import au.org.ands.vocabs.registry.enums.VocabularyStatus;
 import au.org.ands.vocabs.registry.model.sequence.VersionElement;
 import au.org.ands.vocabs.registry.workflow.WorkflowMethods;
+import au.org.ands.vocabs.registry.workflow.provider.importer.SesameImporterProvider;
+import au.org.ands.vocabs.registry.workflow.provider.publish.SISSVocPublishProvider;
+import au.org.ands.vocabs.registry.workflow.provider.transform.ResourceMapTransformProvider;
+import au.org.ands.vocabs.registry.workflow.tasks.Subtask;
 import au.org.ands.vocabs.registry.workflow.tasks.Task;
 import au.org.ands.vocabs.registry.workflow.tasks.TaskInfo;
 
@@ -64,6 +69,12 @@ public class VersionsModel extends ModelBase {
     /** The draft instances of versions, if there are any.
      * The keys are version Ids. */
     private Map<Integer, Version> draftVersions = new HashMap<>();
+
+    /** Used by applyChanges() to keep track of whether a version has both
+     * the doImport and doPublish flags set. This is then used by
+     * {@link #addImpliedSubtasks()} to determine
+     * whether to add or delete additional workflow subtasks. */
+    private Map<Integer, Boolean> versionHasImportAndPublish = new HashMap<>();
 
     /** The model of the AccessPoints. */
     private AccessPointsModel apModel;
@@ -343,6 +354,7 @@ public class VersionsModel extends ModelBase {
             sm.applyChanges(updatedVocabulary));
 
         // And now run any tasks that have been accumulated along the way.
+        addImpliedSubtasks();
         processRequiredTasks();
     }
 
@@ -520,6 +532,8 @@ public class VersionsModel extends ModelBase {
                             version.getId(), null, version));
                     if (version.getId() != null) {
                         updatedVersions.put(version.getId(), version);
+                        versionHasImportAndPublish.put(version.getId(),
+                                version.isDoImport() && version.isDoPublish());
                     }
                 });
         Collections.sort(updatedSequence);
@@ -779,6 +793,54 @@ public class VersionsModel extends ModelBase {
             taskInfo = new TaskInfo(task, vocabulary, version);
             versionTasks.put(versionId, task);
             versionTaskInfos.put(versionId, taskInfo);
+        }
+    }
+
+    /** To any existing Tasks, add subtasks that are implied by
+     * the subtasks already present. For now, that means adding
+     * subtasks for the ResourceMapTransform provider.
+     */
+    private void addImpliedSubtasks() {
+        for (Task task : versionTasks.values()) {
+            boolean hasImportInsert = false;
+            boolean hasPublishInsert = false;
+            boolean hasImportDelete = false;
+            boolean hasPublishDelete = false;
+            for (Subtask subtask : task.getSubtasks()) {
+                if (subtask.getProviderClass().equals(
+                        SesameImporterProvider.class)) {
+                    if (subtask.getOperation() == SubtaskOperationType.DELETE) {
+                        hasImportDelete = true;
+                    } else {
+                        hasImportInsert = true;
+                    }
+                }
+                if (subtask.getProviderClass().equals(
+                        SISSVocPublishProvider.class)) {
+                    if (subtask.getOperation() == SubtaskOperationType.DELETE) {
+                        hasPublishDelete = true;
+                    } else {
+                        hasPublishInsert = true;
+                    }
+                }
+            }
+            // We would "normally" require _both_ hasImportInsert and
+            // hasPublishInsert to justify running the transform.
+            // By checking versionHasImportAndPublish, we handle the cases
+            // where one of the required INSERT operations was done by an
+            // earlier API call, and we're now seeing the other one.
+            if (versionHasImportAndPublish.get(task.getVersionId())
+                    && (hasImportInsert || hasPublishInsert)) {
+                task.addSubtask(new Subtask(SubtaskProviderType.TRANSFORM,
+                        SubtaskOperationType.PERFORM,
+                        ResourceMapTransformProvider.class));
+                continue;
+            }
+            if (hasImportDelete || hasPublishDelete) {
+                task.addSubtask(new Subtask(SubtaskProviderType.TRANSFORM,
+                        SubtaskOperationType.DELETE,
+                        ResourceMapTransformProvider.class));
+            }
         }
     }
 

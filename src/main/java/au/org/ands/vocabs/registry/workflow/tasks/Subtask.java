@@ -40,6 +40,7 @@ public class Subtask implements Comparable<Subtask> {
             final Class<? extends WorkflowProvider> aProviderClass) {
         subtaskProviderType = aSubtaskProviderType;
         operation = anOperation;
+        providerClass = aProviderClass;
         provider = ProviderUtils.providerName(aProviderClass);
         determinePriority();
     }
@@ -99,6 +100,9 @@ public class Subtask implements Comparable<Subtask> {
     /** The name of the subtask provider. */
     private String provider;
 
+    /** The class of the subtask provider. */
+    private Class<? extends WorkflowProvider> providerClass;
+
     /** Set the subtask provider. This method takes a String parameter.
      * @param aProvider The subtask provider to be set.
      */
@@ -115,6 +119,22 @@ public class Subtask implements Comparable<Subtask> {
     public void setProvider(
             final Class<? extends WorkflowProvider> aProviderClass) {
         provider = ProviderUtils.providerName(aProviderClass);
+    }
+
+    /** Get the subtask provider class.
+     * @return The subtask provider class.
+     */
+    public Class<? extends WorkflowProvider> getProviderClass() {
+        if (providerClass != null) {
+            return providerClass;
+        }
+        if (subtaskProviderType == null || provider == null) {
+            throw new IllegalArgumentException(
+                    "Either provider type or provider is null.");
+        }
+        providerClass = ProviderUtils.getProviderClass(subtaskProviderType,
+                provider);
+        return providerClass;
     }
 
     /** Get the subtask provider.
