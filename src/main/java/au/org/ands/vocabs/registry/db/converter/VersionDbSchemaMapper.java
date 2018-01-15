@@ -31,6 +31,7 @@ public interface VersionDbSchemaMapper {
     @Mapping(target = "doPoolpartyHarvest", ignore = true)
     @Mapping(target = "doImport", ignore = true)
     @Mapping(target = "doPublish", ignore = true)
+    @Mapping(target = "forceWorkflow", ignore = true)
     @Mapping(target = "accessPoint", ignore = true)
     au.org.ands.vocabs.registry.schema.vocabulary201701.Version
       sourceToTarget(au.org.ands.vocabs.registry.db.entity.Version source);
@@ -44,6 +45,7 @@ public interface VersionDbSchemaMapper {
     @Mapping(target = "releaseDate", ignore = true)
     @Mapping(target = "slug", ignore = true)
     @Mapping(target = "status", ignore = true)
+    @Mapping(target = "forceWorkflow", ignore = true)
     @Mapping(target = "accessPoint", ignore = true)
     void jsonDataIntoTarget(VersionJson data,
               @MappingTarget

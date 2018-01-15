@@ -20,12 +20,14 @@ import org.slf4j.LoggerFactory;
 
 import au.org.ands.vocabs.registry.api.converter.VersionRegistrySchemaMapper;
 import au.org.ands.vocabs.registry.db.context.TemporalUtils;
+import au.org.ands.vocabs.registry.db.converter.JSONSerialization;
 import au.org.ands.vocabs.registry.db.converter.VersionDbSchemaMapper;
 import au.org.ands.vocabs.registry.db.dao.VersionDAO;
 import au.org.ands.vocabs.registry.db.entity.ComparisonUtils;
 import au.org.ands.vocabs.registry.db.entity.Version;
 import au.org.ands.vocabs.registry.db.entity.Vocabulary;
 import au.org.ands.vocabs.registry.db.entity.clone.VersionClone;
+import au.org.ands.vocabs.registry.db.internal.VersionJson;
 import au.org.ands.vocabs.registry.enums.SubtaskOperationType;
 import au.org.ands.vocabs.registry.enums.VocabularyStatus;
 import au.org.ands.vocabs.registry.model.sequence.VersionElement;
@@ -580,6 +582,74 @@ public class VersionsModel extends ModelBase {
                 // TO DO: mark this as requiring workflow processing.
                 workflowRequired(vocabularyModel.getCurrentVocabulary(),
                         newCurrentVersion);
+                Task task = getTaskForVersion(versionId);
+                // Now do the following:
+                // Compare the before/after settings of the various
+                // doXYZ flags.
+                VersionJson existingVersionJson =
+                        JSONSerialization.deserializeStringAsJson(
+                                existingVersion.getData(), VersionJson.class);
+                VersionJson newCurrentVersionJson =
+                        JSONSerialization.deserializeStringAsJson(
+                                newCurrentVersion.getData(), VersionJson.class);
+                // Sorry for the spaghetti.
+                // The structure of each of these is:
+                //   Is workflow forced, or did the value of the flag change?
+                //   If yes, then:
+                //     Is the flag now set to true? If so, do an INSERT.
+                //     Otherwise (it is now false): do a DELETE.
+                // The "tricky" bit is managing any follow-on. For now,
+                // means that a (re-)harvest can also force a (re-)import.
+                if (schemaVersion.isForceWorkflow()
+                        || (newCurrentVersionJson.isDoPoolpartyHarvest()
+                                != existingVersionJson.
+                                isDoPoolpartyHarvest())) {
+                    if (newCurrentVersionJson.isDoPoolpartyHarvest()) {
+                        task.addSubtask(WorkflowMethods.
+                                createHarvestPoolPartySubtask(
+                                        SubtaskOperationType.INSERT,
+                                        vocabularyModel.
+                                        getCurrentVocabulary()));
+                        // And also do a (re-)import, if doImport is set.
+                        if (newCurrentVersionJson.isDoImport()) {
+                            task.addSubtask(WorkflowMethods.
+                                    createImporterSesameSubtask(
+                                            SubtaskOperationType.INSERT));
+                        }
+                    } else {
+                        task.addSubtask(WorkflowMethods.
+                                createHarvestPoolPartySubtask(
+                                        SubtaskOperationType.DELETE,
+                                        vocabularyModel.
+                                        getCurrentVocabulary()));
+                    }
+                }
+                if (schemaVersion.isForceWorkflow()
+                        || (newCurrentVersionJson.isDoImport()
+                                != existingVersionJson.isDoImport())) {
+                    if (newCurrentVersionJson.isDoImport()) {
+                        task.addSubtask(WorkflowMethods.
+                                createImporterSesameSubtask(
+                                        SubtaskOperationType.INSERT));
+                    } else {
+                        task.addSubtask(WorkflowMethods.
+                                createImporterSesameSubtask(
+                                        SubtaskOperationType.DELETE));
+                    }
+                }
+                if (schemaVersion.isForceWorkflow()
+                        || (newCurrentVersionJson.isDoPublish()
+                                != existingVersionJson.isDoPublish())) {
+                    if (newCurrentVersionJson.isDoPublish()) {
+                        task.addSubtask(WorkflowMethods.
+                                createPublishSissvocSubtask(
+                                        SubtaskOperationType.INSERT));
+                    } else {
+                        task.addSubtask(WorkflowMethods.
+                                createPublishSissvocSubtask(
+                                        SubtaskOperationType.DELETE));
+                    }
+                }
             }
         }
 
@@ -596,9 +666,11 @@ public class VersionsModel extends ModelBase {
             VersionDAO.updateVersion(em(), versionToDelete);
             Integer versionId = ve.getVersionId();
             currentVersions.remove(versionId);
-            // TO DO: workflow deletion processing.
-            workflowRequired(vocabularyModel.getCurrentVocabulary(),
-                    versionToDelete);
+            // (I think) we don't need to do anything about workflow
+            // processing here, as it is all handled by the two sub-models.
+            // E.g., we don't need to examine the various doXYZ flags here, as
+            // AccessPointsModel takes care of creating the necessary
+            // DELETE subtasks.
         }
 
         /** {@inheritDoc} */
@@ -645,13 +717,13 @@ public class VersionsModel extends ModelBase {
                 // And this is a tricky bit: we modify the input data
                 // so that the version Id can be seen by submodels.
                 schemaVersion.setId(newVersionId);
-
-                // TO DO: mark this as requiring workflow processing.
                 workflowRequired(vocabularyModel.getCurrentVocabulary(),
                         newCurrentVersion);
             }
             // Join paths: what follows applies both when reusing
             // an existing database row and when adding a new database row.
+            // NB: _either_ way we got here, workflowRequired() has already
+            // been invoked.
             Task task = getTaskForVersion(versionId);
             // Apply the settings for the three version-level flags.
             if (schemaVersion.isDoPoolpartyHarvest()) {
@@ -713,10 +785,13 @@ public class VersionsModel extends ModelBase {
     /** Process all of the tasks that have been accumulated. */
     private void processRequiredTasks() {
         for (TaskInfo taskInfo : versionTaskInfos.values()) {
-            taskInfo.setEm(em());
-            taskInfo.setNowTime(nowTime());
-            taskInfo.setModifiedBy(modifiedBy());
-            taskInfo.persistAndProcess();
+            // Only do something if there is at least one subtask!
+            if (!taskInfo.getTask().getSubtasks().isEmpty()) {
+                taskInfo.setEm(em());
+                taskInfo.setNowTime(nowTime());
+                taskInfo.setModifiedBy(modifiedBy());
+                taskInfo.persistAndProcess();
+            }
         }
     }
 

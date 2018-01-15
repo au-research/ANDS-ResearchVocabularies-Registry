@@ -87,6 +87,11 @@
             <xs:attribute name="do-poolparty-harvest" type="xs:boolean"/>
             <xs:attribute name="do-import" type="xs:boolean"/>
             <xs:attribute name="do-publish" type="xs:boolean"/>
+            <xs:attribute name="force-workflow" type="xs:boolean">
+                <xs:annotation>
+                    <xs:documentation>Input only. Force workflow processing of this version.</xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
         </xs:complexType>
     </xs:element>
     <xs:element name="version-list">

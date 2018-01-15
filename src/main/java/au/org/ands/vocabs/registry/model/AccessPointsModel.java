@@ -27,6 +27,8 @@ import au.org.ands.vocabs.registry.db.entity.AccessPoint;
 import au.org.ands.vocabs.registry.db.entity.ComparisonUtils;
 import au.org.ands.vocabs.registry.db.entity.Version;
 import au.org.ands.vocabs.registry.db.entity.Vocabulary;
+import au.org.ands.vocabs.registry.enums.AccessPointType;
+import au.org.ands.vocabs.registry.enums.SubtaskOperationType;
 import au.org.ands.vocabs.registry.enums.VocabularyStatus;
 import au.org.ands.vocabs.registry.model.sequence.AccessPointElement;
 import au.org.ands.vocabs.registry.workflow.WorkflowMethods;
@@ -277,6 +279,21 @@ public class AccessPointsModel extends ModelBase {
         }
         Integer versionId = version.getVersionId();
         versionsModel.getTaskForVersion(versionId).addSubtasks(subtaskList);
+    }
+
+    /** Add one workflow subtask required for a version.
+     * @param vocabulary The vocabulary instance for which workflow
+     *      subtasks are to be added.
+     * @param version The version instance for which workflow
+     *      subtasks are to be added.
+     * @param subtask The subtask to be applied for the version.
+     */
+    private void accumulateSubtask(final Vocabulary vocabulary,
+            final Version version,
+            final Subtask subtask) {
+        Integer versionId = version.getVersionId();
+        versionsModel.workflowRequired(vocabulary, version);
+        versionsModel.getTaskForVersion(versionId).addSubtask(subtask);
     }
 
     /** {@inheritDoc} */
@@ -584,14 +601,22 @@ public class AccessPointsModel extends ModelBase {
         // applyChanges() above: each version _does_ have a version Id,
         // because any missing ones were supplied by VersionsModel.
         List<AccessPointElement> updatedSequence = new ArrayList<>();
+        // Link access points to the updated Versions, so that the
+        // visitor can work out if extra subtasks are required.
+        // Keys are version Ids.
+        Map<Integer,
+        au.org.ands.vocabs.registry.schema.vocabulary201701.Version>
+        updatedVersions = new HashMap<>();
         // Also, put the access points that have access point Ids into a map,
         // so that they can be found later by visitKeepCommand().
+        // Keys are access point Ids.
         Map<Integer,
         au.org.ands.vocabs.registry.schema.vocabulary201701.AccessPoint>
         updatedAPs = new HashMap<>();
         updatedVocabulary.getVersion().forEach(
                 version -> {
                     Integer versionId = version.getId();
+                    updatedVersions.put(versionId, version);
                     version.getAccessPoint().forEach(
                             ap -> {
                                 updatedSequence.add(new AccessPointElement(
@@ -608,7 +633,8 @@ public class AccessPointsModel extends ModelBase {
                 new SequencesComparator<>(
                         currentSequence, updatedSequence);
         // Apply the changes.
-        comparator.getScript().visit(new UpdateCurrentVisitor(updatedAPs));
+        comparator.getScript().visit(new UpdateCurrentVisitor(updatedVersions,
+                updatedAPs));
         // Delete any remaining draft rows.
         // TO DO: decide if this is what is to be done. May
         // need to do workflow processing?
@@ -644,15 +670,26 @@ public class AccessPointsModel extends ModelBase {
         /** The map of updated access points. Keys are access point Ids; values
          * are the access points in registry schema format. */
         private Map<Integer,
+        au.org.ands.vocabs.registry.schema.vocabulary201701.Version>
+        updatedVersions;
+
+        /** The map of updated access points. Keys are access point Ids; values
+         * are the access points in registry schema format. */
+        private Map<Integer,
         au.org.ands.vocabs.registry.schema.vocabulary201701.AccessPoint>
         updatedAPs;
 
         /** Constructor that accepts the map of updated access points.
+         * @param anUpdatedVersions The map of updated versions.
          * @param anUpdatedAPs The map of updated access points.
          */
         UpdateCurrentVisitor(final Map<Integer,
                 au.org.ands.vocabs.registry.schema.vocabulary201701.
+                Version> anUpdatedVersions,
+                final Map<Integer,
+                au.org.ands.vocabs.registry.schema.vocabulary201701.
                 AccessPoint> anUpdatedAPs) {
+            updatedVersions = anUpdatedVersions;
             updatedAPs = anUpdatedAPs;
         }
 
@@ -682,9 +719,6 @@ public class AccessPointsModel extends ModelBase {
                     WorkflowMethods.deleteAccessPoint(apToDelete);
             if (subtaskList == null) {
                 // No more to do.
-                // TO DO: hmm, or is there? E.g., May need to do
-                // workflow processing if we just deleted a harvest source
-                // and the version has the import flag set.
                 // Make the existing row historical.
                 TemporalUtils.makeHistorical(apToDelete, nowTime());
                 apToDelete.setModifiedBy(modifiedBy());
@@ -693,6 +727,15 @@ public class AccessPointsModel extends ModelBase {
             } else {
                 accumulateSubtasks(vocabularyModel.getCurrentVocabulary(),
                         currentVersions.get(versionId), subtaskList);
+            }
+            // Was a file access point deleted, and does the version have
+            // the import flag set? If so, need to force re-importing.
+            if (apToDelete.getType() == AccessPointType.FILE
+                    && updatedVersions.get(versionId).isDoImport()) {
+                accumulateSubtask(vocabularyModel.getCurrentVocabulary(),
+                        currentVersions.get(versionId),
+                        WorkflowMethods.createImporterSesameSubtask(
+                                SubtaskOperationType.INSERT));
             }
         }
 
@@ -703,9 +746,14 @@ public class AccessPointsModel extends ModelBase {
             // there _not_ to be. But if there is,
             // it had better belong to the version already.
             Integer versionId = ape.getVersionId();
+            Version currentVersion = currentVersions.get(versionId);
             Integer apId = ape.getAPId();
             au.org.ands.vocabs.registry.schema.vocabulary201701.AccessPoint
             schemaAP = ape.getSchemaAP();
+            // Keep track of the AccessPoint as actually inserted, so
+           // that it can be used after the if statement is completed,
+            // irrespective of the path taken.
+            AccessPoint accessPoint = null;
             if (apId != null) {
                 // There's an AP Id, so check if it's in the
                 // set of draft instances.
@@ -720,7 +768,6 @@ public class AccessPointsModel extends ModelBase {
                                 + "is not supported");
                     }
                     // Reuse this draft row, making it no longer a draft.
-                    Version currentVersion = currentVersions.get(versionId);
                     versionsModel.workflowRequired(
                             vocabularyModel.getCurrentVocabulary(),
                             currentVersion);
@@ -732,6 +779,7 @@ public class AccessPointsModel extends ModelBase {
                     draftAPs.get(versionId).remove(draftAP);
                     currentAPs.add(versionId, draftAP);
                     accumulateSubtasks(currentVersion, insertResult.getRight());
+                    accessPoint = draftAP;
                     // Possible future work required: check if there is
                     // any other subtask to be done.
                 } else {
@@ -744,7 +792,6 @@ public class AccessPointsModel extends ModelBase {
                 }
             } else {
                 // This is a new access point.
-                Version currentVersion = currentVersions.get(versionId);
                 versionsModel.workflowRequired(
                         vocabularyModel.getCurrentVocabulary(),
                         currentVersion);
@@ -758,8 +805,18 @@ public class AccessPointsModel extends ModelBase {
                     currentAPs.add(versionId, insertedAP);
                 }
                 accumulateSubtasks(currentVersion, insertResult.getRight());
+                accessPoint = insertedAP;
                 // Possible future work required: check if there is
                 // any other subtask to be done.
+            }
+            // Was a file access point added, and does the version have
+            // the import flag set? If so, need to force importing.
+            if (accessPoint.getType() == AccessPointType.FILE
+                    && updatedVersions.get(versionId).isDoImport()) {
+                accumulateSubtask(vocabularyModel.getCurrentVocabulary(),
+                        currentVersions.get(versionId),
+                        WorkflowMethods.createImporterSesameSubtask(
+                                SubtaskOperationType.INSERT));
             }
         }
     }
