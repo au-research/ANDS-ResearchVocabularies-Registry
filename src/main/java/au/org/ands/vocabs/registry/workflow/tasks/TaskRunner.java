@@ -5,6 +5,7 @@ import java.lang.invoke.MethodHandles;
 import java.util.HashMap;
 import java.util.List;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,7 +19,7 @@ public class TaskRunner {
 
     /** A generic error response, to be used as the value corresponding
      * to key {{@link #RESPONSE}. */
-    private static final String GENERIC_ERROR_REPONSE = "Error running task.";
+    private static final String GENERIC_ERROR_RESPONSE = "Error running task.";
 
     /** Result key in which a completion timestamp is stored. */
     public static final String TIMESTAMP = "timestamp";
@@ -26,8 +27,8 @@ public class TaskRunner {
     /** Result key in which an overall response message is stored. */
     public static final String RESPONSE = "response";
 
-    /** A generic error response, to be used as the value corresponding
-     * to key {{@link #RESPONSE}. */
+    /** Result key in which a stacktrace is stored. */
+    public static final String STACKTRACE = "stacktrace";
 
     /** Result key in which an error message is stored. */
     public static final String ERROR = "error";
@@ -62,7 +63,7 @@ public class TaskRunner {
             task.setStatus(TaskStatus.ERROR);
             task.addResult(ERROR, "No subtasks specified, or invalid"
                     + " format.");
-            task.addResult(RESPONSE, GENERIC_ERROR_REPONSE);
+            task.addResult(RESPONSE, GENERIC_ERROR_RESPONSE);
             addTimestamp();
             return;
         }
@@ -73,17 +74,23 @@ public class TaskRunner {
             logger.debug("subtask type: " + subtask.getSubtaskProviderType());
             WorkflowProvider provider = ProviderUtils.getProvider(
                     subtask.getProviderClass());
-            provider.doSubtask(taskInfo, subtask);
+            try {
+                provider.doSubtask(taskInfo, subtask);
+            } catch (Throwable t) {
+                logger.error("Subtask threw an exception", t);
+                subtask.setStatus(TaskStatus.ERROR);
+                subtask.addResult(ERROR, "Exception in subtask.");
+                subtask.addResult(STACKTRACE, ExceptionUtils.getStackTrace(t));
+            }
             addTimestamp(subtask);
             lastSubtaskStatus = subtask.getStatus();
             if (lastSubtaskStatus != TaskStatus.SUCCESS) {
                 logger.error("Subtask did not complete successfully: "
                         + task);
-//                results.put("error_subtask", thisTask);
                 addTimestamp();
                 task.setStatus(lastSubtaskStatus);
                 task.addResult(ERROR, "Error in subtask.");
-                task.addResult(RESPONSE, GENERIC_ERROR_REPONSE);
+                task.addResult(RESPONSE, GENERIC_ERROR_RESPONSE);
                 return;
             }
         }
