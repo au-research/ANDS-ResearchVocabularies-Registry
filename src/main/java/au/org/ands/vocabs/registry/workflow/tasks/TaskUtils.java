@@ -14,6 +14,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Enumeration;
 import java.util.Locale;
+import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
@@ -29,6 +30,7 @@ import au.org.ands.vocabs.registry.db.entity.Task;
 import au.org.ands.vocabs.registry.db.entity.Version;
 import au.org.ands.vocabs.registry.db.entity.Vocabulary;
 import au.org.ands.vocabs.registry.utils.RegistryConfig;
+import au.org.ands.vocabs.registry.utils.RegistryFileUtils;
 import au.org.ands.vocabs.registry.utils.SlugGenerator;
 
 /** Utility methods for working with tasks.
@@ -107,16 +109,32 @@ public final class TaskUtils {
         return taskInfo;
     }
 
+    /** Pattern that matches characters that should be replaced when
+     * converting a timestamp into a file path component. Use with
+     * {@link java.util.regex.Matcher#replaceAll(String)}. */
+    private static final Pattern TIMESTAMP_PATTERN =
+            Pattern.compile("[^0-9A-Z]");
+
+    /** Sanitize a timestamp String by removing characters we don't want
+     * to appear in a directory name.
+     * @param timestamp The timestamp String to be sanitized.
+     * @return The sanitized timestamp String.
+     */
+    private static String replaceCharactersInTimestamp(final String timestamp) {
+        return TIMESTAMP_PATTERN.matcher(timestamp).replaceAll("");
+    }
 
     /** Get the full path of the directory used to store all
      * the files referred to by the task.
      * @param taskInfo The TaskInfo object representing the task.
+     * @param requireDirectory If true, make the directory exist.
      * @param extraPath An optional additional path component to be added
      * at the end. If not required, pass in null or an empty string.
      * @return The full path of the directory used to store the
      * vocabulary data.
      */
     public static String getTaskOutputPath(final TaskInfo taskInfo,
+            final boolean requireDirectory,
             final String extraPath) {
         // NB: We call makeSlug() on the vocabulary slug, which should
         // (as of ANDS-Registry-Core commit e365392831ae)
@@ -125,7 +143,12 @@ public final class TaskUtils {
                 .resolve(SlugGenerator.generateSlug(
                         taskInfo.getVocabulary().getOwner()))
                 .resolve(taskInfo.getVocabulary().getVocabularyId().toString())
-                .resolve(taskInfo.getVersion().getVersionId().toString());
+                .resolve(taskInfo.getVersion().getVersionId().toString())
+                .resolve(replaceCharactersInTimestamp(
+                        taskInfo.getNowTime().toString()));
+        if (requireDirectory) {
+            RegistryFileUtils.requireDirectory(path.toString());
+        }
         if (extraPath != null && (!extraPath.isEmpty())) {
             path = path.resolve(extraPath);
         }
@@ -135,11 +158,14 @@ public final class TaskUtils {
     /** Get the full path of the directory used to store all
      * harvested data referred to by the task.
      * @param taskInfo The TaskInfo object representing the task.
+     * @param requireDirectory If true, make the directory exist.
      * @return The full path of the directory used to store the
      * vocabulary data.
      */
-    public static String getTaskHarvestOutputPath(final TaskInfo taskInfo) {
-        return getTaskOutputPath(taskInfo, RegistryConfig.HARVEST_DATA_PATH);
+    public static String getTaskHarvestOutputPath(final TaskInfo taskInfo,
+            final boolean requireDirectory) {
+        return getTaskOutputPath(taskInfo, requireDirectory,
+                RegistryConfig.HARVEST_DATA_PATH);
     }
 
     /** Get the full path of (what will be) a new directory used to store
@@ -150,14 +176,17 @@ public final class TaskUtils {
      * @param taskInfo The TaskInfo object representing the task.
      * @param transformName The name of the transform being done. This is
      * used in the generation of the path.
+     * @param requireDirectory If true, make the directory exist.
      * @return The full path of the directory used to store the
-     * transformed data. The directory does not yet exist; it must be
-     * created by the caller.
+     * transformed data. The directory will be forced to exist if
+     *      requireDirectory was true.
      */
     public static String getTaskTransformTemporaryOutputPath(
             final TaskInfo taskInfo,
-            final String transformName) {
-        return getTaskOutputPath(taskInfo, "after_" + transformName);
+            final String transformName,
+            final boolean requireDirectory) {
+        return getTaskOutputPath(taskInfo, requireDirectory,
+                "after_" + transformName);
     }
 
     /** This method is used by transforms that produce new vocabulary
@@ -172,12 +201,12 @@ public final class TaskUtils {
             final TaskInfo taskInfo,
             final String transformName) {
         Path transformOutputPath =
-                Paths.get(getTaskOutputPath(taskInfo,
+                Paths.get(getTaskOutputPath(taskInfo, false,
                         "after_" + transformName));
         Path harvestPath =
-                Paths.get(getTaskHarvestOutputPath(taskInfo));
+                Paths.get(getTaskHarvestOutputPath(taskInfo, false));
         Path harvestPathDestination =
-                Paths.get(getTaskOutputPath(taskInfo,
+                Paths.get(getTaskOutputPath(taskInfo, false,
                         "before_" + transformName));
         try {
             // Remove any previous harvestPathDestination

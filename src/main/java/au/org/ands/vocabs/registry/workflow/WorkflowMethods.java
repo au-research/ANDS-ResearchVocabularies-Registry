@@ -167,8 +167,7 @@ public final class WorkflowMethods {
                     AccessPointDAO.updateAccessPoint(em, ap);
                 }
                 String harvestOutputPath =
-                        TaskUtils.getTaskHarvestOutputPath(taskInfo);
-                RegistryFileUtils.requireDirectory(harvestOutputPath);
+                        TaskUtils.getTaskHarvestOutputPath(taskInfo, true);
                 Upload upload = UploadDAO.getUploadById(em, uploadId);
                 String filename = upload.getFilename();
                 Path destPath = Paths.get(harvestOutputPath, filename);
