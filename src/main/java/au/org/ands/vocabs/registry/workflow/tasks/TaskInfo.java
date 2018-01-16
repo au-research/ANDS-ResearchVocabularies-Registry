@@ -139,7 +139,7 @@ public class TaskInfo {
     /** Get the value of nowTime.
      * @return The value of nowTime.
      */
-    public final LocalDateTime nowTime() {
+    public final LocalDateTime getNowTime() {
         return nowTime;
     }
 
@@ -153,7 +153,7 @@ public class TaskInfo {
     /** Get the value of modifiedBy.
      * @return The value of modifiedBy.
      */
-    public final String modifiedBy() {
+    public final String getModifiedBy() {
         return modifiedBy;
     }
 
