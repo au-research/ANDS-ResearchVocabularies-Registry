@@ -128,6 +128,8 @@ public final class ModelMethods {
 
     /** Apply changes to a vocabulary model using data specified
      * in registry schema format.
+     * TO DO: work out how to return a failure response (e.g., from
+     * running a task).
      * @param vm The VocabularyModel representing the vocabulary.
      * @param modifiedBy The value to use for "modifiedBy" when adding
      *      or updating rows of the database.

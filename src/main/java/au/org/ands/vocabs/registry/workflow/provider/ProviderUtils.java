@@ -108,4 +108,31 @@ public final class ProviderUtils {
         return workflowProvider;
     }
 
+    /** Get an instance of the provider based on the provider class.
+     * @param providerClass The provider class.
+     * @return An instance of the provider, or null if there is an error during
+     *      instantiation.
+     */
+    public static WorkflowProvider getProvider(
+            final Class<? extends WorkflowProvider> providerClass) {
+        WorkflowProvider workflowProvider = null;
+        try {
+            workflowProvider = providerClass.getConstructor().newInstance();
+        } catch (InstantiationException | IllegalAccessException
+                | IllegalArgumentException | InvocationTargetException
+                | NoSuchMethodException | SecurityException e) {
+            LOGGER.error("ProviderUtils.getProvider(): "
+                    + "can't instantiate provider class for provider class: "
+                    + providerClass, e);
+            return null;
+        }
+        if (!(workflowProvider instanceof WorkflowProvider)) {
+            LOGGER.error("ProviderUtils.getProvider() bad class:"
+                    + workflowProvider.getClass().getName()
+                    + ". Class not of type WorkflowProvider");
+            return null;
+        }
+        return workflowProvider;
+    }
+
 }

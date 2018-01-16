@@ -157,24 +157,47 @@ public class TaskInfo {
         return modifiedBy;
     }
 
-    /** Persist and process this task.
-     */
-    public void persistAndProcess() {
+    /** Persist this task. No processing of the task is done. */
+    public void persist() {
         if (em == null) {
             throw new IllegalArgumentException("EntityManager not set");
         }
-        dbTask = new au.org.ands.vocabs.registry.db.entity.Task();
-        dbTask.setVocabularyId(vocabulary.getVocabularyId());
-        dbTask.setVersionId(version.getVersionId());
-        dbTask.setStatus(TaskStatus.NEW);
-        dbTask.setResponse("");
-        dbTask.setParams(JSONSerialization.serializeObjectAsJsonString(
-                task.getSubtasks()));
+        if (dbTask == null) {
+            dbTask = new au.org.ands.vocabs.registry.db.entity.Task();
+            dbTask.setVocabularyId(vocabulary.getVocabularyId());
+            dbTask.setVersionId(version.getVersionId());
+            dbTask.setStatus(TaskStatus.NEW);
+            dbTask.setResponse("");
+            dbTask.setParams(JSONSerialization.serializeObjectAsJsonString(
+                    task.getSubtasks()));
+            /* TO DO: uncomment when we're ready.
+            // Persist the database entity a first time, so it has an Id.
+            TaskDAO.saveTask(em, dbTask);
+            logger.info("Persisted task with task Id: " + dbTask.getId());
+             */
+        } else {
+            // Update the database entity with the results.
+            dbTask.setParams(JSONSerialization.serializeObjectAsJsonString(
+                    task.getSubtasks()));
+            dbTask.setResponse(JSONSerialization.serializeObjectAsJsonString(
+                    task.getResults()));
+            /* TO DO: uncomment when ready.
+            TaskDAO.updateTask(em, dbTask);
+            */
+        }
+    }
+
+    /** Process this task. If it has not already been persisted,
+     * {@link #persist()} will be called first. In any case,
+     * {@link #persist()} will be called <i>after</i> processing. */
+    public void process() {
         /* TO DO: uncomment when we're ready.
-        TaskDAO.saveTask(em, dbTask);
-        logger.info("Persisted task with task Id: " + dbTask.getId());
+        if (dbTask == null) {
+            persist();
+        }
+        new TaskRunner(this).runTask();
+        persist();
         */
-        // TO DO: now process it.
     }
 
 }

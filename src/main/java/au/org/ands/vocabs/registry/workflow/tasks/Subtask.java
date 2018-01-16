@@ -204,8 +204,8 @@ public class Subtask implements Comparable<Subtask> {
     /** Results of the subtask. A map of String keys/values. */
     private Map<String, String> results;
 
-    /** Get the subtask execution status.
-     * @return The execution status.
+    /** Get the subtask execution results.
+     * @return The results.
      */
     public TaskStatus getResults() {
         return status;

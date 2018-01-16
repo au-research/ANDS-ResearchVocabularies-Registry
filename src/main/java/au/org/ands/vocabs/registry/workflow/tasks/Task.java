@@ -3,15 +3,36 @@
 package au.org.ands.vocabs.registry.workflow.tasks;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
+import au.org.ands.vocabs.registry.enums.TaskStatus;
+
 /** Representation of one workflow task. */
 @XmlRootElement(name = "task")
 public class Task {
+
+    /** The task status. */
+    private TaskStatus status = TaskStatus.NEW;
+
+    /** Get the value of status.
+     * @return The value of status.
+     */
+    public TaskStatus getStatus() {
+        return status;
+    }
+
+    /** Set the value of status.
+     * @param aStatus The value of status to set.
+     */
+    public void setStatus(final TaskStatus aStatus) {
+        status = aStatus;
+    }
 
     /** The vocabulary Id. */
     private Integer vocabularyId;
@@ -85,6 +106,34 @@ public class Task {
      */
     public List<Subtask> getSubtasks() {
         return new ArrayList<>(subtasks);
+    }
+
+    /** Results of the task. A map of String keys/values. */
+    private Map<String, String> results;
+
+    /** Get the task execution results.
+     * @return The execution status.
+     */
+    public TaskStatus getResults() {
+        return status;
+    }
+
+    /** Set the task execution results.
+     * @param aResults The execution results to set.
+     */
+    public void setResults(final Map<String, String> aResults) {
+        results = aResults;
+    }
+
+    /** Add one task execution result.
+     * @param key The key of the result to be added.
+     * @param value The value of the result to be added.
+     */
+    public void addResult(final String key, final String value) {
+        if (results == null) {
+            results = new HashMap<>();
+        }
+        results.put(key, value);
     }
 
 }

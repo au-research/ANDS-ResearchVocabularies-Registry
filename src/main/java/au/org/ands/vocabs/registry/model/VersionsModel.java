@@ -846,13 +846,21 @@ public class VersionsModel extends ModelBase {
 
     /** Process all of the tasks that have been accumulated. */
     private void processRequiredTasks() {
+        // First, persist all.
         for (TaskInfo taskInfo : versionTaskInfos.values()) {
             // Only do something if there is at least one subtask!
             if (!taskInfo.getTask().getSubtasks().isEmpty()) {
                 taskInfo.setEm(em());
                 taskInfo.setNowTime(nowTime());
                 taskInfo.setModifiedBy(modifiedBy());
-                taskInfo.persistAndProcess();
+                taskInfo.persist();
+            }
+        }
+        // Then process all.
+        for (TaskInfo taskInfo : versionTaskInfos.values()) {
+            // Only do something if there is at least one subtask!
+            if (!taskInfo.getTask().getSubtasks().isEmpty()) {
+                taskInfo.process();
             }
         }
     }
