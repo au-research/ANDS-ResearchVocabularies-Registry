@@ -2,7 +2,6 @@
 package au.org.ands.vocabs.registry.workflow.tasks;
 
 import java.lang.invoke.MethodHandles;
-import java.util.HashMap;
 import java.util.List;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -43,9 +42,6 @@ public class TaskRunner {
     /** The Task object for this task. */
     private Task task;
 
-    /** The results of running the task. */
-    private HashMap<String, String> results = new HashMap<>();
-
     /** Constructor.
      * @param aTaskInfo The TaskInfo structure describing this task.
      */
@@ -67,7 +63,6 @@ public class TaskRunner {
             addTimestamp();
             return;
         }
-        boolean success = false;
         TaskStatus lastSubtaskStatus;
         for (Subtask subtask : subtasks) {
             logger.debug("Got subtask: " + subtask.toString());
@@ -96,8 +91,6 @@ public class TaskRunner {
         }
         task.setStatus(TaskStatus.SUCCESS);
         task.addResult(RESPONSE, "All tasks completed.");
-//        results.put("output_path", TaskUtils.getTaskOutputPath(taskInfo,
-//                null));
         addTimestamp();
     }
 
