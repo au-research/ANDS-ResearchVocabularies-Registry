@@ -149,6 +149,15 @@ public class VersionsModel extends ModelBase {
         }
 
         // Sub-models
+        populateSubmodels();
+    }
+
+    /** Populate the sub-models. Invoke this method inside
+     * {@link #populateModel()}, and when it is desired to "refresh"
+     * the sub-models, e.g., after running tasks.
+     */
+    private void populateSubmodels() {
+        subModels.clear();
         apModel = new AccessPointsModel(em(), vocabularyId(),
                 vocabularyModel, this, currentVersions, draftVersions);
         subModels.add(apModel);
@@ -357,6 +366,8 @@ public class VersionsModel extends ModelBase {
         // And now run any tasks that have been accumulated along the way.
         addImpliedSubtasks();
         processRequiredTasks();
+        // Having run tasks, repopulate the sub-models.
+        populateSubmodels();
     }
 
     /** Make the database's draft view of the Versions match updatedVocabulary.
