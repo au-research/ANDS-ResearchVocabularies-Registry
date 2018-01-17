@@ -15,6 +15,7 @@ import javax.persistence.EntityManager;
 
 import org.apache.commons.collections4.sequence.CommandVisitor;
 import org.apache.commons.collections4.sequence.SequencesComparator;
+import org.apache.commons.lang3.BooleanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -614,18 +615,20 @@ public class VersionsModel extends ModelBase {
                 //     Otherwise (it is now false): do a DELETE.
                 // The "tricky" bit is managing any follow-on. For now,
                 // means that a (re-)harvest can also force a (re-)import.
-                if (schemaVersion.isForceWorkflow()
+                if (BooleanUtils.isTrue(schemaVersion.isForceWorkflow())
                         || (newCurrentVersionJson.isDoPoolpartyHarvest()
                                 != existingVersionJson.
                                 isDoPoolpartyHarvest())) {
-                    if (newCurrentVersionJson.isDoPoolpartyHarvest()) {
+                    if (BooleanUtils.isTrue(
+                            newCurrentVersionJson.isDoPoolpartyHarvest())) {
                         task.addSubtask(WorkflowMethods.
                                 createHarvestPoolPartySubtask(
                                         SubtaskOperationType.INSERT,
                                         vocabularyModel.
                                         getCurrentVocabulary()));
                         // And also do a (re-)import, if doImport is set.
-                        if (newCurrentVersionJson.isDoImport()) {
+                        if (BooleanUtils.isTrue(
+                                newCurrentVersionJson.isDoImport())) {
                             task.addSubtask(WorkflowMethods.
                                     createImporterSesameSubtask(
                                             SubtaskOperationType.INSERT));
@@ -638,10 +641,11 @@ public class VersionsModel extends ModelBase {
                                         getCurrentVocabulary()));
                     }
                 }
-                if (schemaVersion.isForceWorkflow()
+                if (BooleanUtils.isTrue(schemaVersion.isForceWorkflow())
                         || (newCurrentVersionJson.isDoImport()
                                 != existingVersionJson.isDoImport())) {
-                    if (newCurrentVersionJson.isDoImport()) {
+                    if (BooleanUtils.isTrue(
+                            newCurrentVersionJson.isDoImport())) {
                         task.addSubtask(WorkflowMethods.
                                 createImporterSesameSubtask(
                                         SubtaskOperationType.INSERT));
@@ -651,10 +655,11 @@ public class VersionsModel extends ModelBase {
                                         SubtaskOperationType.DELETE));
                     }
                 }
-                if (schemaVersion.isForceWorkflow()
+                if (BooleanUtils.isTrue(schemaVersion.isForceWorkflow())
                         || (newCurrentVersionJson.isDoPublish()
                                 != existingVersionJson.isDoPublish())) {
-                    if (newCurrentVersionJson.isDoPublish()) {
+                    if (BooleanUtils.isTrue(
+                            newCurrentVersionJson.isDoPublish())) {
                         task.addSubtask(WorkflowMethods.
                                 createPublishSissvocSubtask(
                                         SubtaskOperationType.INSERT));
@@ -721,12 +726,14 @@ public class VersionsModel extends ModelBase {
                 // New row required.
                 Version newCurrentVersion = mapper.sourceToTarget(
                         schemaVersion);
+                newCurrentVersion.setVocabularyId(vocabularyId());
                 TemporalUtils.makeCurrentlyValid(newCurrentVersion, nowTime());
                 newCurrentVersion.setModifiedBy(modifiedBy());
                 VersionDAO.saveVersionWithId(em(), newCurrentVersion);
                 Integer newVersionId = newCurrentVersion.getVersionId();
                 // Update our records (i.e., in this case, adding
                 // a new entry).
+                versionId = newVersionId;
                 currentVersions.put(newVersionId, newCurrentVersion);
                 // And this is a tricky bit: we modify the input data
                 // so that the version Id can be seen by submodels.
@@ -740,16 +747,16 @@ public class VersionsModel extends ModelBase {
             // been invoked.
             Task task = getTaskForVersion(versionId);
             // Apply the settings for the three version-level flags.
-            if (schemaVersion.isDoPoolpartyHarvest()) {
+            if (BooleanUtils.isTrue(schemaVersion.isDoPoolpartyHarvest())) {
                 task.addSubtask(WorkflowMethods.createHarvestPoolPartySubtask(
                         SubtaskOperationType.INSERT,
                         vocabularyModel.getCurrentVocabulary()));
             }
-            if (schemaVersion.isDoImport()) {
+            if (BooleanUtils.isTrue(schemaVersion.isDoImport())) {
                 task.addSubtask(WorkflowMethods.createImporterSesameSubtask(
                         SubtaskOperationType.INSERT));
             }
-            if (ve.getSchemaVersion().isDoPublish()) {
+            if (BooleanUtils.isTrue(ve.getSchemaVersion().isDoPublish())) {
                 task.addSubtask(WorkflowMethods.createPublishSissvocSubtask(
                         SubtaskOperationType.INSERT));
             }
@@ -791,6 +798,8 @@ public class VersionsModel extends ModelBase {
             task.setVocabularyId(vocabularyId());
             task.setVersionId(versionId);
             taskInfo = new TaskInfo(task, vocabulary, version);
+            taskInfo.setModifiedBy(modifiedBy());
+            taskInfo.setNowTime(nowTime());
             versionTasks.put(versionId, task);
             versionTaskInfos.put(versionId, taskInfo);
         }
@@ -829,7 +838,8 @@ public class VersionsModel extends ModelBase {
             // By checking versionHasImportAndPublish, we handle the cases
             // where one of the required INSERT operations was done by an
             // earlier API call, and we're now seeing the other one.
-            if (versionHasImportAndPublish.get(task.getVersionId())
+            if (BooleanUtils.isTrue(versionHasImportAndPublish.get(
+                    task.getVersionId()))
                     && (hasImportInsert || hasPublishInsert)) {
                 task.addSubtask(new Subtask(SubtaskProviderType.TRANSFORM,
                         SubtaskOperationType.PERFORM,

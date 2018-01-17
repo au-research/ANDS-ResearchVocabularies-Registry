@@ -164,8 +164,12 @@ public final class TaskUtils {
      */
     public static String getTaskHarvestOutputPath(final TaskInfo taskInfo,
             final boolean requireDirectory) {
-        return getTaskOutputPath(taskInfo, requireDirectory,
-                RegistryConfig.HARVEST_DATA_PATH);
+        String taskHarvestOutputPath = getTaskOutputPath(taskInfo,
+                false, RegistryConfig.HARVEST_DATA_PATH);
+        if (requireDirectory) {
+            RegistryFileUtils.requireDirectory(taskHarvestOutputPath);
+        }
+        return taskHarvestOutputPath;
     }
 
     /** Get the full path of (what will be) a new directory used to store

@@ -113,6 +113,7 @@ public final class WorkflowMethods {
         } else {
             ap = existingAccessPoint;
         }
+        ap.setType(schemaAP.getDiscriminator());
         switch (schemaAP.getDiscriminator()) {
         case API_SPARQL:
             ap.setVersionId(versionId);
@@ -130,7 +131,7 @@ public final class WorkflowMethods {
                     apApiSparql));
             ap.setModifiedBy(modifiedBy);
             if (existingAccessPoint == null) {
-                AccessPointDAO.saveAccessPoint(em, ap);
+                AccessPointDAO.saveAccessPointWithId(em, ap);
             } else {
                 AccessPointDAO.updateAccessPoint(em, ap);
             }
@@ -152,7 +153,7 @@ public final class WorkflowMethods {
                 ap.setData(JSONSerialization.serializeObjectAsJsonString(
                         apFile));
                 ap.setModifiedBy(modifiedBy);
-                AccessPointDAO.saveAccessPoint(em, ap);
+                AccessPointDAO.saveAccessPointWithId(em, ap);
             } else {
                 TemporalUtils.makeCurrentlyValid(ap, nowTime);
                 // We make the access point visible, by "harvesting"
@@ -162,7 +163,7 @@ public final class WorkflowMethods {
                 ap.setData("{}");
                 ap.setModifiedBy(modifiedBy);
                 if (existingAccessPoint == null) {
-                    AccessPointDAO.saveAccessPoint(em, ap);
+                    AccessPointDAO.saveAccessPointWithId(em, ap);
                 } else {
                     AccessPointDAO.updateAccessPoint(em, ap);
                 }
@@ -210,7 +211,7 @@ public final class WorkflowMethods {
                     apSissvoc));
             ap.setModifiedBy(modifiedBy);
             if (existingAccessPoint == null) {
-                AccessPointDAO.saveAccessPoint(em, ap);
+                AccessPointDAO.saveAccessPointWithId(em, ap);
             } else {
                 AccessPointDAO.updateAccessPoint(em, ap);
             }
@@ -231,7 +232,7 @@ public final class WorkflowMethods {
                     apWebPage));
             ap.setModifiedBy(modifiedBy);
             if (existingAccessPoint == null) {
-                AccessPointDAO.saveAccessPoint(em, ap);
+                AccessPointDAO.saveAccessPointWithId(em, ap);
             } else {
                 AccessPointDAO.updateAccessPoint(em, ap);
             }

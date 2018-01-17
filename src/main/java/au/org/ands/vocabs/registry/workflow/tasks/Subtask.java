@@ -7,6 +7,7 @@ import java.util.Map;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
+import org.apache.commons.lang3.builder.CompareToBuilder;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -244,9 +245,16 @@ public class Subtask implements Comparable<Subtask> {
             // This version has no priority. It will be sorted
             // after all subtasks that _do_ have priorities.
             if (other.priority == null) {
-                // Both versions have null priorities, so
-                // consider them equal.
-                return 0;
+                // Both versions have null priorities, so have to compare
+                // other attributes.
+                return new CompareToBuilder().
+                        append(subtaskProviderType,
+                                other.getSubtaskProviderType()).
+                        append(operation, other.getOperation()).
+                        append(provider, other.getProvider()).
+                        append(subtaskProperties, other.getSubtaskProperties()).
+                        toComparison();
+//                return 0;
             }
             // The other version has a priority. This subtask
             // is sorted after it.
@@ -259,7 +267,14 @@ public class Subtask implements Comparable<Subtask> {
             return -1;
         }
         // Both this and other have priorities. Compare them.
-        return priority.compareTo(other.priority);
+        return new CompareToBuilder().
+                append(priority, other.getPriority()).
+                append(subtaskProviderType,
+                        other.getSubtaskProviderType()).
+                append(operation, other.getOperation()).
+                append(provider, other.getProvider()).
+                append(subtaskProperties, other.getSubtaskProperties()).
+                toComparison();
     }
 
     /** {@inheritDoc}
