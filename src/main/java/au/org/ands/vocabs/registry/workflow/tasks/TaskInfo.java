@@ -1,20 +1,29 @@
 /** See the file "LICENSE" for the full license governing this code. */
 package au.org.ands.vocabs.registry.workflow.tasks;
 
+import java.lang.invoke.MethodHandles;
 import java.time.LocalDateTime;
 import java.util.List;
 
 import javax.persistence.EntityManager;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.fasterxml.jackson.core.type.TypeReference;
 
 import au.org.ands.vocabs.registry.db.converter.JSONSerialization;
+import au.org.ands.vocabs.registry.db.dao.TaskDAO;
 import au.org.ands.vocabs.registry.db.entity.Version;
 import au.org.ands.vocabs.registry.db.entity.Vocabulary;
 import au.org.ands.vocabs.registry.enums.TaskStatus;
 
 /** Class encapsulating all information about a task. */
 public class TaskInfo {
+
+    /** Logger for this class. */
+    private Logger logger = LoggerFactory.getLogger(
+            MethodHandles.lookup().lookupClass());
 
     /** Database task object for this task. */
     private au.org.ands.vocabs.registry.db.entity.Task dbTask;
@@ -170,20 +179,16 @@ public class TaskInfo {
             dbTask.setResponse("");
             dbTask.setParams(JSONSerialization.serializeObjectAsJsonString(
                     task.getSubtasks()));
-            /* TO DO: uncomment when we're ready.
             // Persist the database entity a first time, so it has an Id.
             TaskDAO.saveTask(em, dbTask);
             logger.info("Persisted task with task Id: " + dbTask.getId());
-             */
         } else {
             // Update the database entity with the results.
             dbTask.setParams(JSONSerialization.serializeObjectAsJsonString(
                     task.getSubtasks()));
             dbTask.setResponse(JSONSerialization.serializeObjectAsJsonString(
                     task.getResults()));
-            /* TO DO: uncomment when ready.
             TaskDAO.updateTask(em, dbTask);
-            */
         }
     }
 
@@ -191,13 +196,11 @@ public class TaskInfo {
      * {@link #persist()} will be called first. In any case,
      * {@link #persist()} will be called <i>after</i> processing. */
     public void process() {
-        /* TO DO: uncomment when we're ready.
         if (dbTask == null) {
             persist();
         }
         new TaskRunner(this).runTask();
         persist();
-        */
     }
 
 }
