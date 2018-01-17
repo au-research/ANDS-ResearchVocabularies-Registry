@@ -450,7 +450,7 @@ public class VersionsModel extends ModelBase {
             Version versionToDelete = ve.getDbVersion();
             // Notify submodels first.
             subModels.forEach(sm -> sm.notifyDeleteDraftVersion(
-                    versionToDelete.getId()));
+                    versionToDelete.getVersionId()));
             VersionDAO.deleteVersion(em(), versionToDelete);
             draftVersions.remove(ve.getVersionId());
             // And that's all, since we are updating a draft.
@@ -534,7 +534,8 @@ public class VersionsModel extends ModelBase {
                     if (version.getId() != null) {
                         updatedVersions.put(version.getId(), version);
                         versionHasImportAndPublish.put(version.getId(),
-                                version.isDoImport() && version.isDoPublish());
+                                BooleanUtils.isTrue(version.isDoImport())
+                                && BooleanUtils.isTrue(version.isDoPublish()));
                     }
                 });
         Collections.sort(updatedSequence);
@@ -678,7 +679,7 @@ public class VersionsModel extends ModelBase {
             Version versionToDelete = ve.getDbVersion();
             // Notify submodels first.
             subModels.forEach(sm -> sm.notifyDeleteCurrentVersion(
-                    versionToDelete.getId()));
+                    versionToDelete.getVersionId()));
             // Make the existing row historical.
             TemporalUtils.makeHistorical(versionToDelete, nowTime());
             versionToDelete.setModifiedBy(modifiedBy());

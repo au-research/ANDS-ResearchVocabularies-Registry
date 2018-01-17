@@ -94,7 +94,7 @@ public class AccessPointElement
     @Override
     public boolean equals(final Object other) {
         if (other == null
-                || !(other instanceof VocabularyRelatedEntityElement)) {
+                || !(other instanceof AccessPointElement)) {
             return false;
         }
         if (apId == null) {

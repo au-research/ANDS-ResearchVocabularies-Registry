@@ -16,6 +16,7 @@ import javax.ws.rs.core.MultivaluedMap;
 
 import org.apache.commons.collections4.sequence.CommandVisitor;
 import org.apache.commons.collections4.sequence.SequencesComparator;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -350,15 +351,29 @@ public class AccessPointsModel extends ModelBase {
     /** {@inheritDoc} */
     @Override
     protected void notifyDeleteCurrentVersion(final Integer versionId) {
-        for (AccessPoint ap : currentAPs.get(versionId)) {
-            // TO DO: workflow deletion processing.
-            // Make the existing row historical.
-            TemporalUtils.makeHistorical(ap, nowTime());
-            ap.setModifiedBy(modifiedBy());
-            AccessPointDAO.updateAccessPoint(em(), ap);
+        List<AccessPoint> currentAPList = currentAPs.get(versionId);
+        List<AccessPoint> apsToRemove = new ArrayList<>();
+        if (currentAPList != null) {
+            for (AccessPoint ap : currentAPList) {
+                List<Subtask> subtaskList =
+                        WorkflowMethods.deleteAccessPoint(ap);
+                if (subtaskList == null) {
+                    // No more to do.
+                    // Make the existing row historical.
+                    TemporalUtils.makeHistorical(ap, nowTime());
+                    ap.setModifiedBy(modifiedBy());
+                    AccessPointDAO.updateAccessPoint(em(), ap);
+                    // Remove from our own records.
+                    apsToRemove.add(ap);
+                } else {
+                    accumulateSubtasks(vocabularyModel.getCurrentVocabulary(),
+                            currentVersions.get(versionId), subtaskList);
+                }
+            }
         }
-        // Remove from our own records.
-        currentAPs.remove(versionId);
+        for (AccessPoint ap : apsToRemove) {
+            currentAPList.remove(ap);
+        }
     }
 
     /** {@inheritDoc} */
@@ -584,7 +599,6 @@ public class AccessPointsModel extends ModelBase {
     private void applyChangesCurrent(
             final au.org.ands.vocabs.registry.schema.vocabulary201701.
             Vocabulary updatedVocabulary) {
-        // TO DO: finish this method.
         // Create sequences.
         // First, the current values. All of these have AP Ids.
         List<AccessPointElement> currentSequence = new ArrayList<>();
@@ -731,7 +745,8 @@ public class AccessPointsModel extends ModelBase {
             // Was a file access point deleted, and does the version have
             // the import flag set? If so, need to force re-importing.
             if (apToDelete.getType() == AccessPointType.FILE
-                    && updatedVersions.get(versionId).isDoImport()) {
+                    && BooleanUtils.isTrue(updatedVersions.get(versionId).
+                            isDoImport())) {
                 accumulateSubtask(vocabularyModel.getCurrentVocabulary(),
                         currentVersions.get(versionId),
                         WorkflowMethods.createImporterSesameSubtask(
@@ -812,7 +827,8 @@ public class AccessPointsModel extends ModelBase {
             // Was a file access point added, and does the version have
             // the import flag set? If so, need to force importing.
             if (accessPoint.getType() == AccessPointType.FILE
-                    && updatedVersions.get(versionId).isDoImport()) {
+                    && BooleanUtils.isTrue(updatedVersions.get(versionId).
+                            isDoImport())) {
                 accumulateSubtask(vocabularyModel.getCurrentVocabulary(),
                         currentVersions.get(versionId),
                         WorkflowMethods.createImporterSesameSubtask(

@@ -272,15 +272,30 @@ public class VersionArtefactsModel extends ModelBase {
     /** {@inheritDoc} */
     @Override
     protected void notifyDeleteCurrentVersion(final Integer versionId) {
-        for (VersionArtefact va : currentVAs.get(versionId)) {
-            // TO DO: workflow deletion processing.
-            // Make the existing row historical.
-            TemporalUtils.makeHistorical(va, nowTime());
-            va.setModifiedBy(modifiedBy());
-            VersionArtefactDAO.updateVersionArtefact(em(), va);
+        List<VersionArtefact> currentVAList = currentVAs.get(versionId);
+        List<VersionArtefact> vasToRemove = new ArrayList<>();
+        if (currentVAList != null) {
+            for (VersionArtefact va : currentVAList) {
+                List<Subtask> subtaskList =
+                        WorkflowMethods.deleteVersionArtefact(va);
+                if (subtaskList == null) {
+                    // No more to do.
+                    // Make the existing row historical.
+                    TemporalUtils.makeHistorical(va, nowTime());
+                    va.setModifiedBy(modifiedBy());
+                    VersionArtefactDAO.updateVersionArtefact(em(), va);
+                    // Remove from our own records.
+                    vasToRemove.add(va);
+                    currentVAs.get(versionId).remove(va);
+                } else {
+                    accumulateSubtasks(vocabularyModel.getCurrentVocabulary(),
+                            currentVersions.get(versionId), subtaskList);
+                }
+            }
         }
-        // Remove from our own records.
-        currentVAs.remove(versionId);
+        for (VersionArtefact va : vasToRemove) {
+            currentVAList.remove(va);
+        }
     }
 
     /** {@inheritDoc} */
