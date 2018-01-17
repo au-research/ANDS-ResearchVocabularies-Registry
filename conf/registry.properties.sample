@@ -1,20 +1,17 @@
 ## Vocabs registry database connection properties.
 
-# This version of the properties file is for automated testing,
-# and uses the H2 database.
+# Database properties can be specified here instead of/as well as
+# in persistence.xml.
 
-javax.persistence.jdbc.url=jdbc:h2:/PUT-SOMETHING-HERE/h2db/testregistryh2db;AUTO_SERVER=TRUE
-# As above, but logging all queries:
-#javax.persistence.jdbc.url=jdbc:h2:/PUT-SOMETHING-HERE/h2db/testregistryh2db;AUTO_SERVER=TRUE;TRACE_LEVEL_FILE=2
+# Standard JPA properties
+# Replace [path to DB] with something like localhost/vocabs_registry
+# The connection parameters for datetime/timezone are important; don't adjust them!
+javax.persistence.jdbc.url=jdbc:mysql://[path to DB]?zeroDateTimeBehavior=convertToNull&serverTimezone=UTC&useLegacyDatetimeCode=false
+javax.persistence.jdbc.driver=com.mysql.jdbc.Driver
+javax.persistence.jdbc.user=[db_username]
+javax.persistence.jdbc.password=[db_password]
 
-javax.persistence.jdbc.user=test
-javax.persistence.jdbc.password=test
-
-# Initialize schema, wiping out anything already there.
-javax.persistence.schema-generation.database.action=drop-and-create
-
-hibernate.connection.driver_class=org.h2.Driver
-
+# Hibernate-specific settings
 # Cope with the database server dropping connections after a timeout.
 # This is the most basic setting; customize as per instructions at:
 #   http://www.mchange.com/projects/c3p0/
@@ -32,7 +29,7 @@ hibernate.c3p0.testConnectionOnCheckout=true
 # https://docs.oracle.com/javase/8/docs/api/constant-values.html#java.sql.Connection.TRANSACTION_NONE
 # Hmm, let's try without this setting. For the registry database, we won't
 # have the portal changing things underneath us.
-hibernate.connection.isolation=2
+#hibernate.connection.isolation=2
 
 # Absolutely necessary to force instances of java.sql.Timestamp
 # to be sent back and forth to the database using UTC.

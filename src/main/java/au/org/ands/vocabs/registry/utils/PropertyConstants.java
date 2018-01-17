@@ -85,4 +85,16 @@ public final class PropertyConstants {
     public static final String REGISTRY_SOLR_COLLECTION_URL =
             "Registry.Solr.collectionURL";
 
+    /* Public-facing Sesame. */
+
+    /** Sesame importer SPARQL prefix. */
+    public static final String SESAMEIMPORTER_SPARQLPREFIX =
+            "SesameImporter.sparqlPrefix";
+
+    /* Public-facing SISSVoc. */
+
+    /** SISSVoc endpoints prefix. */
+    public static final String SISSVOC_ENDPOINTSPREFIX =
+            "SISSVoc.endpointsPrefix";
+
 }
