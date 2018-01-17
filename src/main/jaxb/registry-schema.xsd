@@ -15,7 +15,11 @@
             <xs:sequence>
                 <xs:element minOccurs="0" name="poolparty-project">
                     <xs:complexType>
-                        <xs:attribute name="server-id" type="xs:int"/>
+                        <xs:attribute name="server-id" type="xs:int">
+                            <xs:annotation>
+                                <xs:documentation>For the ANDS PoolParty server, set this to 1.</xs:documentation>
+                            </xs:annotation>
+                        </xs:attribute>
                         <xs:attribute name="project-id" type="xs:token"/>
                     </xs:complexType>
                 </xs:element>
@@ -29,7 +33,11 @@
                 </xs:element>
                 <xs:element maxOccurs="unbounded" minOccurs="0" ref="version"/>
                 <xs:element maxOccurs="unbounded" name="other-language" minOccurs="0"
-                    type="xs:token"> </xs:element>
+                    type="xs:token">
+                    <xs:annotation>
+                        <xs:documentation>The two-letter code for the language, drawn from ISO 639-1.</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
                 <xs:element maxOccurs="unbounded" minOccurs="0" name="top-concept" type="xs:token"/>
                 <xs:element maxOccurs="unbounded" name="related-entity-ref">
                     <xs:complexType>
@@ -55,14 +63,34 @@
             <xs:attribute name="id" type="id-type"> </xs:attribute>
             <xs:attribute name="status" use="required" type="common:vocabulary-status"> </xs:attribute>
             <xs:attribute name="owner" use="required" type="xs:token"/>
-            <xs:attribute name="slug" type="xs:token"/>
+            <xs:attribute name="slug" type="xs:token">
+                <xs:annotation>
+                    <xs:documentation>When creating a vocabulary, this may be omitted; a slug will be automatically generated based on the title.</xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
             <xs:attribute name="title" use="required" type="xs:token"/>
             <xs:attribute name="acronym" type="xs:token"/>
-            <xs:attribute name="description" type="xs:token"/>
-            <xs:attribute name="note" type="xs:token"/>
+            <xs:attribute name="description" type="xs:token">
+                <xs:annotation>
+                    <xs:documentation>The content must be a well-formed HTML fragment.</xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="note" type="xs:token">
+                <xs:annotation>
+                    <xs:documentation>The content must be a well-formed HTML fragment.</xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
             <xs:attribute name="revision-cycle" type="xs:token"/>
-            <xs:attribute name="creation-date" type="xs:token"/>
-            <xs:attribute name="primary-language" type="xs:token"/>
+            <xs:attribute name="creation-date" type="xs:token">
+                <xs:annotation>
+                    <xs:documentation>A value in one of three possible formats: YYYY, YYYY-MM, or YYYY-MM-DD.</xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="primary-language" type="xs:token">
+                <xs:annotation>
+                    <xs:documentation>The two-letter code for the language, drawn from ISO 639-1.</xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
             <xs:attribute name="licence" type="xs:token"/>
         </xs:complexType>
     </xs:element>
@@ -81,15 +109,31 @@
             <xs:attribute name="id" type="id-type" use="optional"> </xs:attribute>
             <xs:attribute name="status" use="required" type="common:version-status"> </xs:attribute>
             <xs:attribute name="title" use="required" type="xs:token"/>
-            <xs:attribute name="slug" type="xs:token"/>
-            <xs:attribute name="note" type="xs:token"/>
-            <xs:attribute name="release-date" type="xs:token"/>
-            <xs:attribute name="do-poolparty-harvest" type="xs:boolean"/>
+            <xs:attribute name="slug" type="xs:token">
+                <xs:annotation>
+                    <xs:documentation>When creating a version, this may be omitted; a slug will be generated automatically based on the title.</xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="note" type="xs:token">
+                <xs:annotation>
+                    <xs:documentation>The content must be a well-formed HTML fragment.</xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="release-date" type="xs:token">
+                <xs:annotation>
+                    <xs:documentation>A value in one of three possible formats: YYYY, YYYY-MM, or YYYY-MM-DD.</xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="do-poolparty-harvest" type="xs:boolean">
+                <xs:annotation>
+                    <xs:documentation>May only be specified to be true if the vocabulary element has a valid poolparty-project sub-element.</xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
             <xs:attribute name="do-import" type="xs:boolean"/>
             <xs:attribute name="do-publish" type="xs:boolean"/>
             <xs:attribute name="force-workflow" type="xs:boolean">
                 <xs:annotation>
-                    <xs:documentation>Input only. Force workflow processing of this version.</xs:documentation>
+                    <xs:documentation>For an existing version that is being updated, force one-time workflow processing of this version. This attribute is not persisted.</xs:documentation>
                 </xs:annotation>
             </xs:attribute>
         </xs:complexType>
@@ -105,14 +149,26 @@
         <xs:complexType>
             <xs:choice>
                 <xs:element name="ap-api-sparql" type="ap-api-sparql"/>
-                <xs:element name="ap-file" type="ap-file"/>
+                <xs:element name="ap-file" type="ap-file">
+                    <xs:annotation>
+                        <xs:documentation>When creating, specify only format and upload-id. The url attribute will be generated during processing.</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
                 <xs:element name="ap-sesame-download" type="ap-sesame-download"/>
                 <xs:element name="ap-sissvoc" type="ap-sissvoc"/>
                 <xs:element name="ap-web-page" type="ap-web-page"/>
             </xs:choice>
             <xs:attribute name="id" type="id-type" use="optional"/>
-            <xs:attribute name="source" type="common:ap-source"/>
-            <xs:attribute name="discriminator" type="common:access-point-type" use="required"/>
+            <xs:attribute name="source" type="common:ap-source">
+                <xs:annotation>
+                    <xs:documentation>For an access point of type file, specify user.</xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="discriminator" type="common:access-point-type" use="required">
+                <xs:annotation>
+                    <xs:documentation>There must be a sub-element of the type corresponding to the value of this attribute. For example, if the value is file, there must be an ap-file sub-element.</xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
         </xs:complexType>
     </xs:element>
     <xs:element name="access-point-list">
@@ -134,7 +190,11 @@
         <xs:complexContent>
             <xs:extension base="ap-common">
                 <xs:attribute name="format" type="xs:token"/>
-                <xs:attribute name="upload-id" type="xs:int"/>
+                <xs:attribute name="upload-id" type="xs:int">
+                    <xs:annotation>
+                        <xs:documentation>The upload-id of a upload made previously by the user.</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
                 <xs:attribute name="url" type="xs:anyURI"/>
             </xs:extension>
         </xs:complexContent>
@@ -175,8 +235,8 @@
             </xs:sequence>
             <xs:attribute name="id" type="id-type"/>
             <xs:attribute name="type" use="required" type="common:related-entity-type"/>
-            <xs:attribute name="owner" type="xs:token"/>
-            <xs:attribute name="title" type="xs:token"/>
+            <xs:attribute name="owner" type="xs:token" use="required"/>
+            <xs:attribute name="title" type="xs:token" use="required"/>
             <xs:attribute name="email" type="xs:token"/>
             <xs:attribute name="phone" type="xs:token"/>
         </xs:complexType>
@@ -184,15 +244,20 @@
     <xs:element name="related-entity-identifier">
         <xs:complexType>
             <xs:attribute name="id" type="id-type"/>
-            <xs:attribute name="identifier-type" type="common:related-entity-identifier-type"/>
-            <xs:attribute name="identifier-value" type="xs:token"/>
+            <xs:attribute name="identifier-type" type="common:related-entity-identifier-type"
+                use="required"/>
+            <xs:attribute name="identifier-value" type="xs:token" use="required">
+                <xs:annotation>
+                    <xs:documentation>The value must conform to a type-specific pattern.</xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
         </xs:complexType>
     </xs:element>
     <xs:element name="version-artefact">
         <xs:complexType>
             <xs:attribute name="id" type="id-type"/>
-            <xs:attribute name="status" type="common:version-artefact-status"/>
-            <xs:attribute name="type" type="common:version-artefact-type"/>
+            <xs:attribute name="status" type="common:version-artefact-status" use="required"/>
+            <xs:attribute name="type" type="common:version-artefact-type" use="required"/>
         </xs:complexType>
     </xs:element>
     <xs:element name="version-artefact-list">
@@ -203,6 +268,9 @@
         </xs:complexType>
     </xs:element>
     <xs:element name="related-vocabulary">
+        <xs:annotation>
+            <xs:documentation>This element represents the top-level metadata of a related vocabulary. It appears only as a sub-element of the vocabulary element.</xs:documentation>
+        </xs:annotation>
         <xs:complexType>
             <xs:attribute name="id" type="id-type"> </xs:attribute>
             <xs:attribute name="status" use="required" type="common:vocabulary-status"> </xs:attribute>
@@ -232,6 +300,9 @@
         </xs:complexType>
     </xs:element>
     <xs:element name="owned-vocabulary">
+        <xs:annotation>
+            <xs:documentation>This element represents the top-level metadata of one of the user's vocabularies. It is used to generate content on the My Vocabs page.</xs:documentation>
+        </xs:annotation>
         <xs:complexType>
             <xs:attribute name="id" type="id-type"> </xs:attribute>
             <xs:attribute name="status" use="required" type="common:vocabulary-status"> </xs:attribute>
