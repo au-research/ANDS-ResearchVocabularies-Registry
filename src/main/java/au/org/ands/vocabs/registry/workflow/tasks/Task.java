@@ -112,10 +112,10 @@ public class Task {
     private Map<String, String> results;
 
     /** Get the task execution results.
-     * @return The execution status.
+     * @return The execution results.
      */
-    public TaskStatus getResults() {
-        return status;
+    public Map<String, String> getResults() {
+        return results;
     }
 
     /** Set the task execution results.

@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 import org.apache.commons.lang3.builder.CompareToBuilder;
 import org.apache.commons.lang3.builder.EqualsBuilder;
@@ -125,6 +126,7 @@ public class Subtask implements Comparable<Subtask> {
     /** Get the subtask provider class.
      * @return The subtask provider class.
      */
+    @XmlTransient
     public Class<? extends WorkflowProvider> getProviderClass() {
         if (providerClass != null) {
             return providerClass;
@@ -208,8 +210,8 @@ public class Subtask implements Comparable<Subtask> {
     /** Get the subtask execution results.
      * @return The results.
      */
-    public TaskStatus getResults() {
-        return status;
+    public Map<String, String> getResults() {
+        return results;
     }
 
     /** Set the subtask execution results.
