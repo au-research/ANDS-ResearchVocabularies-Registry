@@ -503,6 +503,12 @@ public class VersionsModel extends ModelBase {
                 newVersion.setModifiedBy(modifiedBy());
                 VersionDAO.saveVersionWithId(em(), newVersion);
                 Integer newVersionId = newVersion.getVersionId();
+                // Future work: uncomment the following, if/when we
+                // support workflow for drafts:
+//              // And now we can put a value into versionHasImportAndPublish.
+//              versionHasImportAndPublish.put(versionId,
+//                      BooleanUtils.isTrue(schemaVersion.isDoImport())
+//                      && BooleanUtils.isTrue(schemaVersion.isDoPublish()));
                 draftVersions.put(newVersionId, newVersion);
                 // And this is a tricky bit: we modify the input data
                 // so that the version Id can be seen by submodels.
@@ -538,6 +544,7 @@ public class VersionsModel extends ModelBase {
         Map<Integer,
         au.org.ands.vocabs.registry.schema.vocabulary201701.Version>
         updatedVersions = new HashMap<>();
+        versionHasImportAndPublish.clear();
         updatedVocabulary.getVersion().forEach(
                 version -> {
                     updatedSequence.add(new VersionElement(
@@ -746,6 +753,11 @@ public class VersionsModel extends ModelBase {
                 // Update our records (i.e., in this case, adding
                 // a new entry).
                 versionId = newVersionId;
+                // And now we can put a value into versionHasImportAndPublish.
+                versionHasImportAndPublish.put(versionId,
+                        BooleanUtils.isTrue(schemaVersion.isDoImport())
+                        && BooleanUtils.isTrue(schemaVersion.isDoPublish()));
+
                 currentVersions.put(newVersionId, newCurrentVersion);
                 // And this is a tricky bit: we modify the input data
                 // so that the version Id can be seen by submodels.
