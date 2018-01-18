@@ -232,7 +232,6 @@ public class AccessPointsModel extends ModelBase {
     protected void deleteOnlyCurrent() {
         for (Integer vId : currentAPs.keySet()) {
             for (AccessPoint ap : currentAPs.get(vId)) {
-                // TO DO: make sure delete workflow has been done!
                 accumulateSubtasks(vocabularyModel.getCurrentVocabulary(),
                         currentVersions.get(vId),
                         WorkflowMethods.deleteAccessPoint(ap));
@@ -650,8 +649,9 @@ public class AccessPointsModel extends ModelBase {
         comparator.getScript().visit(new UpdateCurrentVisitor(updatedVersions,
                 updatedAPs));
         // Delete any remaining draft rows.
-        // TO DO: decide if this is what is to be done. May
-        // need to do workflow processing?
+        // In future, if drafts may have access points, we will need to
+        // apply workflow processing to these, rather than just deleting
+        // the rows.
         deleteDraftDatabaseRows();
     }
 

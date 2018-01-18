@@ -796,10 +796,6 @@ public class CheckVocabularyImpl
         // doPublish
 
         // accessPoint
-        // TO DO: for updates, check that any AP Ids do in fact
-        // belong to this version. (Including: check that if an AP Id
-        // is specified, so was the version Id!) Hmm, perhaps do this in
-        // the model classes.
         int accessPointIndex = 0;
         for (Iterator<AccessPoint> it =
                 newVersion.getAccessPoint().iterator();

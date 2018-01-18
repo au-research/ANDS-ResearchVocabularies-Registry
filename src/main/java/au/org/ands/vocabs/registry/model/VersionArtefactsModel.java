@@ -177,7 +177,6 @@ public class VersionArtefactsModel extends ModelBase {
     protected void deleteOnlyCurrent() {
         for (Integer vId : currentVAs.keySet()) {
             for (VersionArtefact va : currentVAs.get(vId)) {
-                // TO DO: make sure delete workflow has been done!
                 accumulateSubtasks(vocabularyModel.getCurrentVocabulary(),
                         currentVersions.get(vId),
                         WorkflowMethods.deleteVersionArtefact(va));
