@@ -37,6 +37,7 @@ import au.org.ands.vocabs.registry.enums.ApSource;
 import au.org.ands.vocabs.registry.enums.SubtaskOperationType;
 import au.org.ands.vocabs.registry.enums.SubtaskProviderType;
 import au.org.ands.vocabs.registry.utils.RegistryFileUtils;
+import au.org.ands.vocabs.registry.utils.fileformat.UploadFormatUtils;
 import au.org.ands.vocabs.registry.workflow.provider.harvest.PoolPartyHarvestProvider;
 import au.org.ands.vocabs.registry.workflow.provider.importer.SesameImporterProvider;
 import au.org.ands.vocabs.registry.workflow.provider.publish.SISSVocPublishProvider;
@@ -170,7 +171,12 @@ public final class WorkflowMethods {
                 String harvestOutputPath =
                         TaskUtils.getTaskHarvestOutputPath(taskInfo, true);
                 Upload upload = UploadDAO.getUploadById(em, uploadId);
-                String filename = upload.getFilename();
+                // We create our own filename, e.g., 17.ttl.
+                // Here, we don't trust the extension of the original filename
+                // (e.g., it could be in upper case).
+                String filename = uploadId.toString() + "."
+                        + UploadFormatUtils.getFileFormatByName(
+                                upload.getFormat()).getExtension();
                 Path destPath = Paths.get(harvestOutputPath, filename);
                 try {
                     // We currently copy, but this could (maybe?) be
@@ -181,9 +187,10 @@ public final class WorkflowMethods {
                     logger.error("Error attempting to copy uploaded file", e);
                 }
                 apFile.setPath(destPath.toString());
+                // But we do use the original extension for the URL.
                 apFile.setUrl(AccessPointUtils.
                         getDownloadUrlForFileAccessPoint(ap.getAccessPointId(),
-                                filename));
+                                upload.getFilename()));
                 ap.setData(JSONSerialization.serializeObjectAsJsonString(
                         apFile));
                 AccessPointDAO.updateAccessPoint(em, ap);

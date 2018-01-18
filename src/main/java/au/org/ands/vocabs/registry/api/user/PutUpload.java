@@ -7,8 +7,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.invoke.MethodHandles;
 import java.net.URL;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.regex.Pattern;
 
 import javax.persistence.EntityManager;
@@ -25,6 +23,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
@@ -45,6 +44,8 @@ import au.org.ands.vocabs.registry.db.dao.UploadDAO;
 import au.org.ands.vocabs.registry.db.entity.Upload;
 import au.org.ands.vocabs.registry.utils.Logging;
 import au.org.ands.vocabs.registry.utils.RegistryFileUtils;
+import au.org.ands.vocabs.registry.utils.fileformat.FileFormat;
+import au.org.ands.vocabs.registry.utils.fileformat.UploadFormatUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -63,34 +64,6 @@ public class PutUpload {
     /** Logger for this class. */
     private Logger logger = LoggerFactory.getLogger(
             MethodHandles.lookup().lookupClass());
-
-    // TO DO: make use of allowedExtensions!
-
-    /** A set containing the extensions permitted on the filenames
-     * of uploaded files. */
-    private static Set<String> allowedExtensions;
-
-    static {
-        // cf. setting in portal controllers/vocabs.php/upload().
-
-        allowedExtensions = new HashSet<>();
-        allowedExtensions.add("csv");
-        allowedExtensions.add("json");
-        allowedExtensions.add("n3");
-        allowedExtensions.add("nt");
-        allowedExtensions.add("ods");
-        allowedExtensions.add("pdf");
-        allowedExtensions.add("rdf");
-        allowedExtensions.add("trig");
-        allowedExtensions.add("trix");
-        allowedExtensions.add("tsv");
-        allowedExtensions.add("ttl");
-        allowedExtensions.add("txt");
-        allowedExtensions.add("xls");
-        allowedExtensions.add("xlsx");
-        allowedExtensions.add("xml");
-        allowedExtensions.add("zip");
-    }
 
     /** Regular expression that specifies what is a valid filename,
      * after the sanitization process has been applied. It specifies
@@ -168,9 +141,6 @@ public class PutUpload {
                     fileDisposition) {
         logger.debug("called createUpload");
 
-        // TO DO: make use of allowedExtensions!
-        // And otherwise, do validation, e.g., of the format parameter
-
         String filename = fileDisposition.getFileName();
 
         logger.debug("upload format: " + format);
@@ -188,6 +158,13 @@ public class PutUpload {
             return ResponseUtils.generateForbiddenResponseForOwner();
         }
 
+        // Check the format.
+        FileFormat formatFromFormat =
+                UploadFormatUtils.getFileFormatByName(format);
+        if (formatFromFormat == null) {
+            return ErrorResultUtils.badRequest("Unsupported format.");
+        }
+
         // Validate and normalize the filename.
         if (StringUtils.isEmpty(filename)) {
             return ErrorResultUtils.badRequest("Filename not specified.");
@@ -196,6 +173,16 @@ public class PutUpload {
         if (!FILENAME_PATTERN.matcher(filename).matches()) {
             return ErrorResultUtils.badRequest(
                     "Filename not in the correct format, e.g., myfile.xml.");
+        }
+
+        // Now check that the extension matches the format.
+        // Convert the extension to lower case before looking up.
+        String extension = FilenameUtils.getExtension(filename).toLowerCase();
+        FileFormat formatFromExtension =
+                UploadFormatUtils.getFileFormatByExtension(extension);
+        if (formatFromFormat != formatFromExtension) {
+            return ErrorResultUtils.badRequest(
+                    "Filename extension does not correspond to the format.");
         }
 
         Upload upload = new Upload();
