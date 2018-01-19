@@ -219,29 +219,40 @@ public class VersionArtefactsModel extends ModelBase {
             throw new IllegalArgumentException(
                     "Existing draft; you must delete it first");
         }
-        // TO DO: workflow processing.
-        // What follows really isn't right; we shouldn't have/don't have VAs
-        // for drafts. We need to use
-        // WorkflowMethods.deleteVersionArtefact() to create subtasks
-        // to be done to delete the rows.
         for (Integer vId : currentVAs.keySet()) {
-            for (VersionArtefact va : currentVAs.get(vId)) {
-                TemporalUtils.makeHistorical(va, nowTime());
-                va.setModifiedBy(modifiedBy());
-                VersionArtefactDAO.updateVersionArtefact(em(), va);
-                // Now make a new draft record.
-                VersionArtefact newVA = new VersionArtefact();
-                newVA.setVersionId(vId);
-                newVA.setVersionArtefactId(va.getVersionArtefactId());
-                newVA.setType(va.getType());
-                newVA.setData(va.getData());
-                newVA.setModifiedBy(modifiedBy());
-                TemporalUtils.makeDraft(newVA);
-                VersionArtefactDAO.saveVersionArtefact(em(), newVA);
-                draftVAs.add(vId, newVA);
+            List<VersionArtefact> currentVAList = currentVAs.get(vId);
+            List<VersionArtefact> vasToRemove = new ArrayList<>();
+            if (currentVAList != null) {
+                for (VersionArtefact va : currentVAList) {
+                    List<Subtask> subtaskList =
+                            WorkflowMethods.deleteVersionArtefact(va);
+                    if (subtaskList == null) {
+                        TemporalUtils.makeHistorical(va, nowTime());
+                        va.setModifiedBy(modifiedBy());
+                        VersionArtefactDAO.updateVersionArtefact(em(), va);
+                        vasToRemove.add(va);
+                        // Now make a new draft record.
+                        VersionArtefact newVA = new VersionArtefact();
+                        newVA.setVersionId(vId);
+                        newVA.setVersionArtefactId(va.getVersionArtefactId());
+                        newVA.setType(va.getType());
+                        newVA.setData(va.getData());
+                        newVA.setModifiedBy(modifiedBy());
+                        TemporalUtils.makeDraft(newVA);
+                        VersionArtefactDAO.saveVersionArtefact(em(), newVA);
+                        draftVAs.add(vId, newVA);
+                    } else {
+                        // Need the workflow to remove it.
+                        accumulateSubtasks(
+                                vocabularyModel.getCurrentVocabulary(),
+                                currentVersions.get(vId), subtaskList);
+                    }
+                }
+            }
+            for (VersionArtefact va : vasToRemove) {
+                currentVAList.remove(va);
             }
         }
-        currentVAs.clear();
     }
 
     /** {@inheritDoc} */

@@ -308,26 +308,41 @@ public class AccessPointsModel extends ModelBase {
             throw new IllegalArgumentException(
                     "Existing draft; you must delete it first");
         }
-        // TO DO: workflow processing.
         for (Integer vId : currentAPs.keySet()) {
-            for (AccessPoint ap : currentAPs.get(vId)) {
-                TemporalUtils.makeHistorical(ap, nowTime());
-                ap.setModifiedBy(modifiedBy());
-                AccessPointDAO.updateAccessPoint(em(), ap);
-                // Now make a new draft record.
-                AccessPoint newAP = new AccessPoint();
-                newAP.setVersionId(vId);
-                newAP.setAccessPointId(ap.getAccessPointId());
-                newAP.setType(ap.getType());
-                newAP.setSource(ap.getSource());
-                newAP.setData(ap.getData());
-                newAP.setModifiedBy(modifiedBy());
-                TemporalUtils.makeDraft(newAP);
-                AccessPointDAO.saveAccessPoint(em(), newAP);
-                draftAPs.add(vId, newAP);
+            List<AccessPoint> currentAPList = currentAPs.get(vId);
+            List<AccessPoint> apsToRemove = new ArrayList<>();
+            if (currentAPList != null) {
+                for (AccessPoint ap : currentAPList) {
+                    List<Subtask> subtaskList =
+                            WorkflowMethods.deleteAccessPoint(ap);
+                    if (subtaskList == null) {
+                        TemporalUtils.makeHistorical(ap, nowTime());
+                        ap.setModifiedBy(modifiedBy());
+                        AccessPointDAO.updateAccessPoint(em(), ap);
+                        apsToRemove.add(ap);
+                        // Now make a new draft record.
+                        AccessPoint newAP = new AccessPoint();
+                        newAP.setVersionId(vId);
+                        newAP.setAccessPointId(ap.getAccessPointId());
+                        newAP.setType(ap.getType());
+                        newAP.setSource(ap.getSource());
+                        newAP.setData(ap.getData());
+                        newAP.setModifiedBy(modifiedBy());
+                        TemporalUtils.makeDraft(newAP);
+                        AccessPointDAO.saveAccessPoint(em(), newAP);
+                        draftAPs.add(vId, newAP);
+                    } else {
+                        // Need the workflow to remove it.
+                        accumulateSubtasks(
+                                vocabularyModel.getCurrentVocabulary(),
+                                currentVersions.get(vId), subtaskList);
+                    }
+                }
+            }
+            for (AccessPoint ap : apsToRemove) {
+                currentAPList.remove(ap);
             }
         }
-        currentAPs.clear();
     }
 
     /** {@inheritDoc} */
