@@ -281,7 +281,6 @@ public class VersionsModel extends ModelBase {
             // Oops, nothing to do!
             return;
         }
-        // TO DO: workflow processing.
         // Sub-models first.
         subModels.forEach(sm -> sm.deleteOnlyCurrent());
 
@@ -290,7 +289,17 @@ public class VersionsModel extends ModelBase {
             version.setModifiedBy(modifiedBy());
             VersionDAO.updateVersion(em(), version);
         }
+        // TO DO: workflow processing is done here, but need to confirm
+        // if this is the right place/way to do it.
+        boolean ranATask = processRequiredTasks();
+        // Make this model correct again first ...
         currentVersions.clear();
+        // ... now we can repopulate sub-models, if we need to.
+        if (ranATask) {
+            // If we ran at least one task, repopulate the sub-models
+            // so that they are up-to-date again.
+            populateSubmodels();
+        }
     }
 
     /** {@inheritDoc} */
@@ -305,7 +314,6 @@ public class VersionsModel extends ModelBase {
             throw new IllegalArgumentException(
                     "Existing draft; you must delete it first");
         }
-        // TO DO: workflow processing.
         // Sub-models first.
         subModels.forEach(sm -> sm.makeCurrentIntoDraft());
 
@@ -320,7 +328,17 @@ public class VersionsModel extends ModelBase {
             VersionDAO.saveVersion(em(), draftVersion);
             draftVersions.put(draftVersion.getVersionId(), draftVersion);
         }
+        // TO DO: workflow processing is done here, but need to confirm
+        // if this is the right place/way to do it.
+        boolean ranATask = processRequiredTasks();
+        // Make this model correct again first ...
         currentVersions.clear();
+        // ... now we can repopulate sub-models, if we need to.
+        if (ranATask) {
+            // If we ran at least one task, repopulate the sub-models
+            // so that they are up-to-date again.
+            populateSubmodels();
+        }
     }
 
     /** {@inheritDoc} */
@@ -365,9 +383,12 @@ public class VersionsModel extends ModelBase {
 
         // And now run any tasks that have been accumulated along the way.
         addImpliedSubtasks();
-        processRequiredTasks();
-        // Having run tasks, repopulate the sub-models.
-        populateSubmodels();
+        boolean ranATask = processRequiredTasks();
+        if (ranATask) {
+            // If we ran at least one task, repopulate the sub-models
+            // so that they are up-to-date again.
+            populateSubmodels();
+        }
     }
 
     /** Make the database's draft view of the Versions match updatedVocabulary.
@@ -878,8 +899,11 @@ public class VersionsModel extends ModelBase {
         }
     }
 
-    /** Process all of the tasks that have been accumulated. */
-    private void processRequiredTasks() {
+    /** Process all of the tasks that have been accumulated.
+     * @return True, if at least one task was run.
+     */
+    private boolean processRequiredTasks() {
+        boolean ranATask = false;
         // First, persist all.
         for (TaskInfo taskInfo : versionTaskInfos.values()) {
             // Only do something if there is at least one subtask!
@@ -895,8 +919,10 @@ public class VersionsModel extends ModelBase {
             // Only do something if there is at least one subtask!
             if (!taskInfo.getTask().getSubtasks().isEmpty()) {
                 taskInfo.process();
+                ranATask = true;
             }
         }
+        return ranATask;
     }
 
 }
