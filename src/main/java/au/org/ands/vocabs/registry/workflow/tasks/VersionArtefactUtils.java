@@ -36,7 +36,7 @@ public final class VersionArtefactUtils {
     private static Logger logger = LoggerFactory.getLogger(
             MethodHandles.lookup().lookupClass());
 
-    /** Create a database entity for a system-generated PoolParty harvest
+    /** Create a database entity for a system-generated
      * version artefact for a version.
      * Don't duplicate it, if it already exists.
      * @param <T> The class of the version artefact, as a subclass of VaCommon.
