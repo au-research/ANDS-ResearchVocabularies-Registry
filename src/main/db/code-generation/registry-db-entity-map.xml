@@ -274,6 +274,7 @@
         </queryText>
         <method>    /** Get all current VersionArtefact instances for a Version,
      * that are of a specified VersionArtefactType.
+     * This version of the method creates and uses its own EntityManager.
      * @param id The Version.
      * @param vaType The VersionArtefactType.
      * @return The list of current VersionArtefact
@@ -285,6 +286,41 @@
             final au.org.ands.vocabs.registry.enums.VersionArtefactType
                 vaType) {
         EntityManager em = DBContext.getEntityManager();
+        TypedQuery&lt;VersionArtefact&gt; q = em.createNamedQuery(
+                VersionArtefact.
+                    GET_CURR_VA_LIST_FOR_VERSION_BY_TYPE,
+                VersionArtefact.class).
+                setParameter(
+                        VersionArtefact.
+                            GET_CURR_VA_LIST_FOR_VERSION_BY_TYPE_VERSIONID,
+                        id).
+                setParameter(
+                        VersionArtefact.
+                            GET_CURR_VA_LIST_FOR_VERSION_BY_TYPE_VATYPE,
+                        vaType);
+        q = TemporalUtils.setDatetimeConstantParameters(q);
+        List&lt;VersionArtefact&gt; entityList = q.getResultList();
+        em.close();
+        return entityList;
+    }
+
+    /** Get all current VersionArtefact instances for a Version,
+     * that are of a specified VersionArtefactType.
+     * This version of the method uses an existing EntityManager
+     * provided as a parameter; transaction begin/end must be
+     * managed by the caller.
+     * @param id The Version.
+     * @param vaType The VersionArtefactType.
+     * @param em The EntityManager to be used.
+     * @return The list of current VersionArtefact
+     *     instances for this Version, that are of type vaType.
+     */
+    public static List&lt;VersionArtefact&gt;
+    getCurrentVersionArtefactListForVersionByType(
+            final Integer id,
+            final au.org.ands.vocabs.registry.enums.VersionArtefactType
+                vaType,
+            final EntityManager em) {
         TypedQuery&lt;VersionArtefact&gt; q = em.createNamedQuery(
                 VersionArtefact.
                     GET_CURR_VA_LIST_FOR_VERSION_BY_TYPE,
@@ -338,7 +374,7 @@
     public static List&lt;AccessPoint&gt;
     getCurrentAccessPointListForVersionByType(
             final Integer versionId,
-            final au.org.ands.vocabs.registry.enums.VersionArtefactType
+            final au.org.ands.vocabs.registry.enums.AccessPointType
                 apType,
             final EntityManager em) {
         TypedQuery&lt;AccessPoint&gt; q = em.createNamedQuery(
@@ -378,7 +414,7 @@
     public static List&lt;AccessPoint&gt;
     getDraftAccessPointListForVersionByType(
             final Integer versionId,
-            final au.org.ands.vocabs.registry.enums.VersionArtefactType
+            final au.org.ands.vocabs.registry.enums.AccessPointType
                 apType,
             final EntityManager em) {
         TypedQuery&lt;AccessPoint&gt; q = em.createNamedQuery(
