@@ -414,9 +414,11 @@ public class ResourceMapTransformProvider extends TransformProvider
         switch (operationType) {
         case INSERT:
         case PERFORM:
-            return DefaultPriorities.DEFAULT_TRANSFORM_INSERT_PRIORITY;
+            return DefaultPriorities.
+                    DEFAULT_TRANSFORM_AFTER_IMPORTER_INSERT_PRIORITY;
         case DELETE:
-            return DefaultPriorities.DEFAULT_TRANSFORM_DELETE_PRIORITY;
+            return DefaultPriorities.
+                    DEFAULT_TRANSFORM_AFTER_IMPORTER_DELETE_PRIORITY;
         default:
             // Unknown operation type!
             return null;

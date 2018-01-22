@@ -331,9 +331,9 @@ public class SesameImporterProvider extends ImporterProvider
         switch (operationType) {
         case INSERT:
         case PERFORM:
-            return DefaultPriorities.DEFAULT_IMPORT_INSERT_PRIORITY;
+            return DefaultPriorities.DEFAULT_IMPORTER_INSERT_PRIORITY;
         case DELETE:
-            return DefaultPriorities.DEFAULT_IMPORT_DELETE_PRIORITY;
+            return DefaultPriorities.DEFAULT_IMPORTER_DELETE_PRIORITY;
         default:
             // Unknown operation type!
             return null;
