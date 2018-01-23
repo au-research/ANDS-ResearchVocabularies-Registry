@@ -273,7 +273,7 @@ public class ToolkitTests extends ArquillianBaseTest {
      * @throws SQLException If DbUnit has a problem performing
      *           performing JDBC operations.
      */
-    @Test
+    @Test(enabled = false)
     public final void testResourceMapTransformProvider1() throws
         DatabaseUnitException, HibernateException, IOException, SQLException {
         ArquillianTestUtils.clearDatabase(TOOLKIT);
@@ -342,7 +342,7 @@ public class ToolkitTests extends ArquillianBaseTest {
      * @throws SQLException If DbUnit has a problem performing
      *           performing JDBC operations.
      */
-    @Test
+    @Test(enabled = false)
     public final void testResourceMapTransformProvider2() throws
         DatabaseUnitException, HibernateException, IOException, SQLException {
         ArquillianTestUtils.clearDatabase(TOOLKIT);
@@ -400,7 +400,7 @@ public class ToolkitTests extends ArquillianBaseTest {
      * @throws SQLException If DbUnit has a problem performing
      *           performing JDBC operations.
      */
-    @Test
+    @Test(enabled = false)
     public final void testResourceMapTransformProvider3() throws
         DatabaseUnitException, HibernateException, IOException, SQLException {
         ArquillianTestUtils.clearDatabase(TOOLKIT);
