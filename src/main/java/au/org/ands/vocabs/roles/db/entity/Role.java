@@ -33,7 +33,10 @@ import javax.persistence.TemporalType;
             query = Role.GET_ROLES_FOR_ROLEID_QUERY),
     @NamedQuery(
             name = Role.CHECK_ROLE_EXISTS_ENABLED,
-            query = Role.CHECK_ROLE_EXISTS_ENABLED_QUERY)
+            query = Role.CHECK_ROLE_EXISTS_ENABLED_QUERY),
+    @NamedQuery(
+            name = Role.GET_ALL_ENABLED_ORG_ROLES,
+            query = Role.GET_ALL_ENABLED_ORG_ROLES_QUERY)
 })
 public class Role {
 
@@ -72,6 +75,18 @@ public class Role {
             + " au.org.ands.vocabs.roles.db.entity.RoleTypeId.ROLE_USER"
             + " AND authenticationServiceId = :"
             + CHECK_ROLE_EXISTS_ENABLED_AUTHENTICATION_TYPE
+            + " AND enabled = '1'";
+
+    /** Name of getAllEnabledOrgRoles query. */
+    public static final String GET_ALL_ENABLED_ORG_ROLES =
+            "getAllEnabledOrgRoles";
+    /** Query of getAllEnabledOrgRoles query. */
+    protected static final String GET_ALL_ENABLED_ORG_ROLES_QUERY =
+            "SELECT DISTINCT"
+            + " NEW au.org.ands.vocabs.roles.Role"
+            + "(role.roleId, role.roleTypeId, role.name)"
+            + " FROM Role role "
+            + " WHERE roleTypeId = 'ROLE_ORGANISATIONAL'"
             + " AND enabled = '1'";
 
     /** id. */

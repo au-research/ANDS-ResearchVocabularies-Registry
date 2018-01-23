@@ -120,8 +120,8 @@ public class RolesTests extends ArquillianBaseTest {
 
         Assert.assertTrue(profile.getRoles().contains("ANDS"),
                 "testsuper1 does not have the ANDS organizational role");
-        Assert.assertFalse(profile.getRoles().contains("Org2"),
-                "testsuper1 has the Org2 organizational role");
+        Assert.assertTrue(profile.getRoles().contains("Org2"),
+                "testsuper1 does not have the Org2 organizational role");
         Assert.assertTrue(AuthUtils.ownerIsAuthorizedByOrganisation(profile,
                 "ANDS"),
                 "testsuper1 is not authorized to publish with owner ANDS");
