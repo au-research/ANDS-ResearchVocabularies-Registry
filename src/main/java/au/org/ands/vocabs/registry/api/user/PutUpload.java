@@ -94,8 +94,10 @@ public class PutUpload {
     @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     @Pac4JSecurity
     @POST
-    @ApiOperation(value = "Upload a file. The response contains the ID "
-            + "of the resulting upload in the integerValue field.",
+    @ApiOperation(value = "Upload a file.",
+            notes = " The response contains the ID "
+                    + "of the resulting upload in the integerValue field, "
+                    + "and the sanitized filename in the stringValue field.",
             code = HttpStatus.SC_CREATED,
             responseHeaders = {
                     @ResponseHeader(name = "Location",
@@ -218,8 +220,10 @@ public class PutUpload {
             }
             // And now, commit all of the above changes.
             txn.commit();
+            SimpleResult simpleResult = new SimpleResult(upload.getId());
+            simpleResult.setStringValue(filename);
             return Response.created(EntityPaths.getURIOfEntity(upload)).
-                    entity(new SimpleResult(upload.getId())).build();
+                    entity(simpleResult).build();
         } catch (Throwable t) {
             if (txn != null && txn.isActive()) {
                 try {
