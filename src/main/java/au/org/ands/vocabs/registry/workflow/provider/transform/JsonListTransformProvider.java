@@ -8,7 +8,6 @@ import java.lang.invoke.MethodHandles;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.DirectoryIteratorException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -28,13 +27,8 @@ import org.slf4j.LoggerFactory;
 
 import au.org.ands.vocabs.registry.db.context.TemporalUtils;
 import au.org.ands.vocabs.registry.db.converter.JSONSerialization;
-import au.org.ands.vocabs.registry.db.dao.AccessPointDAO;
 import au.org.ands.vocabs.registry.db.dao.VersionArtefactDAO;
-import au.org.ands.vocabs.registry.db.entity.AccessPoint;
 import au.org.ands.vocabs.registry.db.entity.VersionArtefact;
-import au.org.ands.vocabs.registry.db.internal.ApFile;
-import au.org.ands.vocabs.registry.db.internal.VaHarvestPoolparty;
-import au.org.ands.vocabs.registry.enums.AccessPointType;
 import au.org.ands.vocabs.registry.enums.SubtaskOperationType;
 import au.org.ands.vocabs.registry.enums.TaskStatus;
 import au.org.ands.vocabs.registry.enums.VersionArtefactType;
@@ -64,7 +58,8 @@ public class JsonListTransformProvider implements WorkflowProvider {
     public final void transform(final TaskInfo taskInfo,
             final Subtask subtask) {
         ConceptHandler conceptHandler = new ConceptHandler();
-        List<Path> pathsToProcess = getPathsToProcess(taskInfo);
+        List<Path> pathsToProcess =
+                TaskUtils.getPathsToProcessForVersion(taskInfo);
         for (Path entry: pathsToProcess) {
             try {
                 RDFFormat format = Rio.getParserFormatForFileName(
@@ -109,37 +104,6 @@ public class JsonListTransformProvider implements WorkflowProvider {
             return;
         }
         subtask.setStatus(TaskStatus.SUCCESS);
-    }
-
-    /** Get the Paths of all files that should be processed. The
-     * list includes all current file access points and PoolParty harvests.
-     * @param taskInfo The top-level TaskInfo for the subtask.
-     * @return A list of Paths, each of which is a files that should be
-     *      processed.
-     */
-    private List<Path> getPathsToProcess(final TaskInfo taskInfo) {
-        List<Path> paths = new ArrayList<>();
-        List<AccessPoint> aps = AccessPointDAO.
-                getCurrentAccessPointListForVersionByType(
-                        taskInfo.getVersion().getVersionId(),
-                        AccessPointType.FILE, taskInfo.getEm());
-        for (AccessPoint ap : aps) {
-            ApFile apFile = JSONSerialization.deserializeStringAsJson(
-                    ap.getData(), ApFile.class);
-            paths.add(Paths.get(apFile.getPath()));
-        }
-        List<VersionArtefact> vas = VersionArtefactDAO.
-                getCurrentVersionArtefactListForVersionByType(
-                        taskInfo.getVersion().getVersionId(),
-                        VersionArtefactType.HARVEST_POOLPARTY,
-                        taskInfo.getEm());
-        for (VersionArtefact va : vas) {
-            VaHarvestPoolparty vaHarvestPoolparty =
-                    JSONSerialization.deserializeStringAsJson(
-                            va.getData(), VaHarvestPoolparty.class);
-            paths.add(Paths.get(vaHarvestPoolparty.getPath()));
-        }
-        return paths;
     }
 
     /** RDF Handler to extract prefLabels, notation, and use broader
@@ -201,7 +165,7 @@ public class JsonListTransformProvider implements WorkflowProvider {
      */
     public final void untransform(final TaskInfo taskInfo,
             final Subtask subtask) {
-        // Remove the SISSVoc access point.
+        // Remove the JsonList version artefact.
         List<VersionArtefact> vas = VersionArtefactDAO.
                 getCurrentVersionArtefactListForVersionByType(
                         taskInfo.getVersion().getVersionId(),

@@ -12,7 +12,9 @@ import java.lang.invoke.MethodHandles;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.Locale;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
@@ -23,12 +25,21 @@ import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import au.org.ands.vocabs.registry.db.converter.JSONSerialization;
+import au.org.ands.vocabs.registry.db.dao.AccessPointDAO;
 import au.org.ands.vocabs.registry.db.dao.TaskDAO;
+import au.org.ands.vocabs.registry.db.dao.VersionArtefactDAO;
 import au.org.ands.vocabs.registry.db.dao.VersionDAO;
 import au.org.ands.vocabs.registry.db.dao.VocabularyDAO;
+import au.org.ands.vocabs.registry.db.entity.AccessPoint;
 import au.org.ands.vocabs.registry.db.entity.Task;
 import au.org.ands.vocabs.registry.db.entity.Version;
+import au.org.ands.vocabs.registry.db.entity.VersionArtefact;
 import au.org.ands.vocabs.registry.db.entity.Vocabulary;
+import au.org.ands.vocabs.registry.db.internal.ApFile;
+import au.org.ands.vocabs.registry.db.internal.VaHarvestPoolparty;
+import au.org.ands.vocabs.registry.enums.AccessPointType;
+import au.org.ands.vocabs.registry.enums.VersionArtefactType;
 import au.org.ands.vocabs.registry.utils.RegistryConfig;
 import au.org.ands.vocabs.registry.utils.RegistryFileUtils;
 import au.org.ands.vocabs.registry.utils.SlugGenerator;
@@ -395,6 +406,38 @@ public final class TaskUtils {
         while ((bytesRead = input.read(buffer)) != -1) {
             output.write(buffer, 0, bytesRead);
         }
+    }
+
+    /** Get the Paths of all files that should be processed. The
+     * list includes all current file access points and PoolParty harvests.
+     * @param taskInfo The top-level TaskInfo for the subtask.
+     * @return A list of Paths, each of which is a files that should be
+     *      processed.
+     */
+    public static List<Path> getPathsToProcessForVersion(
+            final TaskInfo taskInfo) {
+        List<Path> paths = new ArrayList<>();
+        List<AccessPoint> aps = AccessPointDAO.
+                getCurrentAccessPointListForVersionByType(
+                        taskInfo.getVersion().getVersionId(),
+                        AccessPointType.FILE, taskInfo.getEm());
+        for (AccessPoint ap : aps) {
+            ApFile apFile = JSONSerialization.deserializeStringAsJson(
+                    ap.getData(), ApFile.class);
+            paths.add(Paths.get(apFile.getPath()));
+        }
+        List<VersionArtefact> vas = VersionArtefactDAO.
+                getCurrentVersionArtefactListForVersionByType(
+                        taskInfo.getVersion().getVersionId(),
+                        VersionArtefactType.HARVEST_POOLPARTY,
+                        taskInfo.getEm());
+        for (VersionArtefact va : vas) {
+            VaHarvestPoolparty vaHarvestPoolparty =
+                    JSONSerialization.deserializeStringAsJson(
+                            va.getData(), VaHarvestPoolparty.class);
+            paths.add(Paths.get(vaHarvestPoolparty.getPath()));
+        }
+        return paths;
     }
 
 }

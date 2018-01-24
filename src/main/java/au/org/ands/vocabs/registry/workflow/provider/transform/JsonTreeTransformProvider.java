@@ -7,12 +7,10 @@ import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.DirectoryIteratorException;
-import java.nio.file.DirectoryStream;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -36,16 +34,21 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.JsonNode;
 
+import au.org.ands.vocabs.registry.db.context.TemporalUtils;
+import au.org.ands.vocabs.registry.db.converter.JSONSerialization;
+import au.org.ands.vocabs.registry.db.dao.VersionArtefactDAO;
+import au.org.ands.vocabs.registry.db.entity.VersionArtefact;
 import au.org.ands.vocabs.registry.enums.SubtaskOperationType;
+import au.org.ands.vocabs.registry.enums.TaskStatus;
+import au.org.ands.vocabs.registry.enums.VersionArtefactType;
 import au.org.ands.vocabs.registry.workflow.provider.DefaultPriorities;
 import au.org.ands.vocabs.registry.workflow.provider.WorkflowProvider;
 import au.org.ands.vocabs.registry.workflow.tasks.Subtask;
-import au.org.ands.vocabs.toolkit.db.TaskUtils;
-import au.org.ands.vocabs.toolkit.tasks.TaskInfo;
-import au.org.ands.vocabs.toolkit.tasks.TaskStatus;
-import au.org.ands.vocabs.toolkit.utils.ToolkitFileUtils;
+import au.org.ands.vocabs.registry.workflow.tasks.TaskInfo;
+import au.org.ands.vocabs.registry.workflow.tasks.TaskRunner;
+import au.org.ands.vocabs.registry.workflow.tasks.TaskUtils;
+import au.org.ands.vocabs.registry.workflow.tasks.VersionArtefactUtils;
 
 /** Transform provider for generating a forest-like representation of the
  * concepts as JSON. This assumes a vocabulary encoded using SKOS.
@@ -150,8 +153,7 @@ import au.org.ands.vocabs.toolkit.utils.ToolkitFileUtils;
  *   remove node from NodesActive
  * </pre>
  */
-public class JsonTreeTransformProvider extends TransformProvider
-    implements WorkflowProvider {
+public class JsonTreeTransformProvider implements WorkflowProvider {
 
     /** Logger for this class. */
     private final Logger logger = LoggerFactory.getLogger(
@@ -173,24 +175,19 @@ public class JsonTreeTransformProvider extends TransformProvider
         typesToLookFor.put(SKOS.ORDERED_COLLECTION, "OrderedCollection");
     }
 
-    @Override
-    public final String getInfo() {
-        // Not implemented.
-        return null;
-    }
-
-    @Override
-    public final boolean transform(final TaskInfo taskInfo,
-            final JsonNode subtask,
-            final HashMap<String, String> results) {
-        Path dir = Paths.get(ToolkitFileUtils.getTaskHarvestOutputPath(
-                taskInfo));
+    /** Create/update the JsonTree version artefact for the version.
+     * @param taskInfo The top-level TaskInfo for the subtask.
+     * @param subtask The subtask to be performed.
+     */
+    public final void transform(final TaskInfo taskInfo,
+            final Subtask subtask) {
         ConceptHandler conceptHandler = new ConceptHandler();
         // Parse all input files in the harvest directory, loading
         // the content into conceptHandler.
-        try (DirectoryStream<Path> stream =
-                Files.newDirectoryStream(dir)) {
-            for (Path entry: stream) {
+        List<Path> pathsToProcess =
+                TaskUtils.getPathsToProcessForVersion(taskInfo);
+        for (Path entry: pathsToProcess) {
+            try {
                 RDFFormat format = Rio.getParserFormatForFileName(
                         entry.toString());
                 RDFParser rdfParser = Rio.createParser(format);
@@ -198,23 +195,22 @@ public class JsonTreeTransformProvider extends TransformProvider
                 FileInputStream is = new FileInputStream(entry.toString());
                 rdfParser.parse(is, entry.toString());
                 logger.debug("Reading RDF: " + entry.toString());
+            } catch (DirectoryIteratorException
+                    | IOException
+                    | RDFParseException
+                    | RDFHandlerException
+                    | UnsupportedRDFormatException ex) {
+                subtask.addResult("parse_" + entry.getFileName(),
+                        "Exception in JsonListTransform while Parsing RDF");
+                logger.error("Exception in JsonTreeTransform "
+                        + "while Parsing RDF:", ex);
             }
-        } catch (DirectoryIteratorException
-                | IOException
-                | RDFParseException
-                | RDFHandlerException
-                | UnsupportedRDFormatException ex) {
-            results.put(TaskStatus.EXCEPTION,
-                    "Exception in JsonTreeTransform while Parsing RDF");
-            logger.error("Exception in JsonTreeTransform while Parsing RDF:",
-                    ex);
-            return false;
         }
 
         // Extract the result, save in results Set and store in the
         // file system.
-        String resultFileNameTree = ToolkitFileUtils.getTaskOutputPath(taskInfo,
-                "concepts_tree.json");
+        String resultFileNameTree = TaskUtils.getTaskOutputPath(taskInfo,
+                true, "concepts_tree.json");
         try {
             Set<Concept> conceptTree = conceptHandler.buildForest();
 
@@ -232,10 +228,12 @@ public class JsonTreeTransformProvider extends TransformProvider
                 // Jackson will serialize TreeSets in sorted order of values
                 // (i.e., the Concept objects' prefLabels).
                 File out = new File(resultFileNameTree);
-                results.put("concepts_tree", resultFileNameTree);
                 FileUtils.writeStringToFile(out,
-                        TaskUtils.collectionToJSONString(conceptTree),
+                        JSONSerialization.serializeObjectAsJsonString(
+                                conceptTree),
                         StandardCharsets.UTF_8);
+                VersionArtefactUtils.createConceptTreeVersionArtefact(taskInfo,
+                        resultFileNameTree);
             } else {
                 String reason;
                 if (conceptHandler.isCycle()) {
@@ -244,30 +242,35 @@ public class JsonTreeTransformProvider extends TransformProvider
                 } else {
                     reason = "there is a forward or cross edge";
                 }
-                results.put("concepts_tree_not_provided", "No concepts tree "
+                subtask.setStatus(TaskStatus.PARTIAL);
+                subtask.addResult("concepts_tree_not_provided",
+                        "No concepts tree "
                         + "provided, because " + reason + ".");
                 logger.error("JsonTreeTransform: not providing a concept "
                         + "tree because " + reason + ".");
                 // Future work:
                 // write something else, e.g., a JSON string.
                 //    FileUtils.writeStringToFile(out, "something");
+                return;
             }
         } catch (IOException ex) {
-            results.put(TaskStatus.EXCEPTION,
+            subtask.setStatus(TaskStatus.ERROR);
+            subtask.addResult(TaskRunner.ERROR,
                     "IO exception in JsonTreeTransform while "
                     + "generating result");
             logger.error("IO exception in JsonTreeTransform generating result:",
                     ex);
-            return false;
+            return;
         } catch (Exception ex) {
             // Any other possible cause?
-            results.put(TaskStatus.EXCEPTION,
+            subtask.setStatus(TaskStatus.ERROR);
+            subtask.addResult(TaskRunner.ERROR,
                     "Exception in JsonTreeTransform while generating result");
             logger.error("Exception in JsonTreeTransform generating result:",
                     ex);
-            return false;
+            return;
         }
-        return true;
+        subtask.setStatus(TaskStatus.SUCCESS);
     }
 
     /** Inner class for representing concepts, to be used as
@@ -881,13 +884,30 @@ public class JsonTreeTransformProvider extends TransformProvider
         }
     }
 
-    @Override
-    public final boolean untransform(final TaskInfo taskInfo,
-            final JsonNode subtask,
-            final HashMap<String, String> results) {
-        // Oops, this should remove the concepts tree file!
-        // TO DO: remove it!
-        return false;
+    /** Remove the JsonTree version artefact for the version.
+     * @param taskInfo The top-level TaskInfo for the subtask.
+     * @param subtask The subtask to be performed.
+     */
+    public final void untransform(final TaskInfo taskInfo,
+            final Subtask subtask) {
+        // Remove the JsonTree version artefact.
+        List<VersionArtefact> vas = VersionArtefactDAO.
+                getCurrentVersionArtefactListForVersionByType(
+                        taskInfo.getVersion().getVersionId(),
+                        VersionArtefactType.CONCEPT_TREE,
+                        taskInfo.getEm());
+        for (VersionArtefact va : vas) {
+            // We _don't_ delete the file. But if we did:
+            /*
+            VaConceptTree vaConceptTree =
+                    JSONSerialization.deserializeStringAsJson(
+                            va.getData(), VaConceptTree.class);
+            Files.deleteIfExists(Paths.get(vaConceptTree.getPath()));
+            */
+            TemporalUtils.makeHistorical(va, taskInfo.getNowTime());
+            VersionArtefactDAO.updateVersionArtefact(taskInfo.getEm(), va);
+        }
+        subtask.setStatus(TaskStatus.SUCCESS);
     }
 
     /** {@inheritDoc} */
@@ -909,21 +929,19 @@ public class JsonTreeTransformProvider extends TransformProvider
 
     /** {@inheritDoc} */
     @Override
-    public void doSubtask(
-            final au.org.ands.vocabs.registry.workflow.tasks.TaskInfo taskInfo,
-            final Subtask subtask) {
-        // TO DO
+    public void doSubtask(final TaskInfo taskInfo, final Subtask subtask) {
         switch (subtask.getOperation()) {
         case INSERT:
-            //
+        case PERFORM:
+            transform(taskInfo, subtask);
             break;
         case DELETE:
-            //
+            untransform(taskInfo, subtask);
             break;
         default:
+            logger.error("Unknown operation!");
             break;
         }
-
     }
 
 }
