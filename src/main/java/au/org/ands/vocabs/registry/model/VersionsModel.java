@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 import javax.persistence.EntityManager;
 
@@ -31,9 +32,12 @@ import au.org.ands.vocabs.registry.db.entity.clone.VersionClone;
 import au.org.ands.vocabs.registry.db.internal.VersionJson;
 import au.org.ands.vocabs.registry.enums.SubtaskOperationType;
 import au.org.ands.vocabs.registry.enums.SubtaskProviderType;
+import au.org.ands.vocabs.registry.enums.TaskStatus;
 import au.org.ands.vocabs.registry.enums.VocabularyStatus;
 import au.org.ands.vocabs.registry.model.sequence.VersionElement;
+import au.org.ands.vocabs.registry.schema.vocabulary201701.WorkflowOutcome;
 import au.org.ands.vocabs.registry.workflow.WorkflowMethods;
+import au.org.ands.vocabs.registry.workflow.converter.WorkflowOutcomeSchemaMapper;
 import au.org.ands.vocabs.registry.workflow.provider.importer.SesameImporterProvider;
 import au.org.ands.vocabs.registry.workflow.provider.publish.SISSVocPublishProvider;
 import au.org.ands.vocabs.registry.workflow.provider.transform.ResourceMapTransformProvider;
@@ -299,6 +303,7 @@ public class VersionsModel extends ModelBase {
             // If we ran at least one task, repopulate the sub-models
             // so that they are up-to-date again.
             populateSubmodels();
+            constructWorkflowOutcome();
         }
     }
 
@@ -338,6 +343,7 @@ public class VersionsModel extends ModelBase {
             // If we ran at least one task, repopulate the sub-models
             // so that they are up-to-date again.
             populateSubmodels();
+            constructWorkflowOutcome();
         }
     }
 
@@ -388,6 +394,7 @@ public class VersionsModel extends ModelBase {
             // If we ran at least one task, repopulate the sub-models
             // so that they are up-to-date again.
             populateSubmodels();
+            constructWorkflowOutcome();
         }
     }
 
@@ -923,6 +930,24 @@ public class VersionsModel extends ModelBase {
             }
         }
         return ranATask;
+    }
+
+    /** Construct a workflow-outcome element to return, if there
+     * was a task that did not complete successfully.
+     */
+    private void constructWorkflowOutcome() {
+        List<TaskInfo> taskInfos = versionTaskInfos.values().stream().
+            filter(taskInfo ->
+                taskInfo.getTask().getStatus() != TaskStatus.SUCCESS).
+            collect(Collectors.toList());
+        if (!taskInfos.isEmpty()) {
+            WorkflowOutcomeSchemaMapper mapper =
+                    WorkflowOutcomeSchemaMapper.INSTANCE;
+            WorkflowOutcome workflowOutcome = mapper.sourceToTarget(taskInfos);
+            logger.info("workflowOutcome: "
+                    + JSONSerialization.serializeObjectAsJsonString(
+                            workflowOutcome));
+        }
     }
 
 }

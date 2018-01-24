@@ -317,4 +317,39 @@
             </xs:sequence>
         </xs:complexType>
     </xs:element>
+    <xs:element name="workflow-outcome">
+        <xs:complexType>
+            <xs:sequence maxOccurs="unbounded" minOccurs="0">
+                <xs:element name="task-outcome">
+                    <xs:complexType>
+                        <xs:sequence maxOccurs="1" minOccurs="1">
+                            <xs:element maxOccurs="unbounded" minOccurs="0" name="subtask-outcome">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element maxOccurs="unbounded" minOccurs="0"
+                                            name="subtask-result" type="result"/>
+                                    </xs:sequence>
+                                    <xs:attribute name="status" type="common:task-status"/>
+                                    <xs:attribute name="subtask-provider-type"
+                                        type="common:subtask-provider-type"/>
+                                    <xs:attribute name="provider" type="xs:token"/>
+                                    <xs:attribute name="operation"
+                                        type="common:subtask-operation-type"/>
+                                </xs:complexType>
+                            </xs:element>
+                            <xs:element maxOccurs="unbounded" minOccurs="0" name="task-result"
+                                type="result"/>
+                        </xs:sequence>
+                        <xs:attribute name="version-id" type="id-type"/>
+                        <xs:attribute name="status" type="common:task-status"/>
+                    </xs:complexType>
+                </xs:element>
+            </xs:sequence>
+            <xs:attribute name="vocabulary-id" type="id-type"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:complexType name="result">
+        <xs:attribute name="result-key" type="xs:token"/>
+        <xs:attribute name="result-value" type="xs:token"/>
+    </xs:complexType>
 </xs:schema>
