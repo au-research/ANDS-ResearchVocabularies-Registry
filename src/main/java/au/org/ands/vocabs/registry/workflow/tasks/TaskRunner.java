@@ -63,6 +63,8 @@ public class TaskRunner {
             addTimestamp();
             return;
         }
+        // Did at least one subtask complete only partially?
+        boolean partial = false;
         TaskStatus lastSubtaskStatus;
         for (Subtask subtask : subtasks) {
             logger.debug("Got subtask: " + subtask.toString());
@@ -79,7 +81,9 @@ public class TaskRunner {
             }
             addTimestamp(subtask);
             lastSubtaskStatus = subtask.getStatus();
-            if (lastSubtaskStatus != TaskStatus.SUCCESS) {
+            if (lastSubtaskStatus == TaskStatus.PARTIAL) {
+                partial = true;
+            } else if (lastSubtaskStatus != TaskStatus.SUCCESS) {
                 logger.error("Subtask did not complete successfully: "
                         + task);
                 addTimestamp();
@@ -89,8 +93,14 @@ public class TaskRunner {
                 return;
             }
         }
-        task.setStatus(TaskStatus.SUCCESS);
-        task.addResult(RESPONSE, "All tasks completed.");
+        if (partial) {
+            task.setStatus(TaskStatus.PARTIAL);
+            task.addResult(RESPONSE, "All subtasks completed; at least one "
+                    + "completed only partially.");
+        } else {
+            task.setStatus(TaskStatus.SUCCESS);
+            task.addResult(RESPONSE, "All subtasks completed successfully.");
+        }
         addTimestamp();
     }
 
