@@ -7,12 +7,11 @@ import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.DirectoryIteratorException;
-import java.nio.file.DirectoryStream;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 import org.openrdf.model.Statement;
@@ -27,21 +26,29 @@ import org.openrdf.rio.helpers.RDFHandlerBase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
+import au.org.ands.vocabs.registry.db.context.TemporalUtils;
+import au.org.ands.vocabs.registry.db.converter.JSONSerialization;
+import au.org.ands.vocabs.registry.db.dao.AccessPointDAO;
+import au.org.ands.vocabs.registry.db.dao.VersionArtefactDAO;
+import au.org.ands.vocabs.registry.db.entity.AccessPoint;
+import au.org.ands.vocabs.registry.db.entity.VersionArtefact;
+import au.org.ands.vocabs.registry.db.internal.ApFile;
+import au.org.ands.vocabs.registry.db.internal.VaHarvestPoolparty;
+import au.org.ands.vocabs.registry.enums.AccessPointType;
 import au.org.ands.vocabs.registry.enums.SubtaskOperationType;
+import au.org.ands.vocabs.registry.enums.TaskStatus;
+import au.org.ands.vocabs.registry.enums.VersionArtefactType;
 import au.org.ands.vocabs.registry.workflow.provider.DefaultPriorities;
 import au.org.ands.vocabs.registry.workflow.provider.WorkflowProvider;
 import au.org.ands.vocabs.registry.workflow.tasks.Subtask;
-import au.org.ands.vocabs.toolkit.db.TaskUtils;
-import au.org.ands.vocabs.toolkit.tasks.TaskInfo;
-import au.org.ands.vocabs.toolkit.tasks.TaskStatus;
-import au.org.ands.vocabs.toolkit.utils.ToolkitFileUtils;
+import au.org.ands.vocabs.registry.workflow.tasks.TaskInfo;
+import au.org.ands.vocabs.registry.workflow.tasks.TaskRunner;
+import au.org.ands.vocabs.registry.workflow.tasks.TaskUtils;
+import au.org.ands.vocabs.registry.workflow.tasks.VersionArtefactUtils;
 
 /** Transform provider for generating a list-like representation of the
  * concepts as JSON. This assumes a vocabulary encoded using SKOS. */
-public class JsonListTransformProvider extends TransformProvider
-    implements WorkflowProvider {
+public class JsonListTransformProvider implements WorkflowProvider {
 
     /** Logger for this class. */
     private final Logger logger = LoggerFactory.getLogger(
@@ -50,61 +57,89 @@ public class JsonListTransformProvider extends TransformProvider
     /** Key used for storing a SKOS prefLabel. */
     public static final String PREF_LABEL = "prefLabel";
 
-    @Override
-    public final String getInfo() {
-        // Return null for now.
-        return null;
-    }
-
-    @Override
-    public final boolean transform(final TaskInfo taskInfo,
-            final JsonNode subtask,
-            final HashMap<String, String> results) {
-        Path dir = Paths.get(ToolkitFileUtils.getTaskHarvestOutputPath(
-                taskInfo));
+    /** Create/update the JsonList version artefact for the version.
+     * @param taskInfo The top-level TaskInfo for the subtask.
+     * @param subtask The subtask to be performed.
+     */
+    public final void transform(final TaskInfo taskInfo,
+            final Subtask subtask) {
         ConceptHandler conceptHandler = new ConceptHandler();
-        try (DirectoryStream<Path> stream =
-                Files.newDirectoryStream(dir)) {
-            for (Path entry: stream) {
+        List<Path> pathsToProcess = getPathsToProcess(taskInfo);
+        for (Path entry: pathsToProcess) {
+            try {
                 RDFFormat format = Rio.getParserFormatForFileName(
                         entry.toString());
                 RDFParser rdfParser = Rio.createParser(format);
                 rdfParser.setRDFHandler(conceptHandler);
+                logger.debug("Reading RDF:" + entry.toString());
                 FileInputStream is = new FileInputStream(entry.toString());
                 rdfParser.parse(is, entry.toString());
-                logger.debug("Reading RDF:" + entry.toString());
-
+            } catch (DirectoryIteratorException
+                    | IOException
+                    | RDFParseException
+                    | RDFHandlerException
+                    | UnsupportedRDFormatException ex) {
+                // Hmm, don't register an error, but keep going.
+                //    subtask.setStatus(TaskStatus.ERROR);
+                // But do log the parse error for this file.
+                subtask.addResult("parse_" + entry.getFileName(),
+                        "Exception in JsonListTransform while Parsing RDF");
+                logger.error("Exception in JsonListTransform "
+                        + "while Parsing RDF:", ex);
             }
-        } catch (DirectoryIteratorException
-                | IOException
-                | RDFParseException
-                | RDFHandlerException
-                | UnsupportedRDFormatException ex) {
-            results.put(TaskStatus.EXCEPTION,
-                    "Exception in JsonListTransform while Parsing RDF");
-            logger.error("Exception in JsonListTransform while Parsing RDF:",
-                    ex);
-            return false;
         }
 
-        String resultFileName = ToolkitFileUtils.getTaskOutputPath(taskInfo,
+        String resultFileName = TaskUtils.getTaskOutputPath(taskInfo, true,
                 "concepts_list.json");
         try {
             File out = new File(resultFileName);
-            results.put("concepts_list", resultFileName);
             HashMap<String, HashMap<String, Object>> conceptMap =
                     conceptHandler.getConceptMap();
             FileUtils.writeStringToFile(out,
-                    TaskUtils.mapToJSONString(conceptMap),
+                    JSONSerialization.serializeObjectAsJsonString(conceptMap),
                     StandardCharsets.UTF_8);
+            VersionArtefactUtils.createConceptListVersionArtefact(taskInfo,
+                    resultFileName);
         } catch (IOException ex) {
-            results.put(TaskStatus.EXCEPTION,
+            subtask.setStatus(TaskStatus.ERROR);
+            subtask.addResult(TaskRunner.ERROR,
                     "Exception in JsonListTransform while Parsing RDF");
             logger.error("Exception in JsonListTransform generating result:",
                     ex);
-            return false;
+            return;
         }
-        return true;
+        subtask.setStatus(TaskStatus.SUCCESS);
+    }
+
+    /** Get the Paths of all files that should be processed. The
+     * list includes all current file access points and PoolParty harvests.
+     * @param taskInfo The top-level TaskInfo for the subtask.
+     * @return A list of Paths, each of which is a files that should be
+     *      processed.
+     */
+    private List<Path> getPathsToProcess(final TaskInfo taskInfo) {
+        List<Path> paths = new ArrayList<>();
+        List<AccessPoint> aps = AccessPointDAO.
+                getCurrentAccessPointListForVersionByType(
+                        taskInfo.getVersion().getVersionId(),
+                        AccessPointType.FILE, taskInfo.getEm());
+        for (AccessPoint ap : aps) {
+            ApFile apFile = JSONSerialization.deserializeStringAsJson(
+                    ap.getData(), ApFile.class);
+            paths.add(Paths.get(apFile.getPath()));
+        }
+        List<VersionArtefact> vas = VersionArtefactDAO.
+                getCurrentVersionArtefactListForVersionByType(
+                        taskInfo.getVersion().getVersionId(),
+                        VersionArtefactType.HARVEST_POOLPARTY,
+                        taskInfo.getEm());
+        for (VersionArtefact va : vas) {
+            VaHarvestPoolparty vaHarvestPoolparty =
+                    JSONSerialization.deserializeStringAsJson(
+                            va.getData(), VaHarvestPoolparty.class);
+            paths.add(Paths.get(vaHarvestPoolparty.getPath()));
+        }
+        return paths;
     }
 
     /** RDF Handler to extract prefLabels, notation, and use broader
@@ -160,12 +195,30 @@ public class JsonListTransformProvider extends TransformProvider
         }
     }
 
-    @Override
-    public final boolean untransform(final TaskInfo taskInfo,
-            final JsonNode subtask,
-            final HashMap<String, String> results) {
-        // TO DO: remove it!
-        return false;
+    /** Remove the JsonList version artefact for the version.
+     * @param taskInfo The top-level TaskInfo for the subtask.
+     * @param subtask The subtask to be performed.
+     */
+    public final void untransform(final TaskInfo taskInfo,
+            final Subtask subtask) {
+        // Remove the SISSVoc access point.
+        List<VersionArtefact> vas = VersionArtefactDAO.
+                getCurrentVersionArtefactListForVersionByType(
+                        taskInfo.getVersion().getVersionId(),
+                        VersionArtefactType.CONCEPT_LIST,
+                        taskInfo.getEm());
+        for (VersionArtefact va : vas) {
+            // We _don't_ delete the file. But if we did:
+            /*
+            VaConceptList vaConceptList =
+                    JSONSerialization.deserializeStringAsJson(
+                            va.getData(), VaConceptList.class);
+            Files.deleteIfExists(Paths.get(vaConceptList.getPath()));
+            */
+            TemporalUtils.makeHistorical(va, taskInfo.getNowTime());
+            VersionArtefactDAO.updateVersionArtefact(taskInfo.getEm(), va);
+        }
+        subtask.setStatus(TaskStatus.SUCCESS);
     }
 
     /** {@inheritDoc} */
@@ -187,11 +240,19 @@ public class JsonListTransformProvider extends TransformProvider
 
     /** {@inheritDoc} */
     @Override
-    public void doSubtask(
-            final au.org.ands.vocabs.registry.workflow.tasks.TaskInfo taskInfo,
-            final Subtask subtask) {
-        // TO DO
-
+    public void doSubtask(final TaskInfo taskInfo, final Subtask subtask) {
+        switch (subtask.getOperation()) {
+        case INSERT:
+        case PERFORM:
+            transform(taskInfo, subtask);
+            break;
+        case DELETE:
+            untransform(taskInfo, subtask);
+            break;
+        default:
+            logger.error("Unknown operation!");
+            break;
+        }
     }
 
 }

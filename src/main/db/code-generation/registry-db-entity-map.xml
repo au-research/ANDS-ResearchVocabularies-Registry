@@ -335,7 +335,6 @@
                         vaType);
         q = TemporalUtils.setDatetimeConstantParameters(q);
         List&lt;VersionArtefact&gt; entityList = q.getResultList();
-        em.close();
         return entityList;
     }
 

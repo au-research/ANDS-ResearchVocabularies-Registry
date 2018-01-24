@@ -40,11 +40,8 @@ public final class VersionArtefactUtils {
      * version artefact for a version.
      * Don't duplicate it, if it already exists.
      * @param <T> The class of the version artefact, as a subclass of VaCommon.
-     * @param em The EntityManager to use.
-     * @param modifiedBy The value to use for "modifiedBy" when adding/updating
-     *      rows of the database.
-     * @param nowTime The date/time being used for this operation.
-     * @param version The version for which the access point is to be created.
+     * @param taskInfo The TaskInfo providing the context for
+     *      the creation of the version artefact.
      * @param vaClass The class instance of the version artefact type.
      * @param vaType The version artefact type.
      * @param comparePredicate Predicate used to compare against an existing
@@ -52,16 +49,18 @@ public final class VersionArtefactUtils {
      * @param fieldSetter Consumer used to set type-specific field(s) of a
      *      new version artefact.
      */
-    @SuppressWarnings("checkstyle:ParameterNumber")
     private static <T extends VaCommon> void createVersionArtefact(
-            final EntityManager em,
-            final String modifiedBy,
-            final LocalDateTime nowTime,
-            final Version version,
+            final TaskInfo taskInfo,
             final Class<T> vaClass,
             final VersionArtefactType vaType,
             final Predicate<T> comparePredicate,
             final Consumer<T> fieldSetter) {
+
+        EntityManager em = taskInfo.getEm();
+        String modifiedBy = taskInfo.getModifiedBy();
+        LocalDateTime nowTime = taskInfo.getNowTime();
+        Version version = taskInfo.getVersion();
+
         Integer versionId = version.getVersionId();
         List<VersionArtefact> vas = VersionArtefactDAO.
                 getCurrentVersionArtefactListForVersionByType(
@@ -83,7 +82,7 @@ public final class VersionArtefactUtils {
         // so create a new one.
         VersionArtefact va = new VersionArtefact();
         TemporalUtils.makeCurrentlyValid(va, nowTime);
-        va.setVersionId(version.getId());
+        va.setVersionId(version.getVersionId());
         va.setModifiedBy(modifiedBy);
         va.setStatus(VersionArtefactStatus.CURRENT);
         va.setType(vaType);
@@ -105,20 +104,14 @@ public final class VersionArtefactUtils {
     /** Create a database entity for a system-generated concept list
      * version artefact for a version.
      * Don't duplicate it, if it already exists.
-     * @param em The EntityManager to use.
-     * @param modifiedBy The value to use for "modifiedBy" when adding/updating
-     *      rows of the database.
-     * @param nowTime The date/time being used for this operation.
-     * @param version The version for which the access point is to be created.
+     * @param taskInfo The TaskInfo providing the context for
+     *      the creation of the version artefact.
      * @param path The path to put into the database entity.
      */
     public static void createConceptListVersionArtefact(
-            final EntityManager em,
-            final String modifiedBy,
-            final LocalDateTime nowTime,
-            final Version version,
+            final TaskInfo taskInfo,
             final String path) {
-        createVersionArtefact(em, modifiedBy, nowTime, version,
+        createVersionArtefact(taskInfo,
                 VaConceptList.class,
                 VersionArtefactType.CONCEPT_LIST,
                 vaT -> path.equals(vaT.getPath()),
@@ -128,20 +121,14 @@ public final class VersionArtefactUtils {
     /** Create a database entity for a system-generated concept tree
      * version artefact for a version.
      * Don't duplicate it, if it already exists.
-     * @param em The EntityManager to use.
-     * @param modifiedBy The value to use for "modifiedBy" when adding/updating
-     *      rows of the database.
-     * @param nowTime The date/time being used for this operation.
-     * @param version The version for which the access point is to be created.
+     * @param taskInfo The TaskInfo providing the context for
+     *      the creation of the version artefact.
      * @param path The path to put into the database entity.
      */
     public static void createConceptTreeVersionArtefact(
-            final EntityManager em,
-            final String modifiedBy,
-            final LocalDateTime nowTime,
-            final Version version,
+            final TaskInfo taskInfo,
             final String path) {
-        createVersionArtefact(em, modifiedBy, nowTime, version,
+        createVersionArtefact(taskInfo,
                 VaConceptTree.class,
                 VersionArtefactType.CONCEPT_TREE,
                 vaT -> path.equals(vaT.getPath()),
@@ -151,20 +138,14 @@ public final class VersionArtefactUtils {
     /** Create a database entity for a system-generated PoolParty harvest
      * version artefact for a version.
      * Don't duplicate it, if it already exists.
-     * @param em The EntityManager to use.
-     * @param modifiedBy The value to use for "modifiedBy" when adding/updating
-     *      rows of the database.
-     * @param nowTime The date/time being used for this operation.
-     * @param version The version for which the access point is to be created.
+     * @param taskInfo The TaskInfo providing the context for
+     *      the creation of the version artefact.
      * @param path The path to put into the database entity.
      */
     public static void createPoolpartyHarvestVersionArtefact(
-            final EntityManager em,
-            final String modifiedBy,
-            final LocalDateTime nowTime,
-            final Version version,
+            final TaskInfo taskInfo,
             final String path) {
-        createVersionArtefact(em, modifiedBy, nowTime, version,
+        createVersionArtefact(taskInfo,
                 VaHarvestPoolparty.class,
                 VersionArtefactType.HARVEST_POOLPARTY,
                 vaT -> path.equals(vaT.getPath()),
