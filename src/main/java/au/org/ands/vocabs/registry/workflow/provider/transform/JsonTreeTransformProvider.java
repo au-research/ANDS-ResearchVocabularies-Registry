@@ -155,6 +155,15 @@ import au.org.ands.vocabs.registry.workflow.tasks.VersionArtefactUtils;
  */
 public class JsonTreeTransformProvider implements WorkflowProvider {
 
+    /** Prefix for keys used for results that say that a file could
+     * not be parsed. */
+    public static final String PARSE_PREFIX = "parse-";
+
+    /** Key to use for a result that says that the concepts tree was
+     * not generated. */
+    public static final String CONCEPTS_TREE_NOT_PROVIDED =
+            "concepts-tree-not-provided";
+
     /** Logger for this class. */
     private final Logger logger = LoggerFactory.getLogger(
             MethodHandles.lookup().lookupClass());
@@ -200,7 +209,7 @@ public class JsonTreeTransformProvider implements WorkflowProvider {
                     | RDFParseException
                     | RDFHandlerException
                     | UnsupportedRDFormatException ex) {
-                subtask.addResult("parse_" + entry.getFileName(),
+                subtask.addResult(PARSE_PREFIX + entry.getFileName(),
                         "Exception in JsonListTransform while Parsing RDF");
                 logger.error("Exception in JsonTreeTransform "
                         + "while Parsing RDF:", ex);
@@ -243,7 +252,7 @@ public class JsonTreeTransformProvider implements WorkflowProvider {
                     reason = "there is a forward or cross edge";
                 }
                 subtask.setStatus(TaskStatus.PARTIAL);
-                subtask.addResult("concepts_tree_not_provided",
+                subtask.addResult(CONCEPTS_TREE_NOT_PROVIDED,
                         "No concepts tree "
                         + "provided, because " + reason + ".");
                 logger.error("JsonTreeTransform: not providing a concept "

@@ -44,6 +44,10 @@ import au.org.ands.vocabs.registry.workflow.tasks.VersionArtefactUtils;
  * concepts as JSON. This assumes a vocabulary encoded using SKOS. */
 public class JsonListTransformProvider implements WorkflowProvider {
 
+    /** Prefix for keys used for results that say that a file could
+     * not be parsed. */
+    public static final String PARSE_PREFIX = "parse-";
+
     /** Logger for this class. */
     private final Logger logger = LoggerFactory.getLogger(
             MethodHandles.lookup().lookupClass());
@@ -77,7 +81,7 @@ public class JsonListTransformProvider implements WorkflowProvider {
                 // Hmm, don't register an error, but keep going.
                 //    subtask.setStatus(TaskStatus.ERROR);
                 // But do log the parse error for this file.
-                subtask.addResult("parse_" + entry.getFileName(),
+                subtask.addResult(PARSE_PREFIX + entry.getFileName(),
                         "Exception in JsonListTransform while Parsing RDF");
                 logger.error("Exception in JsonListTransform "
                         + "while Parsing RDF:", ex);
