@@ -28,13 +28,13 @@ import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import au.org.ands.vocabs.registry.utils.RegistryNetUtils;
 import au.org.ands.vocabs.registry.workflow.provider.WorkflowProvider;
 import au.org.ands.vocabs.registry.workflow.tasks.Subtask;
 import au.org.ands.vocabs.toolkit.tasks.TaskStatus;
 import au.org.ands.vocabs.toolkit.utils.PoolPartyUtils;
 import au.org.ands.vocabs.toolkit.utils.PropertyConstants;
 import au.org.ands.vocabs.toolkit.utils.ToolkitFileUtils;
-import au.org.ands.vocabs.toolkit.utils.ToolkitNetUtils;
 import au.org.ands.vocabs.toolkit.utils.ToolkitProperties;
 import ch.qos.logback.classic.Level;
 
@@ -59,7 +59,7 @@ public class PoolPartyBackupProvider extends BackupProvider
 
         logger.debug("Getting metadata from " + remoteUrl);
 
-        Client client = ToolkitNetUtils.getClient();
+        Client client = RegistryNetUtils.getClient();
         WebTarget target = client.target(remoteUrl)
                 .path(PoolPartyUtils.API_PROJECTS);
         HttpAuthenticationFeature feature =
@@ -140,7 +140,7 @@ public class PoolPartyBackupProvider extends BackupProvider
 
         logger.debug("Getting project from " + remoteUrl);
 
-        Client client = ToolkitNetUtils.getClient();
+        Client client = RegistryNetUtils.getClient();
         WebTarget target = client.target(remoteUrl).
                 path(PoolPartyUtils.API_PROJECTS);
         HttpAuthenticationFeature feature =

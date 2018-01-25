@@ -54,11 +54,8 @@ public final class AccessPointUtils {
     /** Create a database entity for a system-generated access point
      * for a version. Don't duplicate it, if it already exists.
      * @param <T> The class of the access point, as a subclass of ApCommon.
-     * @param em The EntityManager to use.
-     * @param modifiedBy The value to use for "modifiedBy" when adding/updating
-     *      rows of the database.
-     * @param nowTime The date/time being used for this operation.
-     * @param version The version for which the access point is to be created.
+     * @param taskInfo The TaskInfo providing the context for
+     *      the creation of the access point.
      * @param apClass The class instance of the access point type.
      * @param apType The access point type.
      * @param comparePredicate Predicate used to compare against an existing
@@ -66,16 +63,18 @@ public final class AccessPointUtils {
      * @param fieldSetter Consumer used to set type-specific field(s) of a
      *      new access point.
      */
-    @SuppressWarnings("checkstyle:ParameterNumber")
     private static <T extends ApCommon> void createAccessPoint(
-            final EntityManager em,
-            final String modifiedBy,
-            final LocalDateTime nowTime,
-            final Version version,
+            final TaskInfo taskInfo,
             final Class<T> apClass,
             final AccessPointType apType,
             final Predicate<T> comparePredicate,
             final Consumer<T> fieldSetter) {
+
+        EntityManager em = taskInfo.getEm();
+        String modifiedBy = taskInfo.getModifiedBy();
+        LocalDateTime nowTime = taskInfo.getNowTime();
+        Version version = taskInfo.getVersion();
+
         Integer versionId = version.getVersionId();
         List<AccessPoint> aps =
                 AccessPointDAO.getCurrentAccessPointListForVersionByType(
@@ -101,7 +100,7 @@ public final class AccessPointUtils {
         // so create a new one.
         AccessPoint ap = new AccessPoint();
         TemporalUtils.makeCurrentlyValid(ap, nowTime);
-        ap.setVersionId(version.getId());
+        ap.setVersionId(version.getVersionId());
         ap.setModifiedBy(modifiedBy);
         ap.setType(apType);
         ap.setSource(ApSource.SYSTEM);
@@ -121,20 +120,14 @@ public final class AccessPointUtils {
 
     /** Create a database entity for a system-generated SISSVoc access point
      * for a version. Don't duplicate it, if it already exists.
-     * @param em The EntityManager to use.
-     * @param modifiedBy The value to use for "modifiedBy" when adding/updating
-     *      rows of the database.
-     * @param nowTime The date/time being used for this operation.
-     * @param version The version for which the access point is to be created.
+     * @param taskInfo The TaskInfo providing the context for
+     *      the creation of the access point.
      * @param urlPrefix The urlPrefix to put into the database entity.
      */
     public static void createSissvocAccessPoint(
-            final EntityManager em,
-            final String modifiedBy,
-            final LocalDateTime nowTime,
-            final Version version,
+            final TaskInfo taskInfo,
             final String urlPrefix) {
-        createAccessPoint(em, modifiedBy, nowTime, version,
+        createAccessPoint(taskInfo,
                 ApSissvoc.class,
                 AccessPointType.SISSVOC,
                 apT -> urlPrefix.equals(apT.getUrlPrefix()),

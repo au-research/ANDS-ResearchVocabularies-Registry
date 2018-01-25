@@ -1,6 +1,6 @@
 /** See the file "LICENSE" for the full license governing this code. */
 
-package au.org.ands.vocabs.toolkit.utils;
+package au.org.ands.vocabs.registry.utils;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -9,7 +9,7 @@ import org.glassfish.jersey.client.ClientProperties;
 import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature;
 
 /** Utility methods for working with the network. */
-public final class ToolkitNetUtils {
+public final class RegistryNetUtils {
 
     /** A shared Client resource, initialized on class loading.
      * Follows redirects. */
@@ -35,7 +35,7 @@ public final class ToolkitNetUtils {
             register(basicAuthFeature);
 
     /** Private constructor for a utility class. */
-    private ToolkitNetUtils() {
+    private RegistryNetUtils() {
     }
 
     /** Get the shared Client resource that follows redirects.

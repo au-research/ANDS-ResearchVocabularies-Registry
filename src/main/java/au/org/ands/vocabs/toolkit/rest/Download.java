@@ -27,6 +27,7 @@ import javax.ws.rs.core.Response.Status;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import au.org.ands.vocabs.registry.utils.RegistryNetUtils;
 import au.org.ands.vocabs.toolkit.db.AccessPointUtils;
 import au.org.ands.vocabs.toolkit.db.VersionUtils;
 import au.org.ands.vocabs.toolkit.db.VocabularyUtils;
@@ -34,7 +35,6 @@ import au.org.ands.vocabs.toolkit.db.model.AccessPoint;
 import au.org.ands.vocabs.toolkit.db.model.Version;
 import au.org.ands.vocabs.toolkit.db.model.Vocabulary;
 import au.org.ands.vocabs.toolkit.utils.ToolkitFileUtils;
-import au.org.ands.vocabs.toolkit.utils.ToolkitNetUtils;
 
 /** REST web services for downloading a vocabulary. */
 @Path("download")
@@ -297,7 +297,7 @@ public class Download {
         final String downloadFilename = downloadFilename(ap, downloadFormat);
 
         // Prepare the connection to Sesame.
-        Client client = ToolkitNetUtils.getClient();
+        Client client = RegistryNetUtils.getClient();
         WebTarget target = client.target(sesameUri + "/statements");
 
         final Invocation.Builder invocationBuilder =

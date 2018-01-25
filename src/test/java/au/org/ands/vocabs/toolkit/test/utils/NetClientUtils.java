@@ -15,7 +15,7 @@ import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import au.org.ands.vocabs.toolkit.utils.ToolkitNetUtils;
+import au.org.ands.vocabs.registry.utils.RegistryNetUtils;
 
 /** Utility methods for testing the toolkit as a remote client. */
 public final class NetClientUtils {
@@ -43,7 +43,7 @@ public final class NetClientUtils {
     public static Response doGet(final URL baseURL,
             final String path) {
         logger.info("doGet: baseURL = " + baseURL + "; path = " + path);
-        Client client = ToolkitNetUtils.getClient();
+        Client client = RegistryNetUtils.getClient();
         WebTarget target = client.target(baseURL.toString()).
                 path(path);
         Response response = target.request().get();
@@ -62,7 +62,7 @@ public final class NetClientUtils {
             final String path, final MediaType responseMediaType) {
         logger.info("doGet: baseURL = " + baseURL + "; path = " + path
                 + "; responseMediaType = " + responseMediaType);
-        Client client = ToolkitNetUtils.getClient();
+        Client client = RegistryNetUtils.getClient();
         WebTarget target = client.target(baseURL.toString()).
                 path(path);
         Response response =
@@ -88,7 +88,7 @@ public final class NetClientUtils {
             final Function<WebTarget, WebTarget> additionalComponents) {
         logger.info("doGetWithAdditionalComponents: baseURL = " + baseURL
                 + "; path = " + path);
-        Client client = ToolkitNetUtils.getClient();
+        Client client = RegistryNetUtils.getClient();
         WebTarget target = client.target(baseURL.toString()).path(path);
         target = additionalComponents.apply(target);
         Response response = target.request().get();
@@ -117,7 +117,7 @@ public final class NetClientUtils {
             final Function<WebTarget, WebTarget> additionalComponents) {
         logger.info("doGetBasicAuthWithAdditionalComponents: baseURL = "
             + baseURL + "; path = " + path);
-        Client client = ToolkitNetUtils.getClientBasicAuthentication();
+        Client client = RegistryNetUtils.getClientBasicAuthentication();
         WebTarget target = client.target(baseURL.toString()).path(path);
         target = additionalComponents.apply(target);
         Response response = target.request(responseMediaType).
@@ -147,7 +147,7 @@ public final class NetClientUtils {
             final Function<WebTarget, WebTarget> additionalComponents) {
         logger.info("doGetWithAdditionalComponentsNoRedirects: baseURL = "
             + baseURL + "; path = " + path);
-        Client client = ToolkitNetUtils.getClientNoRedirects();
+        Client client = RegistryNetUtils.getClientNoRedirects();
         WebTarget target = client.target(baseURL.toString()).path(path);
         target = additionalComponents.apply(target);
         Response response = target.request().get();
@@ -175,7 +175,7 @@ public final class NetClientUtils {
             final Function<WebTarget, WebTarget> additionalComponents) {
         logger.info("doDelete: baseURL = " + baseURL + "; path = " + path
                 + "; responseMediaType = " + responseMediaType);
-        Client client = ToolkitNetUtils.getClientBasicAuthentication();
+        Client client = RegistryNetUtils.getClientBasicAuthentication();
         WebTarget target = client.target(baseURL.toString()).
                 path(path);
         target = additionalComponents.apply(target);

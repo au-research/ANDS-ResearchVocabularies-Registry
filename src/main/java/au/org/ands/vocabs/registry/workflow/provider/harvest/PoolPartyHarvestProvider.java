@@ -30,6 +30,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 import au.org.ands.vocabs.editor.admin.model.PoolPartyProject;
 import au.org.ands.vocabs.registry.enums.SubtaskOperationType;
+import au.org.ands.vocabs.registry.utils.RegistryNetUtils;
 import au.org.ands.vocabs.registry.workflow.provider.DefaultPriorities;
 import au.org.ands.vocabs.registry.workflow.provider.WorkflowProvider;
 import au.org.ands.vocabs.registry.workflow.provider.transform.GetMetadataTransformProvider;
@@ -41,7 +42,6 @@ import au.org.ands.vocabs.toolkit.utils.PoolPartyUtils;
 import au.org.ands.vocabs.toolkit.utils.PropertyConstants;
 import au.org.ands.vocabs.toolkit.utils.RDFUtils;
 import au.org.ands.vocabs.toolkit.utils.ToolkitFileUtils;
-import au.org.ands.vocabs.toolkit.utils.ToolkitNetUtils;
 import au.org.ands.vocabs.toolkit.utils.ToolkitProperties;
 
 /** Harvest provider for PoolParty. */
@@ -71,7 +71,7 @@ public class PoolPartyHarvestProvider extends HarvestProvider
 
         logger.debug("Getting metadata from " + remoteUrl);
 
-        Client client = ToolkitNetUtils.getClient();
+        Client client = RegistryNetUtils.getClient();
         WebTarget target = client.target(remoteUrl).
                 path(PoolPartyUtils.API_PROJECTS);
         HttpAuthenticationFeature feature =
@@ -183,7 +183,7 @@ public class PoolPartyHarvestProvider extends HarvestProvider
         results.put("poolparty_url", remoteUrl);
         results.put("poolparty_project_id", ppProjectId);
 
-        Client client = ToolkitNetUtils.getClient();
+        Client client = RegistryNetUtils.getClient();
         WebTarget target = client.target(remoteUrl).
                 path(PoolPartyUtils.API_PROJECTS);
         HttpAuthenticationFeature feature =
