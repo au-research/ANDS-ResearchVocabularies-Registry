@@ -43,7 +43,7 @@ public final class DefaultPriorities {
      * Note that such subtasks are done <i>before</i> importer deletes! */
     public static final Integer
             DEFAULT_TRANSFORM_AFTER_IMPORTER_DELETE_PRIORITY =
-            -DEFAULT_TRANSFORM_BEFORE_IMPORTER_INSERT_PRIORITY;
+            -DEFAULT_TRANSFORM_AFTER_IMPORTER_INSERT_PRIORITY;
 
     /** Default priority for backup perform. */
     public static final Integer DEFAULT_BACKUP_PERFORM_PRIORITY = null;
