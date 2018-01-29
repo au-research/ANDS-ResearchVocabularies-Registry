@@ -3,12 +3,10 @@ package au.org.ands.vocabs.registry.workflow.provider.transform;
 
 import java.lang.invoke.MethodHandles;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import javax.persistence.EntityManager;
-
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.impl.LiteralImpl;
@@ -28,41 +26,39 @@ import org.openrdf.repository.manager.RepositoryProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
+import au.org.ands.vocabs.registry.db.dao.AccessPointDAO;
+import au.org.ands.vocabs.registry.db.dao.ResourceMapEntryDAO;
+import au.org.ands.vocabs.registry.db.dao.ResourceOwnerHostDAO;
+import au.org.ands.vocabs.registry.db.entity.AccessPoint;
+import au.org.ands.vocabs.registry.db.entity.ResourceMapEntry;
+import au.org.ands.vocabs.registry.db.entity.ResourceOwnerHost;
+import au.org.ands.vocabs.registry.enums.AccessPointType;
 import au.org.ands.vocabs.registry.enums.SubtaskOperationType;
+import au.org.ands.vocabs.registry.enums.TaskStatus;
+import au.org.ands.vocabs.registry.utils.PropertyConstants;
+import au.org.ands.vocabs.registry.utils.RegistryProperties;
 import au.org.ands.vocabs.registry.workflow.provider.DefaultPriorities;
 import au.org.ands.vocabs.registry.workflow.provider.WorkflowProvider;
 import au.org.ands.vocabs.registry.workflow.tasks.Subtask;
-import au.org.ands.vocabs.toolkit.db.AccessPointUtils;
-import au.org.ands.vocabs.toolkit.db.DBContext;
-import au.org.ands.vocabs.toolkit.db.ResourceMapEntryUtils;
-import au.org.ands.vocabs.toolkit.db.ResourceOwnerHostUtils;
-import au.org.ands.vocabs.toolkit.db.TaskUtils;
-import au.org.ands.vocabs.toolkit.db.model.AccessPoint;
-import au.org.ands.vocabs.toolkit.db.model.ResourceOwnerHost;
-import au.org.ands.vocabs.toolkit.tasks.TaskInfo;
-import au.org.ands.vocabs.toolkit.tasks.TaskStatus;
-import au.org.ands.vocabs.toolkit.utils.PropertyConstants;
-import au.org.ands.vocabs.toolkit.utils.ToolkitFileUtils;
-import au.org.ands.vocabs.toolkit.utils.ToolkitProperties;
+import au.org.ands.vocabs.registry.workflow.tasks.TaskInfo;
+import au.org.ands.vocabs.registry.workflow.tasks.TaskRunner;
+import au.org.ands.vocabs.registry.workflow.tasks.TaskUtils;
 
 /**
  * Transform provider for adding/removing resource map entries.
  *
  * Prerequisite for this transform is that the version must have exactly
- * one access point of type "sissvoc".
+ * one access point of type SISSVoc.
  */
-public class ResourceMapTransformProvider extends TransformProvider
-    implements WorkflowProvider {
+public class ResourceMapTransformProvider implements WorkflowProvider {
 
     /** Logger for this class. */
     private final Logger logger = LoggerFactory.getLogger(
             MethodHandles.lookup().lookupClass());
 
     /** URL to access the Sesame server. */
-    private static String sesameServer = ToolkitProperties.getProperty(
-            PropertyConstants.SESAMEIMPORTER_SERVERURL);
+    private static String sesameServer = RegistryProperties.getProperty(
+            PropertyConstants.SESAME_IMPORTER_SERVERURL);
 
     /** Force loading of HttpClientUtils, so that shutdown works
      * properly. Revisit this when using a later version of Tomcat,
@@ -97,14 +93,7 @@ public class ResourceMapTransformProvider extends TransformProvider
         HTTPCLIENTUTILS_CLASS =
             org.apache.http.client.utils.HttpClientUtils.class;
 
-    @Override
-    public final String getInfo() {
-        // Not implemented.
-        return null;
-    }
-
-    /** The default setting for {@code fail_on_error}.
-     */
+    /** The default setting for {@code fail-on-error}. */
     private static final boolean FAIL_ON_ERROR_DEFAULT = false;
 
     /** Array of resource types of interest. */
@@ -149,7 +138,7 @@ public class ResourceMapTransformProvider extends TransformProvider
     /** Template for a SPARQL Query to extract exactly those IRIs
      * to be added to the concept map. The template elements
      * #RESOURCETYPES# and #HOSTNAMES# are replaced by
-     * {@link #transform(TaskInfo, JsonNode, HashMap)}.
+     * {@link #transform(TaskInfo, Subtask)}.
      * When running this query, turn off inferred statements, otherwise
      * deprecated resources that don't have a defined type will go missing.
      * (If inferring is on, they get the inferred type rdfs:Resource.)
@@ -182,43 +171,50 @@ public class ResourceMapTransformProvider extends TransformProvider
      */
     private Integer getAccessPointId(final TaskInfo taskInfo) {
         List<AccessPoint> aps =
-                AccessPointUtils.getAccessPointsForVersionAndType(
-                        taskInfo.getVersion(), AccessPoint.SISSVOC_TYPE);
+                AccessPointDAO.getCurrentAccessPointListForVersionByType(
+                        taskInfo.getVersion().getVersionId(),
+                        AccessPointType.SISSVOC,
+                        taskInfo.getEm());
         if (aps.size() != 1) {
             return null;
         }
-        return aps.get(0).getId();
+        return aps.get(0).getAccessPointId();
     }
 
-    @Override
+    /** Add the resource map entries for the version.
+     * @param taskInfo The top-level TaskInfo for the subtask.
+     * @param subtask The subtask to be performed.
+     */
     @SuppressWarnings("checkstyle:MethodLength")
-    public final boolean transform(final TaskInfo taskInfo,
-            final JsonNode subtask,
-            final HashMap<String, String> results) {
+    public final void transform(final TaskInfo taskInfo,
+            final Subtask subtask) {
         Integer accessPointId = getAccessPointId(taskInfo);
         if (accessPointId == null) {
-            logNotExactlyOneSissvocAccessPoint(taskInfo, results);
+            logNotExactlyOneSissvocAccessPoint(taskInfo, subtask);
             // Return failure (i.e., false) in this case,
             // if fail_on_error is set to true.
-            return !TaskUtils.isSubtaskFailOnError(subtask,
-                    FAIL_ON_ERROR_DEFAULT);
+            if (TaskUtils.isSubtaskFailOnError(subtask,
+                    FAIL_ON_ERROR_DEFAULT)) {
+                subtask.setStatus(TaskStatus.ERROR);
+            } else {
+                subtask.setStatus(TaskStatus.SUCCESS);
+            }
+            return;
         }
 
         String owner = taskInfo.getVocabulary().getOwner();
         List<ResourceOwnerHost> resourceOwnerHosts =
-                ResourceOwnerHostUtils.getResourceOwnerHostMapEntriesForOwner(
-                        owner);
+                ResourceOwnerHostDAO.getCurrentResourceOwnerHostsForOwner(
+                        owner, taskInfo.getEm());
 
         // Possible future change: support indexing of "everything",
         // i.e., even when the owner has no associated hosts.
         if (resourceOwnerHosts.size() == 0) {
             // This owner has no hosts associated with it. So there
             // is nothing more to be done.
-            logNoHosts(taskInfo, results);
-            // Return failure (i.e., false) in this case,
-            // if fail_on_error is set to true.
-            return !TaskUtils.isSubtaskFailOnError(subtask,
-                    FAIL_ON_ERROR_DEFAULT);
+            logNoHosts(taskInfo, subtask);
+            subtask.setStatus(TaskStatus.SUCCESS);
+            return;
         }
 
         // Join the resource owner hostnames together to get a String
@@ -245,35 +241,39 @@ public class ResourceMapTransformProvider extends TransformProvider
         // First, open the repository.
         try {
             manager = RepositoryProvider.getRepositoryManager(sesameServer);
-            String repositoryID = ToolkitFileUtils.getSesameRepositoryId(
+            String repositoryID = TaskUtils.getSesameRepositoryId(
                     taskInfo);
             repository = manager.getRepository(repositoryID);
             if (repository == null) {
-                TaskUtils.updateMessageAndTaskStatus(logger,
-                        taskInfo.getTask(),
-                        results, TaskStatus.ERROR,
+                subtask.addResult(TaskRunner.ERROR,
                         "ResourceMapTransformProvider.transform(): "
                         + "no such repository: " + repositoryID);
                 // Return failure (i.e., false) if fail_on_error is set to true.
-                return !TaskUtils.isSubtaskFailOnError(subtask,
-                        FAIL_ON_ERROR_DEFAULT);
+                if (TaskUtils.isSubtaskFailOnError(subtask,
+                        FAIL_ON_ERROR_DEFAULT)) {
+                    subtask.setStatus(TaskStatus.ERROR);
+                } else {
+                    subtask.setStatus(TaskStatus.SUCCESS);
+                }
+                return;
             }
         } catch (RepositoryConfigException | RepositoryException e) {
             // Log separately so as to get stacktrace.
             logger.error("Exception in ResourceMapTransformProvider."
                     + "transform() opening repository", e);
-            TaskUtils.updateMessageAndTaskStatus(logger,
-                    taskInfo.getTask(),
-                    results, TaskStatus.EXCEPTION,
+            subtask.addResult(TaskRunner.ERROR,
                     "Exception in ResourceMapTransformProvider.transform() "
                             + "opening repository");
+            subtask.addResult(TaskRunner.STACKTRACE,
+                    ExceptionUtils.getStackTrace(e));
             // An exception: always return false in this case.
-            return false;
+            subtask.setStatus(TaskStatus.ERROR);
+            return;
         }
 
         // Clear out any existing entries before proceeding.
-        ResourceMapEntryUtils.deleteResourceMapEntriesForAccessPoint(
-                accessPointId);
+        ResourceMapEntryDAO.deleteResourceMapEntriesForAccessPoint(
+                accessPointId, taskInfo.getEm());
         // Now, open a connection and process the resources.
         try {
             RepositoryConnection conn = null;
@@ -293,8 +293,6 @@ public class ResourceMapTransformProvider extends TransformProvider
                     // transaction. This makes a very big difference
                     // to performance, over doing a separate transaction
                     // to insert each new entry.
-                    EntityManager em = DBContext.getEntityManager();
-                    em.getTransaction().begin();
                     while (queryResult.hasNext()) {
                         BindingSet aBinding = queryResult.next();
                         Value iri = aBinding.getBinding(BINDING_NAME_IRI)
@@ -307,27 +305,29 @@ public class ResourceMapTransformProvider extends TransformProvider
                         LiteralImpl deprecated = (LiteralImpl)
                                 (aBinding.getBinding(BINDING_NAME_DEPRECATED)
                                         .getValue());
-                        ResourceMapEntryUtils.addResourceMapEntry(em,
-                                iri.stringValue(), accessPointId,
-                                owned.booleanValue(),
-                                resourceType.stringValue(),
-                                deprecated.booleanValue());
+                        ResourceMapEntry rme = new ResourceMapEntry();
+                        rme.setIri(iri.stringValue());
+                        rme.setAccessPointId(accessPointId);
+                        rme.setOwned(owned.booleanValue());
+                        rme.setResourceType(resourceType.stringValue());
+                        rme.setDeprecated(deprecated.booleanValue());
+                        ResourceMapEntryDAO.saveResourceMapEntry(
+                                taskInfo.getEm(), rme);
                     }
-                    em.getTransaction().commit();
-                    em.close();
                     queryResult.close();
                 } catch (MalformedQueryException | QueryEvaluationException e) {
                     logger.error("Bad query constructed in "
                             + "ResourceMapTransformProvider.transform(): "
                             + queryString, e);
-                    TaskUtils.updateMessageAndTaskStatus(logger,
-                            taskInfo.getTask(),
-                            results, TaskStatus.EXCEPTION,
+                    subtask.addResult(TaskRunner.STACKTRACE,
+                            ExceptionUtils.getStackTrace(e));
+                    subtask.addResult(TaskRunner.ERROR,
                             "Bad query constructed in "
                             + "ResourceMapTransformProvider.transform(): "
                             + queryString);
-                    // An exception: always return false in this case.
-                    return false;
+                    // An exception: always return error status in this case.
+                    subtask.setStatus(TaskStatus.ERROR);
+                    return;
                 }
             } finally {
                 if (queryResult != null) {
@@ -340,72 +340,73 @@ public class ResourceMapTransformProvider extends TransformProvider
         } catch (RepositoryException | QueryEvaluationException e) {
             logger.error("Exception in ResourceMapTransformProvider."
                     + "transform() with connection handling", e);
-            TaskUtils.updateMessageAndTaskStatus(logger,
-                    taskInfo.getTask(),
-                    results, TaskStatus.EXCEPTION,
+            subtask.addResult(TaskRunner.STACKTRACE,
+                    ExceptionUtils.getStackTrace(e));
+            subtask.addResult(TaskRunner.ERROR,
                     "Exception in ResourceMapTransformProvider."
                     + "transform() with connection handling");
-            // An exception: always return false in this case.
-            return false;
+            // An exception: always return error status in this case.
+            subtask.setStatus(TaskStatus.ERROR);
+            return;
         }
 
         // Subtask completed successfully.
-        return true;
+        subtask.setStatus(TaskStatus.SUCCESS);
     }
 
     /** Log the fact that there is not exactly one access point of
      * type "sissvoc".
      * @param taskInfo The TaskInfo object describing the entire task.
-     * @param results HashMap representing the result of the transform.
+     * @param subtask The subtask to be performed.
      */
     private void logNotExactlyOneSissvocAccessPoint(final TaskInfo taskInfo,
-            final HashMap<String, String> results) {
-        TaskUtils.updateMessageAndTaskStatus(logger,
-                taskInfo.getTask(),
-                results, TaskStatus.ERROR,
+            final Subtask subtask) {
+        subtask.addResult(TaskRunner.ERROR,
                 "ResourceMapTransformProvider.transform(): "
-                + "not exactly one sissvoc access point for version: "
-                + taskInfo.getVersion().getId());
+                + "not exactly one SISSVoc access point for version: "
+                + taskInfo.getVersion().getVersionId());
     }
 
     /** Log the fact that there are no hosts associated with the
      * owner of the vocabulary.
      * @param taskInfo The TaskInfo object describing the entire task.
-     * @param results HashMap representing the result of the transform.
+     * @param subtask The subtask to be performed.
      */
     private void logNoHosts(final TaskInfo taskInfo,
-            final HashMap<String, String> results) {
-        TaskUtils.updateMessageAndTaskStatus(logger,
-                taskInfo.getTask(),
-                results, TaskStatus.SUCCESS,
+            final Subtask subtask) {
+        subtask.addResult(TaskRunner.INFO_PRIVATE,
                 "ResourceMapTransformProvider.transform(): "
                 + "no hosts associated with this owner: "
                 + taskInfo.getVocabulary().getOwner());
     }
 
-    @Override
-    public final boolean untransform(final TaskInfo taskInfo,
-            final JsonNode subtask,
-            final HashMap<String, String> results) {
+    /** Add the resource map entries for the version.
+     * @param taskInfo The top-level TaskInfo for the subtask.
+     * @param subtask The subtask to be performed.
+     */
+    public final void untransform(final TaskInfo taskInfo,
+            final Subtask subtask) {
         Integer accessPointId = getAccessPointId(taskInfo);
         if (accessPointId == null) {
-            TaskUtils.updateMessageAndTaskStatus(logger,
-                    taskInfo.getTask(),
-                    results, TaskStatus.ERROR,
+            subtask.addResult(TaskRunner.ERROR,
                     "ResourceMapTransformProvider.untransform(): "
-                    + "not exactly one sissvoc access point for version: "
-                    + taskInfo.getVersion().getId());
+                    + "not exactly one SISSVoc access point for version: "
+                    + taskInfo.getVersion().getVersionId());
             // Return failure (i.e., false) in this case,
-            // if fail_on_error is set to true.
-            return !TaskUtils.isSubtaskFailOnError(subtask,
-                    FAIL_ON_ERROR_DEFAULT);
+            // if fail-on-error is set to true.
+            if (TaskUtils.isSubtaskFailOnError(subtask,
+                    FAIL_ON_ERROR_DEFAULT)) {
+                subtask.setStatus(TaskStatus.ERROR);
+            } else {
+                subtask.setStatus(TaskStatus.SUCCESS);
+            }
         }
 
-        ResourceMapEntryUtils.deleteResourceMapEntriesForAccessPoint(
-                accessPointId);
+        ResourceMapEntryDAO.deleteResourceMapEntriesForAccessPoint(
+                accessPointId, taskInfo.getEm());
 
         // Subtask completed successfully.
-        return true;
+        subtask.setStatus(TaskStatus.SUCCESS);
     }
 
     /** {@inheritDoc} */
@@ -427,10 +428,19 @@ public class ResourceMapTransformProvider extends TransformProvider
 
     /** {@inheritDoc} */
     @Override
-    public void doSubtask(
-            final au.org.ands.vocabs.registry.workflow.tasks.TaskInfo taskInfo,
-            final Subtask subtask) {
-        // TO DO
+    public void doSubtask(final TaskInfo taskInfo, final Subtask subtask) {
+        switch (subtask.getOperation()) {
+        case INSERT:
+        case PERFORM:
+            transform(taskInfo, subtask);
+            break;
+        case DELETE:
+            untransform(taskInfo, subtask);
+            break;
+        default:
+            logger.error("Unknown operation!");
+            break;
+        }
     }
 
 }

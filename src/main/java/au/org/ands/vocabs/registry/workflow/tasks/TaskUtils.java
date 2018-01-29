@@ -43,6 +43,7 @@ import au.org.ands.vocabs.registry.enums.VersionArtefactType;
 import au.org.ands.vocabs.registry.utils.RegistryConfig;
 import au.org.ands.vocabs.registry.utils.RegistryFileUtils;
 import au.org.ands.vocabs.registry.utils.SlugGenerator;
+import net.logstash.logback.encoder.org.apache.commons.lang.BooleanUtils;
 
 /** Utility methods for working with tasks.
  * Included here are methods migrated from
@@ -438,6 +439,33 @@ public final class TaskUtils {
             paths.add(Paths.get(vaHarvestPoolparty.getPath()));
         }
         return paths;
+    }
+
+    /** The name of a property which may be present in a subtask,
+     * which specifies if an error in the subtask should cause
+     * the failure of the task.
+     */
+    private static final String FAIL_ON_ERROR = "fail-on-error";
+
+    /** Does a subtask contain a setting for the parameter
+     * {@link #FAIL_ON_ERROR}, that can be interpreted as a Boolean value?
+     * If so, return that value. Otherwise, return {@code defaultValue}.
+     * @param subtask The subtask to be examined, in JSON format.
+     * @param defaultValue The value to be returned, if the subtask does
+     *      not contain a setting for {@code fail_on_error}.
+     * @return The value of the subtask's {@code fail_on_error} setting,
+     *      if it has one that makes sense as a boolean value;
+     *      otherwise, {@code defaultValue}.
+     */
+    public static boolean isSubtaskFailOnError(
+            final Subtask subtask, final boolean defaultValue) {
+        String failOnError = subtask.getSubtaskProperty(FAIL_ON_ERROR);
+        if (failOnError == null) {
+            // No value specified. Fall back to defaultValue.
+            return defaultValue;
+        }
+        // Try to interpret the value as Boolean.
+        return BooleanUtils.toBoolean(failOnError);
     }
 
 }

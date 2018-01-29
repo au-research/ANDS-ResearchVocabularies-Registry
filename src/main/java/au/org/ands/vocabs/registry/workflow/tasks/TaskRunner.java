@@ -32,6 +32,9 @@ public class TaskRunner {
     /** Result key in which an error message is stored. */
     public static final String ERROR = "error";
 
+    /** Result key in which a private information message is stored. */
+    public static final String INFO_PRIVATE = "info-private";
+
     /** Logger for this class. */
     private Logger logger = LoggerFactory.getLogger(
             MethodHandles.lookup().lookupClass());

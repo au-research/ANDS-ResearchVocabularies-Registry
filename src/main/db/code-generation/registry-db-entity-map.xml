@@ -998,6 +998,7 @@
           #AND_TEMPORAL_QUERY_VALID_SUFFIX
         </queryText>
         <method>    /** Get all resource owner hosts by owner.
+     * This version of the method creates and uses its own EntityManager.
      * @param owner The owner to be looked up.
      * @return A list of all current resource owner host entries
      *     belonging to the owner.
@@ -1017,7 +1018,29 @@
         return rohList;
     }
 
-        </method>
+    /** Get all resource owner hosts by owner.
+     * This version of the method uses an existing EntityManager
+     * provided as a parameter.
+     * @param owner The owner to be looked up.
+     * @param em The EntityManager to be used.
+     * @return A list of all current resource owner host entries
+     *     belonging to the owner.
+     */
+    public static List&lt;ResourceOwnerHost&gt;
+    getCurrentResourceOwnerHostsForOwner(
+            final String owner,
+            final EntityManager em) {
+        TypedQuery&lt;ResourceOwnerHost&gt; q = em.createNamedQuery(
+                ResourceOwnerHost.GET_CURRENT_R_O_HS_FOR_OWNER,
+                ResourceOwnerHost.class).
+                setParameter(ResourceOwnerHost.
+                        GET_CURRENT_R_O_HS_FOR_OWNER_OWNER, owner);
+        q = TemporalUtils.setDatetimeConstantParameters(q);
+        List&lt;ResourceOwnerHost&gt; rohList = q.getResultList();
+        return rohList;
+    }
+
+</method>
       </extraQuery>
     </extraQueries>
   </map>
@@ -1025,6 +1048,32 @@
        entityName="ResourceMapEntry"
        serialVersionUID="-7521129755199622960L"
        >
+    <extraQueries>
+      <extraQuery name="DELETE_RESOURCEMAPENTRIES_FOR_AP_ID"
+                  type="update">
+        <extraQueryParameter name="accessPointId" />
+        <queryText>
+          DELETE FROM ResourceMapEntry rme
+          WHERE rme.accessPointId = :accessPointId
+        </queryText>
+        <method>    /** Delete all resource map entries for an access point.
+     * @param accessPointId The access point ID.
+     * @param em The EntityManager to be used.
+     */
+    public static void deleteResourceMapEntriesForAccessPoint(
+            final Integer accessPointId,
+            final EntityManager em) {
+        Query q = em.createNamedQuery(
+                ResourceMapEntry.DELETE_RESOURCEMAPENTRIES_FOR_AP_ID).
+                setParameter(ResourceMapEntry.
+                        DELETE_RESOURCEMAPENTRIES_FOR_AP_ID_ACCESSPOINTID,
+                        accessPointId);
+        q.executeUpdate();
+    }
+
+</method>
+      </extraQuery>
+    </extraQueries>
   </map>
   <map tableName="subject_resolver_sources"
        entityName="SubjectResolverSource"
