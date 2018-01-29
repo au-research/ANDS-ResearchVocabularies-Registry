@@ -184,6 +184,7 @@ public class TaskInfo {
             logger.info("Persisted task with task Id: " + dbTask.getId());
         } else {
             // Update the database entity with the results.
+            dbTask.setStatus(task.getStatus());
             dbTask.setParams(JSONSerialization.serializeObjectAsJsonString(
                     task.getSubtasks()));
             dbTask.setResponse(JSONSerialization.serializeObjectAsJsonString(
