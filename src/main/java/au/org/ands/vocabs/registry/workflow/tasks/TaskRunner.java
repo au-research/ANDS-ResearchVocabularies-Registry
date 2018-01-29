@@ -87,7 +87,7 @@ public class TaskRunner {
                 logger.error("Subtask did not complete successfully: "
                         + task);
                 addTimestamp();
-                task.setStatus(lastSubtaskStatus);
+                task.setStatus(TaskStatus.ERROR);
                 task.addResult(ERROR, "Error in subtask.");
                 task.addResult(RESPONSE, GENERIC_ERROR_RESPONSE);
                 return;
