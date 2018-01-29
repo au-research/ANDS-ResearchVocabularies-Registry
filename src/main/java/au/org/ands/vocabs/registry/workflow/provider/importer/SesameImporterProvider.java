@@ -356,7 +356,8 @@ public class SesameImporterProvider implements WorkflowProvider {
             // that the repository already exists, and the subsequent
             // importing of data fails.
             manager.refresh();
-            // If we're still here, success, so return true.
+            // If we're still here, success, so return with success.
+            subtask.setStatus(TaskStatus.SUCCESS);
             return;
         } catch (RepositoryConfigException | RepositoryException e) {
             subtask.setStatus(TaskStatus.ERROR);

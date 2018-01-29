@@ -118,6 +118,7 @@ public class SISSVocPublishProvider implements WorkflowProvider {
         //        removeSpecFile(taskInfo, subtask, results);
         // For now, use the truncation method.
         truncateSpecFileIfExists(taskInfo, subtask);
+        subtask.setStatus(TaskStatus.SUCCESS);
     }
 
 
