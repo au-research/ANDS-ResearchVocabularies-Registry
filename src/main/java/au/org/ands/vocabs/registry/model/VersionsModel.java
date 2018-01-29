@@ -281,7 +281,7 @@ public class VersionsModel extends ModelBase {
     /** {@inheritDoc} */
     @Override
     protected void deleteOnlyCurrent() {
-        if (!currentVersions.isEmpty()) {
+        if (currentVersions.isEmpty()) {
             // Oops, nothing to do!
             return;
         }
@@ -295,6 +295,8 @@ public class VersionsModel extends ModelBase {
         }
         // TO DO: workflow processing is done here, but need to confirm
         // if this is the right place/way to do it.
+        // And now run any tasks that have been accumulated along the way.
+        addImpliedSubtasks();
         boolean ranATask = processRequiredTasks();
         // Make this model correct again first ...
         currentVersions.clear();
@@ -335,6 +337,8 @@ public class VersionsModel extends ModelBase {
         }
         // TO DO: workflow processing is done here, but need to confirm
         // if this is the right place/way to do it.
+        // And now run any tasks that have been accumulated along the way.
+        addImpliedSubtasks();
         boolean ranATask = processRequiredTasks();
         // Make this model correct again first ...
         currentVersions.clear();
