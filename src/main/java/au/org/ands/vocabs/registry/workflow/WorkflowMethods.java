@@ -309,7 +309,7 @@ public final class WorkflowMethods {
             subtask.setOperation(SubtaskOperationType.DELETE);
             subtask.determinePriority();
             */
-            break;
+            return null;
         case SISSVOC:
             if (ap.getSource() == ApSource.USER) {
                 // No further action required.
