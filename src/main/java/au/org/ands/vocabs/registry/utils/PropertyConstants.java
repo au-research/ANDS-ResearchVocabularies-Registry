@@ -99,6 +99,8 @@ public final class PropertyConstants {
 
     /* Publishers. */
 
+    /* SISSVoc publisher. */
+
     /** SISSVoc spec template. */
     public static final String SISSVOC_SPECTEMPLATE =
             "SISSVoc.specTemplate";

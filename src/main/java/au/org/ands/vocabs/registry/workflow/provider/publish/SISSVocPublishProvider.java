@@ -10,7 +10,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.WebTarget;
@@ -92,6 +91,7 @@ public class SISSVocPublishProvider implements WorkflowProvider {
         // Add SISSVoc endpoint.
         AccessPointUtils.createSissvocAccessPoint(taskInfo,
                 sparqlTarget.getUri().toString());
+        subtask.setStatus(TaskStatus.SUCCESS);
     }
 
     /** Remove the SISSVoc spec file and access point for the version.
@@ -200,8 +200,8 @@ public class SISSVocPublishProvider implements WorkflowProvider {
      * @param subtask The specification of this publish subtask
      */
     private void addAdditionalSpecProperties(final Subtask subtask) {
-        Map<String, String> subtaskProperties = subtask.getSubtaskProperties();
-        if (subtaskProperties.get(SPEC_SETTINGS_KEY) == null) {
+//      Map<String, String> subtaskProperties = subtask.getSubtaskProperties();
+        if (subtask.getSubtaskProperty(SPEC_SETTINGS_KEY) == null) {
             // No additional properties specified.
             return;
         }

@@ -63,6 +63,9 @@ Registry.vocabsPath = ${Registry.storagePath}/vocabs
 # The directory in which uploaded files will be stored
 Registry.uploadsPath = ${Registry.storagePath}/uploads
 
+# The directory in which all SISSVoc spec files will be stored
+SISSVoc.specsPath = ${Registry.storagePath}/specs
+
 ## Solr
 
 # Specify that an embedded Solr instance will be used.
@@ -77,7 +80,7 @@ Registry.downloadPrefix = ${Registry.swagger.defaultScheme}://${Registry.swagger
 SesameImporter.sparqlPrefix = http://localhost/repository/api/sparql
 
 # Prefix to all SISSVoc endpoints
-SISSVoc.endpointsPrefix = http://localhost/repository/api/lda
+SISSVoc.endpointsPrefix = [LDA prefix URL]
 
 # SISSVoc spec file template
 SISSVoc.specTemplate = [filename to spec file template]

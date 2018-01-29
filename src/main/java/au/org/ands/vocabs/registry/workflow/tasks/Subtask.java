@@ -158,11 +158,24 @@ public class Subtask implements Comparable<Subtask> {
         subtaskProperties = new HashMap<>(aSubtaskProperties);
     }
 
-    /** Get the map of additional subtask properties.
-     * @return The map of additional subtask properties.
+    /** Get the map of additional subtask properties. Note: if there
+     * are no properties, this method may return null.
+     * @return The map of additional subtask properties, which may be null.
      */
     public Map<String, String> getSubtaskProperties() {
         return subtaskProperties;
+    }
+
+    /** Get the value of one subtask property.
+     * @param key The name of the property.
+     * @return The value of the property, or null, if there is no such
+     *      property set.
+     */
+    public String getSubtaskProperty(final String key) {
+        if (subtaskProperties == null) {
+            return null;
+        }
+        return subtaskProperties.get(key);
     }
 
     /** Add an additional subtask property.
