@@ -384,9 +384,7 @@ public class SesameImporterProvider implements WorkflowProvider {
 
     /** {@inheritDoc} */
     @Override
-    public void doSubtask(
-            final au.org.ands.vocabs.registry.workflow.tasks.TaskInfo taskInfo,
-            final Subtask subtask) {
+    public void doSubtask(final TaskInfo taskInfo, final Subtask subtask) {
         switch (subtask.getOperation()) {
         case INSERT:
         case PERFORM:
@@ -399,7 +397,6 @@ public class SesameImporterProvider implements WorkflowProvider {
             logger.error("Unknown operation!");
            break;
         }
-
     }
 
 }

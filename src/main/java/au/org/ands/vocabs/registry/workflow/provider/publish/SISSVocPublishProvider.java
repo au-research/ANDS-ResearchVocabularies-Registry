@@ -86,8 +86,8 @@ public class SISSVocPublishProvider implements WorkflowProvider {
         WebTarget target = client.target(sissvocEndpointsPrefix);
         WebTarget sparqlTarget = target
                 .path(TaskUtils.getSISSVocRepositoryPath(taskInfo));
-        subtask.addResult("sissvoc_endpoints",
-                sparqlTarget.getUri().toString());
+//        subtask.addResult("sissvoc_endpoints",
+//                sparqlTarget.getUri().toString());
         // Add SISSVoc endpoint.
         AccessPointUtils.createSissvocAccessPoint(taskInfo,
                 sparqlTarget.getUri().toString());
@@ -330,9 +330,7 @@ public class SISSVocPublishProvider implements WorkflowProvider {
 
     /** {@inheritDoc} */
     @Override
-    public void doSubtask(
-            final au.org.ands.vocabs.registry.workflow.tasks.TaskInfo taskInfo,
-            final Subtask subtask) {
+    public void doSubtask(final TaskInfo taskInfo, final Subtask subtask) {
         switch (subtask.getOperation()) {
         case INSERT:
         case PERFORM:
