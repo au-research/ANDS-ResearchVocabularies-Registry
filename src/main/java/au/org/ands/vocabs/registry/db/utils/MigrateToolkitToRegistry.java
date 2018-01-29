@@ -1919,8 +1919,12 @@ public final class MigrateToolkitToRegistry {
             String internalUrl = toolkitDataJson.get("uri").asText();
             // The last slash goes into the server base.
             int lastSlashPlusOne = internalUrl.lastIndexOf('/') + 1;
+            String serverBase = internalUrl.substring(0, lastSlashPlusOne);
+            // Remove trailing "repositories/", so that the server base
+            // ends with something like ".../openrdf-sesame/".
+            serverBase = serverBase.replaceFirst("repositories/$", "");
             apSesameDownload.setServerBase(
-                    internalUrl.substring(0, lastSlashPlusOne));
+                    serverBase);
             apSesameDownload.setRepository(
                     internalUrl.substring(lastSlashPlusOne));
             apSesameDownload.setUrlPrefix(portalDataJson.get("uri").asText());

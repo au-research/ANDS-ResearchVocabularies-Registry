@@ -76,8 +76,11 @@ Registry.Solr.collectionURL = test
 # Prefix to all public-facing URLs to downloads from the Registry.
 Registry.downloadPrefix = ${Registry.swagger.defaultScheme}://${Registry.swagger.host}${Registry.swagger.basePath}/download/
 
+# Local OpenRDF Sesame server
+SesameImporter.serverUrl = [Sesame API URL]
+
 # Prefix to all SPARQL endpoints provided by OpenRDF Sesame
-SesameImporter.sparqlPrefix = http://localhost/repository/api/sparql
+SesameImporter.sparqlPrefix = [SPARQL prefix URL]
 
 # Prefix to all SISSVoc endpoints
 SISSVoc.endpointsPrefix = [LDA prefix URL]

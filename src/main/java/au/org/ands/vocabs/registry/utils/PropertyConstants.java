@@ -88,7 +88,7 @@ public final class PropertyConstants {
     /* Public-facing Sesame. */
 
     /** Sesame importer SPARQL prefix. */
-    public static final String SESAMEIMPORTER_SPARQLPREFIX =
+    public static final String SESAME_IMPORTER_SPARQLPREFIX =
             "SesameImporter.sparqlPrefix";
 
     /* Public-facing SISSVoc. */
@@ -96,6 +96,14 @@ public final class PropertyConstants {
     /** SISSVoc endpoints prefix. */
     public static final String SISSVOC_ENDPOINTSPREFIX =
             "SISSVoc.endpointsPrefix";
+
+    /* Importers. */
+
+    /* Sesame importer. */
+
+    /** Sesame importer server URL. */
+    public static final String SESAME_IMPORTER_SERVERURL =
+            "SesameImporter.serverUrl";
 
     /* Publishers. */
 

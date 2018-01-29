@@ -4,17 +4,14 @@ package au.org.ands.vocabs.registry.workflow.provider.importer;
 import java.io.File;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
-import java.nio.file.DirectoryIteratorException;
-import java.nio.file.DirectoryStream;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.List;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.WebTarget;
 
+import org.apache.commons.lang3.BooleanUtils;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
@@ -29,41 +26,54 @@ import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.Rio;
 import org.openrdf.sail.config.SailImplConfig;
 import org.openrdf.sail.inferencer.fc.config.ForwardChainingRDFSInferencerConfig;
-import org.openrdf.sail.memory.config.MemoryStoreConfig;
 import org.openrdf.sail.nativerdf.config.NativeStoreConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
+import au.org.ands.vocabs.registry.db.context.TemporalUtils;
+import au.org.ands.vocabs.registry.db.converter.JSONSerialization;
+import au.org.ands.vocabs.registry.db.dao.AccessPointDAO;
+import au.org.ands.vocabs.registry.db.entity.AccessPoint;
+import au.org.ands.vocabs.registry.db.internal.VersionJson;
+import au.org.ands.vocabs.registry.db.internal.VocabularyJson;
+import au.org.ands.vocabs.registry.enums.AccessPointType;
+import au.org.ands.vocabs.registry.enums.ApSource;
 import au.org.ands.vocabs.registry.enums.SubtaskOperationType;
+import au.org.ands.vocabs.registry.enums.TaskStatus;
+import au.org.ands.vocabs.registry.utils.PropertyConstants;
 import au.org.ands.vocabs.registry.utils.RegistryNetUtils;
+import au.org.ands.vocabs.registry.utils.RegistryProperties;
 import au.org.ands.vocabs.registry.workflow.provider.DefaultPriorities;
 import au.org.ands.vocabs.registry.workflow.provider.WorkflowProvider;
+import au.org.ands.vocabs.registry.workflow.tasks.AccessPointUtils;
 import au.org.ands.vocabs.registry.workflow.tasks.Subtask;
-import au.org.ands.vocabs.toolkit.db.AccessPointUtils;
-import au.org.ands.vocabs.toolkit.db.model.AccessPoint;
-import au.org.ands.vocabs.toolkit.tasks.TaskInfo;
-import au.org.ands.vocabs.toolkit.tasks.TaskStatus;
-import au.org.ands.vocabs.toolkit.utils.PropertyConstants;
-import au.org.ands.vocabs.toolkit.utils.ToolkitFileUtils;
-import au.org.ands.vocabs.toolkit.utils.ToolkitProperties;
+import au.org.ands.vocabs.registry.workflow.tasks.TaskInfo;
+import au.org.ands.vocabs.registry.workflow.tasks.TaskRunner;
+import au.org.ands.vocabs.registry.workflow.tasks.TaskUtils;
 
 /** Sesame importer provider. */
-public class SesameImporterProvider extends ImporterProvider
-    implements WorkflowProvider {
+public class SesameImporterProvider implements WorkflowProvider {
 
-     /** Logger for this class. */
+    /** Logger for this class. */
     private final Logger logger = LoggerFactory.getLogger(
             MethodHandles.lookup().lookupClass());
 
+    /** Subtask property to specify if an existing repository should
+    * be cleared before triples are imported. Defaults to true;
+    * to disable, set the value to {@code "false"}. */
+   private static final String CLEAR = "clear";
+
+   /** Prefix for keys used for results that say that a file could
+    * not be parsed. */
+   public static final String PARSE_PREFIX = "parse-";
+
     /** URL to access the Sesame server. */
-    private String sesameServer = ToolkitProperties.getProperty(
-            PropertyConstants.SESAMEIMPORTER_SERVERURL);
+    private String sesameServer = RegistryProperties.getProperty(
+            PropertyConstants.SESAME_IMPORTER_SERVERURL);
 
     /** URL that is a prefix to all SPARQL endpoints. */
-    private String sparqlPrefix = ToolkitProperties.getProperty(
-            PropertyConstants.SESAMEIMPORTER_SPARQLPREFIX);
+    private String sparqlPrefix = RegistryProperties.getProperty(
+            PropertyConstants.SESAME_IMPORTER_SPARQLPREFIX);
 
     /** Force loading of HttpClientUtils, so that shutdown works
      * properly. Revisit this when using a later version of Tomcat,
@@ -98,8 +108,11 @@ public class SesameImporterProvider extends ImporterProvider
         HTTPCLIENTUTILS_CLASS =
             org.apache.http.client.utils.HttpClientUtils.class;
 
-    @Override
-    public final Collection<?> getInfo() {
+    /** Get information about the Sesame server.
+     * TO DO: hook this up again as a REST service
+     * @return A list of the repositories in the Sesame server.
+     */
+    public final Collection<RepositoryInfo> getInfo() {
         RepositoryManager manager = null;
         try {
             manager = RepositoryProvider.getRepositoryManager(sesameServer);
@@ -112,59 +125,65 @@ public class SesameImporterProvider extends ImporterProvider
         return null;
     }
 
-    @Override
-    public final boolean doImport(final TaskInfo taskInfo,
-            final JsonNode subtask,
-            final HashMap<String, String> results) {
+    /** Create/update the Sesame repository and access points for the version.
+     * @param taskInfo The top-level TaskInfo for the subtask.
+     * @param subtask The subtask to be performed.
+     */
+    public final void doImport(final TaskInfo taskInfo,
+            final Subtask subtask) {
         boolean success;
         // Create repository
-        success = createRepository(taskInfo, results);
+        success = createRepository(taskInfo, subtask);
         if (!success) {
-            return false;
+            return;
         }
         // Upload the RDF
-        success = uploadRDF(taskInfo, subtask, results);
+        success = uploadRDF(taskInfo, subtask);
         if (!success) {
-            return false;
+            return;
         }
-        results.put("repository_id", ToolkitFileUtils.getSesameRepositoryId(
-                taskInfo));
+        String repositoryId = TaskUtils.getSesameRepositoryId(taskInfo);
+//        subtask.addResult("repository_id", repositoryId);
         // Use the nice JAX-RS libraries to construct the path to
         // the SPARQL endpoint.
         Client client = RegistryNetUtils.getClient();
         WebTarget target = client.target(sparqlPrefix);
         WebTarget sparqlTarget = target
-                .path(ToolkitFileUtils.getSesameRepositoryId(taskInfo));
-        results.put("sparql_endpoint",
-                sparqlTarget.getUri().toString());
+                .path(repositoryId);
+//        subtask.addResult("sparql_endpoint",
+//                sparqlTarget.getUri().toString());
         // Add apiSparql endpoint
-        AccessPointUtils.createApiSparqlAccessPoint(taskInfo.getVersion(),
-                sparqlTarget.getUri().toString(), AccessPoint.SYSTEM_SOURCE);
+        AccessPointUtils.createApiSparqlAccessPoint(taskInfo,
+                sparqlTarget.getUri().toString());
         // Add sesameDownload endpoint
-        WebTarget sesameTarget = client.target(sesameServer)
-                .path("repositories")
-                .path(ToolkitFileUtils.getSesameRepositoryId(taskInfo));
-        AccessPointUtils.createSesameDownloadAccessPoint(
-                taskInfo.getVersion(),
-                sesameTarget.getUri().toString());
-        return true;
+        AccessPointUtils.createSesameDownloadAccessPoint(taskInfo,
+                repositoryId, sesameServer);
+        subtask.setStatus(TaskStatus.SUCCESS);
     }
 
     /** Create the repository within Sesame.
      * @param taskInfo The TaskInfo object describing the entire task.
-     * @param results HashMap representing the result of the task.
+     * @param subtask The subtask to be performed.
      * @return True, iff the repository creation succeeded.
      */
     public final boolean createRepository(final TaskInfo taskInfo,
-            final HashMap<String, String> results) {
+            final Subtask subtask) {
         RepositoryManager manager = null;
         try {
             manager = RepositoryProvider.getRepositoryManager(sesameServer);
 
-            String repositoryID = ToolkitFileUtils.getSesameRepositoryId(
+            VocabularyJson vocabularyJson =
+                    JSONSerialization.deserializeStringAsJson(
+                            taskInfo.getVocabulary().getData(),
+                            VocabularyJson.class);
+            VersionJson versionJson =
+                    JSONSerialization.deserializeStringAsJson(
+                            taskInfo.getVersion().getData(),
+                            VersionJson.class);
+            String repositoryID = TaskUtils.getSesameRepositoryId(
                     taskInfo);
-            String versionID = taskInfo.getVersion().getTitle();
-            String repositoryTitle = taskInfo.getVocabulary().getTitle()
+            String versionID = versionJson.getTitle();
+            String repositoryTitle = vocabularyJson.getTitle()
                     + " (Version: " + versionID + ")";
 
             Repository repository = manager.getRepository(repositoryID);
@@ -180,17 +199,15 @@ public class SesameImporterProvider extends ImporterProvider
 
             // create a configuration for the SAIL stack
             SailImplConfig backendConfig;
-            if ("current".equals(versionID)) {
-                // Create an in-memory store for higher performance.
-                boolean persist = true;
-                backendConfig = new MemoryStoreConfig(persist);
-            } else {
-                // Create a native store.
-                boolean forceSync = true;
-                NativeStoreConfig nativeConfig = new NativeStoreConfig();
-                nativeConfig.setForceSync(forceSync);
-                backendConfig = nativeConfig;
-            }
+            // NB: we had code here to examine the version title, and if
+            // it was "current", to create an in-memory store.
+            // That never happened in production, so now just always
+            // create a native store.
+            // Create a native store.
+            boolean forceSync = true;
+            NativeStoreConfig nativeConfig = new NativeStoreConfig();
+            nativeConfig.setForceSync(forceSync);
+            backendConfig = nativeConfig;
 
             // Stack an inferencer config on top of our backend-config.
             backendConfig =
@@ -207,7 +224,8 @@ public class SesameImporterProvider extends ImporterProvider
 
             return true;
         } catch (RepositoryConfigException | RepositoryException e) {
-            results.put(TaskStatus.EXCEPTION,
+            subtask.setStatus(TaskStatus.ERROR);
+            subtask.addResult(TaskRunner.ERROR,
                     "Exception in Sesame createRepository()");
             logger.error("Exception in Sesame createRepository()", e);
         }
@@ -216,18 +234,16 @@ public class SesameImporterProvider extends ImporterProvider
 
     /** Upload the RDF data into the Sesame repository.
      * @param taskInfo The TaskInfo object describing the entire task.
-     * @param subtask The details of the subtask
-     * @param results HashMap representing the result of the task.
+     * @param subtask The details of the subtask.
      * @return True, iff the upload succeeded.
      */
     public final boolean uploadRDF(final TaskInfo taskInfo,
-            final JsonNode subtask,
-            final HashMap<String, String> results) {
+            final Subtask subtask) {
         RepositoryManager manager = null;
         try {
             manager = RepositoryProvider.getRepositoryManager(sesameServer);
 
-            String repositoryID = ToolkitFileUtils.getSesameRepositoryId(
+            String repositoryID = TaskUtils.getSesameRepositoryId(
                     taskInfo);
 
             Repository repository = manager.getRepository(repositoryID);
@@ -240,72 +256,97 @@ public class SesameImporterProvider extends ImporterProvider
             RepositoryConnection con = null;
             try {
                 con = repository.getConnection();
-                // If required, remove all existing triples
-                if (subtask.get("clear") != null
-                        && subtask.get("clear").booleanValue()) {
+                // Default to removing all existing triples.
+                String clearProperty = subtask.getSubtaskProperty(CLEAR);
+                if (clearProperty == null
+                        || BooleanUtils.toBoolean(clearProperty)) {
                     con.clear();
                 }
-                Path dir = Paths.get(ToolkitFileUtils.getTaskHarvestOutputPath(
-                        taskInfo));
-                try (DirectoryStream<Path> stream =
-                        Files.newDirectoryStream(dir)) {
-                    for (Path entry: stream) {
+                List<Path> pathsToProcess =
+                        TaskUtils.getPathsToProcessForVersion(taskInfo);
+                for (Path entry: pathsToProcess) {
+                    try {
                         File file = new File(entry.toString());
                         logger.debug("Full path:"
                                 + entry.toAbsolutePath().toString());
                         con.add(file, "",
                                 Rio.getParserFormatForFileName(
                                         entry.toString()));
+                    } catch (IOException ex) {
+                        // I/O error encountered during the iteration,
+                        // the cause is an IOException
+                        subtask.setStatus(TaskStatus.ERROR);
+                        subtask.addResult(TaskRunner.ERROR,
+                                "Exception in Sesame uploadRDF");
+                        logger.error("Exception in Sesame uploadRDF:", ex);
+                        return false;
+                    } catch (RDFParseException e) {
+                        // Hmm, don't register an error, but keep going.
+                        //    subtask.setStatus(TaskStatus.ERROR);
+                        // But do log the parse error for this file.
+                        subtask.addResult(PARSE_PREFIX + entry.getFileName(),
+                                "Exception in Sesame uploadRDF");
+                        logger.error("Sesame uploadRDF, error parsing RDF: ",
+                                e);
+                        return false;
                     }
-                } catch (DirectoryIteratorException | IOException ex) {
-                    // I/O error encountered during the iteration,
-                    // the cause is an IOException
-                    results.put(TaskStatus.EXCEPTION,
-                            "Exception in Sesame uploadRDF");
-                    logger.error("Exception in Sesame uploadRDF:", ex);
-                    return false;
                 }
-            } catch (RDFParseException e) {
-                results.put(TaskStatus.EXCEPTION,
-                        "Exception in Sesame uploadRDF");
-                logger.error("Sesame uploadRDF, error parsing RDF: ", e);
-                return false;
             } finally {
                 if (con != null) {
                     con.close();
                 }
             }
-
-            return true;
         } catch (RepositoryConfigException | RepositoryException e) {
-            results.put(TaskStatus.EXCEPTION,
+            subtask.setStatus(TaskStatus.ERROR);
+            subtask.addResult(TaskRunner.ERROR,
                     "Exception in Sesame uploadRDF");
             logger.error("Exception in Sesame uploadRDF()", e);
+            return false;
         }
-        return false;
+        return true;
     }
 
-    @Override
-    public final boolean unimport(final TaskInfo taskInfo,
-            final JsonNode subtask,
-            final HashMap<String, String> results) {
+    /** Remove the Sesame repository and access points for the version.
+     * @param taskInfo The top-level TaskInfo for the subtask.
+     * @param subtask The subtask to be performed.
+     */
+    public final void unimport(final TaskInfo taskInfo,
+            final Subtask subtask) {
         // Remove the sesameDownload access point.
-        AccessPointUtils.deleteAccessPointsForVersionAndType(
-                taskInfo.getVersion(), AccessPoint.SESAME_DOWNLOAD_TYPE);
+        List<AccessPoint> aps = AccessPointDAO.
+                getCurrentAccessPointListForVersionByType(
+                        taskInfo.getVersion().getVersionId(),
+                        AccessPointType.SESAME_DOWNLOAD,
+                        taskInfo.getEm());
+        for (AccessPoint ap : aps) {
+            if (ap.getSource() == ApSource.SYSTEM) {
+                TemporalUtils.makeHistorical(ap, taskInfo.getNowTime());
+                AccessPointDAO.updateAccessPoint(taskInfo.getEm(), ap);
+            }
+        }
         // Remove the apiSparql access point.
-        AccessPointUtils.deleteAccessPointsForVersionAndType(
-                taskInfo.getVersion(), AccessPoint.API_SPARQL_TYPE);
+        aps = AccessPointDAO.
+                getCurrentAccessPointListForVersionByType(
+                        taskInfo.getVersion().getVersionId(),
+                        AccessPointType.API_SPARQL,
+                        taskInfo.getEm());
+        for (AccessPoint ap : aps) {
+            if (ap.getSource() == ApSource.SYSTEM) {
+                TemporalUtils.makeHistorical(ap, taskInfo.getNowTime());
+                AccessPointDAO.updateAccessPoint(taskInfo.getEm(), ap);
+            }
+        }
         // Remove the repository from the Sesame server.
         RepositoryManager manager = null;
         try {
             manager = RepositoryProvider.getRepositoryManager(sesameServer);
-            String repositoryID = ToolkitFileUtils.getSesameRepositoryId(
+            String repositoryID = TaskUtils.getSesameRepositoryId(
                     taskInfo);
             Repository repository = manager.getRepository(repositoryID);
             if (repository == null) {
                 // No such repository; nothing to do.
                  logger.debug("Sesame unimport: nothing to do.");
-                return true;
+                return;
             }
             manager.removeRepository(repositoryID);
             // Seems to be necessary to invoke refresh() to make
@@ -316,13 +357,14 @@ public class SesameImporterProvider extends ImporterProvider
             // importing of data fails.
             manager.refresh();
             // If we're still here, success, so return true.
-            return true;
+            return;
         } catch (RepositoryConfigException | RepositoryException e) {
-            results.put(TaskStatus.EXCEPTION,
+            subtask.setStatus(TaskStatus.ERROR);
+            subtask.addResult(TaskRunner.ERROR,
                     "Exception in Sesame unimport");
             logger.error("Exception in Sesame unimport", e);
         }
-        return false;
+        return;
     }
 
     /** {@inheritDoc} */
@@ -345,7 +387,18 @@ public class SesameImporterProvider extends ImporterProvider
     public void doSubtask(
             final au.org.ands.vocabs.registry.workflow.tasks.TaskInfo taskInfo,
             final Subtask subtask) {
-        // TO DO
+        switch (subtask.getOperation()) {
+        case INSERT:
+        case PERFORM:
+            doImport(taskInfo, subtask);
+            break;
+        case DELETE:
+            unimport(taskInfo, subtask);
+            break;
+        default:
+            logger.error("Unknown operation!");
+           break;
+        }
 
     }
 

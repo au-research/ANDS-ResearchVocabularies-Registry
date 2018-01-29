@@ -5,7 +5,7 @@ package au.org.ands.vocabs.registry.workflow.tasks;
 import java.lang.invoke.MethodHandles;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 
 import javax.persistence.EntityManager;
@@ -18,7 +18,9 @@ import au.org.ands.vocabs.registry.db.converter.JSONSerialization;
 import au.org.ands.vocabs.registry.db.dao.AccessPointDAO;
 import au.org.ands.vocabs.registry.db.entity.AccessPoint;
 import au.org.ands.vocabs.registry.db.entity.Version;
+import au.org.ands.vocabs.registry.db.internal.ApApiSparql;
 import au.org.ands.vocabs.registry.db.internal.ApCommon;
+import au.org.ands.vocabs.registry.db.internal.ApSesameDownload;
 import au.org.ands.vocabs.registry.db.internal.ApSissvoc;
 import au.org.ands.vocabs.registry.enums.AccessPointType;
 import au.org.ands.vocabs.registry.enums.ApSource;
@@ -61,14 +63,17 @@ public final class AccessPointUtils {
      * @param comparePredicate Predicate used to compare against an existing
      *      access point of the same type.
      * @param fieldSetter Consumer used to set type-specific field(s) of a
-     *      new access point.
+     *      new access point. NB: This consumer is called <i>after</i> the
+     *      new access point has been persisted with a dummy setting
+     *      for the data field; this means that an access point Id is
+     *      available.
      */
     private static <T extends ApCommon> void createAccessPoint(
             final TaskInfo taskInfo,
             final Class<T> apClass,
             final AccessPointType apType,
             final Predicate<T> comparePredicate,
-            final Consumer<T> fieldSetter) {
+            final BiConsumer<AccessPoint, T> fieldSetter) {
 
         EntityManager em = taskInfo.getEm();
         String modifiedBy = taskInfo.getModifiedBy();
@@ -112,10 +117,55 @@ public final class AccessPointUtils {
             logger.error("Error creating instance of class: " + apClass, e);
             return;
         }
-        fieldSetter.accept(apT);
+        // Dummy data setting.
+        ap.setData("{}");
+        // Persist for the first time.
+        AccessPointDAO.saveAccessPointWithId(em, ap);
+        // Now the access point has an Id, which can be accessed by
+        // the consumer.
+        if (fieldSetter != null) {
+            fieldSetter.accept(ap, apT);
+        }
         ap.setData(JSONSerialization.serializeObjectAsJsonString(apT));
 
-        AccessPointDAO.saveAccessPointWithId(em, ap);
+        AccessPointDAO.updateAccessPoint(em, ap);
+    }
+
+    /** Create a database entity for a system-generated SPARQL access point
+     * for a version. Don't duplicate it, if it already exists.
+     * @param taskInfo The TaskInfo providing the context for
+     *      the creation of the access point.
+     * @param url The URL to put into the database entity.
+     */
+    public static void createApiSparqlAccessPoint(
+            final TaskInfo taskInfo,
+            final String url) {
+        createAccessPoint(taskInfo,
+                ApApiSparql.class, AccessPointType.API_SPARQL,
+                apT -> url.equals(apT.getUrl()),
+                (ap, apT) -> apT.setUrl(url));
+    }
+
+    /** Create a database entity for a system-generated Sesame download
+     * access point for a version. Don't duplicate it, if it already exists.
+     * @param taskInfo The TaskInfo providing the context for
+     *      the creation of the access point.
+     * @param repository The repository Id to put into the database entity.
+     * @param serverBase The server base to put into the database entity.
+     */
+    public static void createSesameDownloadAccessPoint(
+            final TaskInfo taskInfo,
+            final String repository,
+            final String serverBase) {
+        createAccessPoint(taskInfo,
+                ApSesameDownload.class, AccessPointType.SESAME_DOWNLOAD,
+                apT -> repository.equals(apT.getRepository()),
+                (ap, apT) -> {
+                    apT.setRepository(repository);
+                    apT.setServerBase(serverBase);
+                    apT.setUrlPrefix(getDownloadUrlForFileAccessPoint(
+                            ap.getAccessPointId(), repository + "."));
+                });
     }
 
     /** Create a database entity for a system-generated SISSVoc access point
@@ -128,10 +178,9 @@ public final class AccessPointUtils {
             final TaskInfo taskInfo,
             final String urlPrefix) {
         createAccessPoint(taskInfo,
-                ApSissvoc.class,
-                AccessPointType.SISSVOC,
+                ApSissvoc.class, AccessPointType.SISSVOC,
                 apT -> urlPrefix.equals(apT.getUrlPrefix()),
-                apT -> apT.setUrlPrefix(urlPrefix));
+                (ap, apT) -> apT.setUrlPrefix(urlPrefix));
     }
 
 }
