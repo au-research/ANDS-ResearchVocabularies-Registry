@@ -43,6 +43,7 @@ import au.org.ands.vocabs.registry.workflow.provider.importer.SesameImporterProv
 import au.org.ands.vocabs.registry.workflow.provider.publish.SISSVocPublishProvider;
 import au.org.ands.vocabs.registry.workflow.provider.transform.JsonListTransformProvider;
 import au.org.ands.vocabs.registry.workflow.provider.transform.JsonTreeTransformProvider;
+import au.org.ands.vocabs.registry.workflow.provider.transform.SesameInsertMetadataTransformProvider;
 import au.org.ands.vocabs.registry.workflow.tasks.AccessPointUtils;
 import au.org.ands.vocabs.registry.workflow.tasks.Subtask;
 import au.org.ands.vocabs.registry.workflow.tasks.TaskInfo;
@@ -439,6 +440,17 @@ public final class WorkflowMethods {
             final SubtaskOperationType operation) {
         Subtask subtask = new Subtask(SubtaskProviderType.PUBLISH,
                 operation, SISSVocPublishProvider.class);
+        return subtask;
+    }
+
+    /** Create a new Subtask to represent inserting metadata into Sesame.
+     * @param operation The operation to be performed; either PERFORM or DELETE.
+     * @return The newly-created Subtask.
+     */
+    public static Subtask createSesameInsertMetadataSubtask(
+            final SubtaskOperationType operation) {
+        Subtask subtask = new Subtask(SubtaskProviderType.TRANSFORM,
+                operation, SesameInsertMetadataTransformProvider.class);
         return subtask;
     }
 

@@ -8,11 +8,13 @@ import org.openrdf.model.Value;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
-import au.org.ands.vocabs.toolkit.db.TaskUtils;
-import au.org.ands.vocabs.toolkit.tasks.TaskInfo;
-import au.org.ands.vocabs.toolkit.tasks.TaskStatus;
+import au.org.ands.vocabs.registry.enums.SubtaskOperationType;
+import au.org.ands.vocabs.registry.enums.TaskStatus;
+import au.org.ands.vocabs.registry.workflow.provider.DefaultPriorities;
+import au.org.ands.vocabs.registry.workflow.provider.WorkflowProvider;
+import au.org.ands.vocabs.registry.workflow.tasks.Subtask;
+import au.org.ands.vocabs.registry.workflow.tasks.TaskInfo;
+import au.org.ands.vocabs.registry.workflow.tasks.TaskRunner;
 
 /**
  * Transform provider for running a SPARQL update on a Sesame repository. In
@@ -20,38 +22,76 @@ import au.org.ands.vocabs.toolkit.tasks.TaskStatus;
  * https://groups.google.com/d/msg/sesame-users/fJctKX_vNEs/a1gm7rqD3L0J for how
  * to do it.
  */
-public class SesameSPARQLUpdateTransformProvider extends TransformProvider {
+public class SesameSPARQLUpdateTransformProvider implements WorkflowProvider {
 
     /** Logger for this class. */
     private final Logger logger = LoggerFactory.getLogger(
             MethodHandles.lookup().lookupClass());
 
-    @Override
-    public final String getInfo() {
-        // Not implemented.
-        return null;
-    }
-
-    @Override
-    public final boolean transform(final TaskInfo taskInfo,
-            final JsonNode subtask,
-            final HashMap<String, String> results) {
-        if (subtask.get("sparql_update") == null) {
-            TaskUtils.updateMessageAndTaskStatus(logger, taskInfo.getTask(),
-                    results, TaskStatus.ERROR,
+    /** Apply a SPARQL update to the Sesame repository for the version.
+     * @param taskInfo The top-level TaskInfo for the subtask.
+     * @param subtask The subtask to be performed.
+     */
+    public final void transform(final TaskInfo taskInfo,
+            final Subtask subtask) {
+        String sparqlUpdateText = subtask.getSubtaskProperty("sparql_update");
+        if (sparqlUpdateText == null) {
+            subtask.setStatus(TaskStatus.ERROR);
+            subtask.addResult(TaskRunner.ERROR,
                     "No SPARQL update statement specified.");
-            return false;
+            return;
         }
-        String sparqlUpdateText = subtask.get("sparql_update").asText();
-        return SesameTransformUtils.runUpdate(taskInfo, results,
+        boolean success = SesameTransformUtils.runUpdate(taskInfo, subtask,
                 sparqlUpdateText, new HashMap<String, Value>());
+        if (success) {
+            subtask.setStatus(TaskStatus.SUCCESS);
+        } else {
+            subtask.setStatus(TaskStatus.ERROR);
+        }
     }
 
+    /** Undo the metadata insertion from the Sesame repository for the version.
+     * This is a no-op.
+     * @param taskInfo The top-level TaskInfo for the subtask.
+     * @param subtask The subtask to be performed.
+     */
+    public final void untransform(
+            @SuppressWarnings("unused") final TaskInfo taskInfo,
+            @SuppressWarnings("unused") final Subtask subtask) {
+    }
+
+    /** {@inheritDoc} */
     @Override
-    public final boolean untransform(final TaskInfo taskInfo,
-            final JsonNode subtask,
-            final HashMap<String, String> results) {
-        return false;
+    public Integer defaultPriority(final SubtaskOperationType operationType) {
+        switch (operationType) {
+        case INSERT:
+        case PERFORM:
+            return DefaultPriorities.
+                    DEFAULT_TRANSFORM_AFTER_IMPORTER_INSERT_PRIORITY;
+        case DELETE:
+            return DefaultPriorities.
+                    DEFAULT_TRANSFORM_AFTER_IMPORTER_DELETE_PRIORITY;
+        default:
+            // Unknown operation type!
+            return null;
+        }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void doSubtask(final TaskInfo taskInfo, final Subtask subtask) {
+        switch (subtask.getOperation()) {
+        case INSERT:
+        case PERFORM:
+            transform(taskInfo, subtask);
+            break;
+        case DELETE:
+            untransform(taskInfo, subtask);
+            break;
+        default:
+            logger.error("Unknown operation!");
+           break;
+        }
     }
 
 }

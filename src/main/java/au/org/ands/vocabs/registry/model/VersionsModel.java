@@ -673,12 +673,16 @@ public class VersionsModel extends ModelBase {
                                         SubtaskOperationType.INSERT,
                                         vocabularyModel.
                                         getCurrentVocabulary()));
-                        // And also do a (re-)import, if doImport is set.
+                        // And also do a (re-)import and metadata re-insertion,
+                        // if doImport is set.
                         if (BooleanUtils.isTrue(
                                 newCurrentVersionJson.isDoImport())) {
                             task.addSubtask(WorkflowMethods.
                                     createImporterSesameSubtask(
                                             SubtaskOperationType.INSERT));
+                            task.addSubtask(WorkflowMethods.
+                                    createSesameInsertMetadataSubtask(
+                                            SubtaskOperationType.PERFORM));
                         }
                     } else {
                         task.addSubtask(WorkflowMethods.
@@ -807,6 +811,14 @@ public class VersionsModel extends ModelBase {
             if (BooleanUtils.isTrue(schemaVersion.isDoImport())) {
                 task.addSubtask(WorkflowMethods.createImporterSesameSubtask(
                         SubtaskOperationType.INSERT));
+            }
+            // And if doing _both_ a PoolParty harvest and a Sesame import,
+            // also do metadata insertion.
+            if (BooleanUtils.isTrue(schemaVersion.isDoPoolpartyHarvest())
+                    && BooleanUtils.isTrue(schemaVersion.isDoImport())) {
+                task.addSubtask(WorkflowMethods.
+                        createSesameInsertMetadataSubtask(
+                                SubtaskOperationType.PERFORM));
             }
             if (BooleanUtils.isTrue(ve.getSchemaVersion().isDoPublish())) {
                 task.addSubtask(WorkflowMethods.createPublishSissvocSubtask(

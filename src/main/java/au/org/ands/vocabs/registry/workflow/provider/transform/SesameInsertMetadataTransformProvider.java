@@ -1,16 +1,25 @@
 /** See the file "LICENSE" for the full license governing this code. */
 package au.org.ands.vocabs.registry.workflow.provider.transform;
 
+import java.lang.invoke.MethodHandles;
 import java.util.HashMap;
 
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.ValueFactoryImpl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
-import au.org.ands.vocabs.toolkit.db.model.Version;
-import au.org.ands.vocabs.toolkit.tasks.TaskInfo;
+import au.org.ands.vocabs.registry.db.converter.JSONSerialization;
+import au.org.ands.vocabs.registry.db.entity.Version;
+import au.org.ands.vocabs.registry.db.internal.VersionJson;
+import au.org.ands.vocabs.registry.enums.SubtaskOperationType;
+import au.org.ands.vocabs.registry.enums.TaskStatus;
+import au.org.ands.vocabs.registry.workflow.provider.DefaultPriorities;
+import au.org.ands.vocabs.registry.workflow.provider.WorkflowProvider;
+import au.org.ands.vocabs.registry.workflow.tasks.Subtask;
+import au.org.ands.vocabs.registry.workflow.tasks.TaskInfo;
+import au.org.ands.vocabs.registry.workflow.tasks.TaskRunner;
 
 /**
  * Transform provider for inserting (version) metadata into a Sesame repository.
@@ -19,18 +28,12 @@ import au.org.ands.vocabs.toolkit.tasks.TaskInfo;
  * https://groups.google.com/d/msg/sesame-users/fJctKX_vNEs/a1gm7rqD3L0J for how
  * to do it.
  */
-public class SesameInsertMetadataTransformProvider extends TransformProvider {
+public class SesameInsertMetadataTransformProvider
+    implements WorkflowProvider {
 
-    // Not needed yet.
-//    /** Logger for this class. */
-//    private final Logger logger = LoggerFactory.getLogger(
-//            MethodHandles.lookup().lookupClass());
-
-    @Override
-    public final String getInfo() {
-        // Not implemented.
-        return null;
-    }
+    /** Logger for this class. */
+    private final Logger logger = LoggerFactory.getLogger(
+            MethodHandles.lookup().lookupClass());
 
     /** Update to insert dcterms:issued metadata. Removes any existing
      * triples of this format. */
@@ -124,10 +127,12 @@ public class SesameInsertMetadataTransformProvider extends TransformProvider {
                 "http://purl.org/adms/status/Deprecated");
     }
 
-    @Override
-    public final boolean transform(final TaskInfo taskInfo,
-            final JsonNode subtask,
-            final HashMap<String, String> results) {
+    /** Apply metadata insertion to the Sesame repository for the version.
+     * @param taskInfo The top-level TaskInfo for the subtask.
+     * @param subtask The subtask to be performed.
+     */
+    public final void transform(final TaskInfo taskInfo,
+            final Subtask subtask) {
         boolean result = true;
         // Get the metadata values to be inserted.
         Version version = taskInfo.getVersion();
@@ -137,7 +142,9 @@ public class SesameInsertMetadataTransformProvider extends TransformProvider {
         // formatter.
         String issuedDate = version.getReleaseDate();
 
-        String versionTitle = version.getTitle();
+        VersionJson versionJson = JSONSerialization.deserializeStringAsJson(
+                version.getData(), VersionJson.class);
+        String versionTitle = versionJson.getTitle();
 
         // Construct bindings for SPARQL Update.
         ValueFactory factory = ValueFactoryImpl.getInstance();
@@ -145,11 +152,14 @@ public class SesameInsertMetadataTransformProvider extends TransformProvider {
 
         if (issuedDate != null) {
             bindings.put("issuedDate", factory.createLiteral(issuedDate));
-            result = SesameTransformUtils.runUpdate(taskInfo, results,
+            result = SesameTransformUtils.runUpdate(taskInfo, subtask,
                     INSERT_DCTERMS_ISSUED_METADATA_UPDATE, bindings);
             if (!result) {
                 // Failure applying the Update. Stop here.
-                return false;
+                subtask.setStatus(TaskStatus.ERROR);
+                subtask.addResult(TaskRunner.ERROR,
+                        "Error applying dcterms:issued SPARQL update");
+                return;
             }
         }
 
@@ -157,11 +167,15 @@ public class SesameInsertMetadataTransformProvider extends TransformProvider {
             // Reset bindings and apply the version title Update.
             bindings.clear();
             bindings.put("versionTitle", factory.createLiteral(versionTitle));
-            result = SesameTransformUtils.runUpdate(taskInfo, results,
+            result = SesameTransformUtils.runUpdate(taskInfo, subtask,
                     INSERT_OWL_VERSIONINFO_METADATA_UPDATE, bindings);
             if (!result) {
                 // Failure applying the Update. Stop here.
-                return false;
+                subtask.setStatus(TaskStatus.ERROR);
+                subtask.setStatus(TaskStatus.ERROR);
+                subtask.addResult(TaskRunner.ERROR,
+                        "Error applying owl:versionInfo SPARQL update");
+                return;
             }
         }
 
@@ -181,15 +195,56 @@ public class SesameInsertMetadataTransformProvider extends TransformProvider {
                     INSERT_ADMS_STATUS_METADATA_UPDATE, bindings);
         }
         */
-        return result;
+        subtask.setStatus(TaskStatus.SUCCESS);
     }
 
-    @Override
-    public final boolean untransform(final TaskInfo taskInfo,
-            final JsonNode subtask,
-            final HashMap<String, String> results) {
-        return SesameTransformUtils.runUpdate(taskInfo, results,
+    /** Undo the metadata insertion from the Sesame repository for the version.
+     * @param taskInfo The top-level TaskInfo for the subtask.
+     * @param subtask The subtask to be performed.
+     */
+    public final void untransform(final TaskInfo taskInfo,
+            final Subtask subtask) {
+        boolean success = SesameTransformUtils.runUpdate(taskInfo, subtask,
                 DELETE_METADATA_UPDATE, new HashMap<String, Value>());
+        if (success) {
+            subtask.setStatus(TaskStatus.SUCCESS);
+        } else {
+            subtask.setStatus(TaskStatus.ERROR);
+        }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public Integer defaultPriority(final SubtaskOperationType operationType) {
+        switch (operationType) {
+        case INSERT:
+        case PERFORM:
+            return DefaultPriorities.
+                    DEFAULT_TRANSFORM_AFTER_IMPORTER_INSERT_PRIORITY;
+        case DELETE:
+            return DefaultPriorities.
+                    DEFAULT_TRANSFORM_AFTER_IMPORTER_DELETE_PRIORITY;
+        default:
+            // Unknown operation type!
+            return null;
+        }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void doSubtask(final TaskInfo taskInfo, final Subtask subtask) {
+        switch (subtask.getOperation()) {
+        case INSERT:
+        case PERFORM:
+            transform(taskInfo, subtask);
+            break;
+        case DELETE:
+            untransform(taskInfo, subtask);
+            break;
+        default:
+            logger.error("Unknown operation!");
+           break;
+        }
     }
 
 }

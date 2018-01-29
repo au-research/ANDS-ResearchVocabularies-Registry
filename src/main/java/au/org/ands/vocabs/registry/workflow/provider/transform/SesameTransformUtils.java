@@ -5,6 +5,7 @@ import java.lang.invoke.MethodHandles;
 import java.util.HashMap;
 import java.util.Map.Entry;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.openrdf.model.Value;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryLanguage;
@@ -19,12 +20,12 @@ import org.openrdf.repository.manager.RepositoryProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import au.org.ands.vocabs.toolkit.db.TaskUtils;
-import au.org.ands.vocabs.toolkit.tasks.TaskInfo;
-import au.org.ands.vocabs.toolkit.tasks.TaskStatus;
-import au.org.ands.vocabs.toolkit.utils.PropertyConstants;
-import au.org.ands.vocabs.toolkit.utils.ToolkitFileUtils;
-import au.org.ands.vocabs.toolkit.utils.ToolkitProperties;
+import au.org.ands.vocabs.registry.utils.PropertyConstants;
+import au.org.ands.vocabs.registry.utils.RegistryProperties;
+import au.org.ands.vocabs.registry.workflow.tasks.Subtask;
+import au.org.ands.vocabs.registry.workflow.tasks.TaskInfo;
+import au.org.ands.vocabs.registry.workflow.tasks.TaskRunner;
+import au.org.ands.vocabs.registry.workflow.tasks.TaskUtils;
 
 /**
  * Utility methods for working on a Sesame repository.
@@ -35,9 +36,13 @@ public final class SesameTransformUtils {
     private static final Logger LOGGER = LoggerFactory.getLogger(
             MethodHandles.lookup().lookupClass());
 
+    /** Key for storing an error result. */
+    public static final String SESAME_TRANSFORM_ERROR =
+            "sesame-transform-error";
+
     /** URL to access the Sesame server. */
-    private static String sesameServer = ToolkitProperties.getProperty(
-            PropertyConstants.SESAMEIMPORTER_SERVERURL);
+    private static String sesameServer = RegistryProperties.getProperty(
+            PropertyConstants.SESAME_IMPORTER_SERVERURL);
 
     /** Force loading of HttpClientUtils, so that shutdown works
      * properly. Revisit this when using a later version of Tomcat,
@@ -78,7 +83,7 @@ public final class SesameTransformUtils {
 
     /** Run a SPARQL Update on a repository.
      * @param taskInfo The TaskInfo object describing the entire task.
-     * @param results HashMap representing the result of the transform.
+     * @param subtask The subtask to be performed.
      * @param updateString The text of the SPARQL Update to run.
      * @param bindings Any bindings that are to be applied. Keys are
      * variable names (without leading "?"); values are the corresponding
@@ -86,7 +91,7 @@ public final class SesameTransformUtils {
      * @return True, iff the update succeeded.
     */
     public static boolean runUpdate(final TaskInfo taskInfo,
-            final HashMap<String, String> results,
+            final Subtask subtask,
             final String updateString,
             final HashMap<String, Value> bindings) {
         RepositoryManager manager = null;
@@ -95,7 +100,7 @@ public final class SesameTransformUtils {
         try {
             manager = RepositoryProvider.getRepositoryManager(sesameServer);
 
-            String repositoryID = ToolkitFileUtils.getSesameRepositoryId(
+            String repositoryID = TaskUtils.getSesameRepositoryId(
                     taskInfo);
 
             repository = manager.getRepository(repositoryID);
@@ -103,9 +108,7 @@ public final class SesameTransformUtils {
                 LOGGER.error("SesameTransformUtils.runUpdate(): "
                         + "no such repository: "
                         + repositoryID);
-                TaskUtils.updateMessageAndTaskStatus(LOGGER,
-                        taskInfo.getTask(),
-                        results, TaskStatus.ERROR,
+                subtask.addResult(SESAME_TRANSFORM_ERROR,
                         "SesameTransformUtils.runUpdate(): no such repository: "
                                 + repositoryID);
                 return false;
@@ -113,9 +116,9 @@ public final class SesameTransformUtils {
         } catch (RepositoryConfigException | RepositoryException e) {
             LOGGER.error("Exception in SesameTransformUtils.runUpdate() "
                     + "opening repository", e);
-            TaskUtils.updateMessageAndTaskStatus(LOGGER,
-                    taskInfo.getTask(),
-                    results, TaskStatus.EXCEPTION,
+            subtask.addResult(TaskRunner.STACKTRACE,
+                    ExceptionUtils.getStackTrace(e));
+            subtask.addResult(SESAME_TRANSFORM_ERROR,
                     "Exception in SesameTransformUtils.runUpdate() "
                             + "opening repository");
             return false;
@@ -135,9 +138,9 @@ public final class SesameTransformUtils {
                 LOGGER.error("Bad update passed to "
                         + "SesameTransformUtils.runUpdate(): "
                         + updateString, e);
-                TaskUtils.updateMessageAndTaskStatus(LOGGER,
-                        taskInfo.getTask(),
-                        results, TaskStatus.EXCEPTION,
+                subtask.addResult(TaskRunner.STACKTRACE,
+                        ExceptionUtils.getStackTrace(e));
+                subtask.addResult(SESAME_TRANSFORM_ERROR,
                         "Bad update passed to "
                                 + "SesameTransformUtils.runUpdate(): "
                                 + updateString);
@@ -145,9 +148,9 @@ public final class SesameTransformUtils {
             } catch (UpdateExecutionException e) {
                 LOGGER.error("SesameTransformUtils.runUpdate() update failed: "
                         + updateString, e);
-                TaskUtils.updateMessageAndTaskStatus(LOGGER,
-                        taskInfo.getTask(),
-                        results, TaskStatus.EXCEPTION,
+                subtask.addResult(TaskRunner.STACKTRACE,
+                        ExceptionUtils.getStackTrace(e));
+                subtask.addResult(SESAME_TRANSFORM_ERROR,
                         "SesameTransformUtils.runUpdate() update failed: "
                                 + updateString);
                 return false;
@@ -159,9 +162,9 @@ public final class SesameTransformUtils {
         } catch (RepositoryException e) {
             LOGGER.error("Exception in SesameTransformUtils.runUpdate() with "
                     + "connection handling", e);
-            TaskUtils.updateMessageAndTaskStatus(LOGGER,
-                    taskInfo.getTask(),
-                    results, TaskStatus.EXCEPTION,
+            subtask.addResult(TaskRunner.STACKTRACE,
+                    ExceptionUtils.getStackTrace(e));
+            subtask.addResult(SESAME_TRANSFORM_ERROR,
                     "Exception in SesameTransformUtils.runUpdate() with "
                             + "connection handling");
             return false;
