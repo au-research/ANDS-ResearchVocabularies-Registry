@@ -266,16 +266,17 @@ public final class WorkflowMethods {
         subtaskList.add(subtask);
         switch (ap.getType()) {
         case API_SPARQL:
+        case SESAME_DOWNLOAD:
             if (ap.getSource() == ApSource.USER) {
                 // No further action required.
                 return null;
             }
             // Handle source=SYSTEM.
-            // Note well: we rely on the fact that SesameImporterProvider
+            // Note well: SesameImporterProvider
             // is responsible for _both_ the API_SPARQL and SESAME_DOWNLOAD
-            // access points, and where there is one, there will also be
-            // the other. We choose to do something for API_SPARQL and
-            // "ignore" the corresponding SESAME_DOWNLOAD.
+            // access points. No problem to double-up; because of
+            // the implementation of Subtask, there will be only one
+            // instance of this added to the Task.
             subtask.setSubtaskProviderType(SubtaskProviderType.IMPORTER);
             subtask.setProvider(SesameImporterProvider.class);
             subtask.setOperation(SubtaskOperationType.DELETE);
@@ -290,25 +291,6 @@ public final class WorkflowMethods {
                 logger.error("Error deleting file: " + apFile.getPath(), e);
             }
             // No subtask required.
-            return null;
-        case SESAME_DOWNLOAD:
-            // Note well: we rely on the fact that SesameImporterProvider
-            // is responsible for _both_ the API_SPARQL and SESAME_DOWNLOAD
-            // access points, and where there is one, there will also be
-            // the other. So we do nothing here.
-            // And since there's nothing to be done if source=USER,
-            // we do nothing for that case either. Below is the sort of
-            // code that would be required if this assumption should change.
-            /*
-            if (ap.getSource() == ApSource.USER) {
-                // No further action required.
-                return null;
-            }
-            subtask.setSubtaskProviderType(SubtaskProviderType.IMPORTER);
-            subtask.setProvider(SesameImporterProvider.class);
-            subtask.setOperation(SubtaskOperationType.DELETE);
-            subtask.determinePriority();
-            */
             return null;
         case SISSVOC:
             if (ap.getSource() == ApSource.USER) {

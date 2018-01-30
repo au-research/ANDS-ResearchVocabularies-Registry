@@ -177,12 +177,16 @@ public class VersionArtefactsModel extends ModelBase {
     protected void deleteOnlyCurrent() {
         for (Integer vId : currentVAs.keySet()) {
             for (VersionArtefact va : currentVAs.get(vId)) {
-                accumulateSubtasks(vocabularyModel.getCurrentVocabulary(),
-                        currentVersions.get(vId),
-                        WorkflowMethods.deleteVersionArtefact(va));
-                TemporalUtils.makeHistorical(va, nowTime());
-                va.setModifiedBy(modifiedBy());
-                VersionArtefactDAO.updateVersionArtefact(em(), va);
+                List<Subtask> subtaskList =
+                        WorkflowMethods.deleteVersionArtefact(va);
+                if (subtaskList == null) {
+                    TemporalUtils.makeHistorical(va, nowTime());
+                    va.setModifiedBy(modifiedBy());
+                    VersionArtefactDAO.updateVersionArtefact(em(), va);
+                } else {
+                    accumulateSubtasks(vocabularyModel.getCurrentVocabulary(),
+                            currentVersions.get(vId), subtaskList);
+                }
             }
         }
         currentVAs.clear();

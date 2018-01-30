@@ -232,12 +232,16 @@ public class AccessPointsModel extends ModelBase {
     protected void deleteOnlyCurrent() {
         for (Integer vId : currentAPs.keySet()) {
             for (AccessPoint ap : currentAPs.get(vId)) {
-                accumulateSubtasks(vocabularyModel.getCurrentVocabulary(),
-                        currentVersions.get(vId),
-                        WorkflowMethods.deleteAccessPoint(ap));
-                TemporalUtils.makeHistorical(ap, nowTime());
-                ap.setModifiedBy(modifiedBy());
-                AccessPointDAO.updateAccessPoint(em(), ap);
+                List<Subtask> subtaskList =
+                        WorkflowMethods.deleteAccessPoint(ap);
+                if (subtaskList == null) {
+                    TemporalUtils.makeHistorical(ap, nowTime());
+                    ap.setModifiedBy(modifiedBy());
+                    AccessPointDAO.updateAccessPoint(em(), ap);
+                } else {
+                    accumulateSubtasks(vocabularyModel.getCurrentVocabulary(),
+                            currentVersions.get(vId), subtaskList);
+                }
             }
         }
         currentAPs.clear();
