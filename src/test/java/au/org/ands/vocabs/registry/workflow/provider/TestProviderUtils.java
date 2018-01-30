@@ -6,7 +6,7 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import au.org.ands.vocabs.registry.enums.SubtaskProviderType;
-import au.org.ands.vocabs.registry.workflow.provider.backup.PoolPartyBackupProvider;
+import au.org.ands.vocabs.registry.workflow.provider.harvest.PoolPartyHarvestProvider;
 import au.org.ands.vocabs.registry.workflow.provider.transform.JsonListTransformProvider;
 
 /** Tests of the ProviderUtils class. */
@@ -17,7 +17,7 @@ public class TestProviderUtils {
     public void testProviderName() {
 
         Assert.assertEquals(ProviderUtils.providerName(
-                PoolPartyBackupProvider.class), "PoolParty");
+                PoolPartyHarvestProvider.class), "PoolParty");
 
         Assert.assertEquals(ProviderUtils.providerName(
                 JsonListTransformProvider.class), "JsonList");
@@ -30,9 +30,9 @@ public class TestProviderUtils {
     public void testGetProvider() {
 
         Assert.assertTrue(ProviderUtils.getProvider(
-                SubtaskProviderType.BACKUP, "PoolParty")
-                instanceof PoolPartyBackupProvider,
-                "Not an instance of PoolPartyBackupProvider");
+                SubtaskProviderType.HARVEST, "PoolParty")
+                instanceof PoolPartyHarvestProvider,
+                "Not an instance of PoolPartyHarvestProvider");
 
         Assert.assertTrue(ProviderUtils.getProvider(
                 SubtaskProviderType.TRANSFORM, "JsonList")

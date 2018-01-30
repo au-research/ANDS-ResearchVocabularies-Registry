@@ -28,19 +28,17 @@ import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import au.org.ands.vocabs.registry.db.dao.PoolPartyServerDAO;
+import au.org.ands.vocabs.registry.db.entity.PoolPartyServer;
 import au.org.ands.vocabs.registry.utils.PoolPartyUtils;
+import au.org.ands.vocabs.registry.utils.RegistryFileUtils;
 import au.org.ands.vocabs.registry.utils.RegistryNetUtils;
-import au.org.ands.vocabs.registry.workflow.provider.WorkflowProvider;
-import au.org.ands.vocabs.registry.workflow.tasks.Subtask;
-import au.org.ands.vocabs.toolkit.tasks.TaskStatus;
-import au.org.ands.vocabs.toolkit.utils.PropertyConstants;
-import au.org.ands.vocabs.toolkit.utils.ToolkitFileUtils;
-import au.org.ands.vocabs.toolkit.utils.ToolkitProperties;
+import au.org.ands.vocabs.registry.workflow.tasks.TaskRunner;
+import au.org.ands.vocabs.registry.workflow.tasks.TaskUtils;
 import ch.qos.logback.classic.Level;
 
 /** Backup provider for PoolParty. */
-public class PoolPartyBackupProvider extends BackupProvider
-    implements WorkflowProvider {
+public class PoolPartyBackupProvider {
 
     /** The logger for this class. */
     private final Logger logger = LoggerFactory.getLogger(
@@ -50,12 +48,15 @@ public class PoolPartyBackupProvider extends BackupProvider
      * @return An ArrayList of all IDs as Strings.
      */
     public final ArrayList<String> getProjectIDs() {
-        String remoteUrl = ToolkitProperties.getProperty(
-                PropertyConstants.POOLPARTY_REMOTEURL);
-        String username = ToolkitProperties.getProperty(
-                PropertyConstants.POOLPARTY_USERNAME);
-        String password = ToolkitProperties.getProperty(
-                PropertyConstants.POOLPARTY_PASSWORD);
+        PoolPartyServer poolPartyServer =
+                PoolPartyServerDAO.getPoolPartyServerById(1);
+        if (poolPartyServer == null) {
+            logger.error("PoolParty server 1 undefined.");
+            return null;
+        }
+        String remoteUrl = poolPartyServer.getApiUrl();
+        String username = poolPartyServer.getUsername();
+        String password = poolPartyServer.getPassword();
 
         logger.debug("Getting metadata from " + remoteUrl);
 
@@ -105,12 +106,15 @@ public class PoolPartyBackupProvider extends BackupProvider
             final String ppProjectId,
             final String outputPath) {
         HashMap<String, String> result = new HashMap<>();
-        String remoteUrl = ToolkitProperties.getProperty(
-                PropertyConstants.POOLPARTY_REMOTEURL);
-        String username = ToolkitProperties.getProperty(
-                PropertyConstants.POOLPARTY_USERNAME);
-        String password = ToolkitProperties.getProperty(
-                PropertyConstants.POOLPARTY_PASSWORD);
+        PoolPartyServer poolPartyServer =
+                PoolPartyServerDAO.getPoolPartyServerById(1);
+        if (poolPartyServer == null) {
+            logger.error("PoolParty server 1 undefined.");
+            return null;
+        }
+        String remoteUrl = poolPartyServer.getApiUrl();
+        String username = poolPartyServer.getUsername();
+        String password = poolPartyServer.getPassword();
 
         // Has to be either TriG or TriX.
         // We could do this as a Toolkit property (as we used to,
@@ -167,7 +171,7 @@ public class PoolPartyBackupProvider extends BackupProvider
             SimpleDateFormat dateFormat = new SimpleDateFormat(
                     "yyyy-MM-dd'T'HH:mm:ss", Locale.ROOT);
             String fileName = dateFormat.format(date) + "-backup";
-            String filePath = ToolkitFileUtils.saveFile(
+            String filePath = RegistryFileUtils.saveRDFToFile(
                     outputPath,
                     fileName,
                     format, responseData);
@@ -177,7 +181,7 @@ public class PoolPartyBackupProvider extends BackupProvider
                     + "response code = " + response.getStatus());
             // This is an abuse of the task status codes, because
             // it is not a task.
-            result.put(TaskStatus.ERROR, "getBackupFiles got an error "
+            result.put(TaskRunner.ERROR, "getBackupFiles got an error "
                     + "from PoolParty; "
                     + "response code = " + response.getStatus());
         }
@@ -194,7 +198,6 @@ public class PoolPartyBackupProvider extends BackupProvider
      * projects.
      * @return the complete list of the backup files.
      */
-    @Override
     public final HashMap<String, Object> backup(final String pPProjectId) {
 
         ArrayList<String> pList;
@@ -209,36 +212,17 @@ public class PoolPartyBackupProvider extends BackupProvider
 
         for (String projectId : pList) {
             try {
-                ToolkitFileUtils.compressBackupFolder(projectId);
+                TaskUtils.compressBackupFolder(projectId);
             } catch (IOException ex) {
-                results.put(TaskStatus.EXCEPTION, "Unable to compress folder"
+                results.put(TaskRunner.ERROR, "Unable to compress folder"
                         + " for projectId:" + projectId);
                 logger.error("Unable to compress folder", ex);
             }
             results.put(projectId, getBackupFiles(projectId,
-                    ToolkitFileUtils.getBackupPath(projectId)));
+                    TaskUtils.getBackupPath(projectId)));
         }
 
         return results;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void doSubtask(
-            final au.org.ands.vocabs.registry.workflow.tasks.TaskInfo taskInfo,
-            final Subtask subtask) {
-        switch (subtask.getOperation()) {
-        case INSERT:
-        case PERFORM:
-            // TO DO: do a backup.
-            break;
-        case DELETE:
-            // Not implemented.
-            break;
-        default:
-            // Unknown operation.
-            break;
-        }
     }
 
     /**

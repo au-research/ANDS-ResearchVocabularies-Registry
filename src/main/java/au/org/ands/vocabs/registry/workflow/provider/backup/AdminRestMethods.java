@@ -1,5 +1,5 @@
 /** See the file "LICENSE" for the full license governing this code. */
-package au.org.ands.vocabs.toolkit.rest;
+package au.org.ands.vocabs.registry.workflow.provider.backup;
 
 import java.lang.invoke.MethodHandles;
 import java.util.HashMap;
@@ -13,11 +13,11 @@ import javax.ws.rs.core.MediaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import au.org.ands.vocabs.registry.workflow.provider.backup.PoolPartyBackupProvider;
+import au.org.ands.vocabs.registry.api.context.AdminApiPaths;
 
 /** REST web services for doing backups. */
-@Path("doBackup")
-public class Backup {
+@Path(AdminApiPaths.API_ADMIN + "/" + AdminApiPaths.BACKUP)
+public class AdminRestMethods {
 
     /** Logger for this class. */
     private Logger logger = LoggerFactory.getLogger(
@@ -33,8 +33,7 @@ public class Backup {
     public final HashMap<String, Object> backupPoolPartyProject(
             @PathParam("project_id")
             final String pPProjectId) {
-        HashMap<String, Object> result =
-                new HashMap<String, Object>();
+        HashMap<String, Object> result = new HashMap<>();
         logger.debug("Called doBackup/PoolParty/ " + pPProjectId);
         result.putAll(new PoolPartyBackupProvider().backup(pPProjectId));
         return result;
@@ -47,8 +46,7 @@ public class Backup {
     @Produces(MediaType.APPLICATION_JSON)
     @GET
     public final HashMap<String, Object> backupAllPoolPartyProjects() {
-        HashMap<String, Object> result =
-                new HashMap<String, Object>();
+        HashMap<String, Object> result = new HashMap<>();
         logger.debug("Called doBackup/PoolParty/all");
         result.putAll(new PoolPartyBackupProvider().backup(null));
         return result;

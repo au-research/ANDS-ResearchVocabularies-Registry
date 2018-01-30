@@ -12,6 +12,9 @@ public final class AdminApiPaths {
      * so that these can be "hidden" to outside users. */
     public static final String API_ADMIN = "/registry/admin";
 
+    /** Subpath for backup methods. */
+    public static final String BACKUP = "backup";
+
     /** Subpath for database methods. */
     public static final String DATABASE = "database";
 
