@@ -1,18 +1,23 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<!DOCTYPE dataset SYSTEM "../../dbunit-toolkit-export-choice.dtd" >
+<!DOCTYPE dataset SYSTEM "../../dbunit-registry-export-choice.dtd" >
 <dataset>
+
+  <VOCABULARY_IDS ID="1"/>
+
   <VOCABULARIES
-      ID="1"
-      OWNER="ands"
-      TITLE="testResourceMapTransformProvider2"
+      ID="1" START_DATE="2015-06-24 10:56:30.0" END_DATE="9999-12-01 00:00:00" VOCABULARY_ID="1"
+      OWNER="ANDS" MODIFIED_BY="SYSTEM"
       SLUG="testresourcemaptransformprovider2"
-      STATUS="current"
+      STATUS="current" DATA="{''title'':''testResourceMapTransformProvider2''}"
       />
+
+  <VERSION_IDS ID="1"/>
+
   <VERSIONS
-      ID="1"
-      VOCAB_ID="1"
-      TITLE="v1"
-      STATUS="current"
+      ID="1" START_DATE="2015-06-24 10:56:30.0" END_DATE="9999-12-01 00:00:00" VERSION_ID="1"
+      VOCABULARY_ID="1" MODIFIED_BY="SYSTEM"
+      SLUG="v1" RELEASE_DATE="2015-06-01"
+      STATUS="CURRENT" DATA="{''title'':v1''}"
       />
   <RESOURCE_OWNER_HOSTS
       ID="1"
@@ -29,10 +34,27 @@
       HOST="second.owned.com"
       />
 
-  <ACCESS_POINTS ID="1" PORTAL_DATA="{&quot;uri&quot;:&quot;http://localhost:8125/vocabs-registry/download/1/test-data1.ttl&quot;,&quot;format&quot;:&quot;TTL&quot;}" TOOLKIT_DATA="{&quot;path&quot;:&quot;ands_vocabs/vocabs/ands/testresourcemaptransformprovider2/v1/harvest_data/test-data1.ttl&quot;}" TYPE="file" VERSION_ID="1"/>
-  <ACCESS_POINTS ID="2" PORTAL_DATA="{&quot;uri&quot;:&quot;http://testing-host.org.au/repository/api/sparql/ands_testresourcemaptransformprovider2_v1&quot;,&quot;source&quot;:&quot;system&quot;}" TOOLKIT_DATA="{}" TYPE="apiSparql" VERSION_ID="1"/>
-  <ACCESS_POINTS ID="3" PORTAL_DATA="{&quot;uri&quot;:&quot;http://localhost:8125/vocabs-registry/download/3/ands_testresourcemaptransformprovider2_v1.&quot;}" TOOLKIT_DATA="{&quot;uri&quot;:&quot;http://localhost:8125/openrdf-sesame/repositories/ands_testresourcemaptransformprovider2_v1&quot;}" TYPE="sesameDownload" VERSION_ID="1"/>
-  <ACCESS_POINTS ID="4" PORTAL_DATA="{&quot;uri&quot;:&quot;http://testing-host.org.au/repository/api/lda/ands/testresourcemaptransformprovider2/v1&quot;,&quot;source&quot;:&quot;system&quot;}" TOOLKIT_DATA="{}" TYPE="sissvoc" VERSION_ID="1"/>
+  <ACCESS_POINT_IDS ID="1"/>
+  <ACCESS_POINT_IDS ID="2"/>
+  <ACCESS_POINT_IDS ID="3"/>
+  <ACCESS_POINT_IDS ID="4"/>
+
+  <ACCESS_POINTS ID="1"
+      ACCESS_POINT_ID="1" START_DATE="2015-06-24 10:56:30.0" END_DATE="9999-12-01 00:00:00"
+      SOURCE="USER" MODIFIED_BY="SYSTEM"
+      DATA="{}" TYPE="FILE" VERSION_ID="1"/>
+  <ACCESS_POINTS ID="2"
+      ACCESS_POINT_ID="2" START_DATE="2015-06-24 10:56:30.0" END_DATE="9999-12-01 00:00:00"
+      SOURCE="SYSTEM" MODIFIED_BY="SYSTEM"
+      DATA="{}" TYPE="API_SPARQL" VERSION_ID="1"/>
+  <ACCESS_POINTS ID="3"
+      ACCESS_POINT_ID="3" START_DATE="2015-06-24 10:56:30.0" END_DATE="9999-12-01 00:00:00"
+      SOURCE="SYSTEM" MODIFIED_BY="SYSTEM"
+      DATA="{}" TYPE="SESAME_DOWNLOAD" VERSION_ID="1"/>
+  <ACCESS_POINTS ID="4"
+      ACCESS_POINT_ID="4" START_DATE="2015-06-24 10:56:30.0" END_DATE="9999-12-01 00:00:00"
+      SOURCE="SYSTEM" MODIFIED_BY="SYSTEM"
+      DATA="{''url-prefix'':''http://testing-host.org.au/repository/api/lda/ands/testresourcemaptransformprovider2/v1''}" TYPE="SISSVOC" VERSION_ID="1"/>
 
   <RESOURCE_MAP ID="1" ACCESS_POINT_ID="4" DEPRECATED="false" IRI="http://vocab.owner.org/def/vocab1/1" OWNED="true" RESOURCE_TYPE="http://www.w3.org/2004/02/skos/core#ConceptScheme"/>
   <RESOURCE_MAP ID="2" ACCESS_POINT_ID="4" DEPRECATED="true" IRI="http://vocab.owner.org/def/vocab1/5" OWNED="true" RESOURCE_TYPE="http://www.w3.org/2004/02/skos/core#ConceptScheme"/>

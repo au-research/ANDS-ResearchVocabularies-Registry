@@ -125,11 +125,21 @@
                           $db-entity-mapping)/@entityListeners" />
     <!-- Whether or not this entity has columns for
          start/end date/time used to support history.
-         This is used to decide whether or not to import the
-         supporting TemporalUtils class.
+         This is used to decide whether or not to include temporal
+         queries.
     -->
     <xsl:variable name="hasStartEndDateTime"
                   select="dcl:column[lower-case(@name)='start_date']" />
+    <!-- Whether or not the TemporalUtils class should be imported.
+         This is the case if either the entity class has start/end
+         date/time columns, or if there is an extraQuery that needs it.
+    -->
+    <xsl:variable name="requiresTemporalUtils"
+                  select="(dcl:column[lower-case(@name)='start_date'])
+                          or
+                          (key('db-to-entity', lower-case(@tableName),
+                          $db-entity-mapping)/extraQueries/extraQuery/queryText
+                          [@temporal='true'])" />
     <!-- Whether or not this entity uses enumerated types.
          This is used to decide whether or not to import the
          Enumerated annotation class.
@@ -194,6 +204,8 @@ import javax.persistence.Table;
 </xsl:text>
 <xsl:if test="$hasStartEndDateTime">
 <xsl:text>import </xsl:text><xsl:value-of select="$context-package"/>.TemporalColumns;
+</xsl:if>
+<xsl:if test="$requiresTemporalUtils">
 <xsl:text>import </xsl:text><xsl:value-of select="$context-package"/>.TemporalUtils;
 /* import static <xsl:value-of select="$context-package"/>.TemporalUtils.E1; */
 
@@ -367,7 +379,7 @@ import javax.persistence.EntityManager;
 </xsl:if><xsl:text>import javax.persistence.TypedQuery;
 
 import </xsl:text><xsl:value-of select="$context-package"/>.DBContext;
-<xsl:if test="$hasStartEndDateTime">
+<xsl:if test="$requiresTemporalUtils">
 <xsl:text>import </xsl:text><xsl:value-of select="$context-package"/>.TemporalUtils;
 </xsl:if>
 import <xsl:value-of select="$entity-package"/>.<xsl:value-of select="$entityName" />;

@@ -1049,6 +1049,43 @@
        serialVersionUID="-7521129755199622960L"
        >
     <extraQueries>
+      <extraQuery name="GET_CURRENT_OWNED_R_M_ES_FOR_IRI">
+        <extraQueryParameter name="iri" />
+        <queryText temporal="true">
+          SELECT rme FROM ResourceMapEntry rme, AccessPoint e1, Version e2
+          WHERE rme.iri = :iri
+            AND rme.owned = TRUE
+            AND rme.accessPointId = e1.id
+            AND e1.versionId = e2.id
+            AND e2.status = 'CURRENT'
+            AND
+            #TEMPORAL_QUERY_VALID_CLAUSE_E1
+            AND
+            #TEMPORAL_QUERY_VALID_CLAUSE_E2
+        </queryText>
+        <method>    /** Get all owned resource map entries by IRI, which come from "current"
+     * versions.
+     * @param iri The IRI to be looked up.
+     * @return A list of all resource map entries containing the IRI,
+     * for "current" versions only.
+     */
+    public static List&lt;ResourceMapEntry&gt;
+        getCurrentOwnedResourceMapEntriesForIRI(
+            final String iri) {
+        EntityManager em = DBContext.getEntityManager();
+        TypedQuery&lt;ResourceMapEntry&gt; q = em.createNamedQuery(
+                ResourceMapEntry.GET_CURRENT_OWNED_R_M_ES_FOR_IRI,
+                ResourceMapEntry.class).
+                setParameter(ResourceMapEntry.
+                        GET_CURRENT_OWNED_R_M_ES_FOR_IRI_IRI, iri);
+        q = TemporalUtils.setDatetimeConstantParameters(q);
+        List&lt;ResourceMapEntry&gt; rme = q.getResultList();
+        em.close();
+        return rme;
+    }
+
+</method>
+      </extraQuery>
       <extraQuery name="DELETE_RESOURCEMAPENTRIES_FOR_AP_ID"
                   type="update">
         <extraQueryParameter name="accessPointId" />
