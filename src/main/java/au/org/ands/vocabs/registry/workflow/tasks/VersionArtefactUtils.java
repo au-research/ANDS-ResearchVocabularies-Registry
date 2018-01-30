@@ -44,6 +44,9 @@ public final class VersionArtefactUtils {
      *      the creation of the version artefact.
      * @param vaClass The class instance of the version artefact type.
      * @param vaType The version artefact type.
+     * @param multipleOfTheSameType Specify true, if there can be more
+     *      than one instance of this version artefact type, for the
+     *      same version.
      * @param comparePredicate Predicate used to compare against an existing
      *      version artefact of the same type.
      * @param fieldSetter Consumer used to set type-specific field(s) of a
@@ -53,6 +56,7 @@ public final class VersionArtefactUtils {
             final TaskInfo taskInfo,
             final Class<T> vaClass,
             final VersionArtefactType vaType,
+            final boolean multipleOfTheSameType,
             final Predicate<T> comparePredicate,
             final Consumer<T> fieldSetter) {
 
@@ -73,10 +77,12 @@ public final class VersionArtefactUtils {
                 return;
             }
             // So we've got a currently-valid one with a
-            // different path. Retire this one.
-            va.setModifiedBy(modifiedBy);
-            TemporalUtils.makeHistorical(va, nowTime);
-            VersionArtefactDAO.updateVersionArtefact(em, va);
+            // different path. Retire this one, if there can only be one.
+            if (!multipleOfTheSameType) {
+                va.setModifiedBy(modifiedBy);
+                TemporalUtils.makeHistorical(va, nowTime);
+                VersionArtefactDAO.updateVersionArtefact(em, va);
+            }
         }
         // No existing access point with the correct path,
         // so create a new one.
@@ -114,6 +120,7 @@ public final class VersionArtefactUtils {
         createVersionArtefact(taskInfo,
                 VaConceptList.class,
                 VersionArtefactType.CONCEPT_LIST,
+                false,
                 vaT -> path.equals(vaT.getPath()),
                 vaT -> vaT.setPath(path));
     }
@@ -131,6 +138,7 @@ public final class VersionArtefactUtils {
         createVersionArtefact(taskInfo,
                 VaConceptTree.class,
                 VersionArtefactType.CONCEPT_TREE,
+                false,
                 vaT -> path.equals(vaT.getPath()),
                 vaT -> vaT.setPath(path));
     }
@@ -148,6 +156,7 @@ public final class VersionArtefactUtils {
         createVersionArtefact(taskInfo,
                 VaHarvestPoolparty.class,
                 VersionArtefactType.HARVEST_POOLPARTY,
+                true,
                 vaT -> path.equals(vaT.getPath()),
                 vaT -> vaT.setPath(path));
     }

@@ -1,6 +1,6 @@
 /** See the file "LICENSE" for the full license governing this code. */
 
-package au.org.ands.vocabs.toolkit.utils;
+package au.org.ands.vocabs.registry.utils;
 
 import java.lang.invoke.MethodHandles;
 
@@ -22,6 +22,10 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
 
 import au.org.ands.vocabs.editor.admin.model.PoolPartyProject;
+import au.org.ands.vocabs.registry.db.dao.PoolPartyServerDAO;
+import au.org.ands.vocabs.registry.db.entity.PoolPartyServer;
+import au.org.ands.vocabs.toolkit.utils.PropertyConstants;
+import au.org.ands.vocabs.toolkit.utils.ToolkitProperties;
 
 /** Utility methods for working with PoolParty. */
 public final class PoolPartyUtils {
@@ -53,12 +57,15 @@ public final class PoolPartyUtils {
      * @return The user's PoolParty projects as an array of instances of
      *         PoolPartyProject. */
     public static PoolPartyProject[] getPoolPartyProjects() {
-        String remoteUrl = ToolkitProperties.getProperty(
-                PropertyConstants.POOLPARTY_REMOTEURL);
-        String username = ToolkitProperties.getProperty(
-                PropertyConstants.POOLPARTY_USERNAME);
-        String password = ToolkitProperties.getProperty(
-                PropertyConstants.POOLPARTY_PASSWORD);
+        PoolPartyServer poolPartyServer =
+                PoolPartyServerDAO.getPoolPartyServerById(1);
+        if (poolPartyServer == null) {
+            LOGGER.error("PoolParty server 1 undefined.");
+            return null;
+        }
+        String remoteUrl = poolPartyServer.getApiUrl();
+        String username = poolPartyServer.getUsername();
+        String password = poolPartyServer.getPassword();
 
         Client client = ClientBuilder.newClient();
         // Need to register the Jackson provider in order

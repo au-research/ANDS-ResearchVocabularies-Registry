@@ -34,17 +34,14 @@ import org.openrdf.rio.helpers.RDFHandlerBase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
-import au.org.ands.vocabs.toolkit.tasks.TaskInfo;
-import au.org.ands.vocabs.toolkit.tasks.TaskStatus;
-import au.org.ands.vocabs.toolkit.utils.PropertyConstants;
-import au.org.ands.vocabs.toolkit.utils.ToolkitFileUtils;
-import au.org.ands.vocabs.toolkit.utils.ToolkitProperties;
+import au.org.ands.vocabs.registry.utils.PropertyConstants;
+import au.org.ands.vocabs.registry.utils.RegistryProperties;
+import au.org.ands.vocabs.registry.workflow.tasks.TaskRunner;
+import au.org.ands.vocabs.registry.workflow.tasks.TaskUtils;
 
 /** Extract metadata from a PoolParty project, and apply rewritings
  * as specified in the metadata rewrite configuration file. */
-public class GetMetadataTransformProvider extends TransformProvider {
+public class GetMetadataTransformProvider {
 
     /** Logger for this class. */
    private final Logger logger = LoggerFactory.getLogger(
@@ -58,20 +55,22 @@ public class GetMetadataTransformProvider extends TransformProvider {
     * PoolParty project's users named graph.
     * Note that this value is used in
     * {@link
-    *   au.org.ands.vocabs.registry.workflow.provider.harvest.PoolPartyHarvestProvider#getHarvestFiles(String,
-    *   String, boolean, boolean, HashMap)}.
+    *   au.org.ands.vocabs.registry.workflow.provider.harvest.PoolPartyHarvestProvider#getHarvestFiles(Integer,
+    *    String, String, boolean,
+    *    au.org.ands.vocabs.registry.workflow.tasks.TaskInfo,
+    *    au.org.ands.vocabs.registry.workflow.tasks.Subtask)}.
     */
    public static final String USERS_GRAPH_FILE = "users."
            + USERS_GRAPH_FORMAT.getDefaultFileExtension();
 
    /** The path to the metadata rewrite configuration file. */
    protected static final String METADATA_REWRITE_MAP_PATH =
-           ToolkitProperties.getProperty(
-                   PropertyConstants.TOOLKIT_METADATAREWRITEMAPPATH);
+           RegistryProperties.getProperty(
+                   PropertyConstants.REGISTRY_METADATAREWRITEMAPPATH);
 
    /** A map of metadata properties to look for and extract. */
    private static HashMap<URI, String> metadataToLookFor =
-           new HashMap<URI, String>();
+           new HashMap<>();
 
    static {
        metadataToLookFor.put(DCTERMS.TITLE, "dcterms:title");
@@ -85,28 +84,6 @@ public class GetMetadataTransformProvider extends TransformProvider {
        metadataToLookFor.put(DCTERMS.CONTRIBUTOR, "dcterms:contributor");
    }
 
-    @Override
-    public final String getInfo() {
-        // Not supported.
-        return null;
-    }
-
-    @Override
-    public final boolean transform(final TaskInfo taskInfo,
-            final JsonNode subtask,
-            final HashMap<String, String> results) {
-        // This transform is not to be called from a task.
-        return false;
-    }
-
-    @Override
-    public final boolean untransform(final TaskInfo taskInfo,
-            final JsonNode subtask,
-            final HashMap<String, String> results) {
-        // This transform is not to be called from a task.
-        return false;
-    }
-
     /**
      * Parse the files harvested from PoolParty and extract the
      * metadata.
@@ -115,15 +92,15 @@ public class GetMetadataTransformProvider extends TransformProvider {
      */
     public final HashMap<String, Object> extractMetadata(
             final String pPprojectId) {
-        Path dir = Paths.get(ToolkitFileUtils.getMetadataOutputPath(
+        Path dir = Paths.get(TaskUtils.getMetadataOutputPath(
                 pPprojectId));
 
         // The combined results that will be returned as the metadata.
-        HashMap<String, Object> results = new HashMap<String, Object>();
+        HashMap<String, Object> results = new HashMap<>();
 
         // Data from the PoolParty project's users named graph.
         // A map from URL to literal (the user's "full name").
-        HashMap<String, String> usersMap = new HashMap<String, String>();
+        HashMap<String, String> usersMap = new HashMap<>();
 
         // Load content from the users named graph,
         // if there is a file containing it.
@@ -144,7 +121,7 @@ public class GetMetadataTransformProvider extends TransformProvider {
             } catch (RDFParseException
                     | RDFHandlerException
                     | IOException ex) {
-                results.put(TaskStatus.EXCEPTION,
+                results.put(TaskRunner.ERROR,
                         "Exception in extractMetadata while parsing "
                         + "users graph RDF");
                 logger.error("Exception in extractMetadata while parsing "
@@ -177,7 +154,7 @@ public class GetMetadataTransformProvider extends TransformProvider {
                 | IOException
                 | RDFParseException
                 | RDFHandlerException ex) {
-            results.put(TaskStatus.EXCEPTION,
+            results.put(TaskRunner.ERROR,
                     "Exception in extractMetadata while parsing RDF");
             logger.error("Exception in extractMetadata while parsing RDF:",
                     ex);
@@ -207,13 +184,12 @@ public class GetMetadataTransformProvider extends TransformProvider {
          * of Strings of corresponding values. */
         private HashMap<String, HashMap<String, HashMap<String,
             ArrayList<String>>>> metadataMap =
-                new HashMap<String, HashMap<String, HashMap<String,
-                ArrayList<String>>>>();
+                new HashMap<>();
 
         /** Map for users data. Maps from a URL (as a String) to
          * a "full name". */
         private HashMap<String, String> userMap =
-                new HashMap<String, String>();
+                new HashMap<>();
 
         /** Source filename of the metadata. */
         private String source = "";
@@ -285,15 +261,14 @@ public class GetMetadataTransformProvider extends TransformProvider {
                 if (metadataMap.containsKey(key)) {
                     mMap = metadataMap.get(key);
                 } else {
-                    mMap = new HashMap<String, HashMap<String,
-                            ArrayList<String>>>();
+                    mMap = new HashMap<>();
                     metadataMap.put(key, mMap);
                 }
 
                 if (mMap.containsKey(source)) {
                     aMap =  mMap.get(source);
                 } else {
-                    aMap = new HashMap<String, ArrayList<String>>();
+                    aMap = new HashMap<>();
                     mMap.put(source, aMap);
                 }
 
@@ -301,7 +276,7 @@ public class GetMetadataTransformProvider extends TransformProvider {
                 if (!aMap.containsKey("value" + lang)) {
                     // Not already there, so create a new ArrayList
                     // and insert it into aMap.
-                    aList = new ArrayList<String>();
+                    aList = new ArrayList<>();
                     aMap.put("value" + lang, aList);
                 } else {
                     aList = aMap.get("value" + lang);
@@ -364,7 +339,7 @@ public class GetMetadataTransformProvider extends TransformProvider {
         /** Map for users data. Maps from a URL (as a String) to
          * a "full name". */
         private HashMap<String, String> usersMap =
-                new HashMap<String, String>();
+                new HashMap<>();
 
         @Override
         public void handleStatement(final Statement st) {

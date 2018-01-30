@@ -2,7 +2,6 @@
 package au.org.ands.vocabs.toolkit.rest;
 
 import java.lang.invoke.MethodHandles;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -14,13 +13,12 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 
+import org.openrdf.repository.manager.RepositoryInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import au.org.ands.vocabs.registry.workflow.provider.harvest.HarvestProvider;
-import au.org.ands.vocabs.registry.workflow.provider.harvest.HarvestProviderUtils;
-import au.org.ands.vocabs.registry.workflow.provider.importer.ImporterProvider;
-import au.org.ands.vocabs.registry.workflow.provider.importer.ImporterProviderUtils;
+import au.org.ands.vocabs.registry.workflow.provider.harvest.PoolPartyHarvestProvider;
+import au.org.ands.vocabs.registry.workflow.provider.importer.SesameImporterProvider;
 import au.org.ands.vocabs.toolkit.db.TaskUtils;
 import au.org.ands.vocabs.toolkit.db.model.Task;
 import au.org.ands.vocabs.toolkit.utils.PropertyConstants;
@@ -46,14 +44,8 @@ public class GetInfo {
     @GET
     public final String getInfoPoolParty() {
         logger.debug("called getInfoPoolParty");
-        HarvestProvider provider =
-                HarvestProviderUtils.getProvider("PoolParty");
-        if (provider == null) {
-            logger.error("getInfoPoolParty() unable to get "
-                    + "PoolParty harvester provider");
-            return "{\"exception\":\"Can't get PoolParty provider.\"}";
-        }
-        return provider.getInfo();
+        PoolPartyHarvestProvider provider = new PoolPartyHarvestProvider();
+        return provider.getInfo(1);
     }
 
     /** Get the list of Sesame repositories.
@@ -61,15 +53,9 @@ public class GetInfo {
     @Path("SesameRepositories")
     @Produces(MediaType.APPLICATION_JSON)
     @GET
-    public final Collection<?> getInfoSesame() {
+    public final Collection<RepositoryInfo> getInfoSesame() {
         logger.debug("called getInfoSesame");
-        ImporterProvider provider =
-                ImporterProviderUtils.getProvider("Sesame");
-        if (provider == null) {
-            logger.error("getInfoSesame() unable to get "
-                    + "Sesame importer provider");
-            return new ArrayList<String>();
-        }
+        SesameImporterProvider provider = new SesameImporterProvider();
         return provider.getInfo();
     }
 
@@ -94,7 +80,7 @@ public class GetInfo {
     public final HashMap<String, String> getVersion() {
         logger.debug("called getVersion");
         HashMap<String, String> result =
-                new HashMap<String, String>();
+                new HashMap<>();
         result.put("Toolkit.version",
                 ToolkitProperties.getProperty(
                         PropertyConstants.TOOLKIT_VERSION));

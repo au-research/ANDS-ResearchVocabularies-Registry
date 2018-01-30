@@ -6,9 +6,12 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.lang.invoke.MethodHandles;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Locale;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,6 +40,40 @@ public final class RegistryFileUtils {
         if (!oDir.exists()) {
             oDir.mkdirs();
         }
+    }
+
+    /** Save RDF data to a file.
+     * @param dirName The full directory name
+     * @param fileName The base name of the file to create
+     * @param format The format to use; a key in
+     *  ToolkitConfig.FORMAT_TO_FILEEXT_MAP.
+     * @param data The data to be written
+     * @return The complete, full path to the file.
+     */
+    public static String saveRDFToFile(final String dirName,
+            final String fileName,
+            final String format, final String data) {
+        logger.info("saveRDFToFile: " + dirName + "," + fileName);
+        String fileExtension =
+                RDFUtils.FORMAT_TO_FILEEXT_MAP.get(
+                        format.toLowerCase(Locale.ROOT));
+        String filePath = dirName
+                + File.separator + fileName + fileExtension;
+        requireDirectory(dirName);
+        File oFile = new File(filePath);
+        // See, e.g.,
+        // http://stackoverflow.com/questions/9852978/
+        //        write-a-file-in-utf-8-using-filewriter-java
+        try (OutputStreamWriter writer =
+                new OutputStreamWriter(new FileOutputStream(oFile),
+                        StandardCharsets.UTF_8)) {
+            writer.write(data);
+            writer.close();
+        } catch (IOException e) {
+            logger.error("Exception in ToolkitFileUtils.saveFile(): ", e);
+            return "Exception: " + e.toString();
+        }
+        return filePath;
     }
 
     /** Get the full path of the file used to store an uploaded

@@ -97,6 +97,20 @@ public final class PropertyConstants {
     public static final String SISSVOC_ENDPOINTSPREFIX =
             "SISSVoc.endpointsPrefix";
 
+    /* Harvesters. */
+
+    /** PoolParty harvester default format. */
+    public static final String POOLPARTYHARVESTER_DEFAULTFORMAT =
+            "PoolPartyHarvester.defaultFormat";
+
+    /** PoolParty harvester default export module. */
+    public static final String POOLPARTYHARVESTER_DEFAULTEXPORTMODULE =
+            "PoolPartyHarvester.defaultExportModule";
+
+    /** Metadata transform provider metadata rewrite map path. */
+    public static final String REGISTRY_METADATAREWRITEMAPPATH =
+            "Registry.metadataRewriteMapPath";
+
     /* Importers. */
 
     /* Sesame importer. */

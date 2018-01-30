@@ -1,6 +1,6 @@
 /** See the file "LICENSE" for the full license governing this code. */
 
-package au.org.ands.vocabs.toolkit.utils;
+package au.org.ands.vocabs.registry.utils;
 
 import java.util.Hashtable;
 import java.util.Locale;
