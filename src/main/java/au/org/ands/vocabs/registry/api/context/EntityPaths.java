@@ -13,7 +13,7 @@ import au.org.ands.vocabs.registry.db.entity.Version;
 import au.org.ands.vocabs.registry.db.entity.Vocabulary;
 import au.org.ands.vocabs.registry.utils.PropertyConstants;
 import au.org.ands.vocabs.registry.utils.RegistryProperties;
-import au.org.ands.vocabs.toolkit.utils.ToolkitNetUtils;
+import au.org.ands.vocabs.registry.utils.RegistryNetUtils;
 
 /** Utility methods to work with URL paths to registry entities. */
 public final class EntityPaths {
@@ -61,7 +61,7 @@ public final class EntityPaths {
                 RegistryProperties.getProperty(
                         PropertyConstants.REGISTRY_SWAGGER_BASEPATH,
                         SwaggerBootstrapper.REGISTRY_SWAGGER_BASEPATH_DEFAULT);
-        Client client = ToolkitNetUtils.getClient();
+        Client client = RegistryNetUtils.getClient();
         resourceTarget = client.target(scheme + "://" + host).
                 path(basePath).path(ApiPaths.API_RESOURCE);
     }

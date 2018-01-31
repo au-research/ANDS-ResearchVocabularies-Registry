@@ -8,8 +8,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.persistence.EntityManager;
-import javax.ws.rs.core.MultivaluedHashMap;
-import javax.ws.rs.core.MultivaluedMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,15 +15,12 @@ import org.slf4j.LoggerFactory;
 import au.org.ands.vocabs.registry.api.converter.VocabularyRegistrySchemaMapper;
 import au.org.ands.vocabs.registry.db.context.TemporalUtils;
 import au.org.ands.vocabs.registry.db.converter.VocabularyDbSchemaMapper;
-import au.org.ands.vocabs.registry.db.dao.AccessPointDAO;
-import au.org.ands.vocabs.registry.db.dao.VersionDAO;
 import au.org.ands.vocabs.registry.db.dao.VocabularyDAO;
 import au.org.ands.vocabs.registry.db.dao.VocabularyIdDAO;
-import au.org.ands.vocabs.registry.db.entity.AccessPoint;
-import au.org.ands.vocabs.registry.db.entity.Version;
 import au.org.ands.vocabs.registry.db.entity.Vocabulary;
 import au.org.ands.vocabs.registry.db.entity.clone.VocabularyClone;
 import au.org.ands.vocabs.registry.enums.VocabularyStatus;
+import au.org.ands.vocabs.registry.schema.vocabulary201701.WorkflowOutcome;
 import au.org.ands.vocabs.registry.utils.SlugGenerator;
 
 /** Vocabulary domain model.
@@ -65,13 +60,16 @@ public class VocabularyModel extends ModelBase {
     /** List of all sub-models. */
     private List<ModelBase> subModels = new ArrayList<>();
 
-    /** Map of the current versions and their access points. */
-    private MultivaluedMap<Version, AccessPoint> currentVersionsAndAPs =
-            new MultivaluedHashMap<>();
+    /** The outcome of workflow processing, if at least one task did
+     * not complete with a SUCCESS outcome. */
+    private WorkflowOutcome workflowOutcome;
 
-    /** Map of the draft versions and their access points. */
-    private MultivaluedMap<Version, AccessPoint> draftVersionsAndAPs =
-            new MultivaluedHashMap<>();
+    /** Set the workflow outcome. Invoked by VersionsModel.
+     * @param aWorkflowOutcome The workflowOutcome to set.
+     */
+    protected void setWorkflowOutcome(final WorkflowOutcome aWorkflowOutcome) {
+        workflowOutcome = aWorkflowOutcome;
+    }
 
     /** Construct vocabulary model for a vocabulary.
      * @param anEm The EntityManager to be used to fetch and update
@@ -98,6 +96,26 @@ public class VocabularyModel extends ModelBase {
         populateModel();
     }
 
+    // Getters for currentVocabulary and draftVocabulary that are
+    // available to sub-models. They may need them in order to construct
+    // TaskInfo objects.
+
+    /** Get the current instance of the vocabulary, or null, if there
+     * isn't one.
+     * @return The current instance of the vocabulary, or null.
+     */
+    protected Vocabulary getCurrentVocabulary() {
+        return currentVocabulary;
+    }
+
+    /** Get the draft instance of the vocabulary, or null, if there
+     * isn't one.
+     * @return The draft instance of the vocabulary, or null.
+     */
+    protected Vocabulary getDraftVocabulary() {
+        return draftVocabulary;
+    }
+
     /** Notify sub-models. */
     @Override
     protected void notifySetNowTime(final LocalDateTime aNowTime) {
@@ -117,16 +135,6 @@ public class VocabularyModel extends ModelBase {
         currentVocabulary =
                 VocabularyDAO.getCurrentVocabularyByVocabularyId(em(),
                         vocabularyId());
-        List<Version> currentVersions =
-                VersionDAO.getCurrentVersionListForVocabulary(em(),
-                        vocabularyId());
-        for (Version version : currentVersions) {
-            List<AccessPoint> currentAPs =
-                    AccessPointDAO.getCurrentAccessPointListForVersion(em(),
-                            version.getVersionId());
-            currentVersionsAndAPs.addAll(version, currentAPs);
-        }
-
         // Draft
         List<Vocabulary> draftVocabularyList =
                 VocabularyDAO.getDraftVocabularyByVocabularyId(em(),
@@ -134,15 +142,6 @@ public class VocabularyModel extends ModelBase {
         if (!draftVocabularyList.isEmpty()) {
             // There can be at most one draft vocabulary row.
             draftVocabulary = draftVocabularyList.get(0);
-            List<Version> draftVersions =
-                    VersionDAO.getCurrentVersionListForVocabulary(em(),
-                            vocabularyId());
-            for (Version version : draftVersions) {
-                List<AccessPoint> draftAPs =
-                        AccessPointDAO.getCurrentAccessPointListForVersion(
-                                em(), version.getVersionId());
-                draftVersionsAndAPs.addAll(version, draftAPs);
-            }
         }
 
         // Sub-models
@@ -150,7 +149,7 @@ public class VocabularyModel extends ModelBase {
         subModels.add(vreModel);
         vrvModel = new VocabularyRelatedVocabulariesModel(em(), vocabularyId());
         subModels.add(vrvModel);
-        versionsModel = new VersionsModel(em(), vocabularyId());
+        versionsModel = new VersionsModel(em(), vocabularyId(), this);
         subModels.add(versionsModel);
     }
 
@@ -166,39 +165,10 @@ public class VocabularyModel extends ModelBase {
         if (currentVocabulary != null) {
             description.add("Has current vocabulary; Id: "
                     + currentVocabulary.getId());
-            for (Version version : currentVersionsAndAPs.keySet()) {
-                description.add("Current vocabulary has current version; "
-                        + "version Id, Id: " + version.getVersionId()
-                        + "," + version.getId());
-                for (AccessPoint ap : currentVersionsAndAPs.get(version)) {
-                    description.add("Current version has current AP; "
-                            + "version Id, AP Id, Id: "
-                            + version.getVersionId() + " ,"
-                            + ap.getAccessPointId() + ","
-                            + ap.getId());
-                }
-            }
         }
         if (draftVocabulary != null) {
             description.add("Has draft vocabulary; Id: "
                     + draftVocabulary.getId());
-            for (Version version : draftVersionsAndAPs.keySet()) {
-                description.add("Draft vocabulary has draft version; "
-                        + "version Id, Id, meaning: "
-                        + version.getVersionId() + ","
-                        + version.getId() + ","
-                        + TemporalUtils.getTemporalDescription(
-                                version).getValue());
-                for (AccessPoint ap : draftVersionsAndAPs.get(version)) {
-                    description.add("Draft version has draft AP; "
-                            + "version Id, AP Id, Id, meaning"
-                            + version.getVersionId() + ","
-                            + ap.getAccessPointId() + ","
-                            + ap.getId() + ","
-                            + TemporalUtils.getTemporalDescription(
-                                    ap).getValue());
-                }
-            }
         }
 
         // Sub-models.
@@ -259,6 +229,9 @@ public class VocabularyModel extends ModelBase {
         subModels.forEach(sm -> sm.insertIntoSchemaFromCurrent(outputVocabulary,
                 includeVersions, includeAccessPoints,
                 includeRelatedEntitiesAndVocabularies));
+        if (workflowOutcome != null) {
+            outputVocabulary.setWorkflowOutcome(workflowOutcome);
+        }
         return outputVocabulary;
     }
 
@@ -290,6 +263,9 @@ public class VocabularyModel extends ModelBase {
         subModels.forEach(sm -> sm.insertIntoSchemaFromDraft(outputVocabulary,
                 includeVersions, includeAccessPoints,
                 includeRelatedEntitiesAndVocabularies));
+        if (workflowOutcome != null) {
+            outputVocabulary.setWorkflowOutcome(workflowOutcome);
+        }
         return outputVocabulary;
     }
 
@@ -374,7 +350,7 @@ public class VocabularyModel extends ModelBase {
     @Override
     protected void deleteDraftDatabaseRows() {
         if (draftVocabulary != null) {
-            em().remove(draftVocabulary);
+            VocabularyDAO.deleteVocabulary(em(), draftVocabulary);
             draftVocabulary = null;
         }
     }
@@ -384,16 +360,19 @@ public class VocabularyModel extends ModelBase {
     protected void applyChanges(
             final au.org.ands.vocabs.registry.schema.vocabulary201701.
             Vocabulary updatedVocabulary) {
+        // First this model, so that the Vocabulary entity is available
+        // to sub-models.
         prepareUpdatedVocabulary(updatedVocabulary);
-        // Sub-models first.
-        subModels.forEach(sm ->
-            sm.applyChanges(updatedVocabulary));
         VocabularyStatus status = updatedVocabulary.getStatus();
         if (status == VocabularyStatus.DRAFT) {
             applyChangesDraft(updatedVocabulary);
         } else {
             applyChangesCurrent(updatedVocabulary);
         }
+        // Now the Vocabulary entity is ready to be accessed by sub-models,
+        // in case they need it to make a TaskInfo object.
+        subModels.forEach(sm ->
+            sm.applyChanges(updatedVocabulary));
     }
 
     /** Incoming vocabulary metadata in registry schema may be incomplete.

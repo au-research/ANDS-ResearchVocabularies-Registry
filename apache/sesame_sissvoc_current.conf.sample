@@ -24,7 +24,7 @@ RewriteLock /var/log/httpd/lock_httpd_rewrite
 # Adjust this path to rewrite_current.sh.
 # Also, you will need to edit rewrite_current.sh to point to the
 # deployed Toolkit.
-RewriteMap currentMap "prg:/usr/local/src/vocabtoolkit/ANDS-Vocabs-Toolkit/scripts/rewrite_current.sh"
+RewriteMap currentMap "prg:/usr/local/src/vocabs-registry/vocabs-registry/scripts/rewrite_current.sh"
 
 # Adjust hostname, port as necessary.
 RewriteRule "^/repository/api/lda/([^/]*)/([^/]*)/current/(.*)" "ajp://localhost:8009/repository/api/lda/$1/$2/${currentMap:$2|current}/$3" [P,L]

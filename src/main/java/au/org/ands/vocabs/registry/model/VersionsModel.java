@@ -10,23 +10,40 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 import javax.persistence.EntityManager;
 
 import org.apache.commons.collections4.sequence.CommandVisitor;
 import org.apache.commons.collections4.sequence.SequencesComparator;
+import org.apache.commons.lang3.BooleanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import au.org.ands.vocabs.registry.api.converter.VersionRegistrySchemaMapper;
 import au.org.ands.vocabs.registry.db.context.TemporalUtils;
+import au.org.ands.vocabs.registry.db.converter.JSONSerialization;
 import au.org.ands.vocabs.registry.db.converter.VersionDbSchemaMapper;
 import au.org.ands.vocabs.registry.db.dao.VersionDAO;
 import au.org.ands.vocabs.registry.db.entity.ComparisonUtils;
 import au.org.ands.vocabs.registry.db.entity.Version;
+import au.org.ands.vocabs.registry.db.entity.Vocabulary;
 import au.org.ands.vocabs.registry.db.entity.clone.VersionClone;
+import au.org.ands.vocabs.registry.db.internal.VersionJson;
+import au.org.ands.vocabs.registry.enums.SubtaskOperationType;
+import au.org.ands.vocabs.registry.enums.SubtaskProviderType;
+import au.org.ands.vocabs.registry.enums.TaskStatus;
 import au.org.ands.vocabs.registry.enums.VocabularyStatus;
 import au.org.ands.vocabs.registry.model.sequence.VersionElement;
+import au.org.ands.vocabs.registry.schema.vocabulary201701.WorkflowOutcome;
+import au.org.ands.vocabs.registry.workflow.WorkflowMethods;
+import au.org.ands.vocabs.registry.workflow.converter.WorkflowOutcomeSchemaMapper;
+import au.org.ands.vocabs.registry.workflow.provider.importer.SesameImporterProvider;
+import au.org.ands.vocabs.registry.workflow.provider.publish.SISSVocPublishProvider;
+import au.org.ands.vocabs.registry.workflow.provider.transform.ResourceMapTransformProvider;
+import au.org.ands.vocabs.registry.workflow.tasks.Subtask;
+import au.org.ands.vocabs.registry.workflow.tasks.Task;
+import au.org.ands.vocabs.registry.workflow.tasks.TaskInfo;
 
 /** Versions domain model.
  * This is a representation of the versions of a vocabulary,
@@ -46,6 +63,10 @@ public class VersionsModel extends ModelBase {
     private Logger logger = LoggerFactory.getLogger(
             MethodHandles.lookup().lookupClass());
 
+    /** The parent VocabularyModel of this instance. Passed down
+     * by VersionsModel. */
+    private VocabularyModel vocabularyModel;
+
     /** The current instances of versions, if there are any.
      * The keys are version Ids. */
     private Map<Integer, Version> currentVersions = new HashMap<>();
@@ -54,18 +75,41 @@ public class VersionsModel extends ModelBase {
      * The keys are version Ids. */
     private Map<Integer, Version> draftVersions = new HashMap<>();
 
+    /** Used by applyChanges() to keep track of whether a version has both
+     * the doImport and doPublish flags set. This is then used by
+     * {@link #addImpliedSubtasks()} to determine
+     * whether to add or delete additional workflow subtasks. */
+    private Map<Integer, Boolean> versionHasImportAndPublish = new HashMap<>();
+
+    /** The model of the AccessPoints. */
+    private AccessPointsModel apModel;
+
+    /** The model of the VersionArtefacts. */
+    private VersionArtefactsModel vaModel;
+
     /** List of all sub-models. */
     private List<ModelBase> subModels = new ArrayList<>();
+
+    /** The TaskInfo objects containing the tasks to be performed
+     * for versions, if there are any.
+     * The keys are version Ids. */
+    private Map<Integer, TaskInfo> versionTaskInfos = new HashMap<>();
+
+    /** The tasks to be performed for versions, if there are any.
+     * The keys are version Ids. */
+    private Map<Integer, Task> versionTasks = new HashMap<>();
 
     /** Construct versions model for a vocabulary.
      * @param anEm The EntityManager to be used to fetch and update
      *      database data.
      * @param aVocabularyId The Id of the vocabulary for which the model
      *      is to be constructed.
+     * @param aVocabularyModel The parent VocabularyModel of this instance.
      * @throws IllegalArgumentException If aVocabularyId is null.
      */
     public VersionsModel(final EntityManager anEm,
-            final Integer aVocabularyId) {
+            final Integer aVocabularyId,
+            final VocabularyModel aVocabularyModel) {
         if (aVocabularyId == null) {
             logger.error("Attempt to construct versions model with no Id");
             throw new IllegalArgumentException(
@@ -73,6 +117,7 @@ public class VersionsModel extends ModelBase {
         }
         setEm(anEm);
         setVocabularyId(aVocabularyId);
+        vocabularyModel = aVocabularyModel;
         populateModel();
     }
 
@@ -101,15 +146,28 @@ public class VersionsModel extends ModelBase {
 
         // Draft
         versionList =
-                VersionDAO.getCurrentVersionListForVocabulary(
+                VersionDAO.getDraftVersionListForVocabulary(
                         em(), vocabularyId());
         for (Version version : versionList) {
             draftVersions.put(version.getVersionId(), version);
         }
 
         // Sub-models
-//        subModels.add(vreModel);
-//        subModels.add(vrvModel);
+        populateSubmodels();
+    }
+
+    /** Populate the sub-models. Invoke this method inside
+     * {@link #populateModel()}, and when it is desired to "refresh"
+     * the sub-models, e.g., after running tasks.
+     */
+    private void populateSubmodels() {
+        subModels.clear();
+        apModel = new AccessPointsModel(em(), vocabularyId(),
+                vocabularyModel, this, currentVersions, draftVersions);
+        subModels.add(apModel);
+        vaModel = new VersionArtefactsModel(em(), vocabularyId(),
+                vocabularyModel, this, currentVersions, draftVersions);
+        subModels.add(vaModel);
     }
 
     /** {@inheritDoc} */
@@ -223,7 +281,7 @@ public class VersionsModel extends ModelBase {
     /** {@inheritDoc} */
     @Override
     protected void deleteOnlyCurrent() {
-        if (!currentVersions.isEmpty()) {
+        if (currentVersions.isEmpty()) {
             // Oops, nothing to do!
             return;
         }
@@ -235,7 +293,20 @@ public class VersionsModel extends ModelBase {
             version.setModifiedBy(modifiedBy());
             VersionDAO.updateVersion(em(), version);
         }
+        // TO DO: workflow processing is done here, but need to confirm
+        // if this is the right place/way to do it.
+        // And now run any tasks that have been accumulated along the way.
+        addImpliedSubtasks();
+        boolean ranATask = processRequiredTasks();
+        // Make this model correct again first ...
         currentVersions.clear();
+        // ... now we can repopulate sub-models, if we need to.
+        if (ranATask) {
+            // If we ran at least one task, repopulate the sub-models
+            // so that they are up-to-date again.
+            populateSubmodels();
+            constructWorkflowOutcome();
+        }
     }
 
     /** {@inheritDoc} */
@@ -264,7 +335,20 @@ public class VersionsModel extends ModelBase {
             VersionDAO.saveVersion(em(), draftVersion);
             draftVersions.put(draftVersion.getVersionId(), draftVersion);
         }
+        // TO DO: workflow processing is done here, but need to confirm
+        // if this is the right place/way to do it.
+        // And now run any tasks that have been accumulated along the way.
+        addImpliedSubtasks();
+        boolean ranATask = processRequiredTasks();
+        // Make this model correct again first ...
         currentVersions.clear();
+        // ... now we can repopulate sub-models, if we need to.
+        if (ranATask) {
+            // If we ran at least one task, repopulate the sub-models
+            // so that they are up-to-date again.
+            populateSubmodels();
+            constructWorkflowOutcome();
+        }
     }
 
     /** {@inheritDoc} */
@@ -286,7 +370,7 @@ public class VersionsModel extends ModelBase {
             // For now, it is OK just to delete the database rows.
             // In future, if the publication workflow is applied to
             // drafts, more work will have be done here.
-            em().remove(version);
+            VersionDAO.deleteVersion(em(), version);
         }
         draftVersions.clear();
     }
@@ -306,10 +390,19 @@ public class VersionsModel extends ModelBase {
         // Sub-models.
         subModels.forEach(sm ->
             sm.applyChanges(updatedVocabulary));
+
+        // And now run any tasks that have been accumulated along the way.
+        addImpliedSubtasks();
+        boolean ranATask = processRequiredTasks();
+        if (ranATask) {
+            // If we ran at least one task, repopulate the sub-models
+            // so that they are up-to-date again.
+            populateSubmodels();
+            constructWorkflowOutcome();
+        }
     }
 
-    /** Make the database's draft view of the
-     * Versions match updatedVocabulary.
+    /** Make the database's draft view of the Versions match updatedVocabulary.
      * @param updatedVocabulary The updated vocabulary.
      */
     private void applyChangesDraft(
@@ -373,8 +466,7 @@ public class VersionsModel extends ModelBase {
 
         /** {@inheritDoc} */
         @Override
-        public void visitKeepCommand(
-                final VersionElement ve) {
+        public void visitKeepCommand(final VersionElement ve) {
             // This could contain metadata updates, so apply them
             // to the existing draft row.
             Integer versionId = ve.getVersionId();
@@ -397,21 +489,24 @@ public class VersionsModel extends ModelBase {
 
         /** {@inheritDoc} */
         @Override
-        public void visitDeleteCommand(
-                final VersionElement ve) {
+        public void visitDeleteCommand(final VersionElement ve) {
             Version versionToDelete = ve.getDbVersion();
-            em().remove(versionToDelete);
+            // Notify submodels first.
+            subModels.forEach(sm -> sm.notifyDeleteDraftVersion(
+                    versionToDelete.getVersionId()));
+            VersionDAO.deleteVersion(em(), versionToDelete);
             draftVersions.remove(ve.getVersionId());
             // And that's all, since we are updating a draft.
         }
 
         /** {@inheritDoc} */
         @Override
-        public void visitInsertCommand(
-                final VersionElement ve) {
+        public void visitInsertCommand(final VersionElement ve) {
             VersionRegistrySchemaMapper mapper =
                     VersionRegistrySchemaMapper.INSTANCE;
             Integer versionId = ve.getVersionId();
+            au.org.ands.vocabs.registry.schema.vocabulary201701.Version
+            schemaVersion = ve.getSchemaVersion();
             if (versionId != null) {
                 // There's a version Id, so check if it's in the
                 // set of current instances.
@@ -419,7 +514,7 @@ public class VersionsModel extends ModelBase {
                     // We don't need to create a new version Id, but
                     // we do need to add a draft row for it.
                     Version newVersion = mapper.sourceToTarget(
-                            ve.getSchemaVersion(), nowTime());
+                            schemaVersion, nowTime());
                     newVersion.setVersionId(versionId);
                     TemporalUtils.makeDraft(newVersion);
                     newVersion.setModifiedBy(modifiedBy());
@@ -439,7 +534,17 @@ public class VersionsModel extends ModelBase {
                 TemporalUtils.makeDraft(newVersion);
                 newVersion.setModifiedBy(modifiedBy());
                 VersionDAO.saveVersionWithId(em(), newVersion);
-                draftVersions.put(newVersion.getVersionId(), newVersion);
+                Integer newVersionId = newVersion.getVersionId();
+                // Future work: uncomment the following, if/when we
+                // support workflow for drafts:
+//              // And now we can put a value into versionHasImportAndPublish.
+//              versionHasImportAndPublish.put(versionId,
+//                      BooleanUtils.isTrue(schemaVersion.isDoImport())
+//                      && BooleanUtils.isTrue(schemaVersion.isDoPublish()));
+                draftVersions.put(newVersionId, newVersion);
+                // And this is a tricky bit: we modify the input data
+                // so that the version Id can be seen by submodels.
+                schemaVersion.setId(newVersionId);
                 // And that's all, because this is a draft.
             }
         }
@@ -471,12 +576,16 @@ public class VersionsModel extends ModelBase {
         Map<Integer,
         au.org.ands.vocabs.registry.schema.vocabulary201701.Version>
         updatedVersions = new HashMap<>();
+        versionHasImportAndPublish.clear();
         updatedVocabulary.getVersion().forEach(
                 version -> {
                     updatedSequence.add(new VersionElement(
                             version.getId(), null, version));
                     if (version.getId() != null) {
                         updatedVersions.put(version.getId(), version);
+                        versionHasImportAndPublish.put(version.getId(),
+                                BooleanUtils.isTrue(version.isDoImport())
+                                && BooleanUtils.isTrue(version.isDoPublish()));
                     }
                 });
         Collections.sort(updatedSequence);
@@ -516,7 +625,6 @@ public class VersionsModel extends ModelBase {
         public void visitKeepCommand(final VersionElement ve) {
             // This could contain metadata updates. If so, make the
             // existing current row historical, and add a new current row.
-            // to the existing current row.
             Integer versionId = ve.getVersionId();
             Version existingVersion = ve.getDbVersion();
             au.org.ands.vocabs.registry.schema.vocabulary201701.Version
@@ -538,19 +646,105 @@ public class VersionsModel extends ModelBase {
                 // the previous value).
                 currentVersions.put(versionId, newCurrentVersion);
                 // TO DO: mark this as requiring workflow processing.
+                workflowRequired(vocabularyModel.getCurrentVocabulary(),
+                        newCurrentVersion);
+                Task task = getTaskForVersion(versionId);
+                // Now do the following:
+                // Compare the before/after settings of the various
+                // doXYZ flags.
+                VersionJson existingVersionJson =
+                        JSONSerialization.deserializeStringAsJson(
+                                existingVersion.getData(), VersionJson.class);
+                VersionJson newCurrentVersionJson =
+                        JSONSerialization.deserializeStringAsJson(
+                                newCurrentVersion.getData(), VersionJson.class);
+                // Sorry for the spaghetti.
+                // The structure of each of these is:
+                //   Is workflow forced, or did the value of the flag change?
+                //   If yes, then:
+                //     Is the flag now set to true? If so, do an INSERT.
+                //     Otherwise (it is now false): do a DELETE.
+                // The "tricky" bit is managing any follow-on. For now,
+                // means that a (re-)harvest can also force a (re-)import.
+                if (BooleanUtils.isTrue(schemaVersion.isForceWorkflow())
+                        || (newCurrentVersionJson.isDoPoolpartyHarvest()
+                                != existingVersionJson.
+                                isDoPoolpartyHarvest())) {
+                    if (BooleanUtils.isTrue(
+                            newCurrentVersionJson.isDoPoolpartyHarvest())) {
+                        task.addSubtask(WorkflowMethods.
+                                createHarvestPoolPartySubtask(
+                                        SubtaskOperationType.INSERT,
+                                        vocabularyModel.
+                                        getCurrentVocabulary()));
+                        // And also do a (re-)import and metadata re-insertion,
+                        // if doImport is set.
+                        if (BooleanUtils.isTrue(
+                                newCurrentVersionJson.isDoImport())) {
+                            task.addSubtask(WorkflowMethods.
+                                    createImporterSesameSubtask(
+                                            SubtaskOperationType.INSERT));
+                            task.addSubtask(WorkflowMethods.
+                                    createSesameInsertMetadataSubtask(
+                                            SubtaskOperationType.PERFORM));
+                        }
+                    } else {
+                        task.addSubtask(WorkflowMethods.
+                                createHarvestPoolPartySubtask(
+                                        SubtaskOperationType.DELETE,
+                                        vocabularyModel.
+                                        getCurrentVocabulary()));
+                    }
+                }
+                if (BooleanUtils.isTrue(schemaVersion.isForceWorkflow())
+                        || (newCurrentVersionJson.isDoImport()
+                                != existingVersionJson.isDoImport())) {
+                    if (BooleanUtils.isTrue(
+                            newCurrentVersionJson.isDoImport())) {
+                        task.addSubtask(WorkflowMethods.
+                                createImporterSesameSubtask(
+                                        SubtaskOperationType.INSERT));
+                    } else {
+                        task.addSubtask(WorkflowMethods.
+                                createImporterSesameSubtask(
+                                        SubtaskOperationType.DELETE));
+                    }
+                }
+                if (BooleanUtils.isTrue(schemaVersion.isForceWorkflow())
+                        || (newCurrentVersionJson.isDoPublish()
+                                != existingVersionJson.isDoPublish())) {
+                    if (BooleanUtils.isTrue(
+                            newCurrentVersionJson.isDoPublish())) {
+                        task.addSubtask(WorkflowMethods.
+                                createPublishSissvocSubtask(
+                                        SubtaskOperationType.INSERT));
+                    } else {
+                        task.addSubtask(WorkflowMethods.
+                                createPublishSissvocSubtask(
+                                        SubtaskOperationType.DELETE));
+                    }
+                }
             }
         }
 
         /** {@inheritDoc} */
         @Override
         public void visitDeleteCommand(final VersionElement ve) {
-            // Make the existing row historical.
             Version versionToDelete = ve.getDbVersion();
+            // Notify submodels first.
+            subModels.forEach(sm -> sm.notifyDeleteCurrentVersion(
+                    versionToDelete.getVersionId()));
+            // Make the existing row historical.
             TemporalUtils.makeHistorical(versionToDelete, nowTime());
             versionToDelete.setModifiedBy(modifiedBy());
             VersionDAO.updateVersion(em(), versionToDelete);
-            currentVersions.remove(ve.getVersionId());
-            // TO DO: workflow deletion processing.
+            Integer versionId = ve.getVersionId();
+            currentVersions.remove(versionId);
+            // (I think) we don't need to do anything about workflow
+            // processing here, as it is all handled by the two sub-models.
+            // E.g., we don't need to examine the various doXYZ flags here, as
+            // AccessPointsModel takes care of creating the necessary
+            // DELETE subtasks.
         }
 
         /** {@inheritDoc} */
@@ -559,18 +753,22 @@ public class VersionsModel extends ModelBase {
             VersionRegistrySchemaMapper mapper =
                     VersionRegistrySchemaMapper.INSTANCE;
             Integer versionId = ve.getVersionId();
+            au.org.ands.vocabs.registry.schema.vocabulary201701.Version
+            schemaVersion = ve.getSchemaVersion();
             if (versionId != null) {
                 // There's a version Id, so check if it's in the
                 // set of draft instances.
                 if (draftVersions.containsKey(versionId)) {
                     // Reuse this draft row, making it no longer a draft.
                     Version existingDraft = draftVersions.remove(versionId);
-                    mapper.updateTargetFromSource(ve.getSchemaVersion(),
+                    mapper.updateTargetFromSource(schemaVersion,
                             existingDraft);
                     TemporalUtils.makeCurrentlyValid(existingDraft, nowTime());
                     existingDraft.setModifiedBy(modifiedBy());
                     VersionDAO.updateVersion(em(), existingDraft);
                     currentVersions.put(versionId, existingDraft);
+                    workflowRequired(vocabularyModel.getCurrentVocabulary(),
+                            existingDraft);
                 } else {
                     // Error: we don't know about this version Id.
                     // (Well, it might be a historical version that
@@ -582,16 +780,190 @@ public class VersionsModel extends ModelBase {
             } else {
                 // New row required.
                 Version newCurrentVersion = mapper.sourceToTarget(
-                        ve.getSchemaVersion());
+                        schemaVersion);
+                newCurrentVersion.setVocabularyId(vocabularyId());
                 TemporalUtils.makeCurrentlyValid(newCurrentVersion, nowTime());
                 newCurrentVersion.setModifiedBy(modifiedBy());
                 VersionDAO.saveVersionWithId(em(), newCurrentVersion);
+                Integer newVersionId = newCurrentVersion.getVersionId();
                 // Update our records (i.e., in this case, adding
                 // a new entry).
-                currentVersions.put(newCurrentVersion.getVersionId(),
+                versionId = newVersionId;
+                // And now we can put a value into versionHasImportAndPublish.
+                versionHasImportAndPublish.put(versionId,
+                        BooleanUtils.isTrue(schemaVersion.isDoImport())
+                        && BooleanUtils.isTrue(schemaVersion.isDoPublish()));
+
+                currentVersions.put(newVersionId, newCurrentVersion);
+                // And this is a tricky bit: we modify the input data
+                // so that the version Id can be seen by submodels.
+                schemaVersion.setId(newVersionId);
+                workflowRequired(vocabularyModel.getCurrentVocabulary(),
                         newCurrentVersion);
-                // TO DO: mark this as requiring workflow processing.
             }
+            // Join paths: what follows applies both when reusing
+            // an existing database row and when adding a new database row.
+            // NB: _either_ way we got here, workflowRequired() has already
+            // been invoked.
+            Task task = getTaskForVersion(versionId);
+            // Apply the settings for the three version-level flags.
+            if (BooleanUtils.isTrue(schemaVersion.isDoPoolpartyHarvest())) {
+                task.addSubtask(WorkflowMethods.createHarvestPoolPartySubtask(
+                        SubtaskOperationType.INSERT,
+                        vocabularyModel.getCurrentVocabulary()));
+            }
+            if (BooleanUtils.isTrue(schemaVersion.isDoImport())) {
+                task.addSubtask(WorkflowMethods.createImporterSesameSubtask(
+                        SubtaskOperationType.INSERT));
+            }
+            // And if doing _both_ a PoolParty harvest and a Sesame import,
+            // also do metadata insertion.
+            if (BooleanUtils.isTrue(schemaVersion.isDoPoolpartyHarvest())
+                    && BooleanUtils.isTrue(schemaVersion.isDoImport())) {
+                task.addSubtask(WorkflowMethods.
+                        createSesameInsertMetadataSubtask(
+                                SubtaskOperationType.PERFORM));
+            }
+            if (BooleanUtils.isTrue(ve.getSchemaVersion().isDoPublish())) {
+                task.addSubtask(WorkflowMethods.createPublishSissvocSubtask(
+                        SubtaskOperationType.INSERT));
+            }
+        }
+    }
+
+    /** Get the workflow TaskInfo associated with a version, if there is one.
+     * @param versionId The version Id of the version.
+     * @return The TaskInfo instance associated with the version, or null,
+     *      if there is not (yet) such an instance.
+     */
+    protected TaskInfo getTaskInfoForVersion(final Integer versionId) {
+        return versionTaskInfos.get(versionId);
+    }
+
+    /** Get the workflow task associated with a version, if there is one.
+     * @param versionId The version Id of the version.
+     * @return The Task instance associated with the version, or null,
+     *      if there is not (yet) such an instance.
+     */
+    protected Task getTaskForVersion(final Integer versionId) {
+        return versionTasks.get(versionId);
+    }
+
+    /** Mark a version as requiring workflow processing. This associates
+     * new TaskInfo and Task instances to the version, if there are not already
+     * such instances assigned.
+     * @param vocabulary The vocabulary instance to be marked as requiring
+     *      workflow processing.
+     * @param version The version instance to be marked as requiring
+     *      workflow processing.
+     */
+    protected void workflowRequired(final Vocabulary vocabulary,
+            final Version version) {
+        Integer versionId = version.getVersionId();
+        TaskInfo taskInfo = versionTaskInfos.get(versionId);
+        if (taskInfo == null) {
+            Task task = new Task();
+            task.setVocabularyId(vocabularyId());
+            task.setVersionId(versionId);
+            taskInfo = new TaskInfo(task, vocabulary, version);
+            taskInfo.setModifiedBy(modifiedBy());
+            taskInfo.setNowTime(nowTime());
+            versionTasks.put(versionId, task);
+            versionTaskInfos.put(versionId, taskInfo);
+        }
+    }
+
+    /** To any existing Tasks, add subtasks that are implied by
+     * the subtasks already present. For now, that means adding
+     * subtasks for the ResourceMapTransform provider.
+     */
+    private void addImpliedSubtasks() {
+        for (Task task : versionTasks.values()) {
+            boolean hasImportInsert = false;
+            boolean hasPublishInsert = false;
+            boolean hasImportDelete = false;
+            boolean hasPublishDelete = false;
+            for (Subtask subtask : task.getSubtasks()) {
+                if (subtask.getProviderClass().equals(
+                        SesameImporterProvider.class)) {
+                    if (subtask.getOperation() == SubtaskOperationType.DELETE) {
+                        hasImportDelete = true;
+                    } else {
+                        hasImportInsert = true;
+                    }
+                }
+                if (subtask.getProviderClass().equals(
+                        SISSVocPublishProvider.class)) {
+                    if (subtask.getOperation() == SubtaskOperationType.DELETE) {
+                        hasPublishDelete = true;
+                    } else {
+                        hasPublishInsert = true;
+                    }
+                }
+            }
+            // We would "normally" require _both_ hasImportInsert and
+            // hasPublishInsert to justify running the transform.
+            // By checking versionHasImportAndPublish, we handle the cases
+            // where one of the required INSERT operations was done by an
+            // earlier API call, and we're now seeing the other one.
+            if (BooleanUtils.isTrue(versionHasImportAndPublish.get(
+                    task.getVersionId()))
+                    && (hasImportInsert || hasPublishInsert)) {
+                task.addSubtask(new Subtask(SubtaskProviderType.TRANSFORM,
+                        SubtaskOperationType.PERFORM,
+                        ResourceMapTransformProvider.class));
+                continue;
+            }
+            if (hasImportDelete || hasPublishDelete) {
+                task.addSubtask(new Subtask(SubtaskProviderType.TRANSFORM,
+                        SubtaskOperationType.DELETE,
+                        ResourceMapTransformProvider.class));
+            }
+        }
+    }
+
+    /** Process all of the tasks that have been accumulated.
+     * @return True, if at least one task was run.
+     */
+    private boolean processRequiredTasks() {
+        boolean ranATask = false;
+        // First, persist all.
+        for (TaskInfo taskInfo : versionTaskInfos.values()) {
+            // Only do something if there is at least one subtask!
+            if (!taskInfo.getTask().getSubtasks().isEmpty()) {
+                taskInfo.setEm(em());
+                taskInfo.setNowTime(nowTime());
+                taskInfo.setModifiedBy(modifiedBy());
+                taskInfo.persist();
+            }
+        }
+        // Then process all.
+        for (TaskInfo taskInfo : versionTaskInfos.values()) {
+            // Only do something if there is at least one subtask!
+            if (!taskInfo.getTask().getSubtasks().isEmpty()) {
+                taskInfo.process();
+                ranATask = true;
+            }
+        }
+        return ranATask;
+    }
+
+    /** Construct a workflow-outcome element to return, if there
+     * was a task that did not complete successfully.
+     */
+    private void constructWorkflowOutcome() {
+        List<TaskInfo> taskInfos = versionTaskInfos.values().stream().
+            filter(taskInfo ->
+                taskInfo.getTask().getStatus() != TaskStatus.SUCCESS).
+            collect(Collectors.toList());
+        if (!taskInfos.isEmpty()) {
+            WorkflowOutcomeSchemaMapper mapper =
+                    WorkflowOutcomeSchemaMapper.INSTANCE;
+            WorkflowOutcome workflowOutcome = mapper.sourceToTarget(taskInfos);
+            vocabularyModel.setWorkflowOutcome(workflowOutcome);
+            logger.info("workflowOutcome: "
+                    + JSONSerialization.serializeObjectAsJsonString(
+                            workflowOutcome));
         }
     }
 

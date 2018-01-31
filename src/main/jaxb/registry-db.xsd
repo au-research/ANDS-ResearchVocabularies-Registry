@@ -67,7 +67,6 @@
     <xs:complexType name="ap-api-sparql">
         <xs:complexContent>
             <xs:extension base="ap-common">
-                <xs:attribute name="source" type="common:ap-source" use="required"/>
                 <xs:attribute name="url" type="xs:anyURI" use="required"/>
             </xs:extension>
         </xs:complexContent>
@@ -76,6 +75,7 @@
         <xs:complexContent>
             <xs:extension base="ap-common">
                 <xs:attribute name="format" type="xs:string"/>
+                <xs:attribute name="upload-id" type="xs:int"/>
                 <xs:attribute name="path" type="xs:string" use="required"/>
                 <xs:attribute name="url" type="xs:anyURI" use="required"/>
             </xs:extension>
@@ -93,7 +93,6 @@
     <xs:complexType name="ap-sissvoc">
         <xs:complexContent>
             <xs:extension base="ap-common">
-                <xs:attribute name="source" type="common:ap-source" use="required"/>
                 <xs:attribute name="url-prefix" type="xs:anyURI" use="required"/>
             </xs:extension>
         </xs:complexContent>
@@ -145,6 +144,13 @@
         </xs:complexContent>
     </xs:complexType>
     <xs:complexType name="va-concept-tree">
+        <xs:complexContent>
+            <xs:extension base="va-common">
+                <xs:attribute name="path" type="xs:string"/>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+    <xs:complexType name="va-harvest-poolparty">
         <xs:complexContent>
             <xs:extension base="va-common">
                 <xs:attribute name="path" type="xs:string"/>

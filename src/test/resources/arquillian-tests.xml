@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
 
-<suite name="Vocab Toolkit Arquillian tests">
+<suite name="Vocab Registry Arquillian tests">
 
   <!-- To run this suite, you must pass in a Java command line option
        that specifies the location of a properties file.
@@ -24,7 +24,7 @@
   </test>
 
   <!-- These are the "real" tests. -->
-  <test name="Toolkit Arquillian tests" preserve-order="true">
+  <test name="Registry Arquillian tests" preserve-order="true">
     <groups>
       <run>
         <!-- Need to include the special "arquillian" group
@@ -40,6 +40,7 @@
     </groups>
     <packages>
       <package name="au.org.ands.vocabs.toolkit.test.*" />
+      <package name="au.org.ands.vocabs.registry.test.*" />
    </packages>
   </test>
 

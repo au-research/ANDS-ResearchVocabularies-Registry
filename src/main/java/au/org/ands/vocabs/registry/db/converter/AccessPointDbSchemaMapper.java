@@ -89,5 +89,4 @@ public interface AccessPointDbSchemaMapper {
               au.org.ands.vocabs.registry.schema.vocabulary201701.
               ApWebPage target);
 
-
 }

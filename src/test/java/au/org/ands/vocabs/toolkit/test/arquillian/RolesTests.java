@@ -2,6 +2,7 @@
 
 package au.org.ands.vocabs.toolkit.test.arquillian;
 
+import static au.org.ands.vocabs.toolkit.test.utils.DatabaseSelector.REGISTRY;
 import static au.org.ands.vocabs.toolkit.test.utils.DatabaseSelector.ROLES;
 
 import java.io.IOException;
@@ -119,8 +120,8 @@ public class RolesTests extends ArquillianBaseTest {
 
         Assert.assertTrue(profile.getRoles().contains("ANDS"),
                 "testsuper1 does not have the ANDS organizational role");
-        Assert.assertFalse(profile.getRoles().contains("Org2"),
-                "testsuper1 has the Org2 organizational role");
+        Assert.assertTrue(profile.getRoles().contains("Org2"),
+                "testsuper1 does not have the Org2 organizational role");
         Assert.assertTrue(AuthUtils.ownerIsAuthorizedByOrganisation(profile,
                 "ANDS"),
                 "testsuper1 is not authorized to publish with owner ANDS");
@@ -174,6 +175,45 @@ public class RolesTests extends ArquillianBaseTest {
                 "User data Id");
         Assert.assertEquals(userInfo.getFullName(), "Test 1",
                 "User data full name");
+    }
+
+    /** Client-side test of getting vocabularies owned by the user. */
+    @Test
+    @RunAsClient
+    public final void testGetOwnedVocabularies() {
+        ArquillianTestUtils.clientClearDatabase(ROLES, baseURL);
+        ArquillianTestUtils.clientLoadDbUnitTestFile(ROLES, baseURL,
+                CLASS_NAME_PREFIX + "testGetOwnedVocabularies");
+        ArquillianTestUtils.clientClearDatabase(REGISTRY, baseURL);
+        ArquillianTestUtils.clientLoadDbUnitTestFile(REGISTRY, baseURL,
+                CLASS_NAME_PREFIX + "testGetOwnedVocabularies");
+        String urlUnderTest = "api/resource/ownedVocabularies";
+
+        Response response = NetClientUtils.
+                doGetBasicAuthWithAdditionalComponents(baseURL,
+                        urlUnderTest, MediaType.APPLICATION_XML_TYPE,
+                        "test1", "test", webTarget -> webTarget);
+
+        Assert.assertEquals(response.getStatusInfo().getFamily(),
+                Family.SUCCESSFUL,
+                "Response status");
+
+        String result = response.readEntity(String.class);
+        response.close();
+
+        Assert.assertEquals(result,
+        "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+        + "<owned-vocabulary-list xmlns=\"http://vocabs.ands.org.au/registry/"
+            + "schema/2017/01/vocabulary\">"
+        + "<owned-vocabulary id=\"1\" status=\"published\" hasDraft=\"true\" "
+            + "title=\"Registry Interchange Format - Collections and Services "
+            + "(Vocabularies)\"/>"
+        + "<owned-vocabulary id=\"2\" status=\"deprecated\" hasDraft=\"false\" "
+            + "title=\"AGROVOC Multilingual Agricultural Thesaurus\"/>"
+        + "<owned-vocabulary id=\"4\" status=\"draft\" hasDraft=\"true\" "
+            + "title=\"Water Resources Thesaurus\"/>"
+        + "</owned-vocabulary-list>",
+                "Owned vocabulary list");
     }
 
 }

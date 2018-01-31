@@ -30,15 +30,6 @@
             <xs:enumeration value="webPage"/>
         </xs:restriction>
     </xs:simpleType>
-    <xs:simpleType name="access-point-discriminator">
-        <xs:restriction base="xs:token">
-            <xs:enumeration value="ApApiSparql"/>
-            <xs:enumeration value="ApFile"/>
-            <xs:enumeration value="ApSesameDownload"/>
-            <xs:enumeration value="ApSissvoc"/>
-            <xs:enumeration value="ApWebPage"/>
-        </xs:restriction>
-    </xs:simpleType>
     <xs:simpleType name="version-artefact-status">
         <xs:restriction base="xs:token">
             <xs:enumeration value="current"/>
@@ -49,6 +40,7 @@
         <xs:restriction base="xs:token">
             <xs:enumeration value="conceptList"/>
             <xs:enumeration value="conceptTree"/>
+            <xs:enumeration value="harvestPoolparty"/>
         </xs:restriction>
     </xs:simpleType>
     <xs:simpleType name="related-entity-type">
@@ -178,18 +170,28 @@ http://viaf.org/</xs:documentation>
             <xs:enumeration value="isPartOf"/>
         </xs:restriction>
     </xs:simpleType>
+    <xs:simpleType name="subtask-provider-type">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="backup"/>
+            <xs:enumeration value="harvest"/>
+            <xs:enumeration value="importer"/>
+            <xs:enumeration value="publish"/>
+            <xs:enumeration value="transform"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="subtask-operation-type">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="insert"/>
+            <xs:enumeration value="delete"/>
+            <xs:enumeration value="perform"/>
+        </xs:restriction>
+    </xs:simpleType>
     <xs:simpleType name="task-status">
         <xs:restriction base="xs:token">
+            <xs:enumeration value="new"/>
+            <xs:enumeration value="partial"/>
             <xs:enumeration value="success"/>
             <xs:enumeration value="error"/>
-            <xs:enumeration value="harvesting"/>
-            <xs:enumeration value="unharvesting"/>
-            <xs:enumeration value="importing"/>
-            <xs:enumeration value="unimporting"/>
-            <xs:enumeration value="transforming"/>
-            <xs:enumeration value="untransforming"/>
-            <xs:enumeration value="publishing"/>
-            <xs:enumeration value="unpublishing"/>
         </xs:restriction>
     </xs:simpleType>
     <xs:simpleType name="registry-event-element-type">

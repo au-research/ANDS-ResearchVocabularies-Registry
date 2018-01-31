@@ -11,7 +11,7 @@ import au.org.ands.vocabs.toolkit.utils.ToolkitProperties;
 public final class DBContext {
 
     /** The persistence unit name as specified in persistence.xml. */
-    public static final String UNIT_NAME = "ANDS-Vocabs-Toolkit";
+    public static final String UNIT_NAME = "vocabs-registry";
 
     /** Access to persistence context. */
     private static EntityManagerFactory entityManagerFactory =

@@ -31,7 +31,7 @@ public class SwaggerBootstrapper extends HttpServlet {
 
     /** Default setting for the base path for the API. */
     public static final String REGISTRY_SWAGGER_BASEPATH_DEFAULT =
-            "/ANDS-Vocabs-Toolkit";
+            "/vocabs-registry";
 
     /** Generated UID for serialization. */
     private static final long serialVersionUID = -6508920960856827547L;

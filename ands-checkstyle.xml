@@ -5,13 +5,12 @@
     This configuration file was written by the eclipse-cs plugin configuration editor
 -->
 <!--
-    Checkstyle-Configuration: ANDS-Vocabs-Toolkit
+    Checkstyle-Configuration: vocabs-registry
     Description: none
 -->
 <module name="Checker">
   <property name="severity" value="warning"/>
   <module name="TreeWalker">
-    <module name="FileContentsHolder"/>
     <module name="JavadocMethod">
       <property name="suppressLoadErrors" value="true"/>
     </module>
@@ -78,6 +77,18 @@
     <module name="TodoComment"/>
     <module name="UpperEll"/>
     <module name="SuppressWarningsHolder"/>
+    <!-- Since CS 8.1, SuppressionCommentFilterCommentFilter must
+         be a child of TreeWalker. This means it can no longer be
+         used to suppress checks that examine the whole file, e.g.,
+         FileLength. So, see the use of
+         SuppressWithPlainTextCommentFilter
+         below.
+    -->
+    <module name="SuppressionCommentFilter">
+      <property name="offCommentFormat" value="CHECKSTYLE\:OFF\: ([\w\|]+)"/>
+      <property name="onCommentFormat" value="CHECKSTYLE\:ON\: ([\w\|]+)"/>
+      <property name="checkFormat" value="$1"/>
+    </module>
   </module>
   <module name="JavadocPackage"/>
   <module name="NewlineAtEndOfFile"/>
@@ -91,10 +102,18 @@
   <module name="SuppressionFilter">
     <property name="file" value="${samedir}/ands-checkstyle-suppress.xml"/>
   </module>
-  <module name="SuppressionCommentFilter">
-    <property name="offCommentFormat" value="CHECKSTYLE\:OFF\: ([\w\|]+)"/>
-    <property name="onCommentFormat" value="CHECKSTYLE\:ON\: ([\w\|]+)"/>
+  <module name="SuppressWarningsFilter"/>
+  <!-- SuppressWithPlainTextCommentFilter needed to suppress
+       checks that examine the whole file, e.g., FileLength.
+       NB: it "seems" to work to specify the same comment format
+       as used for SuppressionCommentFilter (i.e., CHECKSTYLE:OFF:
+       and CHECKSTYLE:ON:). But, we make it different "just in case".
+  -->
+  <module name="SuppressWithPlainTextCommentFilter">
+    <property name="offCommentFormat"
+              value="CHECKSTYLE_FILE\:OFF\: ([\w\|]+)"/>
+    <property name="onCommentFormat"
+              value="CHECKSTYLE_FILE\:ON\: ([\w\|]+)"/>
     <property name="checkFormat" value="$1"/>
   </module>
-  <module name="SuppressWarningsFilter"/>
 </module>

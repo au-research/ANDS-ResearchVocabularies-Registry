@@ -206,6 +206,39 @@
 
 </method>
       </extraQuery>
+      <extraQuery name="GET_OWNED_VOC_LIST">
+        <extraQueryParameter name="roles" />
+        <queryText temporal="true">
+          SELECT entity FROM Vocabulary entity
+          WHERE entity.owner IN :roles
+          AND (
+          #TEMPORAL_QUERY_VALID_CLAUSE
+          OR
+          #TEMPORAL_QUERY_ALL_DRAFT_CLAUSE
+          )
+          ORDER BY entity.startDate
+        </queryText>
+        <method>    /** Get all current and draft Vocabulary instances
+     * that are owned by a user.
+     * @param roles The roles of the user for which
+     *     owned vocabularies are to be looked up.
+     * @return A list of all Vocabulary instances that are
+     *     "owned" by the user. They are ordered by their startDate values.
+     */
+    public static List&lt;Vocabulary&gt;
+        getOwnedVocabularies(final List&lt;String&gt; roles) {
+        EntityManager em = DBContext.getEntityManager();
+        TypedQuery&lt;Vocabulary&gt; q = em.createNamedQuery(
+                Vocabulary.GET_OWNED_VOC_LIST, Vocabulary.class).
+                setParameter(Vocabulary.GET_OWNED_VOC_LIST_ROLES, roles);
+        q = TemporalUtils.setDatetimeConstantParameters(q);
+        List&lt;Vocabulary&gt; entityList = q.getResultList();
+        em.close();
+        return entityList;
+    }
+
+</method>
+      </extraQuery>
     </extraQueries>
   </map>
   <map tableName="versions"
@@ -240,7 +273,8 @@
           #AND_TEMPORAL_QUERY_VALID_SUFFIX
         </queryText>
         <method>    /** Get all current VersionArtefact instances for a Version,
-         that are of a specified VersionArtefactType.
+     * that are of a specified VersionArtefactType.
+     * This version of the method creates and uses its own EntityManager.
      * @param id The Version.
      * @param vaType The VersionArtefactType.
      * @return The list of current VersionArtefact
@@ -270,6 +304,40 @@
         return entityList;
     }
 
+    /** Get all current VersionArtefact instances for a Version,
+     * that are of a specified VersionArtefactType.
+     * This version of the method uses an existing EntityManager
+     * provided as a parameter; transaction begin/end must be
+     * managed by the caller.
+     * @param id The Version.
+     * @param vaType The VersionArtefactType.
+     * @param em The EntityManager to be used.
+     * @return The list of current VersionArtefact
+     *     instances for this Version, that are of type vaType.
+     */
+    public static List&lt;VersionArtefact&gt;
+    getCurrentVersionArtefactListForVersionByType(
+            final Integer id,
+            final au.org.ands.vocabs.registry.enums.VersionArtefactType
+                vaType,
+            final EntityManager em) {
+        TypedQuery&lt;VersionArtefact&gt; q = em.createNamedQuery(
+                VersionArtefact.
+                    GET_CURR_VA_LIST_FOR_VERSION_BY_TYPE,
+                VersionArtefact.class).
+                setParameter(
+                        VersionArtefact.
+                            GET_CURR_VA_LIST_FOR_VERSION_BY_TYPE_VERSIONID,
+                        id).
+                setParameter(
+                        VersionArtefact.
+                            GET_CURR_VA_LIST_FOR_VERSION_BY_TYPE_VATYPE,
+                        vaType);
+        q = TemporalUtils.setDatetimeConstantParameters(q);
+        List&lt;VersionArtefact&gt; entityList = q.getResultList();
+        return entityList;
+    }
+
 </method>
       </extraQuery>
     </extraQueries>
@@ -280,9 +348,91 @@
        >
     <idKey keyColumn="access_point_id" entityName="AccessPointId" />
     <column db="type" enum="AccessPointType" />
+    <column db="source" enum="ApSource" />
     <foreignKeyQueries>
       <foreignKeyQuery keyColumn="versionId" entityName="Version" />
     </foreignKeyQueries>
+    <extraQueries>
+      <extraQuery name="GET_CURR_AP_LIST_FOR_VERSION_BY_TYPE">
+        <extraQueryParameter name="versionId" />
+        <extraQueryParameter name="apType" />
+        <queryText temporal="true">
+          SELECT entity FROM AccessPoint entity
+          WHERE entity.versionId = :versionId
+          AND entity.type = :apType
+          #AND_TEMPORAL_QUERY_VALID_SUFFIX
+        </queryText>
+        <method>    /** Get all current AccessPoint instances for a Version,
+     * that are of a specified AccessPointType.
+     * @param versionId The version Id.
+     * @param apType The type of access point to look for.
+     * @param em The EntityManager to be used.
+     * @return The list of current AccessPoint instances for this Version,
+     *     that are of type apType.
+     */
+    public static List&lt;AccessPoint&gt;
+    getCurrentAccessPointListForVersionByType(
+            final Integer versionId,
+            final au.org.ands.vocabs.registry.enums.AccessPointType
+                apType,
+            final EntityManager em) {
+        TypedQuery&lt;AccessPoint&gt; q = em.createNamedQuery(
+                AccessPoint.GET_CURR_AP_LIST_FOR_VERSION_BY_TYPE,
+                AccessPoint.class).
+                setParameter(AccessPoint.
+                            GET_CURR_AP_LIST_FOR_VERSION_BY_TYPE_VERSIONID,
+                            versionId).
+                setParameter(AccessPoint.
+                            GET_CURR_AP_LIST_FOR_VERSION_BY_TYPE_APTYPE,
+                            apType);
+        q = TemporalUtils.setDatetimeConstantParameters(q);
+        List&lt;AccessPoint&gt; entityList = q.getResultList();
+        return entityList;
+    }
+
+</method>
+      </extraQuery>
+
+      <extraQuery name="GET_DRAFT_AP_LIST_FOR_VERSION_BY_TYPE">
+        <extraQueryParameter name="versionId" />
+        <extraQueryParameter name="apType" />
+        <queryText temporal="true">
+          SELECT entity FROM AccessPoint entity
+          WHERE entity.versionId = :versionId
+          AND entity.type = :apType
+          #AND_TEMPORAL_QUERY_ALL_DRAFT_SUFFIX
+        </queryText>
+        <method>    /** Get all draft AccessPoint instances for a Version,
+     * that are of a specified AccessPointType.
+     * @param versionId The version Id.
+     * @param apType The type of access point to look for.
+     * @param em The EntityManager to be used.
+     * @return The list of draft AccessPoint instances for this Version,
+     *     that are of type apType.
+     */
+    public static List&lt;AccessPoint&gt;
+    getDraftAccessPointListForVersionByType(
+            final Integer versionId,
+            final au.org.ands.vocabs.registry.enums.AccessPointType
+                apType,
+            final EntityManager em) {
+        TypedQuery&lt;AccessPoint&gt; q = em.createNamedQuery(
+                AccessPoint.GET_DRAFT_AP_LIST_FOR_VERSION_BY_TYPE,
+                AccessPoint.class).
+                setParameter(AccessPoint.
+                            GET_DRAFT_AP_LIST_FOR_VERSION_BY_TYPE_VERSIONID,
+                            versionId).
+                setParameter(AccessPoint.
+                            GET_DRAFT_AP_LIST_FOR_VERSION_BY_TYPE_APTYPE,
+                            apType);
+        q = TemporalUtils.setDatetimeConstantParameters(q);
+        List&lt;AccessPoint&gt; entityList = q.getResultList();
+        return entityList;
+    }
+
+</method>
+      </extraQuery>
+    </extraQueries>
   </map>
   <map tableName="related_entities"
        entityName="RelatedEntity"
@@ -393,7 +543,7 @@
         return entityList;
     }
 
-        </method>
+</method>
       </extraQuery>
       <extraQuery name="GET_RELATED_ENTITIES_MATCHING_IDENT">
         <extraQueryParameter name="owner" />
@@ -848,6 +998,7 @@
           #AND_TEMPORAL_QUERY_VALID_SUFFIX
         </queryText>
         <method>    /** Get all resource owner hosts by owner.
+     * This version of the method creates and uses its own EntityManager.
      * @param owner The owner to be looked up.
      * @return A list of all current resource owner host entries
      *     belonging to the owner.
@@ -867,7 +1018,29 @@
         return rohList;
     }
 
-        </method>
+    /** Get all resource owner hosts by owner.
+     * This version of the method uses an existing EntityManager
+     * provided as a parameter.
+     * @param owner The owner to be looked up.
+     * @param em The EntityManager to be used.
+     * @return A list of all current resource owner host entries
+     *     belonging to the owner.
+     */
+    public static List&lt;ResourceOwnerHost&gt;
+    getCurrentResourceOwnerHostsForOwner(
+            final String owner,
+            final EntityManager em) {
+        TypedQuery&lt;ResourceOwnerHost&gt; q = em.createNamedQuery(
+                ResourceOwnerHost.GET_CURRENT_R_O_HS_FOR_OWNER,
+                ResourceOwnerHost.class).
+                setParameter(ResourceOwnerHost.
+                        GET_CURRENT_R_O_HS_FOR_OWNER_OWNER, owner);
+        q = TemporalUtils.setDatetimeConstantParameters(q);
+        List&lt;ResourceOwnerHost&gt; rohList = q.getResultList();
+        return rohList;
+    }
+
+</method>
       </extraQuery>
     </extraQueries>
   </map>
@@ -875,6 +1048,69 @@
        entityName="ResourceMapEntry"
        serialVersionUID="-7521129755199622960L"
        >
+    <extraQueries>
+      <extraQuery name="GET_CURRENT_OWNED_R_M_ES_FOR_IRI">
+        <extraQueryParameter name="iri" />
+        <queryText temporal="true">
+          SELECT rme FROM ResourceMapEntry rme, AccessPoint e1, Version e2
+          WHERE rme.iri = :iri
+            AND rme.owned = TRUE
+            AND rme.accessPointId = e1.id
+            AND e1.versionId = e2.id
+            AND e2.status = 'CURRENT'
+            AND
+            #TEMPORAL_QUERY_VALID_CLAUSE_E1
+            AND
+            #TEMPORAL_QUERY_VALID_CLAUSE_E2
+        </queryText>
+        <method>    /** Get all owned resource map entries by IRI, which come from "current"
+     * versions.
+     * @param iri The IRI to be looked up.
+     * @return A list of all resource map entries containing the IRI,
+     * for "current" versions only.
+     */
+    public static List&lt;ResourceMapEntry&gt;
+        getCurrentOwnedResourceMapEntriesForIRI(
+            final String iri) {
+        EntityManager em = DBContext.getEntityManager();
+        TypedQuery&lt;ResourceMapEntry&gt; q = em.createNamedQuery(
+                ResourceMapEntry.GET_CURRENT_OWNED_R_M_ES_FOR_IRI,
+                ResourceMapEntry.class).
+                setParameter(ResourceMapEntry.
+                        GET_CURRENT_OWNED_R_M_ES_FOR_IRI_IRI, iri);
+        q = TemporalUtils.setDatetimeConstantParameters(q);
+        List&lt;ResourceMapEntry&gt; rme = q.getResultList();
+        em.close();
+        return rme;
+    }
+
+</method>
+      </extraQuery>
+      <extraQuery name="DELETE_RESOURCEMAPENTRIES_FOR_AP_ID"
+                  type="update">
+        <extraQueryParameter name="accessPointId" />
+        <queryText>
+          DELETE FROM ResourceMapEntry rme
+          WHERE rme.accessPointId = :accessPointId
+        </queryText>
+        <method>    /** Delete all resource map entries for an access point.
+     * @param accessPointId The access point ID.
+     * @param em The EntityManager to be used.
+     */
+    public static void deleteResourceMapEntriesForAccessPoint(
+            final Integer accessPointId,
+            final EntityManager em) {
+        Query q = em.createNamedQuery(
+                ResourceMapEntry.DELETE_RESOURCEMAPENTRIES_FOR_AP_ID).
+                setParameter(ResourceMapEntry.
+                        DELETE_RESOURCEMAPENTRIES_FOR_AP_ID_ACCESSPOINTID,
+                        accessPointId);
+        q.executeUpdate();
+    }
+
+</method>
+      </extraQuery>
+    </extraQueries>
   </map>
   <map tableName="subject_resolver_sources"
        entityName="SubjectResolverSource"

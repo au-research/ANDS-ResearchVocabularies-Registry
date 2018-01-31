@@ -15,9 +15,13 @@ public final class RolesConstants {
 //    public static final String AUTH_FUNCTION_LOGGED_IN_ATTRIBUTE =
 //            "AUTHENTICATED_USER";
 
-    /** The name of the role representing registry superusers. */
+    /** The name of the functional role representing registry superusers. */
     public static final String AUTH_FUNCTION_SUPERUSER =
-            "REGISTRY_SUPERUSER";
+            "VOCABS_REGISTRY_SUPERUSER";
 
+    /** The name of the functional role representing users who are allowed to
+     * work with all organizations. */
+    public static final String AUTH_FUNCTION_ALL_GROUPS =
+            "VOCABS_CONTENT_MANAGER";
 
 }

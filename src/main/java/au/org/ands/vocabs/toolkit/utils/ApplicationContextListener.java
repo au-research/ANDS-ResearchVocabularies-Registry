@@ -20,6 +20,7 @@ import com.mchange.v2.c3p0.C3P0Registry;
 import com.mchange.v2.c3p0.PooledDataSource;
 
 import au.org.ands.vocabs.registry.utils.SlugGenerator;
+import au.org.ands.vocabs.registry.utils.RegistryNetUtils;
 import au.org.ands.vocabs.toolkit.db.DBContext;
 
 /** Context listener for the Toolkit web application.
@@ -121,7 +122,7 @@ public class ApplicationContextListener implements ServletContextListener {
         }
 
         // Invoke any remaining shutdown methods.
-        ToolkitNetUtils.doShutdown();
+        RegistryNetUtils.doShutdown();
         SlugGenerator.shutdown();
         solrShutdown();
 

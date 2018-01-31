@@ -67,7 +67,7 @@ import au.org.ands.vocabs.registry.enums.AccessPointType;
 import au.org.ands.vocabs.registry.enums.RelatedEntityRelation;
 import au.org.ands.vocabs.registry.enums.VersionArtefactType;
 import au.org.ands.vocabs.registry.enums.VersionStatus;
-import au.org.ands.vocabs.toolkit.provider.transform.JsonListTransformProvider;
+import au.org.ands.vocabs.registry.workflow.provider.transform.JsonListTransformProvider;
 
 /** Methods to support Solr indexing, including creating a Solr document
  * for a registry entity, and for adding and deleting index entries.

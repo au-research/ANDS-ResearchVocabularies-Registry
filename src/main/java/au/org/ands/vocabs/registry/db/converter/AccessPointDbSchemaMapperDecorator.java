@@ -15,7 +15,6 @@ import au.org.ands.vocabs.registry.db.internal.ApFile;
 import au.org.ands.vocabs.registry.db.internal.ApSesameDownload;
 import au.org.ands.vocabs.registry.db.internal.ApSissvoc;
 import au.org.ands.vocabs.registry.db.internal.ApWebPage;
-import au.org.ands.vocabs.registry.enums.AccessPointDiscriminator;
 import au.org.ands.vocabs.registry.enums.AccessPointType;
 
 /** MapStruct mapper from AccessPoint database to schema. */
@@ -140,7 +139,7 @@ public abstract class AccessPointDbSchemaMapperDecorator
                     data, (au.org.ands.vocabs.registry.schema.
                             vocabulary201701.ApApiSparql)
                     target);
-            parent.setDiscriminator(AccessPointDiscriminator.AP_API_SPARQL);
+            parent.setDiscriminator(AccessPointType.API_SPARQL);
             parent.setApApiSparql((au.org.ands.vocabs.registry.schema.
                     vocabulary201701.ApApiSparql) target);
         } else if (target instanceof au.org.ands.vocabs.registry.schema.
@@ -150,7 +149,7 @@ public abstract class AccessPointDbSchemaMapperDecorator
                     data, (au.org.ands.vocabs.registry.schema.
                             vocabulary201701.ApFile)
                     target);
-            parent.setDiscriminator(AccessPointDiscriminator.AP_FILE);
+            parent.setDiscriminator(AccessPointType.FILE);
             parent.setApFile((au.org.ands.vocabs.registry.schema.
                     vocabulary201701.ApFile) target);
         } else if (target instanceof au.org.ands.vocabs.registry.schema.
@@ -161,7 +160,7 @@ public abstract class AccessPointDbSchemaMapperDecorator
                             vocabulary201701.ApSesameDownload)
                     target);
             parent.setDiscriminator(
-                    AccessPointDiscriminator.AP_SESAME_DOWNLOAD);
+                    AccessPointType.SESAME_DOWNLOAD);
             parent.setApSesameDownload((au.org.ands.vocabs.registry.schema.
                     vocabulary201701.ApSesameDownload) target);
         } else if (target instanceof au.org.ands.vocabs.registry.schema.
@@ -171,7 +170,7 @@ public abstract class AccessPointDbSchemaMapperDecorator
                     data, (au.org.ands.vocabs.registry.schema.
                             vocabulary201701.ApSissvoc)
                     target);
-            parent.setDiscriminator(AccessPointDiscriminator.AP_SISSVOC);
+            parent.setDiscriminator(AccessPointType.SISSVOC);
             parent.setApSissvoc((au.org.ands.vocabs.registry.schema.
                     vocabulary201701.ApSissvoc) target);
         } else if (target instanceof au.org.ands.vocabs.registry.schema.
@@ -181,12 +180,10 @@ public abstract class AccessPointDbSchemaMapperDecorator
                     data, (au.org.ands.vocabs.registry.schema.
                             vocabulary201701.ApWebPage)
                     target);
-            parent.setDiscriminator(AccessPointDiscriminator.AP_WEB_PAGE);
+            parent.setDiscriminator(AccessPointType.WEB_PAGE);
             parent.setApWebPage((au.org.ands.vocabs.registry.schema.
                     vocabulary201701.ApWebPage) target);
         }
     }
-
-
 
 }

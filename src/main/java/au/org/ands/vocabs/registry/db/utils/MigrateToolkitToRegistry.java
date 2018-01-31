@@ -1,10 +1,13 @@
-// CHECKSTYLE:OFF: FileLength
+// CHECKSTYLE_FILE:OFF: FileLength
 // This class is too long. But how to make it shorter?
 /** See the file "LICENSE" for the full license governing this code. */
 
 package au.org.ands.vocabs.registry.db.utils;
 
+import java.io.IOException;
 import java.lang.invoke.MethodHandles;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -45,6 +48,7 @@ import au.org.ands.vocabs.registry.db.dao.RelatedEntityIdentifierDAO;
 import au.org.ands.vocabs.registry.db.dao.ResourceMapEntryDAO;
 import au.org.ands.vocabs.registry.db.dao.ResourceOwnerHostDAO;
 import au.org.ands.vocabs.registry.db.dao.TaskDAO;
+import au.org.ands.vocabs.registry.db.dao.UploadDAO;
 import au.org.ands.vocabs.registry.db.dao.VersionArtefactDAO;
 import au.org.ands.vocabs.registry.db.dao.VersionDAO;
 import au.org.ands.vocabs.registry.db.dao.VocabularyDAO;
@@ -52,6 +56,7 @@ import au.org.ands.vocabs.registry.db.dao.VocabularyRelatedEntityDAO;
 import au.org.ands.vocabs.registry.db.dao.VocabularyRelatedVocabularyDAO;
 import au.org.ands.vocabs.registry.db.entity.RelatedEntity;
 import au.org.ands.vocabs.registry.db.entity.RelatedEntityIdentifier;
+import au.org.ands.vocabs.registry.db.entity.Upload;
 import au.org.ands.vocabs.registry.db.entity.VersionArtefact;
 import au.org.ands.vocabs.registry.db.entity.VocabularyRelatedEntity;
 import au.org.ands.vocabs.registry.db.entity.VocabularyRelatedVocabulary;
@@ -81,6 +86,8 @@ import au.org.ands.vocabs.registry.enums.VersionArtefactStatus;
 import au.org.ands.vocabs.registry.enums.VersionArtefactType;
 import au.org.ands.vocabs.registry.enums.VersionStatus;
 import au.org.ands.vocabs.registry.enums.VocabularyStatus;
+import au.org.ands.vocabs.registry.utils.RegistryFileUtils;
+import au.org.ands.vocabs.registry.utils.RegistryProperties;
 import au.org.ands.vocabs.toolkit.db.AccessPointUtils;
 import au.org.ands.vocabs.toolkit.db.DBContext;
 import au.org.ands.vocabs.toolkit.db.TaskUtils;
@@ -224,6 +231,9 @@ public final class MigrateToolkitToRegistry {
                 ZoneOffset.UTC);
     }
 
+    /** The Path to the directory in which registry uploads are stored. */
+    private java.nio.file.Path uploadsPath;
+
     /** Get the published or deprecated verion of a migrated Vocabulary
      * by its slug, if there is one. Otherwise, return null. This method can be
      * used after all the published/deprecated Vocabulary instances
@@ -312,6 +322,12 @@ public final class MigrateToolkitToRegistry {
         SimpleDateFormat formatter =
                 new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         EntityManager toolkitEm = DBContext.getEntityManager();
+
+        String uploadsDirectoryName = RegistryProperties.getProperty(
+                au.org.ands.vocabs.registry.utils.PropertyConstants.
+                REGISTRY_UPLOADSPATH);
+        RegistryFileUtils.requireDirectory(uploadsDirectoryName);
+        uploadsPath = java.nio.file.Paths.get(uploadsDirectoryName);
 
         migratePublishedAndDeprecatedVocabularies(formatter, toolkitEm);
         migrateDraftVocabularies(formatter, toolkitEm);
@@ -534,7 +550,7 @@ public final class MigrateToolkitToRegistry {
             registryAccessPoint.setStartDate(registryVersion.getStartDate());
             registryAccessPoint.setEndDate(registryVersion.getEndDate());
             AccessPointDAO.saveAccessPointWithId(registryAccessPoint);
-            fixUpAccessPointWithinURLs(ap, registryAccessPoint);
+            fixUpAccessPoints(toolkitVocabulary, ap, registryAccessPoint);
             migratedAccessPoints.put(ap.getId(),
                     registryAccessPoint.getAccessPointId());
         }
@@ -1882,13 +1898,14 @@ public final class MigrateToolkitToRegistry {
         case "apiSparql":
             registryAccessPoint.setType(AccessPointType.API_SPARQL);
             ApApiSparql apApiSparql = new ApApiSparql();
-            apApiSparql.setSource(ApSource.fromValue(
+            registryAccessPoint.setSource(ApSource.fromValue(
                     portalDataJson.get("source").asText()));
             apApiSparql.setUrl(portalDataJson.get("uri").asText());
             apData = apApiSparql;
             break;
         case "file":
             registryAccessPoint.setType(AccessPointType.FILE);
+            registryAccessPoint.setSource(ApSource.USER);
             ApFile apFile = new ApFile();
             apFile.setFormat(portalDataJson.get("format").asText());
             apFile.setUrl(portalDataJson.get("uri").asText());
@@ -1897,12 +1914,17 @@ public final class MigrateToolkitToRegistry {
             break;
         case "sesameDownload":
             registryAccessPoint.setType(AccessPointType.SESAME_DOWNLOAD);
+            registryAccessPoint.setSource(ApSource.SYSTEM);
             ApSesameDownload apSesameDownload = new ApSesameDownload();
             String internalUrl = toolkitDataJson.get("uri").asText();
             // The last slash goes into the server base.
             int lastSlashPlusOne = internalUrl.lastIndexOf('/') + 1;
+            String serverBase = internalUrl.substring(0, lastSlashPlusOne);
+            // Remove trailing "repositories/", so that the server base
+            // ends with something like ".../openrdf-sesame/".
+            serverBase = serverBase.replaceFirst("repositories/$", "");
             apSesameDownload.setServerBase(
-                    internalUrl.substring(0, lastSlashPlusOne));
+                    serverBase);
             apSesameDownload.setRepository(
                     internalUrl.substring(lastSlashPlusOne));
             apSesameDownload.setUrlPrefix(portalDataJson.get("uri").asText());
@@ -1911,13 +1933,14 @@ public final class MigrateToolkitToRegistry {
         case "sissvoc":
             registryAccessPoint.setType(AccessPointType.SISSVOC);
             ApSissvoc apSissvoc = new ApSissvoc();
-            apSissvoc.setSource(ApSource.fromValue(
+            registryAccessPoint.setSource(ApSource.fromValue(
                     portalDataJson.get("source").asText()));
             apSissvoc.setUrlPrefix(portalDataJson.get("uri").asText());
             apData = apSissvoc;
             break;
         case "webPage":
             registryAccessPoint.setType(AccessPointType.WEB_PAGE);
+            registryAccessPoint.setSource(ApSource.USER);
             ApWebPage apWebPage = new ApWebPage();
             apWebPage.setUrl(portalDataJson.get("uri").asText());
             apData = apWebPage;
@@ -1946,12 +1969,19 @@ public final class MigrateToolkitToRegistry {
         registryAccessPoint.setData(serializeJsonAsString(apData));
     }
 
-    /** Fix up the URL values within access points, so that they point
+    /** Make adjustments to migrated access points that can only be
+     * done once the new access point has been persisted, so that we
+     * know its Id.
+     * Fix up the URL values within access points, so that they point
      * to the correct new access point.
+     * Create an Upload for each file access point.
+     * @param toolkitVocabulary The "toolkit" vocabulary record that "owns" the
+     *      access point being migrated.
      * @param originalAP The original, Toolkit version of the access point.
      * @param newAP The migrated access point.
      */
-    private void fixUpAccessPointWithinURLs(final AccessPoint originalAP,
+    private void fixUpAccessPoints(final Vocabulary toolkitVocabulary,
+            final AccessPoint originalAP,
             final au.org.ands.vocabs.registry.db.entity.AccessPoint
             newAP) {
         switch (newAP.getType()) {
@@ -1968,17 +1998,20 @@ public final class MigrateToolkitToRegistry {
                     PropertyConstants.TOOLKIT_DOWNLOADPREFIX)
                     + originalAP.getId() + "/";
             if (url.startsWith(expectedPrefix)) {
+                // Make an upload.
+                Upload upload = makeUpload(toolkitVocabulary, fileData);
                 String newUrl = ToolkitProperties.getProperty(
                         PropertyConstants.TOOLKIT_DOWNLOADPREFIX)
                         + newAP.getAccessPointId() + "/"
                         + url.substring(expectedPrefix.length());
-                logger.info("fixUpAccessPointWithinURLs: rewrote file AP: "
+                logger.info("fixUpAccessPoints: rewrote file AP: "
                         + newAP.getAccessPointId());
                 fileData.setUrl(newUrl);
+                fileData.setUploadId(upload.getId());
                 newAP.setData(serializeJsonAsString(fileData));
                 AccessPointDAO.updateAccessPoint(newAP);
             } else {
-                logger.error("fixUpAccessPointWithinURLs: file download "
+                logger.error("fixUpAccessPoints: file download "
                         + "doesn't begin with expected prefix: "
                         + expectedPrefix);
             }
@@ -2002,15 +2035,46 @@ public final class MigrateToolkitToRegistry {
                 newAP.setData(serializeJsonAsString(sesameDownloadData));
                 AccessPointDAO.updateAccessPoint(newAP);
             } else {
-                logger.error("fixUpAccessPointWithinURLs: Sesame download "
+                logger.error("fixUpAccessPoints: Sesame download "
                         + "doesn't begin with expected prefix:"
                         + expectedPrefix);
             }
             break;
         default:
-            logger.error("fixUpAccessPointWithinURLs: impossible type");
+            logger.error("fixUpAccessPoints: impossible type");
         }
 
+    }
+
+    /** Create an upload based on a file access point.
+     * @param toolkitVocabulary The "toolkit" vocabulary record that "owns" the
+     *      access point being migrated.
+     * @param fileData The file access point being migrated.
+     * @return The newly created and persisted Upload entity.
+     */
+    private Upload makeUpload(final Vocabulary toolkitVocabulary,
+            final ApFile fileData) {
+        java.nio.file.Path sourcePath = java.nio.file.Paths.get(
+                fileData.getPath());
+        Upload upload = new Upload();
+        upload.setModifiedBy(SYSTEM_USER);
+        upload.setOwner(toolkitVocabulary.getOwner());
+        upload.setFormat(fileData.getFormat());
+        upload.setFilename(sourcePath.getFileName().toString());
+        UploadDAO.saveUpload(upload);
+        // Now we can copy the file.
+        java.nio.file.Path destPath =
+                uploadsPath.resolve(upload.getId().toString());
+        try {
+            Files.copy(sourcePath, destPath,
+                    StandardCopyOption.COPY_ATTRIBUTES,
+                    StandardCopyOption.REPLACE_EXISTING);
+        } catch (IOException e) {
+            logger.error("makeUpload: Error copying file: source path: "
+            + fileData.getPath(), e);
+        }
+        logger.info("makeUpload: Created upload: " + upload.getId());
+        return upload;
     }
 
     /** Create a version artefact related to a registry version.

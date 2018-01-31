@@ -25,6 +25,7 @@ import org.glassfish.jersey.uri.UriComponent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import au.org.ands.vocabs.registry.utils.RDFUtils;
 import au.org.ands.vocabs.toolkit.db.TaskUtils;
 import au.org.ands.vocabs.toolkit.db.VersionUtils;
 import au.org.ands.vocabs.toolkit.db.VocabularyUtils;

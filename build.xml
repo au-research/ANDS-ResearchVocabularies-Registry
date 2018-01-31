@@ -3,7 +3,7 @@
 <project
   basedir="."
   default="war"
-  name="ANDS-Vocabs-Toolkit"
+  name="vocabs-registry"
   xmlns:if="ant:if"
   xmlns:unless="ant:unless"
   xmlns:jacoco="antlib:org.jacoco.ant"
@@ -49,8 +49,8 @@
   <property name="roles-db-model-jar"
             value="${build-jar}/roles-db-model.jar" />
 
-  <property name="jar" value="vocabtoolkit.jar" />
-  <property name="war" value="vocabtoolkit.war" />
+  <property name="jar" value="vocabs-registry.jar" />
+  <property name="war" value="vocabs-registry.war" />
   <property name="javadoc-output" value="doc/javadoc" />
   <property name="test-output" value="test-output" />
   <!-- JaCoCo -->
@@ -66,7 +66,7 @@
 
   <taskdef
     resource="com/puppycrawl/tools/checkstyle/ant/checkstyle-ant-task.properties"
-    classpath="libdev/checkstyle-7.6/checkstyle-7.6-all.jar" />
+    classpath="libdev/checkstyle-8.7/checkstyle-8.7-all.jar" />
 
   <taskdef
       name="forbiddenapis"
@@ -809,15 +809,15 @@
     <uptodate property="swagger-json.uptodate"
               targetfile="swagger.json">
       <srcfiles dir="src">
-        <include name="*/*.java" />
-        <include name="*/*.xml" />
-        <include name="*/*.xsl" />
+        <include name="**/*.java" />
+        <include name="**/*.xml" />
+        <include name="**/*.xsl" />
       </srcfiles>
       <srcfiles dir="build">
-        <include name="*/*" />
+        <include name="**/*" />
       </srcfiles>
       <srcfiles dir="build-test">
-        <include name="*/*" />
+        <include name="**/*" />
       </srcfiles>
       <srcfiles dir="build-jar">
         <include name="*/*.jar" />
@@ -909,6 +909,8 @@
       <arg value="${php-client-dir}" />
       <arg value="-DpackagePath=vocabs-registry-client" />
       <arg value="-DinvokerPackage=ANDS\VocabsRegistry" />
+      <arg value="--git-user-id=au-research" />
+      <arg value="--git-repo-id=vocabs-php-client" />
     </java>
   </target>
 
@@ -1009,7 +1011,7 @@
       <executiondata>
         <file file="${jacoco-output}"/>
       </executiondata>
-      <structure name="ANDS-Vocabs-Toolkit">
+      <structure name="vocabs-registry">
         <classfiles>
           <fileset dir="${build}"/>
         </classfiles>
@@ -1101,7 +1103,7 @@
       <executiondata>
         <file file="${jacoco-output}"/>
       </executiondata>
-      <structure name="ANDS-Vocabs-Toolkit">
+      <structure name="vocabs-registry">
         <classfiles>
           <fileset dir="${build}"/>
         </classfiles>
@@ -1111,6 +1113,58 @@
       </structure>
       <html destdir="${jacoco-report}"/>
     </jacoco:report>
+  </target>
+
+  <!-- Support deployment to Tomcat. -->
+
+  <!-- If you want to deploy to Tomcat, create deployer.properties
+       containing settings for tomcat.url, username, password, and path.
+       Sample content for deployer.properties:
+
+       tomcat.url=http://localhost:8080/manager/text
+       tomcat.username=deploy
+       tomcat.password=my-password
+       tomcat.context=/repository/api/registry
+
+       You need to have add the username/password to Tomcat's tomcat-users.xml
+       and assign that user the "manager-script" role:
+       <user name="deploy" password="my-password" roles="manager-script" />
+  -->
+  <property file="deployer.properties"/>
+
+  <!-- Change the value of the file attribute as necessary. -->
+  <include optional="true" file="/usr/share/tomcat/bin/catalina-tasks.xml"/>
+
+  <target name="deploy" description="Deploy web application"
+          depends="war">
+    <deploy url="${tomcat.url}"
+            username="${tomcat.username}" password="${tomcat.password}"
+            path="${tomcat.context}" war="${war}" update="true" />
+  </target>
+
+  <target name="undeploy" description="Undeploy web application">
+    <undeploy url="${tomcat.url}"
+              username="${tomcat.username}" password="${tomcat.password}"
+              path="${tomcat.context}"/>
+  </target>
+
+  <!-- Webapp lifecycle control -->
+  <target name="start" description="Start web application">
+    <start url="${tomcat.url}"
+           username="${tomcat.username}" password="${tomcat.password}"
+           path="${tomcat.context}"/>
+  </target>
+
+  <target name="reload" description="Reload web application">
+    <reload url="${tomcat.url}"
+            username="${tomcat.username}" password="${tomcat.password}"
+            path="${tomcat.context}"/>
+  </target>
+
+  <target name="stop" description="Stop web application">
+    <stop url="${tomcat.url}"
+          username="${tomcat.username}" password="${tomcat.password}"
+          path="${tomcat.context}"/>
   </target>
 
 </project>

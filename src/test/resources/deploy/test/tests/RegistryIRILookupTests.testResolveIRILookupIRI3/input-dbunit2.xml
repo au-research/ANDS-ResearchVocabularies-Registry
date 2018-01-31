@@ -1,0 +1,16 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE dataset SYSTEM "../../dbunit-registry-export-choice.dtd" >
+<dataset>
+  <VERSIONS
+      ID="2" START_DATE="2015-06-24 10:56:30.0" END_DATE="2017-06-24 10:56:30.0" VERSION_ID="2"
+      VOCABULARY_ID="2" MODIFIED_BY="SYSTEM"
+      SLUG="v1-2" RELEASE_DATE="2015-06-01"
+      STATUS="CURRENT" DATA="{''title'':v1''}"
+      />
+  <VERSIONS
+      ID="3" START_DATE="2017-06-24 10:56:30.0" END_DATE="9999-12-01 00:00:00" VERSION_ID="2"
+      VOCABULARY_ID="2" MODIFIED_BY="SYSTEM"
+      SLUG="v1-2" RELEASE_DATE="2015-06-01"
+      STATUS="SUPERSEDED" DATA="{''title'':v1''}"
+      />
+</dataset>

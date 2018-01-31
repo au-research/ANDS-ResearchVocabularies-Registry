@@ -53,6 +53,25 @@ conf.
 Create `conf/toolkit.properties`. You may base it on
 `conf/toolkit.properties.sample`.
 
+### Elda/SISSVoc Config template
+
+The Toolkit property `SISSVoc.specTemplate` must point to a file that
+contains a template which will be used in the generation of
+configuration ('spec') files as used by the Elda library.  Please
+refer to `conf/ANDS-ELDAConfig-template.ttl.sample` for an example.
+
+### Elda/SISSVoc XSL transform
+
+The Toolkit property `SISSVoc.variable.HTML_STYLESHEET` must point to
+an XSL transform used by Elda/SISSVoc to generate HTML pages.  Either,
+copy `lda/resources/default/transform/ands-ashtml-sissvoc.xsl` into
+the `resources/default/transform` directory of your deployed instance
+of SISSVoc, or make use of the file(s) provided in the repository
+https://github.com/au-research/ANDS-ResearchVocabularies-LDA.  (There
+is a version of `ands-ashtml-sissvoc.xsl` contained in the directory
+`common/resources/default/transform`.)
+
+
 ## Create Registry configuration
 
 ### Web application properties
@@ -64,6 +83,19 @@ You decide on the Registry database JDBC URL, username, and password
 here, and you will need them in subsequent steps. They are referred to
 in subsequent steps as `registry-url`, `registry-user`, and
 `registry-password`.
+
+The setting `Registry.storagePath` points to a directory in the file
+system where the Registry stores all of the vocabulary data. This
+directory must exist, and be writable by the user that runs
+Tomcat. For example, if you are using
+`/var/vocab-files/registry-data`, you might do something like this to
+create it:
+```
+sudo sh
+mkdir -p /var/vocab-files/registry-data
+chown 755 /var/vocab-files/registry-data
+chown tomcat.tomcat /var/vocab-files/registry-data
+```
 
 ### Liquibase properties
 
@@ -87,6 +119,12 @@ collection. In the following, we have chosen `vocabs-registry`.
 
 Create `conf/roles.properties`. You may base it on
 `conf/roles.properties.sample`.
+
+## Configure logging
+
+The file `conf/logback.xml` is the logging configuration for the
+Registry. You may modify it to suit your needs.
+
 
 # Create the Registry database
 
@@ -121,7 +159,7 @@ tools/dist/liquibase-3.5.3/liquibase --defaultsFile=registry-liquibase-superuser
 
 # Deploy and start the Toolkit/Registry web application
 
-Deploy the resulting `vocabtoolkit.war` into Tomcat.
+Deploy the resulting `vocabs-registry.war` into Tomcat.
 
 You may choose to deploy it using a Tomcat context file in order to
 select a convenient context path.
@@ -142,6 +180,15 @@ Registry database:
 ```
 wget -O - http://localhost:8080/registry-context/registry/admin/database/migrateToolkitToRegistry
 ```
+
+It is crucial to check the log file of the Registry to see if there
+are any log messages related to migration that have priority
+"ERROR". If there are, an error has occurred during migration that
+needs to be addressed. Note that the migration may have continued
+anyway, and reported completion, in order to migrate as much data as
+possible; nevertheless, the errors need to be addressed. When that has
+been done, you will need to clear out the database (see "Create
+Registry database tables" above) and run the migration again.
 
 # Define PoolParty server for the Registry
 
@@ -191,6 +238,64 @@ chosen for the collection and assigned in `registry.properties` above.
 ant create-solr-schema
 ```
 
+## Force indexing of the vocabularies into Solr
+
+Run:
+
+```
+wget -O - http://localhost:8080/registry-context/registry/admin/solr/index
+```
+
+Once again, it is crucial to check the log file of the Registry to see
+if there are any log messages related to indexing. If Solr is not
+responding, you will see an error message of priority "SEVERE".
+In this case, restart Solr and try again.
+
 # Create PHP Client API
 
 `ant php-client`
+
+# Create JavaScript Client API
+
+`ant js-client`
+
+# Optional: use automated webapp deploy/start/stop
+
+If you want to be able to script the deployment of the Registry webapp
+to Tomcat, and/or to script starting/stopping the webapp, please see
+the section in `build.xml` that begins with the comment
+"Support deployment to Tomcat".
+
+It's easiest if you have a local installation of Tomcat, so that you
+have the file `catalina-tasks.xml` that is part of the Tomcat
+distribution. Otherwise, you will need, at least, to download a copy
+of the Tomcat distribution and unpack it. Then, edit `build.xml` and
+change the file attribute of the `include` statement:
+```
+<include optional="true" file="/usr/share/tomcat/bin/catalina-tasks.xml"/>
+```
+so that it points to the correct location of `catalina-tasks.xml`.
+
+Here is a summary of the steps involved to configure deployment:
+
+* In the Tomcat installation to which you will be deploying, ensure
+  that in Tomcat's `tomcat-users.xml`, you have a suitable user
+  defined that has the `manager-script` role. For example:
+  ```
+  <user name="deploy" password="my-password" roles="manager-script" />
+  ```
+* If you add a username/password in this way, you need to restart
+  Tomcat so that it loads `tomcat-users.xml` afresh.
+* In the top-level of your checkout of the Registry code, create
+  a file `deployer.properties` containing the URL of the target
+  Tomcat, the username/password you specified, and the context
+  path. For example (following the running example used in these
+  instructions), the file might look like this:
+  ```
+  tomcat.url=http://localhost:8080/manager/text
+  tomcat.username=deploy
+  tomcat.password=my-password
+  tomcat.context=/registry-context
+  ```
+
+Now you can run `ant deploy`, `ant stop`, and `ant start`.

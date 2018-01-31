@@ -97,6 +97,18 @@ public final class RolesUtils {
                 }
             }
         }
+        // If we saw one of the two special functional roles, then
+        // also add _all_ of the known organisational roles.
+        if (roleIdsSeen.contains(RolesConstants.AUTH_FUNCTION_SUPERUSER)
+                || roleIdsSeen.contains(
+                        RolesConstants.AUTH_FUNCTION_ALL_GROUPS)) {
+            query = em.createNamedQuery(
+                    Role.GET_ALL_ENABLED_ORG_ROLES,
+                    au.org.ands.vocabs.roles.Role.class);
+            List<au.org.ands.vocabs.roles.Role> allOrgRoles =
+                    query.getResultList();
+            parentRoles.addAll(allOrgRoles);
+        }
         em.close();
         userInfo.setParentRoles(parentRoles);
     }

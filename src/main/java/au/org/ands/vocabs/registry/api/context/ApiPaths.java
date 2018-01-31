@@ -33,6 +33,9 @@ public final class ApiPaths {
     public static final String REVERSE_RELATED_VOCABULARIES =
             "reverseRelatedVocabularies";
 
+    /** Subpath for owned vocabulary resources. */
+    public static final String OWNED_VOCABULARIES = "ownedVocabularies";
+
     /** Subpath for version resources. */
     public static final String VERSIONS = "versions";
 

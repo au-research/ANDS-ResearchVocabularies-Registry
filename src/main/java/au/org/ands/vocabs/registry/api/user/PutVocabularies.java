@@ -36,6 +36,7 @@ import au.org.ands.vocabs.registry.api.context.ApiPaths;
 import au.org.ands.vocabs.registry.api.context.EntityPaths;
 import au.org.ands.vocabs.registry.api.context.ResponseUtils;
 import au.org.ands.vocabs.registry.api.context.SwaggerInterface;
+import au.org.ands.vocabs.registry.api.validation.AuthorizationValidationUtils;
 import au.org.ands.vocabs.registry.api.validation.CheckVocabulary;
 import au.org.ands.vocabs.registry.api.validation.ValidationMode;
 import au.org.ands.vocabs.registry.db.context.DBContext;
@@ -121,6 +122,17 @@ public class PutVocabularies {
             return ResponseUtils.generateForbiddenResponseForOwner();
         }
 
+        List<ValidationError> validationErrors =
+                AuthorizationValidationUtils.checkAuthorizationForContent(
+                        profile, newVocabulary);
+        if (!validationErrors.isEmpty()) {
+            ErrorResult errorResult =
+                    new ErrorResult("Won't create vocabulary.");
+            errorResult.setConstraintViolation(validationErrors);
+            return Response.status(Response.Status.BAD_REQUEST).
+                    entity(errorResult).build();
+        }
+
         EntityManager em = null;
         EntityTransaction txn = null;
 
@@ -134,7 +146,10 @@ public class PutVocabularies {
             VocabularyIdDAO.saveVocabularyId(em, vocabularyId);
             // That needs to be visible to subsequent queries, so that
             // ModelMethods.createVocabularyModel() will find it.
-//            em.flush();
+            // Because it has an auto-increment column, it _is_
+            // flushed ... within the current transaction.
+            // So need to make sure that all subsequent database access
+            // is done using the _same_ EntityManager.
             Integer newVocabularyId = vocabularyId.getId();
             logger.info("Created new vocabulary Id: " + newVocabularyId);
 
@@ -290,6 +305,17 @@ public class PutVocabularies {
                 ownerIsAuthorizedByOrganisationOrUsername(profile,
                 dbVocabulary.getOwner())) {
             return ResponseUtils.generateForbiddenResponseForOwner();
+        }
+
+        List<ValidationError> validationErrors =
+                AuthorizationValidationUtils.checkAuthorizationForContent(
+                        profile, updatedVocabulary);
+        if (!validationErrors.isEmpty()) {
+            ErrorResult errorResult =
+                    new ErrorResult("Won't update vocabulary.");
+            errorResult.setConstraintViolation(validationErrors);
+            return Response.status(Response.Status.BAD_REQUEST).
+                    entity(errorResult).build();
         }
 
         EntityManager em = null;

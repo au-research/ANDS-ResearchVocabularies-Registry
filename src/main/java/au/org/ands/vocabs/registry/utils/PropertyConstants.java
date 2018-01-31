@@ -85,4 +85,78 @@ public final class PropertyConstants {
     public static final String REGISTRY_SOLR_COLLECTION_URL =
             "Registry.Solr.collectionURL";
 
+    /* Public-facing Sesame. */
+
+    /** Sesame importer SPARQL prefix. */
+    public static final String SESAME_IMPORTER_SPARQLPREFIX =
+            "SesameImporter.sparqlPrefix";
+
+    /* Public-facing SISSVoc. */
+
+    /** SISSVoc endpoints prefix. */
+    public static final String SISSVOC_ENDPOINTSPREFIX =
+            "SISSVoc.endpointsPrefix";
+
+    /* Harvesters. */
+
+    /** PoolParty harvester default format. */
+    public static final String POOLPARTYHARVESTER_DEFAULTFORMAT =
+            "PoolPartyHarvester.defaultFormat";
+
+    /** PoolParty harvester default export module. */
+    public static final String POOLPARTYHARVESTER_DEFAULTEXPORTMODULE =
+            "PoolPartyHarvester.defaultExportModule";
+
+    /** Metadata transform provider metadata rewrite map path. */
+    public static final String REGISTRY_METADATAREWRITEMAPPATH =
+            "Registry.metadataRewriteMapPath";
+
+    /* Importers. */
+
+    /* Sesame importer. */
+
+    /** Sesame importer server URL. */
+    public static final String SESAME_IMPORTER_SERVERURL =
+            "SesameImporter.serverUrl";
+
+    /* Publishers. */
+
+    /* SISSVoc publisher. */
+
+    /** SISSVoc spec template. */
+    public static final String SISSVOC_SPECTEMPLATE =
+            "SISSVoc.specTemplate";
+
+    /** SISSVoc specs path. */
+    public static final String SISSVOC_SPECSPATH =
+            "SISSVoc.specsPath";
+
+    /** SISSVoc template variable DEPLOYPATH. */
+    public static final String SISSVOC_VARIABLE_DEPLOYPATH =
+            "SISSVoc.variable.DEPLOYPATH";
+
+    /** SISSVoc template variable SERVICE_TITLE. */
+    public static final String SISSVOC_VARIABLE_SERVICE_TITLE =
+            "SISSVoc.variable.SERVICE_TITLE";
+
+    /** SISSVoc template variable SERVICE_AUTHOR. */
+    public static final String SISSVOC_VARIABLE_SERVICE_AUTHOR =
+            "SISSVoc.variable.SERVICE_AUTHOR";
+
+    /** SISSVoc template variable SERVICE_AUTHOR_EMAIL. */
+    public static final String SISSVOC_VARIABLE_SERVICE_AUTHOR_EMAIL =
+            "SISSVoc.variable.SERVICE_AUTHOR_EMAIL";
+
+    /** SISSVoc template variable SERVICE_HOMEPAGE. */
+    public static final String SISSVOC_VARIABLE_SERVICE_HOMEPAGE =
+            "SISSVoc.variable.SERVICE_HOMEPAGE";
+
+    /** SISSVoc template variable SPARQL_ENDPOINT_PREFIX. */
+    public static final String SISSVOC_VARIABLE_SPARQL_ENDPOINT_PREFIX =
+            "SISSVoc.variable.SPARQL_ENDPOINT_PREFIX";
+
+    /** SISSVoc template variable HTML_STYLESHEET. */
+    public static final String SISSVOC_VARIABLE_HTML_STYLESHEET =
+            "SISSVoc.variable.HTML_STYLESHEET";
+
 }

@@ -276,7 +276,8 @@ public class VocabularyRelatedVocabulariesModel extends ModelBase {
         for (Integer rvId : draftRVsAndRelations.keySet()) {
             for (VocabularyRelatedVocabulary vrv
                     : draftRVsAndRelations.get(rvId)) {
-                em().remove(vrv);
+                VocabularyRelatedVocabularyDAO.
+                    deleteVocabularyRelatedVocabulary(em(), vrv);
             }
         }
         draftRVsAndRelations.clear();
@@ -378,7 +379,8 @@ public class VocabularyRelatedVocabulariesModel extends ModelBase {
             // Remove from our own records ...
             draftRVsAndRelations.get(draftRvId).remove(draftVrv);
             // ... and from the database.
-            em().remove(draftVrv);
+            VocabularyRelatedVocabularyDAO.deleteVocabularyRelatedVocabulary(
+                    em(), draftVrv);
         }
 
         /** {@inheritDoc} */

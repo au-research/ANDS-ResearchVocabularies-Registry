@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Context>
+<Context>
+
+  <!-- The following is an Apache Tomcat-specific way of externalizing
+       configuration files that aren't directly under the control of
+       the web application.  This applies particularly to logback.xml.
+       If you want to have logback.xml picked up from a directory
+       that's not contained within the WAR file:
+
+       (1) Move logback.xml into a separate directory (i.e., out of
+       the conf directory).
+
+       (2) Either (a) edit and include this context.xml in the webapp
+       (i.e., copying context.xml.sample to context.xml), or (b)
+       create/edit a context file within Catalina's
+       conf/Catalina/localhost directory based on this file, so that
+       it points to the directory into which you put logback.xml.
+       For (b), the name of the file needs to be based on the name of
+       the webapp as you will deploy it. See the Tomcat documentation.
+       You need to uncomment the <Loader> element below, and change the
+       value of the virtualClasspath attribute.
+
+       (3) Build the WAR file (ant war). Since you moved logback.xml
+       out of the conf directory, the generated WAR file will _not_
+       contain logback.xml.
+
+       (4) Deploy to Tomcat.
+  -->
+
+  <!--
+  <Loader className="org.apache.catalina.loader.VirtualWebappLoader"
+          virtualClasspath="/put/here/the/full/path/to/extra/directory" />
+  -->
+
+
+  <!-- This is an example setting of the location to look for
+       toolkit.properties. The point is:
+       (a) This setting can be made in a file _external_ to the WAR
+           file: specifically, in the application-specific context file
+           ~tomcat/conf/Catalina/localhost/vocabs-registry.xml.
+       (b) The setting can in turn point to a properties file that
+           is _either_ internal or external to the WAR file.
+       This means, for example, that the WAR file can be created and deployed
+       without having included a toolkit.properties file inside.
+       Uncomment and modify the setting below as needed.
+  -->
+
+  <!-- The value of the environment variable toolkit.properties can be
+       either an absolute path or a relative path.
+       If an absolute path, note that variables are expanded within
+       context files in ~tomcat/conf/Catalina/localhost, so, for example,
+       you could use ${catalina.base} in the pathname. So a good place to
+       put the properties file might be
+       ${catalina.base}/conf-ands/toolkit.properties.
+       Or, you can use a relative path, in which case, the path is resolved
+       relative to the _root_ of the webapp. So, a value such as
+       "WEB-INF/classes/toolkit.properties" is possible.
+
+       The code for all this is in the class
+         au.org.ands.vocabs.toolkit.utils.ToolkitProperties.
+
+       Sample values for testing:
+       value="/Users/rwalker/Desktop/test-loading-from-elsewhere-toolkit-jndi.properties"
+       value="WEB-INF/classes/test-loading-from-toolkit-jndi-relative.properties"
+  -->
+
+  <!--
+  <Environment name="toolkit.properties"
+    value="/put/here/the/full/path/to/toolkit.properties"
+    type="java.lang.String"
+    override="false"
+  />
+  -->
+
+  <!-- In the above, the name "toolkit.properties" is a special, fixed
+       name; this is not a generic facility for remapping files.
+
+       However, note that the name "registry.properties" is also
+       supported.
+  -->
+
+
+</Context>

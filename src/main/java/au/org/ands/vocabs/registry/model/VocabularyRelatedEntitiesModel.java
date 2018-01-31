@@ -300,7 +300,8 @@ public class VocabularyRelatedEntitiesModel extends ModelBase {
         for (Integer reId : draftREsAndRelations.keySet()) {
             for (VocabularyRelatedEntity vre
                     : draftREsAndRelations.get(reId)) {
-                em().remove(vre);
+                VocabularyRelatedEntityDAO.deleteVocabularyRelatedEntity(
+                        em(), vre);
             }
         }
         draftREsAndRelations.clear();
@@ -400,7 +401,8 @@ public class VocabularyRelatedEntitiesModel extends ModelBase {
             // Remove from our own records ...
             draftREsAndRelations.get(draftReId).remove(draftVre);
             // ... and from the database.
-            em().remove(draftVre);
+            VocabularyRelatedEntityDAO.deleteVocabularyRelatedEntity(
+                    em(), draftVre);
         }
 
         /** {@inheritDoc} */

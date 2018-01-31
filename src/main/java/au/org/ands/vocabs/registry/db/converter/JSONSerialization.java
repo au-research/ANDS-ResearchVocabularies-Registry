@@ -120,7 +120,7 @@ public final class JSONSerialization {
         }
     }
 
-    /** Deserialize a file containint data in JSON format.
+    /** Deserialize a file containing data in JSON format.
      * @param jsonFile A File containing the JSON data to be deSerialized.
      *      The contents should normally be
      *      an instance of one of our custom JSON storage objects,
