@@ -5,32 +5,14 @@
   <VOCABULARY_IDS ID="1"/>
   <VOCABULARY_IDS ID="2"/>
 
-  <VOCABULARIES
-      ID="1" START_DATE="2015-06-24 10:56:30.0" END_DATE="9999-12-01 00:00:00" VOCABULARY_ID="1"
-      OWNER="ANDS" MODIFIED_BY="SYSTEM" STATUS="PUBLISHED"
-      SLUG="testresourcemaptransformprovider3-1" DATA="{''title'':''testResourceMapTransformProvider3-1''}"
-      />
-  <VOCABULARIES
-      ID="2" START_DATE="2015-06-24 10:56:30.0" END_DATE="9999-12-01 00:00:00" VOCABULARY_ID="2"
-      OWNER="ANOTHER" MODIFIED_BY="SYSTEM" STATUS="PUBLISHED"
-      SLUG="testresourcemaptransformprovider3-2" DATA="{''title'':''testResourceMapTransformProvider3-2''}"
-      />
+  <VOCABULARIES ID="1" DATA="{&quot;title&quot;:&quot;testResourceMapTransformProvider3-1&quot;}" END_DATE="9999-12-01 00:00:00.0" MODIFIED_BY="SYSTEM" OWNER="ANDS" SLUG="testresourcemaptransformprovider3-1" START_DATE="2015-06-24 10:56:30.0" STATUS="PUBLISHED" VOCABULARY_ID="1"/>
+  <VOCABULARIES ID="2" DATA="{&quot;title&quot;:&quot;testResourceMapTransformProvider3-2&quot;}" END_DATE="9999-12-01 00:00:00.0" MODIFIED_BY="SYSTEM" OWNER="ANOTHER" SLUG="testresourcemaptransformprovider3-2" START_DATE="2015-06-24 10:56:30.0" STATUS="PUBLISHED" VOCABULARY_ID="2"/>
 
   <VERSION_IDS ID="1"/>
   <VERSION_IDS ID="2"/>
 
-  <VERSIONS
-      ID="1" START_DATE="2015-06-24 10:56:30.0" END_DATE="9999-12-01 00:00:00" VERSION_ID="1"
-      VOCABULARY_ID="1" MODIFIED_BY="SYSTEM"
-      SLUG="v1" RELEASE_DATE="2015-06-01"
-      STATUS="CURRENT" DATA="{''title'':v1''}"
-      />
-  <VERSIONS
-      ID="2" START_DATE="2015-06-24 10:56:30.0" END_DATE="9999-12-01 00:00:00" VERSION_ID="2"
-      VOCABULARY_ID="2" MODIFIED_BY="SYSTEM"
-      SLUG="v1-2" RELEASE_DATE="2015-06-01"
-      STATUS="CURRENT" DATA="{''title'':v1''}"
-      />
+  <VERSIONS ID="1" DATA="{&quot;title&quot;:&quot;v1&quot;}" END_DATE="9999-12-01 00:00:00.0" MODIFIED_BY="SYSTEM" RELEASE_DATE="2015-06-01" SLUG="v1" START_DATE="2015-06-24 10:56:30.0" STATUS="CURRENT" VERSION_ID="1" VOCABULARY_ID="1"/>
+  <VERSIONS ID="2" DATA="{&quot;title&quot;:&quot;v1&quot;}" END_DATE="9999-12-01 00:00:00.0" MODIFIED_BY="SYSTEM" RELEASE_DATE="2015-06-01" SLUG="v1-2" START_DATE="2015-06-24 10:56:30.0" STATUS="CURRENT" VERSION_ID="2" VOCABULARY_ID="2"/>
 
   <RESOURCE_OWNER_HOSTS
       ID="1"

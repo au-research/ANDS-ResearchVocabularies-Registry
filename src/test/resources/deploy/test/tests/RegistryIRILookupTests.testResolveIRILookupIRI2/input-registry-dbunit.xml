@@ -4,33 +4,24 @@
 
   <VOCABULARY_IDS ID="1"/>
 
-  <VOCABULARIES
-      ID="1" START_DATE="2015-06-24 10:56:30.0" END_DATE="9999-12-01 00:00:00" VOCABULARY_ID="1"
-      OWNER="ANDS" MODIFIED_BY="SYSTEM"
-      SLUG="testresourcemaptransformprovider2"
-      STATUS="current" DATA="{''title'':''testResourceMapTransformProvider2''}"
-      />
+  <VOCABULARIES ID="1" DATA="{&quot;title&quot;:&quot;testResourceMapTransformProvider2&quot;}" END_DATE="9999-12-01 00:00:00.0" MODIFIED_BY="SYSTEM" OWNER="ANDS" SLUG="testresourcemaptransformprovider2" START_DATE="2015-06-24 10:56:30.0" STATUS="PUBLISHED" VOCABULARY_ID="1"/>
 
   <VERSION_IDS ID="1"/>
 
-  <VERSIONS
-      ID="1" START_DATE="2015-06-24 10:56:30.0" END_DATE="9999-12-01 00:00:00" VERSION_ID="1"
-      VOCABULARY_ID="1" MODIFIED_BY="SYSTEM"
-      SLUG="v1" RELEASE_DATE="2015-06-01"
-      STATUS="CURRENT" DATA="{''title'':v1''}"
-      />
+  <VERSIONS ID="1" DATA="{&quot;title&quot;:&quot;v1&quot;}" END_DATE="9999-12-01 00:00:00.0" MODIFIED_BY="SYSTEM" RELEASE_DATE="2015-06-01" SLUG="v1" START_DATE="2015-06-24 10:56:30.0" STATUS="CURRENT" VERSION_ID="1" VOCABULARY_ID="1"/>
+
   <RESOURCE_OWNER_HOSTS
       ID="1"
       START_DATE="2016-09-16"
       END_DATE="9999-12-01"
-      OWNER="ands"
+      OWNER="ANDS"
       HOST="vocab.owner.org"
       />
   <RESOURCE_OWNER_HOSTS
       ID="2"
       START_DATE="2016-09-16"
       END_DATE="9999-12-01"
-      OWNER="ands"
+      OWNER="ANDS"
       HOST="second.owned.com"
       />
 
@@ -39,22 +30,10 @@
   <ACCESS_POINT_IDS ID="3"/>
   <ACCESS_POINT_IDS ID="4"/>
 
-  <ACCESS_POINTS ID="1"
-      ACCESS_POINT_ID="1" START_DATE="2015-06-24 10:56:30.0" END_DATE="9999-12-01 00:00:00"
-      SOURCE="USER" MODIFIED_BY="SYSTEM"
-      DATA="{}" TYPE="FILE" VERSION_ID="1"/>
-  <ACCESS_POINTS ID="2"
-      ACCESS_POINT_ID="2" START_DATE="2015-06-24 10:56:30.0" END_DATE="9999-12-01 00:00:00"
-      SOURCE="SYSTEM" MODIFIED_BY="SYSTEM"
-      DATA="{}" TYPE="API_SPARQL" VERSION_ID="1"/>
-  <ACCESS_POINTS ID="3"
-      ACCESS_POINT_ID="3" START_DATE="2015-06-24 10:56:30.0" END_DATE="9999-12-01 00:00:00"
-      SOURCE="SYSTEM" MODIFIED_BY="SYSTEM"
-      DATA="{}" TYPE="SESAME_DOWNLOAD" VERSION_ID="1"/>
-  <ACCESS_POINTS ID="4"
-      ACCESS_POINT_ID="4" START_DATE="2015-06-24 10:56:30.0" END_DATE="9999-12-01 00:00:00"
-      SOURCE="SYSTEM" MODIFIED_BY="SYSTEM"
-      DATA="{''url-prefix'':''http://testing-host.org.au/repository/api/lda/ands/testresourcemaptransformprovider2/v1''}" TYPE="SISSVOC" VERSION_ID="1"/>
+  <ACCESS_POINTS ID="1" ACCESS_POINT_ID="1" DATA="{&quot;format&quot;:&quot;Turtle&quot;,&quot;upload-id&quot;:&quot;1&quot;,&quot;path&quot;:&quot;/Users/rwalker/Documents/workspace/vocabs-registry/tomcatmanaged/apache-tomcat-7.0.69/webapps/test/WEB-INF/classes/test/tests/TransformProviderTests.testResourceMapTransformProvider2/test-data1.ttl&quot;,&quot;url&quot;:&quot;http://vocabs.ands.org.au/repository/api/download/1/test-data1.ttl&quot;}" END_DATE="9999-12-01 00:00:00.0" MODIFIED_BY="SYSTEM" SOURCE="USER" START_DATE="2015-11-26 10:04:05.0" TYPE="FILE" VERSION_ID="1"/>
+  <ACCESS_POINTS ID="2" ACCESS_POINT_ID="2" DATA="{&quot;url&quot;:&quot;http://localhost/repository/api/sparql/ands_testresourcemaptransformprovider2_v1&quot;}" END_DATE="9999-12-01 00:00:00.0" MODIFIED_BY="SYSTEM" SOURCE="SYSTEM" START_DATE="2017-10-01 10:10:00.0" TYPE="API_SPARQL" VERSION_ID="1"/>
+  <ACCESS_POINTS ID="3" ACCESS_POINT_ID="3" DATA="{&quot;repository&quot;:&quot;ands_testresourcemaptransformprovider2_v1&quot;,&quot;server-base&quot;:&quot;http://localhost:8123/openrdf-sesame/&quot;,&quot;url-prefix&quot;:&quot;http://localhost:8123/vocabs-registry/download/3/ands_testresourcemaptransformprovider2_v1.&quot;}" END_DATE="9999-12-01 00:00:00.0" MODIFIED_BY="SYSTEM" SOURCE="SYSTEM" START_DATE="2017-10-01 10:10:00.0" TYPE="SESAME_DOWNLOAD" VERSION_ID="1"/>
+  <ACCESS_POINTS ID="4" ACCESS_POINT_ID="4" DATA="{&quot;url-prefix&quot;:&quot;http://testing-host.org.au/repository/api/lda/ands/testresourcemaptransformprovider2/v1&quot;}" END_DATE="9999-12-01 00:00:00.0" MODIFIED_BY="SYSTEM" SOURCE="SYSTEM" START_DATE="2017-10-01 10:10:00.0" TYPE="SISSVOC" VERSION_ID="1"/>
 
   <RESOURCE_MAP ID="1" ACCESS_POINT_ID="4" DEPRECATED="false" IRI="http://vocab.owner.org/def/vocab1/1" OWNED="true" RESOURCE_TYPE="http://www.w3.org/2004/02/skos/core#ConceptScheme"/>
   <RESOURCE_MAP ID="2" ACCESS_POINT_ID="4" DEPRECATED="true" IRI="http://vocab.owner.org/def/vocab1/5" OWNED="true" RESOURCE_TYPE="http://www.w3.org/2004/02/skos/core#ConceptScheme"/>
