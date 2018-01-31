@@ -1,0 +1,137 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE dataset SYSTEM "../../dbunit-registry-export-choice.dtd" >
+<dataset>
+
+  <VOCABULARY_IDS ID="1"/>
+  <VOCABULARY_IDS ID="2"/>
+
+  <VOCABULARIES
+      ID="1" START_DATE="2015-06-24 10:56:30.0" END_DATE="9999-12-01 00:00:00" VOCABULARY_ID="1"
+      OWNER="ANDS" MODIFIED_BY="SYSTEM" STATUS="PUBLISHED"
+      SLUG="testresourcemaptransformprovider3-1" DATA="{''title'':''testResourceMapTransformProvider3-1''}"
+      />
+  <VOCABULARIES
+      ID="2" START_DATE="2015-06-24 10:56:30.0" END_DATE="9999-12-01 00:00:00" VOCABULARY_ID="2"
+      OWNER="ANOTHER" MODIFIED_BY="SYSTEM" STATUS="PUBLISHED"
+      SLUG="testresourcemaptransformprovider3-2" DATA="{''title'':''testResourceMapTransformProvider3-2''}"
+      />
+
+  <VERSION_IDS ID="1"/>
+  <VERSION_IDS ID="2"/>
+
+  <VERSIONS
+      ID="1" START_DATE="2015-06-24 10:56:30.0" END_DATE="9999-12-01 00:00:00" VERSION_ID="1"
+      VOCABULARY_ID="1" MODIFIED_BY="SYSTEM"
+      SLUG="v1" RELEASE_DATE="2015-06-01"
+      STATUS="CURRENT" DATA="{''title'':''v1''}"
+      />
+  <VERSIONS
+      ID="2" START_DATE="2015-06-24 10:56:30.0" END_DATE="9999-12-01 00:00:00" VERSION_ID="2"
+      VOCABULARY_ID="2" MODIFIED_BY="SYSTEM"
+      SLUG="v1-2" RELEASE_DATE="2015-06-01"
+      STATUS="CURRENT" DATA="{''title'':''v1''}"
+      />
+
+  <ACCESS_POINT_IDS ID="1"/>
+  <ACCESS_POINT_IDS ID="2"/>
+  <ACCESS_POINTS ID="1"
+      START_DATE="2015-11-26 10:04:05.0" END_DATE="9999-12-01 00:00:00.0" ACCESS_POINT_ID="1"
+      VERSION_ID="1" MODIFIED_BY="SYSTEM" SOURCE="USER"
+      TYPE="FILE"
+      DATA="{&quot;format&quot;:&quot;Turtle&quot;,&quot;upload-id&quot;:&quot;1&quot;,&quot;path&quot;:&quot;{CLASSES}/test/tests/TransformProviderTests.testResourceMapTransformProvider3/test-data1.ttl&quot;,&quot;url&quot;:&quot;http://vocabs.ands.org.au/repository/api/download/1/test-data1.ttl&quot;}"/>
+  <ACCESS_POINTS ID="2"
+      START_DATE="2015-11-26 10:04:05.0" END_DATE="9999-12-01 00:00:00.0" ACCESS_POINT_ID="2"
+      VERSION_ID="2" MODIFIED_BY="SYSTEM" SOURCE="USER"
+      TYPE="FILE"
+      DATA="{&quot;format&quot;:&quot;Turtle&quot;,&quot;upload-id&quot;:&quot;1&quot;,&quot;path&quot;:&quot;{CLASSES}/test/tests/TransformProviderTests.testResourceMapTransformProvider3/test-data2.ttl&quot;,&quot;url&quot;:&quot;http://vocabs.ands.org.au/repository/api/download/1/test-data2.ttl&quot;}"/>
+
+  <RESOURCE_OWNER_HOSTS
+      ID="1"
+      START_DATE="2016-09-16 00:00:00.0"
+      END_DATE="9999-12-01 00:00:00.0"
+      OWNER="ANDS"
+      HOST="vocab.owner.org"
+      />
+  <RESOURCE_OWNER_HOSTS
+      ID="2"
+      START_DATE="2016-09-16 00:00:00.0"
+      END_DATE="9999-12-01 00:00:00.0"
+      OWNER="ANDS"
+      HOST="second.owned.com"
+      />
+  <RESOURCE_OWNER_HOSTS
+      ID="3"
+      START_DATE="2016-09-16 00:00:00.0"
+      END_DATE="9999-12-01 00:00:00.0"
+      OWNER="ANDS"
+      HOST="third.another.edu"
+      />
+  <RESOURCE_OWNER_HOSTS
+      ID="4"
+      START_DATE="2016-09-16 00:00:00.0"
+      END_DATE="9999-12-01 00:00:00.0"
+      OWNER="ANOTHER"
+      HOST="third.another.edu"
+      />
+
+  <TASKS
+      ID="1"
+      VOCABULARY_ID="1"
+      VERSION_ID="1"
+      PARAMS="[
+                {
+                  ''subtaskProviderType'': ''importer'',
+                  ''status'': ''new'',
+                  ''provider'': ''Sesame'',
+                  ''priority'': 30,
+                  ''operation'': ''insert''
+                },
+                {
+                  ''operation'' : ''insert'',
+                  ''priority'' : 40,
+                  ''provider'': ''SISSVoc'',
+                  ''status'' : ''new'',
+                  ''subtaskProviderType'' : ''publish''
+                },
+                {
+                  ''subtaskProviderType'': ''transform'',
+                  ''status'': ''new'',
+                  ''provider'': ''ResourceMap'',
+                  ''priority'': 50,
+                  ''operation'': ''insert''
+                }
+              ]"
+      STATUS="NEW"
+      RESPONSE="{}"
+      />
+  <TASKS
+      ID="2"
+      VOCABULARY_ID="2"
+      VERSION_ID="2"
+      PARAMS="[
+                {
+                  ''subtaskProviderType'': ''importer'',
+                  ''status'': ''new'',
+                  ''provider'': ''Sesame'',
+                  ''priority'': 30,
+                  ''operation'': ''insert''
+                },
+                {
+                  ''operation'' : ''insert'',
+                  ''priority'' : 40,
+                  ''provider'': ''SISSVoc'',
+                  ''status'' : ''new'',
+                  ''subtaskProviderType'' : ''publish''
+                },
+                {
+                  ''subtaskProviderType'': ''transform'',
+                  ''status'': ''new'',
+                  ''provider'': ''ResourceMap'',
+                  ''priority'': 50,
+                  ''operation'': ''insert''
+                }
+              ]"
+      STATUS="NEW"
+      RESPONSE="{}"
+      />
+</dataset>

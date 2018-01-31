@@ -4,12 +4,12 @@ package au.org.ands.vocabs.toolkit.test.utils;
 
 import java.util.Locale;
 
-import au.org.ands.vocabs.toolkit.db.model.AccessPoint;
-import au.org.ands.vocabs.toolkit.db.model.ResourceMapEntry;
-import au.org.ands.vocabs.toolkit.db.model.ResourceOwnerHost;
-import au.org.ands.vocabs.toolkit.db.model.Task;
-import au.org.ands.vocabs.toolkit.db.model.Version;
-import au.org.ands.vocabs.toolkit.db.model.Vocabulary;
+import au.org.ands.vocabs.registry.db.entity.AccessPoint;
+import au.org.ands.vocabs.registry.db.entity.ResourceMapEntry;
+import au.org.ands.vocabs.registry.db.entity.ResourceOwnerHost;
+import au.org.ands.vocabs.registry.db.entity.Task;
+import au.org.ands.vocabs.registry.db.entity.Version;
+import au.org.ands.vocabs.registry.db.entity.Vocabulary;
 
 /** Constants for use with DbUnit. */
 public final class DbUnitConstants {

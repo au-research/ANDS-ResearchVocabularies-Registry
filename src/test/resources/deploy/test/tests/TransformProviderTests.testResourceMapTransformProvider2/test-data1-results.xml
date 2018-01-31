@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<!DOCTYPE dataset SYSTEM "../../dbunit-toolkit-export-choice.dtd" >
+<!DOCTYPE dataset SYSTEM "../../dbunit-registry-export-choice.dtd" >
 <dataset>
   <RESOURCE_MAP ID="1" ACCESS_POINT_ID="4" DEPRECATED="false" IRI="http://vocab.owner.org/def/vocab1/1" OWNED="true" RESOURCE_TYPE="http://www.w3.org/2004/02/skos/core#ConceptScheme"/>
   <RESOURCE_MAP ID="2" ACCESS_POINT_ID="4" DEPRECATED="true" IRI="http://vocab.owner.org/def/vocab1/5" OWNED="true" RESOURCE_TYPE="http://www.w3.org/2004/02/skos/core#ConceptScheme"/>

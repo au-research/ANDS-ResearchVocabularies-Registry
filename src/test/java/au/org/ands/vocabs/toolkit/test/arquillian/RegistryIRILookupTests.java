@@ -44,7 +44,8 @@ public class RegistryIRILookupTests extends ArquillianBaseTest {
     /** Client-side test 1 of the global IRI resolver function,
      * {@link au.org.ands.vocabs.registry.api.user.ResolveIRI#lookupIRI}.
      * Lookup data is based on the correct result
-     * of {@link ToolkitTests#testResourceMapTransformProvider1()}.
+     * of {@link
+     * au.org.ands.vocabs.registry.test.TransformProviderTests#testResourceMapTransformProvider1()}.
      */
     @Test
     @RunAsClient
@@ -127,7 +128,8 @@ public class RegistryIRILookupTests extends ArquillianBaseTest {
     /** Client-side test 2 of the global IRI resolver function,
      * {@link au.org.ands.vocabs.registry.api.user.ResolveIRI#lookupIRI}.
      * Lookup data is based on the correct result
-     * of {@link ToolkitTests#testResourceMapTransformProvider2()}.
+     * of {@link
+     * au.org.ands.vocabs.registry.test.TransformProviderTests#testResourceMapTransformProvider2()}.
      */
     @Test
     @RunAsClient
@@ -183,7 +185,8 @@ public class RegistryIRILookupTests extends ArquillianBaseTest {
     /** Client-side test 3 of the global IRI resolver function,
      * {@link au.org.ands.vocabs.registry.api.user.ResolveIRI#lookupIRI}.
      * Lookup data is based on the correct result
-     * of {@link ToolkitTests#testResourceMapTransformProvider3()}.
+     * of {@link
+     * au.org.ands.vocabs.registry.test.TransformProviderTests#testResourceMapTransformProvider3()}.
      */
     @Test
     @RunAsClient
