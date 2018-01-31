@@ -109,12 +109,8 @@ public abstract class WorkflowOutcomeSchemaMapperDecorator
         Map<String, String> results = source.getResults();
         if (results != null && !results.isEmpty()) {
             List<Result> targetResults = target.getSubtaskResult();
-            for (Map.Entry<String, String> result : results.entrySet()) {
-                Result oneResult = new Result();
-                oneResult.setResultKey(result.getKey());
-                oneResult.setResultValue(result.getValue());
-                targetResults.add(oneResult);
-            }
+            results.entrySet().stream().map(this::mapResult).
+                forEach(targetResults::add);
         }
         return target;
     }

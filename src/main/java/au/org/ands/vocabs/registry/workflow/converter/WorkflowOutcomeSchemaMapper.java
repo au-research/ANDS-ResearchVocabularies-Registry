@@ -3,12 +3,14 @@
 package au.org.ands.vocabs.registry.workflow.converter;
 
 import java.util.List;
+import java.util.Map;
 
 import org.mapstruct.DecoratedWith;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
 
+import au.org.ands.vocabs.registry.schema.vocabulary201701.Result;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.WorkflowOutcome;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.WorkflowOutcome.TaskOutcome;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.WorkflowOutcome.TaskOutcome.SubtaskOutcome;
@@ -57,4 +59,12 @@ public interface WorkflowOutcomeSchemaMapper {
     @Mapping(target = "subtaskResult", ignore = true)
     SubtaskOutcome sourceToTarget(Subtask source);
 
+    /** MapStruct-generated Mapper from one workflow Subtask result
+     * to schema.
+     * @param result One Subtask result.
+     * @return The schema representation of the subtask result.
+     */
+    @Mapping(source = "key", target = "resultKey")
+    @Mapping(source = "value", target = "resultValue")
+    Result mapResult(Map.Entry<String, String> result);
 }
