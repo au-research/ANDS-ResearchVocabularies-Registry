@@ -64,9 +64,11 @@ public class ArquillianTestSetup extends ArquillianBaseTest {
 
     /** This is a null test, the presence of which seems to be necessary
      * to have the BeforeSuite/AfterSuite-annotated methods recognized and
-     * run.
+     * run. The negative priority also seems to be required, as
+     * despite preserve-order being set true, this method can otherwise
+     * be run other than first.
      */
-    @Test
+    @Test(priority = -1)
     public void dummyTestForSetup() {
     }
 
