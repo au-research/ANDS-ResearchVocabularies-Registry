@@ -59,6 +59,7 @@
                         <xs:attribute name="id" type="id-type" use="required"/>
                     </xs:complexType>
                 </xs:element>
+                <xs:element minOccurs="0" ref="workflow-outcome"/>
             </xs:sequence>
             <xs:attribute name="id" type="id-type"> </xs:attribute>
             <xs:attribute name="status" use="required" type="common:vocabulary-status"> </xs:attribute>

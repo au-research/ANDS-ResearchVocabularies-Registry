@@ -255,6 +255,15 @@ public class JsonTreeTransformProvider implements WorkflowProvider {
                 subtask.addResult(CONCEPTS_TREE_NOT_PROVIDED,
                         "No concepts tree "
                         + "provided, because " + reason + ".");
+                subtask.addResult(TaskRunner.ALERT_HTML,
+                        "Alert: Either a polyhierarchy or cycle was detected "
+                        + "in the vocabulary data.<br />The concept browse "
+                        + "tree will not be visible for this vocabulary."
+                        + "<br />For more information, please see "
+                        + "<a target=\"_blank\" href=\"https://documentation."
+                        + "ands.org.au/display/DOC/Support+for+concept+"
+                        + "browsing+within+the+portal\">Portal concept "
+                        + "browsing</a>.");
                 logger.error("JsonTreeTransform: not providing a concept "
                         + "tree because " + reason + ".");
                 // Future work:

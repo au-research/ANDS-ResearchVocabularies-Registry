@@ -20,6 +20,7 @@ import au.org.ands.vocabs.registry.db.dao.VocabularyIdDAO;
 import au.org.ands.vocabs.registry.db.entity.Vocabulary;
 import au.org.ands.vocabs.registry.db.entity.clone.VocabularyClone;
 import au.org.ands.vocabs.registry.enums.VocabularyStatus;
+import au.org.ands.vocabs.registry.schema.vocabulary201701.WorkflowOutcome;
 import au.org.ands.vocabs.registry.utils.SlugGenerator;
 
 /** Vocabulary domain model.
@@ -58,6 +59,17 @@ public class VocabularyModel extends ModelBase {
 
     /** List of all sub-models. */
     private List<ModelBase> subModels = new ArrayList<>();
+
+    /** The outcome of workflow processing, if at least one task did
+     * not complete with a SUCCESS outcome. */
+    private WorkflowOutcome workflowOutcome;
+
+    /** Set the workflow outcome. Invoked by VersionsModel.
+     * @param aWorkflowOutcome The workflowOutcome to set.
+     */
+    protected void setWorkflowOutcome(final WorkflowOutcome aWorkflowOutcome) {
+        workflowOutcome = aWorkflowOutcome;
+    }
 
     /** Construct vocabulary model for a vocabulary.
      * @param anEm The EntityManager to be used to fetch and update
@@ -217,6 +229,9 @@ public class VocabularyModel extends ModelBase {
         subModels.forEach(sm -> sm.insertIntoSchemaFromCurrent(outputVocabulary,
                 includeVersions, includeAccessPoints,
                 includeRelatedEntitiesAndVocabularies));
+        if (workflowOutcome != null) {
+            outputVocabulary.setWorkflowOutcome(workflowOutcome);
+        }
         return outputVocabulary;
     }
 
@@ -248,6 +263,9 @@ public class VocabularyModel extends ModelBase {
         subModels.forEach(sm -> sm.insertIntoSchemaFromDraft(outputVocabulary,
                 includeVersions, includeAccessPoints,
                 includeRelatedEntitiesAndVocabularies));
+        if (workflowOutcome != null) {
+            outputVocabulary.setWorkflowOutcome(workflowOutcome);
+        }
         return outputVocabulary;
     }
 

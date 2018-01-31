@@ -960,6 +960,7 @@ public class VersionsModel extends ModelBase {
             WorkflowOutcomeSchemaMapper mapper =
                     WorkflowOutcomeSchemaMapper.INSTANCE;
             WorkflowOutcome workflowOutcome = mapper.sourceToTarget(taskInfos);
+            vocabularyModel.setWorkflowOutcome(workflowOutcome);
             logger.info("workflowOutcome: "
                     + JSONSerialization.serializeObjectAsJsonString(
                             workflowOutcome));
