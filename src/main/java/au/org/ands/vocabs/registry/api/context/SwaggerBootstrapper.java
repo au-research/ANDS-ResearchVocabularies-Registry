@@ -113,7 +113,7 @@ public class SwaggerBootstrapper extends HttpServlet {
         // Now define the top-level Swagger properties.
         BeanConfig beanConfig = new BeanConfig();
         beanConfig.setTitle("Vocabulary Registry API");
-        beanConfig.setVersion("0.1.0");
+        beanConfig.setVersion("0.2.0");
         // Schemes are set in SwaggerInterface.
 //        beanConfig.setSchemes(new String[] {"https"});
         beanConfig.setHost(RegistryProperties.getProperty(

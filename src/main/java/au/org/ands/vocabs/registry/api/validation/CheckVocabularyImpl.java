@@ -1121,19 +1121,19 @@ public class CheckVocabularyImpl
         // NB: we can't do authorization checks here; they must
         // be done later. (See PutVocabularies.)
 
-        newValid = ValidationUtils.
-                requireFieldNotNull(
-                INTERFACE_NAME,
-                apFile.getUploadId(), "accessPoint.apFile.uploadId",
-                constraintContext,
-                cvb -> cvb.addPropertyNode("version").
-                addPropertyNode("accessPoint").
-                inIterable().atIndex(versionIndex).
-                addPropertyNode("apFile").
-                inIterable().atIndex(accessPointIndex).
-                addPropertyNode("uploadId").
-                addConstraintViolation(),
-                newValid);
+        if (apFile.getUploadId() <= 0) {
+            newValid = false;
+            constraintContext.buildConstraintViolationWithTemplate(
+                    "{" + INTERFACE_NAME + ".accessPoint.apFile.uploadId}").
+            addPropertyNode("version").
+            addPropertyNode("accessPoint").
+            inIterable().atIndex(versionIndex).
+            addPropertyNode("apFile").
+            inIterable().atIndex(accessPointIndex).
+            addPropertyNode("uploadId").
+            addConstraintViolation();
+        }
+
         return newValid;
     }
 

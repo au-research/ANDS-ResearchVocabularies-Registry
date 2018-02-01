@@ -145,8 +145,11 @@ public final class WorkflowMethods {
             ap.setVersionId(versionId);
             ap.setSource(ApSource.USER);
             ApFile apFile = new ApFile();
-            apFile.setFormat(schemaAP.getApFile().getFormat());
             Integer uploadId = schemaAP.getApFile().getUploadId();
+            Upload upload = UploadDAO.getUploadById(em, uploadId);
+            // Override whatever format was specified by the user, and
+            // use the upload format.
+            apFile.setFormat(upload.getFormat());
             apFile.setUploadId(uploadId);
             if (isDraft) {
                 TemporalUtils.makeDraft(ap);
@@ -171,7 +174,6 @@ public final class WorkflowMethods {
                 }
                 String harvestOutputPath =
                         TaskUtils.getTaskHarvestOutputPath(taskInfo, true);
-                Upload upload = UploadDAO.getUploadById(em, uploadId);
                 // We create our own filename, e.g., 17.ttl.
                 // Here, we don't trust the extension of the original filename
                 // (e.g., it could be in upper case).

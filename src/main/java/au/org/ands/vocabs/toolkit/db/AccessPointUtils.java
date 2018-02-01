@@ -24,7 +24,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 import au.org.ands.vocabs.toolkit.db.model.AccessPoint;
 import au.org.ands.vocabs.toolkit.db.model.Version;
-import au.org.ands.vocabs.toolkit.rest.Download;
 import au.org.ands.vocabs.toolkit.utils.PropertyConstants;
 import au.org.ands.vocabs.toolkit.utils.ToolkitProperties;
 
@@ -451,43 +450,6 @@ public final class AccessPointUtils {
         ap.setPortalData(jobPortal.build().toString());
         ap.setToolkitData(jobToolkit.build().toString());
         AccessPointUtils.saveAccessPoint(ap);
-    }
-
-    /** Create an access point for a version, for a Sesame download.
-     * Don't duplicate it, if it already exists.
-     * @param version The version for which the access point is to be created.
-     * @param toolkitUri The URI to put into the toolkitData.
-     */
-    public static void createSesameDownloadAccessPoint(
-            final Version version,
-            final String toolkitUri) {
-        List<AccessPoint> aps = getAccessPointsForVersionAndType(
-                version, AccessPoint.SESAME_DOWNLOAD_TYPE);
-        for (AccessPoint ap : aps) {
-            if (toolkitUri.equals(getToolkitUri(ap))) {
-                // Already exists.
-                return;
-            }
-        }
-        // No existing access point for this file, so create a new one.
-        AccessPoint ap = new AccessPoint();
-        ap.setVersionId(version.getId());
-        ap.setType(AccessPoint.SESAME_DOWNLOAD_TYPE);
-        ap.setPortalData("");
-        JsonObjectBuilder jobToolkit = Json.createObjectBuilder();
-        jobToolkit.add("uri", toolkitUri);
-        ap.setToolkitData(jobToolkit.build().toString());
-        // Persist what we have ...
-        AccessPointUtils.saveAccessPoint(ap);
-        // ... so that now we can get access to the
-        // ID of the persisted object with ap.getId().
-        JsonObjectBuilder jobPortal = Json.createObjectBuilder();
-        jobPortal.add("uri",
-                downloadPrefixProperty + ap.getId()
-                + "/"
-                + Download.downloadFilename(ap, ""));
-        ap.setPortalData(jobPortal.build().toString());
-        AccessPointUtils.updateAccessPoint(ap);
     }
 
     /** Create a sissvoc access point for a version.

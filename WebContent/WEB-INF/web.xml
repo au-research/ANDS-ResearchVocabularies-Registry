@@ -28,10 +28,6 @@
     <description>JAX-RS REST web services</description>
     <!-- servlet-name>javax.ws.rs.core.Application</servlet-name -->
     <servlet-name>au.org.ands.vocabs.toolkit.utils.ToolkitJerseyApplication</servlet-name>
-    <init-param>
-      <param-name>jersey.config.server.mediaTypeMappings</param-name>
-      <param-value>txt : text/plain, xml : application/xml, json : application/json</param-value>
-    </init-param>
     <load-on-startup>1</load-on-startup>
     <!-- async required because we use AsyncResponse. -->
     <async-supported>true</async-supported>
@@ -49,6 +45,8 @@
   <filter>
     <filter-name>ApiOriginFilter</filter-name>
     <filter-class>au.org.ands.vocabs.registry.api.context.ApiOriginFilter</filter-class>
+    <!-- async required because we use AsyncResponse. -->
+    <async-supported>true</async-supported>
   </filter>
   <filter-mapping>
     <filter-name>ApiOriginFilter</filter-name>

@@ -1,43 +1,57 @@
 /** See the file "LICENSE" for the full license governing this code. */
-package au.org.ands.vocabs.toolkit.rest;
+package au.org.ands.vocabs.registry.api.user;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.lang.invoke.MethodHandles;
-import java.nio.file.Paths;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Hashtable;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.Invocation;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.container.AsyncResponse;
 import javax.ws.rs.container.Suspended;
-import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import au.org.ands.vocabs.registry.api.context.ApiPaths;
+import au.org.ands.vocabs.registry.api.context.SwaggerInterface;
+import au.org.ands.vocabs.registry.db.converter.JSONSerialization;
+import au.org.ands.vocabs.registry.db.dao.AccessPointDAO;
+import au.org.ands.vocabs.registry.db.dao.VersionDAO;
+import au.org.ands.vocabs.registry.db.dao.VocabularyDAO;
+import au.org.ands.vocabs.registry.db.entity.AccessPoint;
+import au.org.ands.vocabs.registry.db.entity.Version;
+import au.org.ands.vocabs.registry.db.entity.Vocabulary;
+import au.org.ands.vocabs.registry.db.internal.ApFile;
+import au.org.ands.vocabs.registry.db.internal.ApSesameDownload;
 import au.org.ands.vocabs.registry.utils.RegistryNetUtils;
-import au.org.ands.vocabs.toolkit.db.AccessPointUtils;
-import au.org.ands.vocabs.toolkit.db.VersionUtils;
-import au.org.ands.vocabs.toolkit.db.VocabularyUtils;
-import au.org.ands.vocabs.toolkit.db.model.AccessPoint;
-import au.org.ands.vocabs.toolkit.db.model.Version;
-import au.org.ands.vocabs.toolkit.db.model.Vocabulary;
-import au.org.ands.vocabs.toolkit.utils.ToolkitFileUtils;
+import au.org.ands.vocabs.registry.utils.SlugGenerator;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
+import io.swagger.annotations.ResponseHeader;
 
 /** REST web services for downloading a vocabulary. */
-@Path("download")
+@Path(ApiPaths.API_RESOURCE + "/" + ApiPaths.DOWNLOADS)
+@Api(value = SwaggerInterface.TAG_RESOURCES)
 public class Download {
 
     /** Logger for this class. */
@@ -113,26 +127,52 @@ public class Download {
      * ignored, depending (for example) on the access point type.
      * Allowed values are the keys of {@link #SESAME_FORMAT_TO_MIMETYPE_MAP}.
      */
-    @Path("{access_point_id}")
+    @Produces({MediaType.APPLICATION_OCTET_STREAM})
+    @Path("{downloadId}")
     @GET
+    @ApiOperation(value = "Get a download.",
+        notes = "In this version of the download method, a download format is "
+                + "specified as a query parameter. "
+                + "The response will include a Content-Disposition "
+                + "header that specifies a full filename based on the "
+                + "underlying data; "
+                + "its extension may be different from the value of the "
+                + "format query parameter.",
+        responseHeaders = {
+                @ResponseHeader(name = "Content-Disposition",
+                        description = "Content disposition of the download, "
+                                + "including a filename",
+                        response = String.class)
+        },
+        response = File.class)
+    @ApiResponses(value = {
+            @ApiResponse(code = HttpStatus.SC_NOT_FOUND,
+                    message = "No such download.",
+                    response = String.class)})
     public final void download(
             @Suspended final AsyncResponse response,
-            @PathParam("access_point_id")
+            @ApiParam(value = "The Id of the download.")
+            @PathParam("downloadId")
             final int accessPointId,
+            @ApiParam(value = "The format of the download. This must be "
+                    + "a filename extension without the period, "
+                    + "e.g., \"rdf\".")
             @DefaultValue("rdf")
             @QueryParam("format")
             final String downloadFormat) {
         logger.info("Called download: " + accessPointId
                 + ", download format: " + downloadFormat);
-        AccessPoint ap = AccessPointUtils.getAccessPointById(accessPointId);
+        AccessPoint ap = AccessPointDAO.getCurrentAccessPointByAccessPointId(
+                accessPointId);
         if (ap == null) {
             response.resume(Response.status(Status.NOT_FOUND).
+                    type(MediaType.TEXT_PLAIN).
                     entity("Not found: no such access point").build());
             return;
         }
 
         switch (ap.getType()) {
-        case "file":
+        case FILE:
             // For now, transforms for file access points are not supported,
             // so we don't look at downloadFormat. In future, we _may_ support
             // transforms for file access points. If that happens, note that
@@ -143,12 +183,13 @@ public class Download {
             // a problem).
             fileDownload(response, ap);
             break;
-        case "sesameDownload":
+        case SESAME_DOWNLOAD:
             // Have a look at the downloadFormat before proceeding.
             final String mimeType =
                     SESAME_FORMAT_TO_MIMETYPE_MAP.get(downloadFormat);
             if (mimeType == null) {
                 response.resume(Response.status(Status.NOT_FOUND).
+                        type(MediaType.TEXT_PLAIN).
                         entity("Not found: no such format").build());
                 return;
             }
@@ -159,6 +200,7 @@ public class Download {
             logger.error("download: invalid type for access point: "
                     + ap.getType());
             response.resume(Response.status(Status.NOT_FOUND).
+                    type(MediaType.TEXT_PLAIN).
                     entity("Invalid access point type").build());
             return;
         }
@@ -179,14 +221,38 @@ public class Download {
      * be ignored in constructing the response headers.
      * @param extension The download format. This may be
      * ignored, depending (for example) on the access point type. */
-    @Path("{access_point_id}/{filename}.{extension}")
+    @Produces({MediaType.APPLICATION_OCTET_STREAM})
+    @Path("{downloadId}/{filename}.{extension}")
     @GET
+    @ApiOperation(value = "Get a download.",
+        notes = "In this version of the download method, the last component of "
+                + "the URL specifies a filename and an extension. "
+                + "The response will include a Content-Disposition "
+                + "header that specifies a filename and extension based on "
+                + "the underlying data; they may be different from the values "
+                + "specified.",
+        responseHeaders = {
+                @ResponseHeader(name = "Content-Disposition",
+                        description = "Content disposition of the download, "
+                                + "including a filename",
+                        response = String.class)
+        },
+        response = File.class)
+    @ApiResponses(value = {
+            @ApiResponse(code = HttpStatus.SC_NOT_FOUND,
+                    message = "No such download.",
+                    response = String.class)})
     public final void downloadWithFilename(
             @Suspended final AsyncResponse response,
-            @PathParam("access_point_id")
+            @ApiParam(value = "The Id of the download.")
+            @PathParam("downloadId")
             final int accessPointId,
+            @ApiParam(value = "The filename of the download.")
             @PathParam("filename")
             final String filename,
+            @ApiParam(value = "The format of the download. This must be "
+                    + "a filename extension without the period, "
+                    + "e.g., \"rdf\".")
             @DefaultValue("rdf")
             @PathParam("extension")
             final String extension) {
@@ -196,51 +262,18 @@ public class Download {
         download(response, accessPointId, extension);
     }
 
-    /** Get the download for an access point. The Path for this
-     * method includes a filename without any extension. (I.e.,
-     * without any period in the filename. downloadWithFilename()
-     * will catch any filename that has a period in the middle
-     * of the filename that does not mark off an extension.) This is to
-     * cope with requests that have been intercepted by the UriConnegFilter
-     * configured with the jersey.config.server.mediaTypeMappings
-     * servlet init-param.
-     * The use of this method enables the URL to contain a path component
-     * with a filename. This enables the use of e.g., curl or wget
-     * to save the download to the "correct" filename.
-     * @param response Asynchronous response for this request
-     * @param request The original HTTP request, from which we will
-     * extract the extension.
-     * @param accessPointId Access point id.
-     * @param filename The filename specified in the URL. This may
-     * be ignored in constructing the response headers. */
-    @Path("{access_point_id}/{filename : [^./]+}")
-    @GET
-    public final void downloadWithFilenameWithoutExtension(
-            @Suspended final AsyncResponse response,
-            @Context final HttpServletRequest request,
-            @PathParam("access_point_id")
-            final int accessPointId,
-            @PathParam("filename")
-            final String filename) {
-        String extension =
-                request.getRequestURI().replaceFirst("^[^.]+\\.", "");
-        logger.info("Called downloadWithFilenameWithoutExtension: "
-                + accessPointId
-                + ", filename: " + filename
-                + ", extension: " + extension);
-        download(response, accessPointId, extension);
-    }
-
-
     /** Return a file download.
      * @param response The response back to the browser.
      * @param ap The access point.
      */
     private void fileDownload(final AsyncResponse response,
             final AccessPoint ap) {
-        String format = AccessPointUtils.getFormat(ap);
+        ApFile apFile = JSONSerialization.deserializeStringAsJson(ap.getData(),
+                ApFile.class);
+        String format = apFile.getFormat();
         if (format == null) {
             response.resume(Response.status(Status.NOT_FOUND).
+                    type(MediaType.TEXT_PLAIN).
                     entity("Not found: no format specified "
                             + "for access point").build());
             return;
@@ -250,14 +283,22 @@ public class Download {
                         format);
         if (responseMimeType == null) {
             response.resume(Response.status(Status.NOT_FOUND).
+                    type(MediaType.TEXT_PLAIN).
                     entity("Not found: no such format").build());
             return;
         }
 
-        String localPath = AccessPointUtils.getToolkitPath(ap);
+        String localPath = apFile.getPath();
         logger.debug("Getting download from file: " + localPath
                 + ", MIME type = " + responseMimeType);
-        String downloadFilename = Paths.get(localPath).getFileName().toString();
+        String downloadFilename = "download";
+        try {
+            downloadFilename = new File(new URL(apFile.getUrl()).
+                    getPath()).getName();
+        } catch (MalformedURLException e) {
+            logger.error("Unable to parse access point's URL: "
+                    + apFile.getUrl(), e);
+        }
 
         InputStream fileStream;
         try {
@@ -267,6 +308,7 @@ public class Download {
             logger.error("download: file not found: "
                     + localPath, e);
             response.resume(Response.status(Status.NOT_FOUND).
+                    type(MediaType.TEXT_PLAIN).
                     entity("File not found").build());
             return;
         }
@@ -290,15 +332,21 @@ public class Download {
     private void sesameDownload(final AsyncResponse response,
             final int accessPointId, final AccessPoint ap,
             final String downloadFormat, final String mimeType) {
-        String sesameUri = AccessPointUtils.getToolkitUri(ap);
-        logger.debug("Getting download from " + sesameUri
-                + ", downloadFormat = " + downloadFormat);
+        ApSesameDownload apSesameDownload =
+                JSONSerialization.deserializeStringAsJson(ap.getData(),
+                        ApSesameDownload.class);
+        String sesameUri = apSesameDownload.getServerBase();
 
         final String downloadFilename = downloadFilename(ap, downloadFormat);
 
         // Prepare the connection to Sesame.
         Client client = RegistryNetUtils.getClient();
-        WebTarget target = client.target(sesameUri + "/statements");
+        WebTarget target = client.target(sesameUri).
+                path("repositories").
+                path(apSesameDownload.getRepository()).path("statements");
+
+        logger.debug("Getting download from " + target.toString()
+                + ", downloadFormat = " + downloadFormat);
 
         final Invocation.Builder invocationBuilder =
                 target.request(mimeType);
@@ -314,6 +362,7 @@ public class Download {
                             + "from Sesame; "
                             + "accessPointId: " + accessPointId);
                     response.resume(Response.status(Status.NOT_FOUND).
+                            type(MediaType.TEXT_PLAIN).
                             entity("Not found: no such access point").build());
                     return;
                 }
@@ -340,15 +389,17 @@ public class Download {
     public static String downloadFilename(final AccessPoint ap,
             final String downloadFormat) {
         // Work out the filename that the download should have.
-        Version version = VersionUtils.getVersionById(ap.getVersionId());
+        Version version = VersionDAO.getCurrentVersionByVersionId(
+                ap.getVersionId());
         Vocabulary vocabulary =
-                VocabularyUtils.getVocabularyById(version.getVocabId());
+                VocabularyDAO.getCurrentVocabularyByVocabularyId(
+                        version.getVocabularyId());
         final String downloadFilename =
-                ToolkitFileUtils.makeSlug(vocabulary.getOwner())
+                SlugGenerator.generateSlug(vocabulary.getOwner())
                 + "_"
                 + vocabulary.getSlug()
                 + "_"
-                + ToolkitFileUtils.makeSlug(version.getTitle())
+                + version.getSlug()
                 + "." + downloadFormat;
         return downloadFilename;
     }

@@ -152,7 +152,7 @@
                 <xs:element name="ap-api-sparql" type="ap-api-sparql"/>
                 <xs:element name="ap-file" type="ap-file">
                     <xs:annotation>
-                        <xs:documentation>When creating, specify only format and upload-id. The url attribute will be generated during processing.</xs:documentation>
+                        <xs:documentation>When creating, specify only upload-id. The format and url attributes will be generated during processing.</xs:documentation>
                     </xs:annotation>
                 </xs:element>
                 <xs:element name="ap-sesame-download" type="ap-sesame-download"/>
@@ -191,7 +191,7 @@
         <xs:complexContent>
             <xs:extension base="ap-common">
                 <xs:attribute name="format" type="xs:token"/>
-                <xs:attribute name="upload-id" type="xs:int">
+                <xs:attribute name="upload-id" type="xs:int" use="required">
                     <xs:annotation>
                         <xs:documentation>The upload-id of a upload made previously by the user.</xs:documentation>
                     </xs:annotation>

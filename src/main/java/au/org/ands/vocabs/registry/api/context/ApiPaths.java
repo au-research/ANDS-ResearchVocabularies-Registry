@@ -54,6 +54,9 @@ public final class ApiPaths {
     /** Subpath for file uploads. */
     public static final String UPLOADS = "uploads";
 
+    /** Subpath for download resources. */
+    public static final String DOWNLOADS = "downloads";
+
 //  /** Subpath for  resources. */
 //  public static final String  = "";
 
