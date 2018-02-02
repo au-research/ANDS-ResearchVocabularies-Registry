@@ -730,6 +730,55 @@ public class RegistryModelTests extends ArquillianBaseTest {
                 + "test-registry-results.xml");
     }
 
+    /** Test of applying changes to the current instance of a vocabulary
+     * that does not have a draft instance.
+     * Vocabulary, Version, and VocabularyRelatedEntity
+     * model elements are used.
+     * @throws DatabaseUnitException If a problem with DbUnit.
+     * @throws IOException If a problem getting test data for DbUnit,
+     *          or reading JSON from the correct and test output files.
+     * @throws SQLException If DbUnit has a problem performing
+     *           performing JDBC operations.
+     * @throws JAXBException If a problem loading vocabulary data.
+     *  */
+    @Test
+    public final void testApplyChangesCurrentVoVREVe1() throws
+    DatabaseUnitException, IOException, SQLException, JAXBException {
+        ArquillianTestUtils.clearDatabase(REGISTRY);
+        ArquillianTestUtils.loadDbUnitTestFile(REGISTRY, CLASS_NAME_PREFIX
+                + "testApplyChangesCurrentVoVREVe1");
+        Vocabulary vocabulary = RegistryTestUtils.
+                getValidatedVocabularyFromFile(
+                "test/tests/"
+                        + CLASS_NAME_PREFIX
+                        + "testApplyChangesCurrentVoVREVe1/"
+                        + "test-vocabulary.xml", ValidationMode.UPDATE);
+        EntityManager em = null;
+        try {
+            em = DBContext.getEntityManager();
+            em.getTransaction().begin();
+            VocabularyModel vm = ModelMethods.createVocabularyModel(em, 1);
+            ModelMethods.applyChanges(vm, "TEST", nowTime1, vocabulary);
+            em.getTransaction().commit();
+        } catch (Exception e) {
+            if (em != null) {
+                em.getTransaction().rollback();
+                throw e;
+            }
+        } finally {
+            if (em != null) {
+                em.close();
+            }
+        }
+
+        ArquillianTestUtils.compareDatabaseCurrentAndExpectedContents(
+                REGISTRY,
+                "test/tests/"
+                + CLASS_NAME_PREFIX
+                + "testApplyChangesCurrentVoVREVe1/"
+                + "test-registry-results.xml");
+    }
+
     /** Test of adding a draft to a vocabulary
      * that has an existing published instance, and then publishing
      * the same.
