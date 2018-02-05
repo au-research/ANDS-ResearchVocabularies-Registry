@@ -515,6 +515,7 @@ public class VersionsModel extends ModelBase {
                     // we do need to add a draft row for it.
                     Version newVersion = mapper.sourceToTarget(
                             schemaVersion, nowTime());
+                    newVersion.setVocabularyId(vocabularyId());
                     newVersion.setVersionId(versionId);
                     TemporalUtils.makeDraft(newVersion);
                     newVersion.setModifiedBy(modifiedBy());
@@ -525,12 +526,13 @@ public class VersionsModel extends ModelBase {
                     // the user wanted to restore, but we don't support that.)
                     throw new IllegalArgumentException(
                             "Attempt to update version that does not "
-                            + "belong to this vocabulary");
+                            + "belong to this vocabulary; Id = " + versionId);
                 }
             } else {
                 // This is a new version.
                 Version newVersion = mapper.sourceToTarget(
                         ve.getSchemaVersion(), nowTime());
+                newVersion.setVocabularyId(vocabularyId());
                 TemporalUtils.makeDraft(newVersion);
                 newVersion.setModifiedBy(modifiedBy());
                 VersionDAO.saveVersionWithId(em(), newVersion);
@@ -633,15 +635,17 @@ public class VersionsModel extends ModelBase {
             if (!ComparisonUtils.isEqualVersion(existingVersion,
                     schemaVersion)) {
                 TemporalUtils.makeHistorical(existingVersion, nowTime());
+                existingVersion.setModifiedBy(modifiedBy());
                 VersionDAO.updateVersion(em(), existingVersion);
                 // Make new current instance with updated details.
                 VersionRegistrySchemaMapper mapper =
                         VersionRegistrySchemaMapper.INSTANCE;
                 Version newCurrentVersion = mapper.sourceToTarget(
                         schemaVersion);
+                newCurrentVersion.setVocabularyId(vocabularyId());
                 TemporalUtils.makeCurrentlyValid(newCurrentVersion, nowTime());
                 newCurrentVersion.setModifiedBy(modifiedBy());
-                VersionDAO.updateVersion(em(), existingVersion);
+                VersionDAO.saveVersion(em(), newCurrentVersion);
                 // Update our records (i.e., in this case, overwriting
                 // the previous value).
                 currentVersions.put(versionId, newCurrentVersion);
