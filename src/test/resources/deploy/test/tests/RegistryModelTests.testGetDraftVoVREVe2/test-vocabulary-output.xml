@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!DOCTYPE vocabulary>
+<vocabulary
+    id="1" status="draft" owner="ANDS-Curated" slug="rifcs" title="Registry Interchange Format - Collections and Services (Vocabularies)" acronym="RIF-CS"
+    description="The RIF-CS schema is a data interchange format that supports the electronic exchange of collection and service descriptions. It organises information about collections and services into a format used by the Australian National Data Service (ANDS) Collections Registry.
+
+More information on the RIF-CS Schema can be found at http://ands.org.au/guides/cpguide/cpgrifcs.html.
+
+With assistance from the RIF-CS Advisory Board and user community, ANDS has developed a suggested vocabulary for use with the RIF-CS Schema. The vocabulary is comprised of suggested terms for specific elements of the schema. Use of the ANDS vocabulary with the RIF-CS Schema is not mandatory but is however recommended. Use of consistent terminology improves data discoverability and the precision of search operations.
+
+The ANDS vocabularies are expected to be informed and developed further by the RIF-CS user community. Please contact services@ands.org.au if you have candidate vocabulary terms to be evaluated for possible inclusion in the ANDS vocabularies. - draft"
+    revision-cycle="Updated as required" creation-date="2008-12-31" primary-language="en" licence="CC-BY"
+    xmlns="http://vocabs.ands.org.au/registry/schema/2017/01/vocabulary">
+  <subject source="anzsrc-for" label="INFORMATION AND COMPUTING SCIENCES" iri="http://purl.org/au-research/vocabulary/anzsrc-for/2008/08"/>
+  <version id="2" status="superseded" title="Version 2" slug="version-2" note="Note for v2 draft" release-date="2015-01"/>
+  <version id="3" status="current" title="Version 3" slug="version-3" note="Note for v3" release-date="2016-01"/>
+  <related-entity-ref id="1">
+    <relation>implementedBy</relation>
+    <relation>hasAuthor</relation>
+    <relation>pointOfContact</relation>
+    <relation>hasContributor</relation>
+  </related-entity-ref>
+  <related-entity-ref id="3">
+    <relation>publishedBy</relation>
+  </related-entity-ref>
+  <related-entity-ref id="4">
+    <relation>publishedBy</relation>
+  </related-entity-ref>
+</vocabulary>

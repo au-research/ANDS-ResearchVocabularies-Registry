@@ -55,7 +55,7 @@
   <VERSIONS ID="4" VERSION_ID="3" VOCABULARY_ID="1"
             START_DATE="9999-12-02 00:00:00.0" END_DATE="9999-12-03 00:00:00.0"
             MODIFIED_BY="SYSTEM" STATUS="CURRENT" SLUG="version-3" RELEASE_DATE="2016-01"
-            DATA="{''note'':''Note for v3,''title'':''Version 3''}"
+            DATA="{''note'':''Note for v3'',''title'':''Version 3''}"
             />
 
   <ACCESS_POINTS/>
