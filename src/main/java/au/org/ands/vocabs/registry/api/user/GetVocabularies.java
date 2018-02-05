@@ -87,7 +87,6 @@ public class GetVocabularies {
      * published and deprecated vocabularies.
      * @param request The HTTP request.
      * @param uriInfo The UriInfo of the request.
-     * @param includeDraft If true, also include draft vocabularies.
      * @return The list of vocabularies, in either XML or JSON format. */
     @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     @GET
@@ -95,13 +94,7 @@ public class GetVocabularies {
             + "both published and deprecated vocabularies.")
     public final VocabularyList getVocabularies(
             @Context final HttpServletRequest request,
-            @Context final UriInfo uriInfo,
-            @ApiParam(value = "If true, also include draft vocabulary records.")
-            @QueryParam("includeDraft")
-            @DefaultValue("false") final boolean includeDraft) {
-        if (includeDraft) {
-            return getVocabulariesIncludingDraft();
-        }
+            @Context final UriInfo uriInfo) {
         logger.debug("called getVocabularies");
         List<au.org.ands.vocabs.registry.db.entity.Vocabulary>
             dbVocabularies = VocabularyDAO.getAllCurrentVocabulary();
@@ -118,34 +111,6 @@ public class GetVocabularies {
 
         Logging.logRequest(true, request, uriInfo, null,
                 "Get all vocabularies");
-        return outputVocabularyList;
-    }
-
-    /** Get all the current vocabularies, of all status values,
-     * including draft.
-     * @return The list of vocabularies of all status values,
-     *      including draft. */
-    public final VocabularyList getVocabulariesIncludingDraft() {
-        logger.debug("called getVocabulariesIncludingDraft");
-        List<au.org.ands.vocabs.registry.db.entity.Vocabulary>
-            dbVocabularies = VocabularyDAO.getAllCurrentVocabulary();
-        List<au.org.ands.vocabs.registry.db.entity.Vocabulary>
-            dbDraftVocabularies = VocabularyDAO.getAllDraftVocabulary();
-        VocabularyList outputVocabularyList = new VocabularyList();
-        List<Vocabulary> outputVocabularies =
-                outputVocabularyList.getVocabulary();
-
-        VocabularyDbSchemaMapper mapper =
-                VocabularyDbSchemaMapper.INSTANCE;
-        for (au.org.ands.vocabs.registry.db.entity.Vocabulary dbVocabulary
-                : dbVocabularies) {
-            outputVocabularies.add(mapper.sourceToTarget(dbVocabulary, true));
-        }
-        for (au.org.ands.vocabs.registry.db.entity.Vocabulary dbVocabulary
-                : dbDraftVocabularies) {
-            outputVocabularies.add(mapper.sourceToTarget(dbVocabulary, true));
-        }
-
         return outputVocabularyList;
     }
 

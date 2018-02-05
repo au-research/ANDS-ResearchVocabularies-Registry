@@ -14,6 +14,22 @@ public final class ResponseUtils {
     }
 
     /** Error message to use when explaining that the user is not
+     * authorized to do something, because they are not a superuser. */
+    private static final String NOT_SUPERUSER =
+            "Not authorized to perform this operation. "
+            + "An administrator-level user is required.";
+
+    /** Generate a response with status code {@link Response.Status#FORBIDDEN}
+     * and body that explains that the user is not authorized to
+     * perform the operation, because they are not a superuser.
+     * @return The generated Response.
+     */
+    public static Response generateForbiddenResponseNotSuperuser() {
+        return Response.status(Response.Status.FORBIDDEN).
+                entity(new ErrorResult(NOT_SUPERUSER)).build();
+    }
+
+    /** Error message to use when explaining that the user is not
      * authorized to add/modify/delete data with the owner they specified. */
     private static final String NOT_AUTHORIZED_FOR_OWNER =
             "Not authorized to add/modify/delete data with that owner";

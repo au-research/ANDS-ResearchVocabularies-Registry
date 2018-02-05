@@ -13,6 +13,17 @@ public final class AuthUtils {
     private AuthUtils() {
     }
 
+    /** Determine if a user's profile makes them
+     * a registry "superuser".
+     * @param profile The user's profile.
+     * @return true, if the user's profile contains the role that makes
+     *      them a superuser.
+     */
+    public static boolean profileIsSuperuser(final CommonProfile profile) {
+        return profile.getPermissions().contains(
+                RolesConstants.AUTH_FUNCTION_SUPERUSER);
+    }
+
     /** Determine if a user's profile authorizes them to add/modify objects
      * with a particular owner value. Either, the user must be
      * a registry "superuser", or the owner value must be the name
