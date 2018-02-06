@@ -30,4 +30,10 @@ public final class AdminApiPaths {
     /** Subpath for workflow methods. */
     public static final String WORKFLOW = "workflow";
 
+    /** Subpath for task resources. */
+    public static final String TASKS = "tasks";
+
+    /** Path parameter name for a task resource. */
+    public static final String TASK_ID = "{taskId}";
+
 }

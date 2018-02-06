@@ -69,6 +69,7 @@ public class AdminGetVocabularies {
     @GET
     @ApiOperation(value = "Get all the current (published and deprecated) "
             + "and draft vocabularies.",
+            notes = "This method is only available to administrator users.",
             response = VocabularyList.class)
     @ApiResponses(value = {
             @ApiResponse(code = HttpStatus.SC_UNAUTHORIZED,

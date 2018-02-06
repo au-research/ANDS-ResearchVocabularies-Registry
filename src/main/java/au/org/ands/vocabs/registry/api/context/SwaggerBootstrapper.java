@@ -122,7 +122,9 @@ public class SwaggerBootstrapper extends HttpServlet {
         beanConfig.setBasePath(RegistryProperties.getProperty(
                 PropertyConstants.REGISTRY_SWAGGER_BASEPATH,
                 REGISTRY_SWAGGER_BASEPATH_DEFAULT));
-        beanConfig.setResourcePackage("au.org.ands.vocabs.registry.api");
+        beanConfig.setResourcePackage("au.org.ands.vocabs.registry.api"
+                + ",au.org.ands.vocabs.registry.solr"
+                + ",au.org.ands.vocabs.registry.workflow");
         // Without scan=true, the top-level properties set in the previous
         // lines don't make their way into the generated swagger.json!
         beanConfig.setScan(true);

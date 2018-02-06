@@ -48,7 +48,7 @@ import io.swagger.annotations.Tag;
                 SwaggerDefinition.Scheme.HTTPS},
         tags = {
                 @Tag(name = SwaggerInterface.TAG_ADMIN,
-                        description = "Administration operations"),
+                        description = "System administration operations"),
                 @Tag(name = SwaggerInterface.TAG_RESOURCES,
                         description = "Operations with resources"),
                 @Tag(name = SwaggerInterface.TAG_SERVICES,
