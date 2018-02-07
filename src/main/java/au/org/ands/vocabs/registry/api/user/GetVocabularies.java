@@ -45,6 +45,7 @@ import au.org.ands.vocabs.registry.db.dao.RelatedEntityDAO;
 import au.org.ands.vocabs.registry.db.dao.RelatedEntityIdentifierDAO;
 import au.org.ands.vocabs.registry.db.dao.VersionDAO;
 import au.org.ands.vocabs.registry.db.dao.VocabularyDAO;
+import au.org.ands.vocabs.registry.enums.ApSource;
 import au.org.ands.vocabs.registry.enums.RelatedVocabularyRelation;
 import au.org.ands.vocabs.registry.model.ModelMethods;
 import au.org.ands.vocabs.registry.model.VocabularyModel;
@@ -247,6 +248,7 @@ public class GetVocabularies {
      * The caller must be authenticated, and authorized to modify the
      * vocabulary. If there is a draft instance, that is returned.
      * Otherwise, the current instance is returned.
+     * Access points that have source SYSTEM are stripped out.
      * @param request The HTTP request.
      * @param uriInfo The UriInfo of the request.
      * @param profile The caller's security profile.
@@ -258,6 +260,7 @@ public class GetVocabularies {
     @Pac4JSecurity
     @GET
     @ApiOperation(value = "Get a vocabulary by its id, for editing.",
+            notes = "Access points that have source=SYSTEM are stripped out.",
             response = Vocabulary.class,
             authorizations = {@Authorization(
                     value = SwaggerInterface.BASIC_AUTH),
@@ -300,6 +303,10 @@ public class GetVocabularies {
                         vocabularyId);
                 vocabularyAsSchema = ModelMethods.getDraft(vm,
                         true, true, true);
+                // Strip out access points with source=SYSTEM.
+                vocabularyAsSchema.getVersion().forEach(
+                        v -> v.getAccessPoint().removeIf(
+                                ap -> ap.getSource() == ApSource.SYSTEM));
             } catch (Exception e) {
                 return ResponseUtils.generateInternalServerError(
                         "Unable to get draft instance");
@@ -327,8 +334,19 @@ public class GetVocabularies {
 
         // No draft, and the caller is authorized. Defer to
         // getVocabularyById().
-        return getVocabularyById(request, uriInfo, vocabularyId,
-                true, true, true);
+        Response getVocabResponse = getVocabularyById(request, uriInfo,
+                vocabularyId, true, true, true);
+        // But now need to unpack the response ...
+        Object responseEntity = getVocabResponse.getEntity();
+        if (responseEntity instanceof Vocabulary) {
+            Vocabulary responseVocabulary = (Vocabulary) responseEntity;
+            // ... and remove access points with source=SYSTEM.
+            responseVocabulary.getVersion().forEach(
+                    v -> v.getAccessPoint().removeIf(
+                            ap -> ap.getSource() == ApSource.SYSTEM));
+            Response.ok().entity(responseVocabulary).build();
+        }
+        return getVocabResponse;
     }
 
     /** Query if the user profile is authorized to modify the

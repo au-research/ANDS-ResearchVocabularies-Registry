@@ -28,7 +28,9 @@ import au.org.ands.vocabs.registry.db.entity.AccessPoint;
 import au.org.ands.vocabs.registry.db.entity.ComparisonUtils;
 import au.org.ands.vocabs.registry.db.entity.Version;
 import au.org.ands.vocabs.registry.db.entity.Vocabulary;
+import au.org.ands.vocabs.registry.db.entity.clone.AccessPointClone;
 import au.org.ands.vocabs.registry.enums.AccessPointType;
+import au.org.ands.vocabs.registry.enums.ApSource;
 import au.org.ands.vocabs.registry.enums.SubtaskOperationType;
 import au.org.ands.vocabs.registry.enums.VocabularyStatus;
 import au.org.ands.vocabs.registry.model.sequence.AccessPointElement;
@@ -188,8 +190,12 @@ public class AccessPointsModel extends ModelBase {
             Integer versionId = outputVersion.getId();
             List<au.org.ands.vocabs.registry.schema.vocabulary201701.
             AccessPoint> outputAPList = outputVersion.getAccessPoint();
-            for (AccessPoint ap : currentAPs.get(versionId)) {
-                outputAPList.add(apDbMapper.sourceToTarget(ap));
+            List<AccessPoint> currentAPList = currentAPs.get(versionId);
+            // It shouldn't be empty, but just in case, do a null check.
+            if (currentAPList != null) {
+                for (AccessPoint ap : currentAPList) {
+                    outputAPList.add(apDbMapper.sourceToTarget(ap));
+                }
             }
         }
     }
@@ -221,8 +227,12 @@ public class AccessPointsModel extends ModelBase {
             Integer versionId = outputVersion.getId();
             List<au.org.ands.vocabs.registry.schema.vocabulary201701.
             AccessPoint> outputAPList = outputVersion.getAccessPoint();
-            for (AccessPoint ap : draftAPs.get(versionId)) {
-                outputAPList.add(apDbMapper.sourceToTarget(ap));
+            List<AccessPoint> draftAPList = draftAPs.get(versionId);
+            // It shouldn't be empty, but just in case, do a null check.
+            if (draftAPList != null) {
+                for (AccessPoint ap : draftAPs.get(versionId)) {
+                    outputAPList.add(apDbMapper.sourceToTarget(ap));
+                }
             }
         }
     }
@@ -427,7 +437,7 @@ public class AccessPointsModel extends ModelBase {
     }
 
     /** Make the database's draft view of the
-     * VocabularyRelatedEntities match updatedVocabulary.
+     * access points match updatedVocabulary.
      * @param updatedVocabulary The updated vocabulary.
      */
     private void applyChangesDraft(
@@ -439,8 +449,11 @@ public class AccessPointsModel extends ModelBase {
         for (Entry<Integer, List<AccessPoint>> apList : draftAPs.entrySet()) {
             Integer versionId = apList.getKey();
             for (AccessPoint ap : apList.getValue()) {
-                existingDraftSequence.add(new AccessPointElement(
-                    versionId, ap.getAccessPointId(), ap, null));
+                // Only consider those access points with source=USER.
+                if (ap.getSource() == ApSource.USER) {
+                    existingDraftSequence.add(new AccessPointElement(
+                            versionId, ap.getAccessPointId(), ap, null));
+                }
             }
         }
         Collections.sort(existingDraftSequence);
@@ -459,10 +472,14 @@ public class AccessPointsModel extends ModelBase {
                     Integer versionId = version.getId();
                     version.getAccessPoint().forEach(
                             ap -> {
-                                updatedSequence.add(new AccessPointElement(
-                                        versionId, ap.getId(), null, ap));
-                                if (ap.getId() != null) {
-                                    updatedAPs.put(ap.getId(), ap);
+                                // Only consider those access points with
+                                // source=USER.
+                                if (ap.getSource() == ApSource.USER) {
+                                    updatedSequence.add(new AccessPointElement(
+                                            versionId, ap.getId(), null, ap));
+                                    if (ap.getId() != null) {
+                                        updatedAPs.put(ap.getId(), ap);
+                                    }
                                 }
                             });
                 });
@@ -569,19 +586,27 @@ public class AccessPointsModel extends ModelBase {
                     }
                     // We don't need to create a new version Id, but
                     // we do need to add a draft row for it.
-                    Version draftVersion = draftVersions.get(versionId);
-                    versionsModel.workflowRequired(
-                            vocabularyModel.getDraftVocabulary(), draftVersion);
-                    TaskInfo taskInfo =
-                            versionsModel.getTaskInfoForVersion(versionId);
-                    Pair<AccessPoint, List<Subtask>> insertResult =
-                    WorkflowMethods.insertAccessPoint(em(), null, taskInfo,
-                            true, modifiedBy(), nowTime(), schemaAP);
-                    AccessPoint insertedAP = insertResult.getLeft();
-                    if (insertedAP != null) {
-                        draftAPs.add(versionId, insertedAP);
-                    }
-                    accumulateSubtasks(draftVersion, insertResult.getRight());
+                    AccessPoint draftAP = AccessPointClone.INSTANCE.clone(
+                            currentAP);
+                    draftAP.setModifiedBy(modifiedBy());
+                    TemporalUtils.makeDraft(draftAP);
+                    AccessPointDAO.saveAccessPoint(em(), draftAP);
+                    draftAPs.add(versionId, draftAP);
+                    // If we were doing workflow for drafts, might have
+                    // to do something like this:
+//                    Version draftVersion = draftVersions.get(versionId);
+//                    versionsModel.workflowRequired(
+//                        vocabularyModel.getDraftVocabulary(), draftVersion);
+//                    TaskInfo taskInfo =
+//                            versionsModel.getTaskInfoForVersion(versionId);
+//                    Pair<AccessPoint, List<Subtask>> insertResult =
+//                    WorkflowMethods.insertAccessPoint(em(), null, taskInfo,
+//                            true, modifiedBy(), nowTime(), schemaAP);
+//                    AccessPoint insertedAP = insertResult.getLeft();
+//                    if (insertedAP != null) {
+//                        draftAPs.add(versionId, insertedAP);
+//                    }
+//                    accumulateSubtasks(draftVersion, insertResult.getRight());
                 } else {
                     // Error: we don't know about this AP Id.
                     // (Well, it might be a historical version that
@@ -611,7 +636,7 @@ public class AccessPointsModel extends ModelBase {
     }
 
     /** Make the database's currently-valid view of the
-     * VocabularyRelatedEntities match updatedVocabulary.
+     * access points match updatedVocabulary.
      * @param updatedVocabulary The updated vocabulary.
      */
     private void applyChangesCurrent(
@@ -623,8 +648,11 @@ public class AccessPointsModel extends ModelBase {
         for (Entry<Integer, List<AccessPoint>> apList : currentAPs.entrySet()) {
             Integer versionId = apList.getKey();
             for (AccessPoint ap : apList.getValue()) {
-                currentSequence.add(new AccessPointElement(
-                    versionId, ap.getAccessPointId(), ap, null));
+                // Only consider those access points with source=USER.
+                if (ap.getSource() == ApSource.USER) {
+                    currentSequence.add(new AccessPointElement(
+                            versionId, ap.getAccessPointId(), ap, null));
+                }
             }
         }
         Collections.sort(currentSequence);
@@ -651,10 +679,14 @@ public class AccessPointsModel extends ModelBase {
                     updatedVersions.put(versionId, version);
                     version.getAccessPoint().forEach(
                             ap -> {
-                                updatedSequence.add(new AccessPointElement(
-                                        versionId, ap.getId(), null, ap));
-                                if (ap.getId() != null) {
-                                    updatedAPs.put(ap.getId(), ap);
+                                // Only consider those access points with
+                                // source=USER.
+                                if (ap.getSource() == ApSource.USER) {
+                                    updatedSequence.add(new AccessPointElement(
+                                            versionId, ap.getId(), null, ap));
+                                    if (ap.getId() != null) {
+                                        updatedAPs.put(ap.getId(), ap);
+                                    }
                                 }
                             });
                 });

@@ -75,7 +75,9 @@ public class VersionsModel extends ModelBase {
      * The keys are version Ids. */
     private Map<Integer, Version> draftVersions = new HashMap<>();
 
-    /** Used by applyChanges() to keep track of whether a version has both
+    /** Used by {@link
+     * #applyChanges(au.org.ands.vocabs.registry.schema.vocabulary201701.Vocabulary)}
+     * to keep track of whether a version has both
      * the doImport and doPublish flags set. This is then used by
      * {@link #addImpliedSubtasks()} to determine
      * whether to add or delete additional workflow subtasks. */
@@ -98,6 +100,13 @@ public class VersionsModel extends ModelBase {
     /** The tasks to be performed for versions, if there are any.
      * The keys are version Ids. */
     private Map<Integer, Task> versionTasks = new HashMap<>();
+
+    /** Flag used to keep track of whether a version was updated during
+     * {@link
+     * #applyChanges(au.org.ands.vocabs.registry.schema.vocabulary201701.Vocabulary)}.
+     * Used to determine whether or not to invoke {@link #populateSubmodels()}.
+     */
+    private boolean versionsUpdated;
 
     /** Construct versions model for a vocabulary.
      * @param anEm The EntityManager to be used to fetch and update
@@ -168,6 +177,8 @@ public class VersionsModel extends ModelBase {
         vaModel = new VersionArtefactsModel(em(), vocabularyId(),
                 vocabularyModel, this, currentVersions, draftVersions);
         subModels.add(vaModel);
+        notifySetNowTime(nowTime());
+        notifySetModifiedBy(modifiedBy());
     }
 
     /** {@inheritDoc} */
@@ -387,6 +398,13 @@ public class VersionsModel extends ModelBase {
             applyChangesCurrent(updatedVocabulary);
         }
 
+        if (versionsUpdated) {
+            // We may have added a new version, so we need to refresh
+            // the sub-models before we delegate to their applyChanges().
+            populateSubmodels();
+            // Reset, "just in case".
+            versionsUpdated = false;
+        }
         // Sub-models.
         subModels.forEach(sm ->
             sm.applyChanges(updatedVocabulary));
@@ -520,6 +538,8 @@ public class VersionsModel extends ModelBase {
                     TemporalUtils.makeDraft(newVersion);
                     newVersion.setModifiedBy(modifiedBy());
                     VersionDAO.saveVersion(em(), newVersion);
+                    draftVersions.put(versionId, newVersion);
+                    versionsUpdated = true;
                 } else {
                     // Error: we don't know about this version Id.
                     // (Well, it might be a historical version that
@@ -544,6 +564,7 @@ public class VersionsModel extends ModelBase {
 //                      BooleanUtils.isTrue(schemaVersion.isDoImport())
 //                      && BooleanUtils.isTrue(schemaVersion.isDoPublish()));
                 draftVersions.put(newVersionId, newVersion);
+                versionsUpdated = true;
                 // And this is a tricky bit: we modify the input data
                 // so that the version Id can be seen by submodels.
                 schemaVersion.setId(newVersionId);
@@ -649,6 +670,7 @@ public class VersionsModel extends ModelBase {
                 // Update our records (i.e., in this case, overwriting
                 // the previous value).
                 currentVersions.put(versionId, newCurrentVersion);
+                versionsUpdated = true;
                 // TO DO: mark this as requiring workflow processing.
                 workflowRequired(vocabularyModel.getCurrentVocabulary(),
                         newCurrentVersion);
@@ -771,6 +793,7 @@ public class VersionsModel extends ModelBase {
                     existingDraft.setModifiedBy(modifiedBy());
                     VersionDAO.updateVersion(em(), existingDraft);
                     currentVersions.put(versionId, existingDraft);
+                    versionsUpdated = true;
                     workflowRequired(vocabularyModel.getCurrentVocabulary(),
                             existingDraft);
                 } else {
@@ -799,6 +822,7 @@ public class VersionsModel extends ModelBase {
                         && BooleanUtils.isTrue(schemaVersion.isDoPublish()));
 
                 currentVersions.put(newVersionId, newCurrentVersion);
+                versionsUpdated = true;
                 // And this is a tricky bit: we modify the input data
                 // so that the version Id can be seen by submodels.
                 schemaVersion.setId(newVersionId);
