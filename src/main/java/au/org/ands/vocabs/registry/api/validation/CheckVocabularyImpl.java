@@ -28,6 +28,7 @@ import au.org.ands.vocabs.registry.enums.RelatedVocabularyRelation;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.AccessPoint;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.ApApiSparql;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.ApFile;
+import au.org.ands.vocabs.registry.schema.vocabulary201701.ApSesameDownload;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.ApSissvoc;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.ApWebPage;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.Version;
@@ -929,11 +930,25 @@ public class CheckVocabularyImpl
 
         // Table of contents of this method:
         // id
+        // source
         // discriminator
 
         // id: mode-specific validation.
         valid = isValidAccessPointId(valid, versionIndex, newVersionId,
                 newAccessPoint, accessPointIndex, constraintContext);
+
+        // source
+        if (newAccessPoint.getSource() == null) {
+            valid = false;
+            constraintContext.buildConstraintViolationWithTemplate(
+                    "{" + INTERFACE_NAME + ".accessPoint.source}").
+                addPropertyNode("version").
+                addPropertyNode("accessPoint").
+                inIterable().atIndex(versionIndex).
+                addPropertyNode("source").
+                inIterable().atIndex(accessPointIndex).
+                addConstraintViolation();
+        }
 
         // discriminator
         if (newAccessPoint.getDiscriminator() == null) {
@@ -987,6 +1002,27 @@ public class CheckVocabularyImpl
             }
             valid = isValidAccessPointFile(valid, versionIndex,
                     accessPointIndex, newAccessPoint, apFile,
+                    constraintContext);
+            break;
+        case SESAME_DOWNLOAD:
+            ApSesameDownload apSesameDownload =
+                newAccessPoint.getApSesameDownload();
+            if (apSesameDownload == null) {
+                valid = false;
+                constraintContext.buildConstraintViolationWithTemplate(
+                        "{" + INTERFACE_NAME
+                            + ".accessPoint.apSesameDownload}").
+                    addPropertyNode("version").
+                    addPropertyNode("accessPoint").
+                    inIterable().atIndex(versionIndex).
+                    addPropertyNode("apSesameDownload").
+                    inIterable().atIndex(accessPointIndex).
+                    addConstraintViolation();
+                // In this case, we can't go any further.
+                break;
+            }
+            valid = isValidAccessPointSesameDownload(valid, versionIndex,
+                    accessPointIndex, newAccessPoint, apSesameDownload,
                     constraintContext);
             break;
         case SISSVOC:
@@ -1122,11 +1158,12 @@ public class CheckVocabularyImpl
             final ApApiSparql apApiSparql,
             final ConstraintValidatorContext constraintContext) {
         boolean newValid = valid;
-        if (newAccessPoint.getSource() != ApSource.USER) {
+        if (mode == ValidationMode.CREATE
+                && newAccessPoint.getSource() != ApSource.USER) {
             newValid = false;
             constraintContext.buildConstraintViolationWithTemplate(
                     "{" + INTERFACE_NAME
-                    + ".accessPoint.apApiSparql.source}").
+                    + ".accessPoint.apApiSparql.source.create}").
                 addPropertyNode("version").
                 addPropertyNode("accessPoint").
                 inIterable().atIndex(versionIndex).
@@ -1203,6 +1240,56 @@ public class CheckVocabularyImpl
         return newValid;
     }
 
+    /** Validate a SesameDownload access point.
+     * @param valid The current validity status.
+     * @param versionIndex The index of the version within the vocabulary
+     * @param accessPointIndex The index of the access point within
+     *      the version.
+     * @param newAccessPoint The access point that is being validated.
+     * @param apSesameDownload The ap-sesame-download element within the
+     *      access point that is being validated.
+     * @param constraintContext The constraint context, into which
+     *      validation errors are reported.
+     * @return The updated validity status.
+     */
+    private boolean isValidAccessPointSesameDownload(final boolean valid,
+            final int versionIndex, final int accessPointIndex,
+            final AccessPoint newAccessPoint,
+            final ApSesameDownload apSesameDownload,
+            final ConstraintValidatorContext constraintContext) {
+        boolean newValid = valid;
+        if (mode == ValidationMode.CREATE
+                && newAccessPoint.getSource() != ApSource.USER) {
+            newValid = false;
+            constraintContext.buildConstraintViolationWithTemplate(
+                    "{" + INTERFACE_NAME
+                    + ".accessPoint.apSesameDownload.source.create}").
+                addPropertyNode("version").
+                addPropertyNode("accessPoint").
+                inIterable().atIndex(versionIndex).
+                addPropertyNode("apSesameDownload").
+                inIterable().atIndex(accessPointIndex).
+                addPropertyNode("source").
+                addConstraintViolation();
+        }
+        newValid = ValidationUtils.
+                requireFieldNotEmptyStringAndSatisfiesPredicate(
+                INTERFACE_NAME,
+                apSesameDownload.getUrlPrefix(),
+                    "accessPoint.apSesameDownload.urlPrefix",
+                ValidationUtils::isValidURL,
+                constraintContext,
+                cvb -> cvb.addPropertyNode("version").
+                addPropertyNode("accessPoint").
+                inIterable().atIndex(versionIndex).
+                addPropertyNode("apSissvoc").
+                inIterable().atIndex(accessPointIndex).
+                addPropertyNode("url").
+                addConstraintViolation(),
+                newValid);
+        return newValid;
+    }
+
     /** Validate a Sissvoc access point.
      * @param valid The current validity status.
      * @param versionIndex The index of the version within the vocabulary
@@ -1220,11 +1307,12 @@ public class CheckVocabularyImpl
             final AccessPoint newAccessPoint, final ApSissvoc apSissvoc,
             final ConstraintValidatorContext constraintContext) {
         boolean newValid = valid;
-        if (newAccessPoint.getSource() != ApSource.USER) {
+        if (mode == ValidationMode.CREATE
+                && newAccessPoint.getSource() != ApSource.USER) {
             newValid = false;
             constraintContext.buildConstraintViolationWithTemplate(
                     "{" + INTERFACE_NAME
-                    + ".accessPoint.apSissvoc.source}").
+                    + ".accessPoint.apSissvoc.source.create}").
                 addPropertyNode("version").
                 addPropertyNode("accessPoint").
                 inIterable().atIndex(versionIndex).

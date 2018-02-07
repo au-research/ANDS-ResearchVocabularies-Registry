@@ -160,7 +160,7 @@
                 <xs:element name="ap-web-page" type="ap-web-page"/>
             </xs:choice>
             <xs:attribute name="id" type="id-type" use="optional"/>
-            <xs:attribute name="source" type="common:ap-source">
+            <xs:attribute name="source" type="common:ap-source" use="required">
                 <xs:annotation>
                     <xs:documentation>For an access point of type file, specify user.</xs:documentation>
                 </xs:annotation>
