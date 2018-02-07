@@ -21,6 +21,7 @@ import au.org.ands.vocabs.registry.db.dao.PoolPartyServerDAO;
 import au.org.ands.vocabs.registry.db.dao.RelatedEntityDAO;
 import au.org.ands.vocabs.registry.db.dao.VocabularyDAO;
 import au.org.ands.vocabs.registry.db.entity.RelatedEntity;
+import au.org.ands.vocabs.registry.enums.AccessPointType;
 import au.org.ands.vocabs.registry.enums.ApSource;
 import au.org.ands.vocabs.registry.enums.RelatedEntityRelation;
 import au.org.ands.vocabs.registry.enums.RelatedVocabularyRelation;
@@ -140,7 +141,7 @@ public class CheckVocabularyImpl
         // slug: optional, but if specified, must not already exist
         String slug = newVocabulary.getSlug();
         if (mode == ValidationMode.CREATE) {
-            // For creation, the slug must be omitted.
+            // For creation, the slug may be omitted.
             // But if specified, it must be valid, and not already in use.
             if (slug != null) {
                 if (!ValidationUtils.isValidSlug(slug)) {
@@ -149,7 +150,8 @@ public class CheckVocabularyImpl
                             "{" + INTERFACE_NAME + ".slug}").
                     addPropertyNode("slug").
                     addConstraintViolation();
-                } else if (VocabularyDAO.isSlugInUse(slug)) {
+                }
+                if (VocabularyDAO.isSlugInUse(slug)) {
                     valid = false;
                     constraintContext.buildConstraintViolationWithTemplate(
                             "{" + INTERFACE_NAME + ".slug.inUse}").
@@ -266,7 +268,8 @@ public class CheckVocabularyImpl
         // licence: optional
 
         // poolpartyProject: optional
-        // If specified, check it is a project in the server specified
+        // If specified, check it is a project in the server specified.
+        // TO DO: check against the PoolParty server.
         PoolpartyProject poolpartyProject =
                 newVocabulary.getPoolpartyProject();
         if (poolpartyProject != null) {
@@ -279,6 +282,14 @@ public class CheckVocabularyImpl
                 addPropertyNode("serverId").
                 addConstraintViolation();
             }
+            valid = ValidationUtils.requireFieldNotEmptyString(
+                    INTERFACE_NAME,
+                    poolpartyProject.getProjectId(),
+                    "poolpartyProject.projectId",
+                    constraintContext,
+                    cvb -> cvb.addPropertyNode("poolpartyProject").
+                        addPropertyNode("projectId").
+                        addConstraintViolation(), valid);
         }
 
         // topConcept: optional
@@ -699,6 +710,7 @@ public class CheckVocabularyImpl
      *      validation errors are reported.
      * @return true, if newVersion represents a valid version.
      */
+    @SuppressWarnings("checkstyle:MethodLength")
     private boolean isValidVersion(final Vocabulary newVocabulary,
             final int versionIndex,
             final Version newVersion,
@@ -792,8 +804,39 @@ public class CheckVocabularyImpl
         }
 
         // doImport
+        // For now: if doImport is set, require that there be something
+        // to import. For now, that means having a file AP, or
+        // that doPoolpartyHarvest be true.
+        if (BooleanUtils.isTrue(newVersion.isDoImport())) {
+            if (BooleanUtils.isNotTrue(newVersion.isDoPoolpartyHarvest())
+                    && !newVersion.getAccessPoint().stream().anyMatch(
+                            ap -> ap.getDiscriminator()
+                                == AccessPointType.FILE)) {
+                valid = false;
+                constraintContext.buildConstraintViolationWithTemplate(
+                        "{" + INTERFACE_NAME
+                        + ".version.doImportButNothingToImport}").
+                    addPropertyNode("version").
+                    addPropertyNode("doImport").inIterable().
+                    atIndex(versionIndex).
+                    addConstraintViolation();
+            }
+        }
 
         // doPublish
+        // For now: if doPublish is set, require doImport.
+        // If we later support publishing from a SPARQL endpoint
+        // not our own, revisit this.
+        if (BooleanUtils.isTrue(newVersion.isDoPublish())
+                && BooleanUtils.isNotTrue(newVersion.isDoImport())) {
+            valid = false;
+            constraintContext.buildConstraintViolationWithTemplate(
+                    "{" + INTERFACE_NAME + ".version.doPublishButNotDoImport}").
+                addPropertyNode("version").
+                addPropertyNode("doPublish").inIterable().
+                atIndex(versionIndex).
+                addConstraintViolation();
+        }
 
         // accessPoint
         int accessPointIndex = 0;
@@ -804,6 +847,29 @@ public class CheckVocabularyImpl
             if (!isValidAccessPoint(versionIndex, newVersion.getId(),
                     accessPointIndex, ap, constraintContext)) {
                 valid = false;
+            }
+        }
+
+        // Ensure there will be at least one access point.
+        // This requirement can be met by the doing a PoolParty harvest
+        // and an import (which will lead to the generation of
+        // a ApiSparql and Sesame APs), or by there being at least one
+        // access point specified with source==USER.
+        // First, check the combination of doPoolpartyHarvest and doImport.
+        if (BooleanUtils.isNotTrue(newVersion.isDoPoolpartyHarvest())
+                || BooleanUtils.isNotTrue(newVersion.isDoImport())) {
+            // No PoolParty harvest and import, so check if there are
+            // user-specified access points.
+            if (!newVersion.getAccessPoint().stream().anyMatch(
+                    ap -> ap.getSource() == ApSource.USER)) {
+                // No user-specified access points either.
+                valid = false;
+                constraintContext.buildConstraintViolationWithTemplate(
+                        "{" + INTERFACE_NAME + ".version.noAccessPoint}").
+                    addPropertyNode("version").
+                    addBeanNode().inIterable().
+                    atIndex(versionIndex).
+                    addConstraintViolation();
             }
         }
 

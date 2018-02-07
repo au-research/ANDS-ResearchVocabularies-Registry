@@ -70,6 +70,9 @@ public class RegistryCheckVocabularyTests extends ArquillianBaseTest {
         List<ValidationSummary> actualErrors = new ArrayList<>();
         for (ConstraintViolation<RegistrySchemaValidationHelper> oneError
                 : errors) {
+//            logger.info("One error: message template: "
+//                + oneError.getMessageTemplate()
+//                + "; propertypath: " + oneError.getPropertyPath());
             actualErrors.add(new ValidationSummary(
                     oneError.getMessageTemplate(),
                     oneError.getPropertyPath().toString()));
@@ -106,6 +109,14 @@ public class RegistryCheckVocabularyTests extends ArquillianBaseTest {
                 "{" + CheckVocabulary.INTERFACE_NAME
                 + ".subject.noAnzsrcFor}",
                 pathPrefix + "subject"));
+        expectedErrors.add(new ValidationSummary(
+                "{" + CheckVocabulary.INTERFACE_NAME
+                + ".version.noAccessPoint}",
+                pathPrefix + "version[0]"));
+        expectedErrors.add(new ValidationSummary(
+                "{" + CheckVocabulary.INTERFACE_NAME
+                + ".version.doImportButNothingToImport}",
+                pathPrefix + "version[0].doImport"));
 //        expectedErrors.add(new ValidationSummary(
 //                "{" + CheckVocabulary.INTERFACE_NAME
 //                + "}",

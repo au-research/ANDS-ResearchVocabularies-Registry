@@ -951,11 +951,11 @@ public class RegistryModelTests extends ArquillianBaseTest {
         ArquillianTestUtils.loadDbUnitTestFile(REGISTRY, CLASS_NAME_PREFIX
                 + "testApplyChangesCurrentVoVREVe1");
         Vocabulary vocabulary = RegistryTestUtils.
-                getValidatedVocabularyFromFile(
+                getUnvalidatedVocabularyFromFile(
                 "test/tests/"
                         + CLASS_NAME_PREFIX
                         + "testApplyChangesCurrentVoVREVe1/"
-                        + "test-vocabulary.xml", ValidationMode.UPDATE);
+                        + "test-vocabulary.xml");
         EntityManager em = null;
         try {
             em = DBContext.getEntityManager();
@@ -1000,11 +1000,11 @@ public class RegistryModelTests extends ArquillianBaseTest {
         ArquillianTestUtils.loadDbUnitTestFile(REGISTRY, CLASS_NAME_PREFIX
                 + "testApplyChangesCurrentVoVREVe2");
         Vocabulary vocabulary = RegistryTestUtils.
-                getValidatedVocabularyFromFile(
+                getUnvalidatedVocabularyFromFile(
                 "test/tests/"
                         + CLASS_NAME_PREFIX
                         + "testApplyChangesCurrentVoVREVe2/"
-                        + "test-vocabulary.xml", ValidationMode.UPDATE);
+                        + "test-vocabulary.xml");
         EntityManager em = null;
         try {
             em = DBContext.getEntityManager();
@@ -1308,11 +1308,11 @@ public class RegistryModelTests extends ArquillianBaseTest {
         ArquillianTestUtils.loadDbUnitTestFile(REGISTRY, CLASS_NAME_PREFIX
                 + "testApplyChangesDraftVoVREVe1");
         Vocabulary vocabulary = RegistryTestUtils.
-                getValidatedVocabularyFromFile(
+                getUnvalidatedVocabularyFromFile(
                 "test/tests/"
                         + CLASS_NAME_PREFIX
                         + "testApplyChangesDraftVoVREVe1/"
-                        + "test-vocabulary-1.xml", ValidationMode.UPDATE);
+                        + "test-vocabulary-1.xml");
         EntityManager em = null;
         try {
             em = DBContext.getEntityManager();
@@ -1338,11 +1338,11 @@ public class RegistryModelTests extends ArquillianBaseTest {
                 + "testApplyChangesDraftVoVREVe1/"
                 + "test-registry-results-1.xml");
 
-        vocabulary = RegistryTestUtils.getValidatedVocabularyFromFile(
+        vocabulary = RegistryTestUtils.getUnvalidatedVocabularyFromFile(
                 "test/tests/"
                         + CLASS_NAME_PREFIX
                         + "testApplyChangesDraftVoVREVe1/"
-                        + "test-vocabulary-2.xml", ValidationMode.UPDATE);
+                        + "test-vocabulary-2.xml");
         em = null;
         try {
             em = DBContext.getEntityManager();
@@ -1387,11 +1387,11 @@ public class RegistryModelTests extends ArquillianBaseTest {
         ArquillianTestUtils.loadDbUnitTestFile(REGISTRY, CLASS_NAME_PREFIX
                 + "testApplyChangesDraftVoVREVe2");
         Vocabulary vocabulary = RegistryTestUtils.
-                getValidatedVocabularyFromFile(
+                getUnvalidatedVocabularyFromFile(
                 "test/tests/"
                         + CLASS_NAME_PREFIX
                         + "testApplyChangesDraftVoVREVe2/"
-                        + "test-vocabulary.xml", ValidationMode.UPDATE);
+                        + "test-vocabulary.xml");
         EntityManager em = null;
         try {
             em = DBContext.getEntityManager();

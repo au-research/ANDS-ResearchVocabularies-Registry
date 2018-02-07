@@ -22,6 +22,7 @@ import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
 
+import org.apache.commons.lang3.StringUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.safety.Whitelist;
 import org.slf4j.Logger;
@@ -408,7 +409,7 @@ public final class ValidationUtils {
      * @return true, if the slug value is valid.
      */
     public static boolean isValidSlug(final String slug) {
-        if (slug == null || slug.isEmpty()) {
+        if (StringUtils.isBlank(slug)) {
             return false;
         }
         // Slug generation is idempotent. So, the proposed slug
