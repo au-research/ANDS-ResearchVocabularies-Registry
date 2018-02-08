@@ -488,7 +488,7 @@ public class GetVocabularies {
      * @return The map of related entities, from related entity id
      *      to the related entity.
      */
-    private Map<Integer, RelatedEntity>
+    static Map<Integer, RelatedEntity>
     getRelatedEntitiesForVocabularyByIdHelper(
             final Integer vocabularyId) {
         List<au.org.ands.vocabs.registry.db.entity.RelatedEntity>
@@ -530,7 +530,7 @@ public class GetVocabularies {
      * @return The map of related vocabularies, from vocabulary id
      *      to the related vocabulary.
      */
-    private Map<Integer, RelatedVocabulary>
+    static Map<Integer, RelatedVocabulary>
     getRelatedVocabulariesForVocabularyByIdHelper(
             final Integer vocabularyId) {
         List<au.org.ands.vocabs.registry.db.entity.Vocabulary>
