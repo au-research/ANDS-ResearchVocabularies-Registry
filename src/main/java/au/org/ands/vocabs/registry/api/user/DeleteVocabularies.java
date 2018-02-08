@@ -164,8 +164,8 @@ public class DeleteVocabularies {
         // an exception).
         if (draftDbVocabulary == null && currentDbVocabulary == null) {
             return ErrorResultUtils.badRequest(
-                    "Vocabulary does not exist in either current "
-                    + "or draft form.");
+                    "Vocabulary does not exist in the form(s) requested "
+                    + "for deletion.");
         }
 
         EntityManager em = null;
