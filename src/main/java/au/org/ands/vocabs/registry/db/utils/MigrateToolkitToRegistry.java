@@ -10,6 +10,7 @@ import java.lang.invoke.MethodHandles;
 import java.nio.file.DirectoryIteratorException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.text.SimpleDateFormat;
@@ -79,6 +80,7 @@ import au.org.ands.vocabs.registry.db.internal.RelatedVocabularyJson;
 import au.org.ands.vocabs.registry.db.internal.VaCommon;
 import au.org.ands.vocabs.registry.db.internal.VaConceptList;
 import au.org.ands.vocabs.registry.db.internal.VaConceptTree;
+import au.org.ands.vocabs.registry.db.internal.VaHarvestPoolparty;
 import au.org.ands.vocabs.registry.db.internal.VersionJson;
 import au.org.ands.vocabs.registry.db.internal.VocabularyJson;
 import au.org.ands.vocabs.registry.enums.AccessPointType;
@@ -106,6 +108,7 @@ import au.org.ands.vocabs.toolkit.db.model.Task;
 import au.org.ands.vocabs.toolkit.db.model.Version;
 import au.org.ands.vocabs.toolkit.db.model.Vocabulary;
 import au.org.ands.vocabs.toolkit.utils.PropertyConstants;
+import au.org.ands.vocabs.toolkit.utils.ToolkitConfig;
 import au.org.ands.vocabs.toolkit.utils.ToolkitFileUtils;
 import au.org.ands.vocabs.toolkit.utils.ToolkitProperties;
 
@@ -535,6 +538,74 @@ public final class MigrateToolkitToRegistry {
             migrateAccessPoints(toolkitEm, toolkitVocabulary,
                     version, registryVersion, isDraft);
             // TO DO: migrate files harvested from PoolParty.
+            if (!isDraft) {
+                migrateRemainingHarvestedFiles(registryVocabulary,
+                        registryVersion);
+            }
+        }
+    }
+
+    /** Migrate so-far-unmigrated files remaining in the harvest_data
+     * directory for a currently-valid version.
+     * @param registryVocabulary The vocabulary record
+     *      as it has been migrated to the registry database.
+     * @param registryVersion The version record
+     *      as it has been migrated to the registry database.
+     */
+    private void migrateRemainingHarvestedFiles(
+            final au.org.ands.vocabs.registry.db.entity.Vocabulary
+            registryVocabulary,
+            final au.org.ands.vocabs.registry.db.entity.Version
+            registryVersion) {
+        VocabularyJson vocabularyJson =
+                JSONSerialization.deserializeStringAsJson(
+                        registryVocabulary.getData(), VocabularyJson.class);
+        if (vocabularyJson.getPoolpartyProject() == null) {
+            // Not a PoolParty project, so nothing remaining to be
+            // migrated.
+            return;
+        }
+        java.nio.file.Path toolkitHarvestDir =
+                getToolkitHarvestOutputPath(registryVocabulary,
+                        registryVersion);
+        java.nio.file.Path registryHarvestDir =
+                getRegistryHarvestOutputPath(registryVocabulary.getOwner(),
+                        registryVocabulary.getVocabularyId(),
+                        registryVersion.getVersionId(), true);
+        String registryHarvestDirString = registryHarvestDir.toString();
+
+        try (DirectoryStream<java.nio.file.Path> stream =
+                Files.newDirectoryStream(toolkitHarvestDir)) {
+            // Iterate over every file in the toolkit harvest directory.
+            for (java.nio.file.Path entry: stream) {
+                String entryString = entry.toString();
+                if (migratedFiles.contains(entryString)) {
+                    // Already migrated as a file access point.
+                    continue;
+                }
+                migratedFiles.add(entryString);
+                // Don't bother to copy empty files.
+                if (entry.toFile().length() > 0) {
+                    RegistryFileUtils.requireDirectory(
+                            registryHarvestDirString);
+                    java.nio.file.Path targetPath =
+                            registryHarvestDir.resolve(entry.getFileName());
+                    logger.info("Migrating file as VA: " + entry
+                            + "; target: " + targetPath);
+                    Files.copy(entry, targetPath,
+                            StandardCopyOption.COPY_ATTRIBUTES,
+                            StandardCopyOption.REPLACE_EXISTING);
+                    VaHarvestPoolparty vahp = new VaHarvestPoolparty();
+                    vahp.setPath(targetPath.toString());
+                    addVersionArtefact(registryVocabulary, registryVersion,
+                            VersionArtefactType.HARVEST_POOLPARTY, vahp);
+                }
+            }
+        } catch (NoSuchFileException nsfe) {
+            // No harvest_data directory for this version, so nothing to do.
+        } catch (DirectoryIteratorException | IOException ex) {
+            logger.error("Exception in migrateRemainingHarvestedFiles "
+                    + "while copying files:", ex);
         }
     }
 
@@ -1939,7 +2010,7 @@ public final class MigrateToolkitToRegistry {
                     Paths.get(toolkitDataJson.get("path").asText());
             java.nio.file.Path basename = oldPath.getFileName();
             java.nio.file.Path migratedFileDirectory =
-                    getHarvestOutputPath(vocabulary.getOwner(),
+                    getRegistryHarvestOutputPath(vocabulary.getOwner(),
                     registryVersion.getVocabularyId(),
                     registryVersion.getVersionId(), true);
             java.nio.file.Path migratedFilePath =
@@ -2286,7 +2357,49 @@ public final class MigrateToolkitToRegistry {
         return TIMESTAMP_PATTERN.matcher(timestamp).replaceAll("");
     }
 
-    /** Get the full path of the directory used to store all
+    /** Get the full path of the toolkit storage directory used to store all
+     * the files referred to by a version.
+     * @param registryVocabulary The vocabulary as it is in the registry
+     * @param registryVersion The version as it is in the registry
+     * @param extraPath An optional additional path component to be added
+     * at the end. If not required, pass in null or an empty string.
+     * @return The full path of the directory used to store the
+     * vocabulary data.
+     */
+    public static java.nio.file.Path getToolkitOutputPath(
+            final au.org.ands.vocabs.registry.db.entity.Vocabulary
+            registryVocabulary,
+            final au.org.ands.vocabs.registry.db.entity.Version
+            registryVersion,
+            final String extraPath) {
+        java.nio.file.Path path = Paths.get(ToolkitConfig.DATA_FILES_PATH)
+                .resolve(ToolkitFileUtils.makeSlug(
+                        registryVocabulary.getOwner()))
+                .resolve(registryVocabulary.getSlug())
+                .resolve(registryVersion.getSlug());
+        if (extraPath != null && (!extraPath.isEmpty())) {
+            path = path.resolve(extraPath);
+        }
+        return path;
+    }
+
+    /** Get the full path of the toolkit storage directory containing the
+     * data that has been harvest for a version.
+     * @param registryVocabulary The vocabulary as it is in the registry
+     * @param registryVersion The version as it is in the registry
+     * @return The full path of the directory used to store the
+     * vocabulary data.
+     */
+    public static java.nio.file.Path getToolkitHarvestOutputPath(
+            final au.org.ands.vocabs.registry.db.entity.Vocabulary
+            registryVocabulary,
+            final au.org.ands.vocabs.registry.db.entity.Version
+            registryVersion) {
+        return getToolkitOutputPath(registryVocabulary,
+                registryVersion, ToolkitConfig.HARVEST_DATA_PATH);
+    }
+
+    /** Get the full path of the registry directory used to store all
      * the files referred to by a version.
      * @param vocabularyOwner The vocabulary owner.
      * @param vocabularyId The vocabulary Id as it is in the registry.
@@ -2297,7 +2410,8 @@ public final class MigrateToolkitToRegistry {
      * @return The full path of the directory used to store the
      * vocabulary data.
      */
-    private java.nio.file.Path getOutputPath(final String vocabularyOwner,
+    private java.nio.file.Path getRegistryOutputPath(
+            final String vocabularyOwner,
             final Integer vocabularyId,
             final Integer versionId,
             final boolean requireDirectory,
@@ -2325,12 +2439,12 @@ public final class MigrateToolkitToRegistry {
      * @return The full path of the directory used to store the
      * vocabulary data.
      */
-    private java.nio.file.Path getHarvestOutputPath(
+    private java.nio.file.Path getRegistryHarvestOutputPath(
             final String vocabularyOwner,
             final Integer vocabularyId,
             final Integer versionId,
             final boolean requireDirectory) {
-        java.nio.file.Path taskHarvestOutputPath = getOutputPath(
+        java.nio.file.Path taskHarvestOutputPath = getRegistryOutputPath(
                 vocabularyOwner,
                 vocabularyId, versionId, false,
                 RegistryConfig.HARVEST_DATA_PATH);
