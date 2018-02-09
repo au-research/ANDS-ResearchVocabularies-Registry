@@ -4,9 +4,13 @@
 
 package au.org.ands.vocabs.registry.db.utils;
 
+import java.io.File;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
+import java.nio.file.DirectoryIteratorException;
+import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
@@ -27,6 +31,8 @@ import javax.persistence.TypedQuery;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -86,8 +92,10 @@ import au.org.ands.vocabs.registry.enums.VersionArtefactStatus;
 import au.org.ands.vocabs.registry.enums.VersionArtefactType;
 import au.org.ands.vocabs.registry.enums.VersionStatus;
 import au.org.ands.vocabs.registry.enums.VocabularyStatus;
+import au.org.ands.vocabs.registry.utils.RegistryConfig;
 import au.org.ands.vocabs.registry.utils.RegistryFileUtils;
 import au.org.ands.vocabs.registry.utils.RegistryProperties;
+import au.org.ands.vocabs.registry.utils.SlugGenerator;
 import au.org.ands.vocabs.toolkit.db.AccessPointUtils;
 import au.org.ands.vocabs.toolkit.db.DBContext;
 import au.org.ands.vocabs.toolkit.db.TaskUtils;
@@ -219,6 +227,9 @@ public final class MigrateToolkitToRegistry {
     private HashMap<au.org.ands.vocabs.registry.db.entity.Vocabulary,
         JsonNode> relatedVocabularies = new HashMap<>();
 
+    /** The time at which migration started, as a String. */
+    private String nowTimeString;
+
     /** Convert a {@link Date} extracted from the "toolkit" database
      * to a {@link LocalDateTime} in UTC. Note that JDBC has already
      * interpreted the database content according to the local time zone,
@@ -233,6 +244,9 @@ public final class MigrateToolkitToRegistry {
 
     /** The Path to the directory in which registry uploads are stored. */
     private java.nio.file.Path uploadsPath;
+
+    /** A set containing the filenames of files that have been migrated. */
+    private Set<String> migratedFiles = new HashSet<>();
 
     /** Get the published or deprecated verion of a migrated Vocabulary
      * by its slug, if there is one. Otherwise, return null. This method can be
@@ -313,7 +327,8 @@ public final class MigrateToolkitToRegistry {
     }
 
     /** Migrate the contents of the "toolkit" database to
-     * the "registry" database.
+     * the "registry" database, and the "toolkit" data to the "registry"
+     * data storage.
      * @return Text indicating success.
      */
     @Path("migrateToolkitToRegistry")
@@ -321,6 +336,9 @@ public final class MigrateToolkitToRegistry {
     public String migrateToolkitToRegistry() {
         SimpleDateFormat formatter =
                 new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        nowTimeString = replaceCharactersInTimestamp(
+                TemporalUtils.nowUTC().toString());
+
         EntityManager toolkitEm = DBContext.getEntityManager();
 
         String uploadsDirectoryName = RegistryProperties.getProperty(
@@ -328,6 +346,12 @@ public final class MigrateToolkitToRegistry {
                 REGISTRY_UPLOADSPATH);
         RegistryFileUtils.requireDirectory(uploadsDirectoryName);
         uploadsPath = java.nio.file.Paths.get(uploadsDirectoryName);
+        try {
+            FileUtils.forceDelete(new File(RegistryConfig.DATA_FILES_PATH));
+        } catch (IOException e) {
+            logger.error("Unable to remove existing registry data directory",
+                    e);
+        }
 
         migratePublishedAndDeprecatedVocabularies(formatter, toolkitEm);
         migrateDraftVocabularies(formatter, toolkitEm);
@@ -336,6 +360,7 @@ public final class MigrateToolkitToRegistry {
         migrateResourceOwnerHosts(toolkitEm);
         migrateResourceMap(toolkitEm);
         toolkitEm.close();
+        migrateSpecFiles();
         return "Done.";
     }
 
@@ -509,6 +534,7 @@ public final class MigrateToolkitToRegistry {
                     version, registryVersion);
             migrateAccessPoints(toolkitEm, toolkitVocabulary,
                     version, registryVersion, isDraft);
+            // TO DO: migrate files harvested from PoolParty.
         }
     }
 
@@ -1909,7 +1935,31 @@ public final class MigrateToolkitToRegistry {
             ApFile apFile = new ApFile();
             apFile.setFormat(portalDataJson.get("format").asText());
             apFile.setUrl(portalDataJson.get("uri").asText());
-            apFile.setPath(toolkitDataJson.get("path").asText());
+            java.nio.file.Path oldPath =
+                    Paths.get(toolkitDataJson.get("path").asText());
+            java.nio.file.Path basename = oldPath.getFileName();
+            java.nio.file.Path migratedFileDirectory =
+                    getHarvestOutputPath(vocabulary.getOwner(),
+                    registryVersion.getVocabularyId(),
+                    registryVersion.getVersionId(), true);
+            java.nio.file.Path migratedFilePath =
+                    migratedFileDirectory.resolve(basename);
+            String migratedFilePathString =
+                    migratedFilePath.toString();
+            logger.info("Migrating file: " + oldPath
+                    + "; target: " + migratedFilePath);
+            try {
+                logger.error("Migrating file: " + oldPath
+                        + "; target: " + migratedFilePathString);
+                Files.copy(oldPath, migratedFilePath,
+                        StandardCopyOption.COPY_ATTRIBUTES,
+                        StandardCopyOption.REPLACE_EXISTING);
+            } catch (IOException e) {
+                logger.error("Error when migrating file: " + oldPath
+                        + "; target: " + migratedFilePath, e);
+            }
+            migratedFiles.add(migratedFilePathString);
+            apFile.setPath(migratedFilePathString);
             apData = apFile;
             break;
         case "sesameDownload":
@@ -2008,6 +2058,26 @@ public final class MigrateToolkitToRegistry {
                         + newAP.getAccessPointId());
                 fileData.setUrl(newUrl);
                 fileData.setUploadId(upload.getId());
+                // Move the path so it has the upload ID.
+                String existingPathString = fileData.getPath();
+                java.nio.file.Path existingPath = Paths.get(existingPathString);
+                java.nio.file.Path existingDir = existingPath.getParent();
+                java.nio.file.Path existingFileName =
+                        existingPath.getFileName();
+                String existingFileNameString = existingFileName.toString();
+                String extension = FilenameUtils.getExtension(
+                        existingFileNameString);
+                String newFilename = upload.getId().toString()
+                        + "." + extension;
+                java.nio.file.Path newPath = existingDir.resolve(newFilename);
+                String newPathString = newPath.toString();
+                try {
+                    Files.move(existingPath, newPath);
+                } catch (IOException e) {
+                    logger.error("Unable to rename file, from: "
+                            + existingPath + " to " + newPath, e);
+                }
+                fileData.setPath(newPathString);
                 newAP.setData(serializeJsonAsString(fileData));
                 AccessPointDAO.updateAccessPoint(newAP);
             } else {
@@ -2194,6 +2264,114 @@ public final class MigrateToolkitToRegistry {
             registryRoh.setOwner(roh.getOwner());
             registryRoh.setHost(roh.getHost());
             ResourceOwnerHostDAO.saveResourceOwnerHost(registryRoh);
+        }
+    }
+
+    // Below here are copies of some of the attributes of the TaskUtils class.
+    // Some have been copied as-is; others have been modified for use
+    // in this class.
+
+    /** Pattern that matches characters that should be replaced when
+     * converting a timestamp into a file path component. Use with
+     * {@link java.util.regex.Matcher#replaceAll(String)}. */
+    private static final Pattern TIMESTAMP_PATTERN =
+            Pattern.compile("[^0-9A-Z]");
+
+    /** Sanitize a timestamp String by removing characters we don't want
+     * to appear in a directory name.
+     * @param timestamp The timestamp String to be sanitized.
+     * @return The sanitized timestamp String.
+     */
+    private static String replaceCharactersInTimestamp(final String timestamp) {
+        return TIMESTAMP_PATTERN.matcher(timestamp).replaceAll("");
+    }
+
+    /** Get the full path of the directory used to store all
+     * the files referred to by a version.
+     * @param vocabularyOwner The vocabulary owner.
+     * @param vocabularyId The vocabulary Id as it is in the registry.
+     * @param versionId The version Id as it is in the registry
+     * @param requireDirectory If true, make the directory exist.
+     * @param extraPath An optional additional path component to be added
+     * at the end. If not required, pass in null or an empty string.
+     * @return The full path of the directory used to store the
+     * vocabulary data.
+     */
+    private java.nio.file.Path getOutputPath(final String vocabularyOwner,
+            final Integer vocabularyId,
+            final Integer versionId,
+            final boolean requireDirectory,
+            final String extraPath) {
+        java.nio.file.Path path = Paths.get(RegistryConfig.DATA_FILES_PATH)
+                .resolve(SlugGenerator.generateSlug(vocabularyOwner))
+                .resolve(vocabularyId.toString())
+                .resolve(versionId.toString())
+                .resolve(nowTimeString);
+        if (requireDirectory) {
+            RegistryFileUtils.requireDirectory(path.toString());
+        }
+        if (extraPath != null && (!extraPath.isEmpty())) {
+            path = path.resolve(extraPath);
+        }
+        return path;
+    }
+
+    /** Get the full path of the directory used to store all
+     * harvested data referred to by the task.
+     * @param vocabularyOwner The vocabulary owner.
+     * @param vocabularyId The vocabulary Id as it is in the registry.
+     * @param versionId The version Id as it is in the registry
+     * @param requireDirectory If true, make the directory exist.
+     * @return The full path of the directory used to store the
+     * vocabulary data.
+     */
+    private java.nio.file.Path getHarvestOutputPath(
+            final String vocabularyOwner,
+            final Integer vocabularyId,
+            final Integer versionId,
+            final boolean requireDirectory) {
+        java.nio.file.Path taskHarvestOutputPath = getOutputPath(
+                vocabularyOwner,
+                vocabularyId, versionId, false,
+                RegistryConfig.HARVEST_DATA_PATH);
+        if (requireDirectory) {
+            RegistryFileUtils.requireDirectory(
+                    taskHarvestOutputPath.toString());
+        }
+        return taskHarvestOutputPath;
+    }
+
+    /** Migrate the SISSVoc spec files from the Toolkit directory
+     * to the Registry directory.
+     */
+    private void migrateSpecFiles() {
+        String toolkitSpecsDir = ToolkitProperties.getProperty(
+                PropertyConstants.SISSVOC_SPECSPATH);
+        java.nio.file.Path toolkitSpecsPath = Paths.get(toolkitSpecsDir);
+        String registrySpecsDir = RegistryProperties.getProperty(
+                au.org.ands.vocabs.registry.utils.PropertyConstants.
+                SISSVOC_SPECSPATH);
+        java.nio.file.Path registrySpecsPath = Paths.get(registrySpecsDir);
+
+        try (DirectoryStream<java.nio.file.Path> stream =
+                Files.newDirectoryStream(toolkitSpecsPath)) {
+            // Ensure target directory exists but is empty.
+            FileUtils.forceDelete(new File(registrySpecsDir));
+            RegistryFileUtils.requireDirectory(registrySpecsDir);
+
+            // Iterate over every file in the specs directory.
+            for (java.nio.file.Path entry: stream) {
+                // Don't bother to migrate empty files.
+                if (entry.toFile().length() > 0) {
+                    Files.copy(entry,
+                            registrySpecsPath.resolve(entry.getFileName()),
+                            StandardCopyOption.COPY_ATTRIBUTES,
+                            StandardCopyOption.REPLACE_EXISTING);
+                }
+            }
+        } catch (DirectoryIteratorException | IOException ex) {
+            logger.error("Exception in migrateSpecFiles while copying files:",
+                    ex);
         }
     }
 
