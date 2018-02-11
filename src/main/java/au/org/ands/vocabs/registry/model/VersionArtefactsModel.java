@@ -315,15 +315,18 @@ public class VersionArtefactsModel extends ModelBase {
     /** {@inheritDoc} */
     @Override
     protected void notifyDeleteDraftVersion(final Integer versionId) {
-        for (VersionArtefact ap : draftVAs.get(versionId)) {
-            // Just delete the row;
-            // for a draft instance, no workflow is applied.
-            // Hmm, this isn't right. VAs are system-generated, so
-            // we shouldn't have database deletion in this class.
-            VersionArtefactDAO.deleteVersionArtefact(em(), ap);
+        List<VersionArtefact> draftVAList = draftVAs.get(versionId);
+        if (draftVAList != null) {
+            for (VersionArtefact ap : draftVAs.get(versionId)) {
+                // Just delete the row;
+                // for a draft instance, no workflow is applied.
+                // Hmm, this isn't right. VAs are system-generated, so
+                // we shouldn't have database deletion in this class.
+                VersionArtefactDAO.deleteVersionArtefact(em(), ap);
+            }
+            // Remove from our own records.
+            draftVAs.remove(versionId);
         }
-        // Remove from our own records.
-        draftVAs.remove(versionId);
     }
 
     /** {@inheritDoc}
