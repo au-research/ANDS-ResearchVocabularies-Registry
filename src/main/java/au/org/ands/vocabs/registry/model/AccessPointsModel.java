@@ -409,7 +409,7 @@ public class AccessPointsModel extends ModelBase {
     protected void notifyDeleteDraftVersion(final Integer versionId) {
         List<AccessPoint> draftAPList = draftAPs.get(versionId);
         if (draftAPList != null) {
-            for (AccessPoint ap : draftAPs.get(versionId)) {
+            for (AccessPoint ap : draftAPList) {
                 // Just delete the row;
                 // for a draft instance, no workflow is applied.
                 AccessPointDAO.deleteAccessPoint(em(), ap);

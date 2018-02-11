@@ -317,7 +317,7 @@ public class VersionArtefactsModel extends ModelBase {
     protected void notifyDeleteDraftVersion(final Integer versionId) {
         List<VersionArtefact> draftVAList = draftVAs.get(versionId);
         if (draftVAList != null) {
-            for (VersionArtefact ap : draftVAs.get(versionId)) {
+            for (VersionArtefact ap : draftVAList) {
                 // Just delete the row;
                 // for a draft instance, no workflow is applied.
                 // Hmm, this isn't right. VAs are system-generated, so
