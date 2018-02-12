@@ -1,5 +1,5 @@
 /** See the file "LICENSE" for the full license governing this code. */
-package au.org.ands.vocabs.toolkit.utils;
+package au.org.ands.vocabs.registry.utils;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -18,7 +18,7 @@ import org.slf4j.LoggerFactory;
 
 import com.mysql.jdbc.exceptions.jdbc4.CommunicationsException;
 
-import au.org.ands.vocabs.toolkit.db.DBContext;
+import au.org.ands.vocabs.registry.db.context.DBContext;
 
 /** Support program as part of the redirection of SPARQL and SISSVoc
  *  URLs containing "current" as the version identifier. Use this
@@ -35,16 +35,19 @@ public final class RewriteCurrent {
 
     /** Query string for accessing the current version. */
     private static final String QUERY_STRING =
-            "SELECT ver.title from vocabularies voc, versions ver "
-            + "WHERE voc.slug= ? "
-            + "AND voc.status='published' and ver.vocab_id = voc.id "
-            + "AND ver.status='current'";
+            "SELECT ver.slug from vocabularies voc, versions ver "
+            + "WHERE voc.end_date = '9999-12-01 00:00:00' "
+            + "AND ver.end_date ='9999-12-01 00:00:00' "
+            + "AND voc.slug= ? "
+            + "AND voc.status='PUBLISHED' "
+            + "AND ver.vocabulary_id = voc.vocabulary_id "
+            + "AND ver.status='CURRENT'";
 
     /** Main program. Reads lines from standard input, until EOF reached.
      * For each line read, treat that as a vocabulary slug, and look
-     * that up in the database to find the title of the current version,
+     * that up in the database to find the slug of the current version,
      * if there is one, and as long as it has been published.
-     * Output the slug form of that version title.
+     * Output the version slug.
      * If there is no such current version, output the string "NULL"
      * as required by the Apache HTTP Server RewriteMap.
      * NB, this relies on the uniqueness of slugs. Won't work if we
@@ -72,17 +75,16 @@ public final class RewriteCurrent {
                     new BufferedReader(new InputStreamReader(System.in,
                             StandardCharsets.UTF_8));
             String vocabularySlug;
-            String rewrittenSlug;
+            String versionSlug;
             vocabularySlug = input.readLine();
             while (vocabularySlug != null && vocabularySlug.length() != 0) {
                 stmt.setString(1, vocabularySlug);
                 try (ResultSet rs = stmt.executeQuery()) {
                     if (rs.next()) {
-                        rewrittenSlug =
-                                ToolkitFileUtils.makeSlug(rs.getString(1));
+                        versionSlug = rs.getString(1);
                     } else {
                         // No answer.
-                        rewrittenSlug = "NULL";
+                        versionSlug = "NULL";
                     }
                 } catch (CommunicationsException e) {
                     // Handle the specific case of the Connection object
@@ -101,15 +103,14 @@ public final class RewriteCurrent {
                     stmt.setString(1, vocabularySlug);
                     try (ResultSet rs = stmt.executeQuery()) {
                         if (rs.next()) {
-                            rewrittenSlug =
-                                    ToolkitFileUtils.makeSlug(rs.getString(1));
+                            versionSlug = rs.getString(1);
                         } else {
                             // No answer.
-                            rewrittenSlug = "NULL";
+                            versionSlug = "NULL";
                         }
                     }
                 }
-                System.out.println(rewrittenSlug);
+                System.out.println(versionSlug);
                 System.out.flush();
                 vocabularySlug = input.readLine();
             }
