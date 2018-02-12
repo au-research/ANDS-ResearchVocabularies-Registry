@@ -356,6 +356,11 @@ public final class MigrateToolkitToRegistry {
                     e);
         }
 
+        // Do spec files first, so that their final location can
+        // be included in migrated access points.
+        migrateSpecFiles();
+
+        // Now migrate all the database.
         migratePublishedAndDeprecatedVocabularies(formatter, toolkitEm);
         migrateDraftVocabularies(formatter, toolkitEm);
         migrateInternallyRelatedVocabularies();
@@ -363,7 +368,6 @@ public final class MigrateToolkitToRegistry {
         migrateResourceOwnerHosts(toolkitEm);
         migrateResourceMap(toolkitEm);
         toolkitEm.close();
-        migrateSpecFiles();
         return "Done.";
     }
 
@@ -537,7 +541,6 @@ public final class MigrateToolkitToRegistry {
                     version, registryVersion);
             migrateAccessPoints(toolkitEm, toolkitVocabulary,
                     version, registryVersion, isDraft);
-            // TO DO: migrate files harvested from PoolParty.
             if (!isDraft) {
                 migrateRemainingHarvestedFiles(registryVocabulary,
                         registryVersion);
@@ -2056,6 +2059,12 @@ public final class MigrateToolkitToRegistry {
             ApSissvoc apSissvoc = new ApSissvoc();
             registryAccessPoint.setSource(ApSource.fromValue(
                     portalDataJson.get("source").asText()));
+            java.nio.file.Path specFilePath =
+                    getSpecFilePath(vocabulary, registryVersion);
+            logger.info("specFilePath: " + specFilePath);
+            if (Files.exists(specFilePath)) {
+                apSissvoc.setPath(specFilePath.toString());
+            }
             apSissvoc.setUrlPrefix(portalDataJson.get("uri").asText());
             apData = apSissvoc;
             break;
@@ -2487,6 +2496,30 @@ public final class MigrateToolkitToRegistry {
             logger.error("Exception in migrateSpecFiles while copying files:",
                     ex);
         }
+    }
+
+    /** Get the full path to what should be the migrated SISSVoc spec file
+     * for a version.
+     * @param vocabulary The Vocabulary instance used to create the path.
+     * @param registryVersion The Version instance used to create the path.
+     * @return The full path to the what should be the migrated SISSVoc
+     *      spec file.
+     */
+    private java.nio.file.Path getSpecFilePath(final Vocabulary vocabulary,
+            final au.org.ands.vocabs.registry.db.entity.Version
+            registryVersion) {
+        String registrySpecsDir = RegistryProperties.getProperty(
+                au.org.ands.vocabs.registry.utils.PropertyConstants.
+                SISSVOC_SPECSPATH);
+        java.nio.file.Path specPath = Paths.get(registrySpecsDir).
+                resolve(SlugGenerator.generateSlug(
+                        vocabulary.getOwner())
+                        + "_"
+                        + vocabulary.getSlug()
+                        + "_"
+                        + registryVersion.getSlug()
+                        + ".ttl");
+        return specPath;
     }
 
     /** Jackson ObjectMapper used for serializing JSON data into Strings.

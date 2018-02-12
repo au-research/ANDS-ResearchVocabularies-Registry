@@ -172,15 +172,20 @@ public final class AccessPointUtils {
      * for a version. Don't duplicate it, if it already exists.
      * @param taskInfo The TaskInfo providing the context for
      *      the creation of the access point.
+     * @param path The path to put into the database entity.
      * @param urlPrefix The urlPrefix to put into the database entity.
      */
     public static void createSissvocAccessPoint(
             final TaskInfo taskInfo,
+            final String path,
             final String urlPrefix) {
         createAccessPoint(taskInfo,
                 ApSissvoc.class, AccessPointType.SISSVOC,
                 apT -> urlPrefix.equals(apT.getUrlPrefix()),
-                (ap, apT) -> apT.setUrlPrefix(urlPrefix));
+                (ap, apT) -> {
+                    apT.setPath(path);
+                    apT.setUrlPrefix(urlPrefix);
+                    });
     }
 
 }

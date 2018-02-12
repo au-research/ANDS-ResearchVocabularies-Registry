@@ -93,6 +93,7 @@
     <xs:complexType name="ap-sissvoc">
         <xs:complexContent>
             <xs:extension base="ap-common">
+                <xs:attribute name="path" type="xs:string"/>
                 <xs:attribute name="url-prefix" type="xs:anyURI" use="required"/>
             </xs:extension>
         </xs:complexContent>

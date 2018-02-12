@@ -16,6 +16,7 @@ import javax.ws.rs.client.WebTarget;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.text.StrSubstitutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,6 +25,7 @@ import au.org.ands.vocabs.registry.db.context.TemporalUtils;
 import au.org.ands.vocabs.registry.db.converter.JSONSerialization;
 import au.org.ands.vocabs.registry.db.dao.AccessPointDAO;
 import au.org.ands.vocabs.registry.db.entity.AccessPoint;
+import au.org.ands.vocabs.registry.db.internal.ApSissvoc;
 import au.org.ands.vocabs.registry.db.internal.VocabularyJson;
 import au.org.ands.vocabs.registry.enums.AccessPointType;
 import au.org.ands.vocabs.registry.enums.ApSource;
@@ -69,6 +71,9 @@ public class SISSVocPublishProvider implements WorkflowProvider {
     private final HashMap<String, String> specProperties =
             new HashMap<>();
 
+    /** The full path of the generated spec file. */
+    private String path;
+
     /** Create/update the SISSVoc spec file and access point for the version.
      * @param taskInfo The top-level TaskInfo for the subtask.
      * @param subtask The subtask to be performed.
@@ -89,7 +94,7 @@ public class SISSVocPublishProvider implements WorkflowProvider {
 //        subtask.addResult("sissvoc_endpoints",
 //                sparqlTarget.getUri().toString());
         // Add SISSVoc endpoint.
-        AccessPointUtils.createSissvocAccessPoint(taskInfo,
+        AccessPointUtils.createSissvocAccessPoint(taskInfo, path,
                 sparqlTarget.getUri().toString());
         subtask.setStatus(TaskStatus.SUCCESS);
     }
@@ -101,6 +106,7 @@ public class SISSVocPublishProvider implements WorkflowProvider {
     public final void unpublish(final TaskInfo taskInfo,
             final Subtask subtask) {
         // Remove the SISSVoc access point.
+        boolean removed = false;
         List<AccessPoint> aps = AccessPointDAO.
                 getCurrentAccessPointListForVersionByType(
                         taskInfo.getVersion().getVersionId(),
@@ -110,6 +116,14 @@ public class SISSVocPublishProvider implements WorkflowProvider {
             if (ap.getSource() == ApSource.SYSTEM) {
                 TemporalUtils.makeHistorical(ap, taskInfo.getNowTime());
                 AccessPointDAO.updateAccessPoint(taskInfo.getEm(), ap);
+                ApSissvoc apSissvoc =
+                        JSONSerialization.deserializeStringAsJson(ap.getData(),
+                                ApSissvoc.class);
+                String existingPath = apSissvoc.getPath();
+                if (StringUtils.isNotBlank(existingPath)) {
+                    truncateSpecFileIfExists(subtask, existingPath);
+                    removed = true;
+                }
             }
         }
 
@@ -117,8 +131,16 @@ public class SISSVocPublishProvider implements WorkflowProvider {
         // supports it.
         //        removeSpecFile(taskInfo, subtask, results);
         // For now, use the truncation method.
-        truncateSpecFileIfExists(taskInfo, subtask);
-        subtask.setStatus(TaskStatus.SUCCESS);
+        // Have we not removed the file? Fall back to computing the
+        // filename of the spec file.
+        if (!removed) {
+            truncateSpecFileIfExists(taskInfo, subtask);
+        }
+        // truncateSpecFileIfExists() may report an error; don't
+        // lose that.
+        if (subtask.getStatus() != TaskStatus.ERROR) {
+            subtask.setStatus(TaskStatus.SUCCESS);
+        }
     }
 
 
@@ -247,10 +269,10 @@ public class SISSVocPublishProvider implements WorkflowProvider {
         StrSubstitutor sub = new StrSubstitutor(specProperties);
         String customSpec = sub.replace(specTemplate);
         RegistryFileUtils.requireDirectory(sissvocSpecOutputPath);
-        File specFile = new File(
-                Paths.get(sissvocSpecOutputPath).
+        path = Paths.get(sissvocSpecOutputPath).
                 resolve(TaskUtils.getSesameRepositoryId(taskInfo)
-                        + ".ttl").toString());
+                        + ".ttl").toString();
+        File specFile = new File(path);
         try {
             FileUtils.writeStringToFile(specFile, customSpec,
                     StandardCharsets.UTF_8);
@@ -268,7 +290,35 @@ public class SISSVocPublishProvider implements WorkflowProvider {
     /** If there is an existing spec file for SISSVoc, overwrite
      * it and truncate it to zero size. This is the workaround
      * for unpublication until the elda library supports detection
-     * of deleted files.
+     * of deleted files. Use this version of the method when a
+     * file path is recorded in the access point.
+     * @param subtask The subtask to be performed.
+     * @param existingPath The full path to the spec file, as recorded
+     *      in the access point.
+     */
+    private void truncateSpecFileIfExists(final Subtask subtask,
+            final String existingPath) {
+        try {
+            Path specFilePath = Paths.get(existingPath);
+            if (Files.exists(specFilePath)) {
+                Files.write(specFilePath, new byte[0]);
+            }
+
+        } catch (IOException e) {
+            // This may mean a file permissions problem, so do log it.
+            subtask.setStatus(TaskStatus.ERROR);
+            subtask.addResult(TaskRunner.ERROR,
+                    "SISSVoc truncateSpecFileIfExists: failed");
+            logger.error("truncateSpecFileIfExists failed", e);
+        }
+    }
+
+    /** If there is an existing spec file for SISSVoc, overwrite
+     * it and truncate it to zero size. This is the workaround
+     * for unpublication until the elda library supports detection
+     * of deleted files. Use this version of the method when no
+     * file path is recorded in the access point, and it must
+     * be computed from the TaskInfo data.
      * @param taskInfo The TaskInfo object for this task.
      * @param subtask The subtask to be performed.
      */
