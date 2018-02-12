@@ -11,6 +11,7 @@ import javax.persistence.EntityManager;
 import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
 
+import org.apache.commons.collections4.ListUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -119,8 +120,8 @@ public class VersionArtefactsModel extends ModelBase {
         description.add("VA | Vocabulary; Id: " + vocabularyId());
         if (currentVAs != null) {
             for (Integer vId : currentVAs.keySet()) {
-                for (VersionArtefact va
-                        : currentVAs.get(vId)) {
+                for (VersionArtefact va : ListUtils.emptyIfNull(
+                        currentVAs.get(vId))) {
                     description.add("VA | Current version has VA; "
                             + "V Id, VA Id: " + vId + ","
                             + va.getVersionArtefactId());
@@ -129,8 +130,8 @@ public class VersionArtefactsModel extends ModelBase {
         }
         if (draftVAs != null) {
             for (Integer vId : draftVAs.keySet()) {
-                for (VersionArtefact va
-                        : draftVAs.get(vId)) {
+                for (VersionArtefact va : ListUtils.emptyIfNull(
+                        draftVAs.get(vId))) {
                     description.add("VA | Draft version has VA; "
                             + "V Id, VA Id: " + vId + ","
                             + va.getVersionArtefactId());
@@ -176,7 +177,8 @@ public class VersionArtefactsModel extends ModelBase {
     @Override
     protected void deleteOnlyCurrent() {
         for (Integer vId : currentVAs.keySet()) {
-            for (VersionArtefact va : currentVAs.get(vId)) {
+            for (VersionArtefact va : ListUtils.emptyIfNull(
+                    currentVAs.get(vId))) {
                 List<Subtask> subtaskList =
                         WorkflowMethods.deleteVersionArtefact(va);
                 if (subtaskList == null) {
@@ -276,7 +278,8 @@ public class VersionArtefactsModel extends ModelBase {
         // Hmm, this isn't right. VAs are system-generated, so
         // we shouldn't have database deletion in this class.
         for (Integer vId : draftVAs.keySet()) {
-            for (VersionArtefact va : draftVAs.get(vId)) {
+            for (VersionArtefact va : ListUtils.emptyIfNull(
+                    draftVAs.get(vId))) {
                 VersionArtefactDAO.deleteVersionArtefact(em(), va);
             }
         }

@@ -11,6 +11,7 @@ import javax.persistence.EntityManager;
 import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
 
+import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.collections4.sequence.CommandVisitor;
 import org.apache.commons.collections4.sequence.SequencesComparator;
 import org.slf4j.Logger;
@@ -97,7 +98,8 @@ public class VocabularyRelatedVocabulariesModel extends ModelBase {
         if (currentRVsAndRelations != null) {
             for (Integer rvId : currentRVsAndRelations.keySet()) {
                 for (VocabularyRelatedVocabulary vrv
-                        : currentRVsAndRelations.get(rvId)) {
+                        : ListUtils.emptyIfNull(
+                                currentRVsAndRelations.get(rvId))) {
                     description.add("VRV | Current vocabulary has RV; "
                             + "RV Id, relation: " + rvId + ","
                             + vrv.getRelation());
@@ -107,7 +109,8 @@ public class VocabularyRelatedVocabulariesModel extends ModelBase {
         if (draftRVsAndRelations != null) {
             for (Integer rvId : draftRVsAndRelations.keySet()) {
                 for (VocabularyRelatedVocabulary vrv
-                        : draftRVsAndRelations.get(rvId)) {
+                        : ListUtils.emptyIfNull(
+                                draftRVsAndRelations.get(rvId))) {
                     description.add("VRV | Draft vocabulary has RV; "
                             + "RV Id, relation, meaning: " + rvId + ","
                             + vrv.getRelation() + ","
@@ -146,7 +149,8 @@ public class VocabularyRelatedVocabulariesModel extends ModelBase {
         for (Integer reId : currentRVsAndRelations.keySet()) {
             RelatedVocabularyRef rvRef = null;
             for (VocabularyRelatedVocabulary vrv
-                    : currentRVsAndRelations.get(reId)) {
+                    : ListUtils.emptyIfNull(
+                            currentRVsAndRelations.get(reId))) {
                 if (rvRef == null) {
                     rvRef = vrvdbMapper.sourceToTarget(vrv);
                 }
@@ -181,7 +185,8 @@ public class VocabularyRelatedVocabulariesModel extends ModelBase {
         for (Integer reId : draftRVsAndRelations.keySet()) {
             RelatedVocabularyRef rvRef = null;
             for (VocabularyRelatedVocabulary vrv
-                    : draftRVsAndRelations.get(reId)) {
+                    : ListUtils.emptyIfNull(
+                            draftRVsAndRelations.get(reId))) {
                 if (rvRef == null) {
                     rvRef = vrvdbMapper.sourceToTarget(vrv);
                 }
@@ -219,7 +224,8 @@ public class VocabularyRelatedVocabulariesModel extends ModelBase {
     protected void deleteOnlyCurrent() {
         for (Integer reId : currentRVsAndRelations.keySet()) {
             for (VocabularyRelatedVocabulary vrv
-                    : currentRVsAndRelations.get(reId)) {
+                    : ListUtils.emptyIfNull(
+                            currentRVsAndRelations.get(reId))) {
                 TemporalUtils.makeHistorical(vrv, nowTime());
                 vrv.setModifiedBy(modifiedBy());
                 VocabularyRelatedVocabularyDAO.
@@ -243,7 +249,8 @@ public class VocabularyRelatedVocabulariesModel extends ModelBase {
         }
         for (Integer rvId : currentRVsAndRelations.keySet()) {
             for (VocabularyRelatedVocabulary vrv
-                    : currentRVsAndRelations.get(rvId)) {
+                    : ListUtils.emptyIfNull(
+                            currentRVsAndRelations.get(rvId))) {
                 TemporalUtils.makeHistorical(vrv, nowTime());
                 vrv.setModifiedBy(modifiedBy());
                 VocabularyRelatedVocabularyDAO.
@@ -275,7 +282,8 @@ public class VocabularyRelatedVocabulariesModel extends ModelBase {
     protected void deleteDraftDatabaseRows() {
         for (Integer rvId : draftRVsAndRelations.keySet()) {
             for (VocabularyRelatedVocabulary vrv
-                    : draftRVsAndRelations.get(rvId)) {
+                    : ListUtils.emptyIfNull(
+                            draftRVsAndRelations.get(rvId))) {
                 VocabularyRelatedVocabularyDAO.
                     deleteVocabularyRelatedVocabulary(em(), vrv);
             }
@@ -328,7 +336,8 @@ public class VocabularyRelatedVocabulariesModel extends ModelBase {
                 new ArrayList<>();
         for (Integer rvId : draftRVsAndRelations.keySet()) {
             for (VocabularyRelatedVocabulary vrv
-                    : draftRVsAndRelations.get(rvId)) {
+                    : ListUtils.emptyIfNull(
+                            draftRVsAndRelations.get(rvId))) {
                 existingDraftSequence.add(
                         new VocabularyRelatedVocabularyElement(
                         rvId, vrv.getRelation(), vrv));
@@ -413,7 +422,8 @@ public class VocabularyRelatedVocabulariesModel extends ModelBase {
                 new ArrayList<>();
         for (Integer reId : currentRVsAndRelations.keySet()) {
             for (VocabularyRelatedVocabulary vrv
-                    : currentRVsAndRelations.get(reId)) {
+                    : ListUtils.emptyIfNull(
+                            currentRVsAndRelations.get(reId))) {
                 currentSequence.add(new VocabularyRelatedVocabularyElement(
                         reId, vrv.getRelation(), vrv));
             }

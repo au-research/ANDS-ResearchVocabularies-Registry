@@ -14,6 +14,7 @@ import javax.persistence.EntityManager;
 import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
 
+import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.collections4.sequence.CommandVisitor;
 import org.apache.commons.collections4.sequence.SequencesComparator;
 import org.apache.commons.lang3.BooleanUtils;
@@ -134,8 +135,8 @@ public class AccessPointsModel extends ModelBase {
         description.add("AP | Vocabulary; Id: " + vocabularyId());
         if (currentAPs != null) {
             for (Integer vId : currentAPs.keySet()) {
-                for (AccessPoint ap
-                        : currentAPs.get(vId)) {
+                for (AccessPoint ap : ListUtils.emptyIfNull(
+                        currentAPs.get(vId))) {
                     description.add("AP | Current version has AP; "
                             + "V Id, AP Id: " + vId + ","
                             + ap.getAccessPointId());
@@ -144,8 +145,8 @@ public class AccessPointsModel extends ModelBase {
         }
         if (draftAPs != null) {
             for (Integer vId : draftAPs.keySet()) {
-                for (AccessPoint ap
-                        : draftAPs.get(vId)) {
+                for (AccessPoint ap : ListUtils.emptyIfNull(
+                        draftAPs.get(vId))) {
                     description.add("AP | Draft version has AP; "
                             + "V Id, AP Id: " + vId + ","
                             + ap.getAccessPointId());
@@ -230,7 +231,7 @@ public class AccessPointsModel extends ModelBase {
             List<AccessPoint> draftAPList = draftAPs.get(versionId);
             // It shouldn't be empty, but just in case, do a null check.
             if (draftAPList != null) {
-                for (AccessPoint ap : draftAPs.get(versionId)) {
+                for (AccessPoint ap : draftAPList) {
                     outputAPList.add(apDbMapper.sourceToTarget(ap));
                 }
             }
@@ -241,7 +242,8 @@ public class AccessPointsModel extends ModelBase {
     @Override
     protected void deleteOnlyCurrent() {
         for (Integer vId : currentAPs.keySet()) {
-            for (AccessPoint ap : currentAPs.get(vId)) {
+            for (AccessPoint ap : ListUtils.emptyIfNull(
+                    currentAPs.get(vId))) {
                 List<Subtask> subtaskList =
                         WorkflowMethods.deleteAccessPoint(ap);
                 if (subtaskList == null) {
@@ -369,7 +371,8 @@ public class AccessPointsModel extends ModelBase {
     @Override
     protected void deleteDraftDatabaseRows() {
         for (Integer vId : draftAPs.keySet()) {
-            for (AccessPoint ap : draftAPs.get(vId)) {
+            for (AccessPoint ap : ListUtils.emptyIfNull(
+                    draftAPs.get(vId))) {
                 AccessPointDAO.deleteAccessPoint(em(), ap);
             }
         }
@@ -451,7 +454,8 @@ public class AccessPointsModel extends ModelBase {
         List<AccessPointElement> existingDraftSequence = new ArrayList<>();
         for (Entry<Integer, List<AccessPoint>> apList : draftAPs.entrySet()) {
             Integer versionId = apList.getKey();
-            for (AccessPoint ap : apList.getValue()) {
+            for (AccessPoint ap : ListUtils.emptyIfNull(
+                    apList.getValue())) {
                 // Only consider those access points with source=USER.
                 if (ap.getSource() == ApSource.USER) {
                     existingDraftSequence.add(new AccessPointElement(
@@ -650,7 +654,8 @@ public class AccessPointsModel extends ModelBase {
         List<AccessPointElement> currentSequence = new ArrayList<>();
         for (Entry<Integer, List<AccessPoint>> apList : currentAPs.entrySet()) {
             Integer versionId = apList.getKey();
-            for (AccessPoint ap : apList.getValue()) {
+            for (AccessPoint ap : ListUtils.emptyIfNull(
+                    apList.getValue())) {
                 // Only consider those access points with source=USER.
                 if (ap.getSource() == ApSource.USER) {
                     currentSequence.add(new AccessPointElement(

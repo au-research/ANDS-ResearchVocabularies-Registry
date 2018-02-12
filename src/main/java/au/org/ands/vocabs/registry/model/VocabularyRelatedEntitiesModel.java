@@ -11,6 +11,7 @@ import javax.persistence.EntityManager;
 import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
 
+import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.collections4.sequence.CommandVisitor;
 import org.apache.commons.collections4.sequence.SequencesComparator;
 import org.slf4j.Logger;
@@ -101,7 +102,8 @@ public class VocabularyRelatedEntitiesModel extends ModelBase {
         if (currentREsAndRelations != null) {
             for (Integer reId : currentREsAndRelations.keySet()) {
                 for (VocabularyRelatedEntity vre
-                        : currentREsAndRelations.get(reId)) {
+                        : ListUtils.emptyIfNull(
+                                currentREsAndRelations.get(reId))) {
                     description.add("VRE | Current vocabulary has RE; "
                             + "RE Id, relation: " + reId + ","
                             + vre.getRelation());
@@ -111,7 +113,8 @@ public class VocabularyRelatedEntitiesModel extends ModelBase {
         if (draftREsAndRelations != null) {
             for (Integer reId : draftREsAndRelations.keySet()) {
                 for (VocabularyRelatedEntity vre
-                        : draftREsAndRelations.get(reId)) {
+                        : ListUtils.emptyIfNull(
+                                draftREsAndRelations.get(reId))) {
                     description.add("VRE | Draft vocabulary has RE; "
                             + "RE Id, relation, meaning: " + reId + ","
                             + vre.getRelation() + ","
@@ -152,7 +155,8 @@ public class VocabularyRelatedEntitiesModel extends ModelBase {
         for (Integer reId : currentREsAndRelations.keySet()) {
             RelatedEntityRef reRef = null;
             for (VocabularyRelatedEntity vre
-                    : currentREsAndRelations.get(reId)) {
+                    : ListUtils.emptyIfNull(
+                            currentREsAndRelations.get(reId))) {
                 if (reRef == null) {
                     reRef = vredbMapper.sourceToTarget(vre);
                 }
@@ -189,7 +193,8 @@ public class VocabularyRelatedEntitiesModel extends ModelBase {
         for (Integer reId : draftREsAndRelations.keySet()) {
             RelatedEntityRef reRef = null;
             for (VocabularyRelatedEntity vre
-                    : draftREsAndRelations.get(reId)) {
+                    : ListUtils.emptyIfNull(
+                            draftREsAndRelations.get(reId))) {
                 if (reRef == null) {
                     reRef = vredbMapper.sourceToTarget(vre);
                 }
@@ -243,7 +248,8 @@ public class VocabularyRelatedEntitiesModel extends ModelBase {
     protected void deleteOnlyCurrent() {
         for (Integer reId : currentREsAndRelations.keySet()) {
             for (VocabularyRelatedEntity vre
-                    : currentREsAndRelations.get(reId)) {
+                    : ListUtils.emptyIfNull(
+                            currentREsAndRelations.get(reId))) {
                 TemporalUtils.makeHistorical(vre, nowTime());
                 vre.setModifiedBy(modifiedBy());
                 VocabularyRelatedEntityDAO.updateVocabularyRelatedEntity(
@@ -267,7 +273,8 @@ public class VocabularyRelatedEntitiesModel extends ModelBase {
         }
         for (Integer reId : currentREsAndRelations.keySet()) {
             for (VocabularyRelatedEntity vre
-                    : currentREsAndRelations.get(reId)) {
+                    : ListUtils.emptyIfNull(
+                            currentREsAndRelations.get(reId))) {
                 TemporalUtils.makeHistorical(vre, nowTime());
                 vre.setModifiedBy(modifiedBy());
                 VocabularyRelatedEntityDAO.updateVocabularyRelatedEntity(
@@ -299,7 +306,8 @@ public class VocabularyRelatedEntitiesModel extends ModelBase {
     protected void deleteDraftDatabaseRows() {
         for (Integer reId : draftREsAndRelations.keySet()) {
             for (VocabularyRelatedEntity vre
-                    : draftREsAndRelations.get(reId)) {
+                    : ListUtils.emptyIfNull(
+                            draftREsAndRelations.get(reId))) {
                 VocabularyRelatedEntityDAO.deleteVocabularyRelatedEntity(
                         em(), vre);
             }
@@ -352,7 +360,8 @@ public class VocabularyRelatedEntitiesModel extends ModelBase {
                 new ArrayList<>();
         for (Integer reId : draftREsAndRelations.keySet()) {
             for (VocabularyRelatedEntity vre
-                    : draftREsAndRelations.get(reId)) {
+                    : ListUtils.emptyIfNull(
+                            draftREsAndRelations.get(reId))) {
                 existingDraftSequence.add(new VocabularyRelatedEntityElement(
                         reId, vre.getRelation(), vre));
             }
@@ -435,7 +444,8 @@ public class VocabularyRelatedEntitiesModel extends ModelBase {
                 new ArrayList<>();
         for (Integer reId : currentREsAndRelations.keySet()) {
             for (VocabularyRelatedEntity vre
-                    : currentREsAndRelations.get(reId)) {
+                    : ListUtils.emptyIfNull(
+                            currentREsAndRelations.get(reId))) {
                 currentSequence.add(new VocabularyRelatedEntityElement(
                         reId, vre.getRelation(), vre));
             }
