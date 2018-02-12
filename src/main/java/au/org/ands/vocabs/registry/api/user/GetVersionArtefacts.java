@@ -100,8 +100,6 @@ public class GetVersionArtefacts {
             outputVAs.add(mapper.sourceToTarget(dbVA));
         }
 
-        Logging.logRequest(true, request, uriInfo, null,
-                "Get version artefacts for version");
         return outputVAList;
     }
 
@@ -164,8 +162,6 @@ public class GetVersionArtefacts {
                     + "file not found.").build();
         }
 
-        Logging.logRequest(true, request, uriInfo, null,
-                "Get concept tree for version");
         return Response.ok(conceptTreeFile).build();
     }
 
