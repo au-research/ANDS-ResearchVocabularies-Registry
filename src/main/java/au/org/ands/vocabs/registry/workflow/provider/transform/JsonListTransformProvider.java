@@ -184,6 +184,7 @@ public class JsonListTransformProvider implements WorkflowProvider {
             Files.deleteIfExists(Paths.get(vaConceptList.getPath()));
             */
             TemporalUtils.makeHistorical(va, taskInfo.getNowTime());
+            va.setModifiedBy(taskInfo.getModifiedBy());
             VersionArtefactDAO.updateVersionArtefact(taskInfo.getEm(), va);
         }
         subtask.setStatus(TaskStatus.SUCCESS);

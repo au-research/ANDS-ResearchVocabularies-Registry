@@ -115,6 +115,7 @@ public class SISSVocPublishProvider implements WorkflowProvider {
         for (AccessPoint ap : aps) {
             if (ap.getSource() == ApSource.SYSTEM) {
                 TemporalUtils.makeHistorical(ap, taskInfo.getNowTime());
+                ap.setModifiedBy(taskInfo.getModifiedBy());
                 AccessPointDAO.updateAccessPoint(taskInfo.getEm(), ap);
                 ApSissvoc apSissvoc =
                         JSONSerialization.deserializeStringAsJson(ap.getData(),

@@ -321,6 +321,7 @@ public class SesameImporterProvider implements WorkflowProvider {
         for (AccessPoint ap : aps) {
             if (ap.getSource() == ApSource.SYSTEM) {
                 TemporalUtils.makeHistorical(ap, taskInfo.getNowTime());
+                ap.setModifiedBy(taskInfo.getModifiedBy());
                 AccessPointDAO.updateAccessPoint(taskInfo.getEm(), ap);
             }
         }
@@ -333,6 +334,7 @@ public class SesameImporterProvider implements WorkflowProvider {
         for (AccessPoint ap : aps) {
             if (ap.getSource() == ApSource.SYSTEM) {
                 TemporalUtils.makeHistorical(ap, taskInfo.getNowTime());
+                ap.setModifiedBy(taskInfo.getModifiedBy());
                 AccessPointDAO.updateAccessPoint(taskInfo.getEm(), ap);
             }
         }

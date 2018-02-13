@@ -923,6 +923,7 @@ public class JsonTreeTransformProvider implements WorkflowProvider {
             Files.deleteIfExists(Paths.get(vaConceptTree.getPath()));
             */
             TemporalUtils.makeHistorical(va, taskInfo.getNowTime());
+            va.setModifiedBy(taskInfo.getModifiedBy());
             VersionArtefactDAO.updateVersionArtefact(taskInfo.getEm(), va);
         }
         subtask.setStatus(TaskStatus.SUCCESS);
