@@ -61,7 +61,7 @@ public class Search {
                     + "'\"p\":3' page number of results; "
                     + "'\"widgetable\":true': select only widgetable "
                     + "vocabularies. Facets are also specified with filters: "
-                    + "e.g., '\"publisher\":\"CSIRO\"'. Supported factes: "
+                    + "e.g., '\"publisher\":\"CSIRO\"'. Supported facets: "
                     + "\"access\", \"format\", \"language\", \"licence\", "
                     + "\"publisher\", \"subject_labels\".")
             @FormParam("filtersJson") final String filtersJson
