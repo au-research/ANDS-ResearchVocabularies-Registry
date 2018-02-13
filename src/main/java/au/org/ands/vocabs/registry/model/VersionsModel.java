@@ -786,6 +786,15 @@ public class VersionsModel extends ModelBase {
                 // set of draft instances.
                 if (draftVersions.containsKey(versionId)) {
                     // Reuse this draft row, making it no longer a draft.
+                    // Oops, be very aware that this causes a temporary
+                    // inconsistency between this model and sub-models,
+                    // and it gets worse when we return to applyChanges()
+                    // and dispose of the current instances of sub-models
+                    // by invoking populateSubmodels(): there are then
+                    // "orphan" database rows (for now, just AccessPoints).
+                    // So see the last part of
+                    // AccessPointsMode.populateModel() to see how this
+                    // inconsistency is dealt with.
                     Version existingDraft = draftVersions.remove(versionId);
                     mapper.updateTargetFromSource(schemaVersion,
                             existingDraft);

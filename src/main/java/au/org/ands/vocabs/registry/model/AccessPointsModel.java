@@ -124,6 +124,7 @@ public class AccessPointsModel extends ModelBase {
                     AccessPointDAO.getDraftAccessPointListForVersion(em(),
                             versionId));
         }
+
         // Now, take into account the fact that this may be invoked
         // as part of a "refresh" done by VersionsModel.populateSubmodels().
         // There may now (temporarily) be some draft AP rows for which
