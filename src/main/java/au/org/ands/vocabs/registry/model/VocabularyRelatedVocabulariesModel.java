@@ -185,8 +185,7 @@ public class VocabularyRelatedVocabulariesModel extends ModelBase {
         for (Integer reId : draftRVsAndRelations.keySet()) {
             RelatedVocabularyRef rvRef = null;
             for (VocabularyRelatedVocabulary vrv
-                    : ListUtils.emptyIfNull(
-                            draftRVsAndRelations.get(reId))) {
+                    : ListUtils.emptyIfNull(draftRVsAndRelations.get(reId))) {
                 if (rvRef == null) {
                     rvRef = vrvdbMapper.sourceToTarget(vrv);
                 }

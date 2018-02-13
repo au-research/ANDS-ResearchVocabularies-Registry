@@ -193,8 +193,7 @@ public class VocabularyRelatedEntitiesModel extends ModelBase {
         for (Integer reId : draftREsAndRelations.keySet()) {
             RelatedEntityRef reRef = null;
             for (VocabularyRelatedEntity vre
-                    : ListUtils.emptyIfNull(
-                            draftREsAndRelations.get(reId))) {
+                    : ListUtils.emptyIfNull(draftREsAndRelations.get(reId))) {
                 if (reRef == null) {
                     reRef = vredbMapper.sourceToTarget(vre);
                 }

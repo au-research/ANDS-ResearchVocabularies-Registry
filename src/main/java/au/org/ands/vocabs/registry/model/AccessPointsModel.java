@@ -256,8 +256,7 @@ public class AccessPointsModel extends ModelBase {
     @Override
     protected void deleteOnlyCurrent() {
         for (Integer vId : currentAPs.keySet()) {
-            for (AccessPoint ap : ListUtils.emptyIfNull(
-                    currentAPs.get(vId))) {
+            for (AccessPoint ap : ListUtils.emptyIfNull(currentAPs.get(vId))) {
                 List<Subtask> subtaskList =
                         WorkflowMethods.deleteAccessPoint(ap);
                 if (subtaskList == null) {
@@ -385,8 +384,7 @@ public class AccessPointsModel extends ModelBase {
     @Override
     protected void deleteDraftDatabaseRows() {
         for (Integer vId : draftAPs.keySet()) {
-            for (AccessPoint ap : ListUtils.emptyIfNull(
-                    draftAPs.get(vId))) {
+            for (AccessPoint ap : ListUtils.emptyIfNull(draftAPs.get(vId))) {
                 AccessPointDAO.deleteAccessPoint(em(), ap);
             }
         }
@@ -468,8 +466,7 @@ public class AccessPointsModel extends ModelBase {
         List<AccessPointElement> existingDraftSequence = new ArrayList<>();
         for (Entry<Integer, List<AccessPoint>> apList : draftAPs.entrySet()) {
             Integer versionId = apList.getKey();
-            for (AccessPoint ap : ListUtils.emptyIfNull(
-                    apList.getValue())) {
+            for (AccessPoint ap : ListUtils.emptyIfNull(apList.getValue())) {
                 // Only consider those access points with source=USER.
                 if (ap.getSource() == ApSource.USER) {
                     existingDraftSequence.add(new AccessPointElement(
@@ -668,8 +665,7 @@ public class AccessPointsModel extends ModelBase {
         List<AccessPointElement> currentSequence = new ArrayList<>();
         for (Entry<Integer, List<AccessPoint>> apList : currentAPs.entrySet()) {
             Integer versionId = apList.getKey();
-            for (AccessPoint ap : ListUtils.emptyIfNull(
-                    apList.getValue())) {
+            for (AccessPoint ap : ListUtils.emptyIfNull(apList.getValue())) {
                 // Only consider those access points with source=USER.
                 if (ap.getSource() == ApSource.USER) {
                     currentSequence.add(new AccessPointElement(
