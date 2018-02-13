@@ -107,6 +107,23 @@ public class VersionArtefactsModel extends ModelBase {
                     VersionArtefactDAO.getDraftVersionArtefactListForVersion(
                             em(), versionId));
         }
+        /* The following is code copied from AccessPointsModel.populateModel()
+         * and adjusted for this class. We don't need it now, as we
+         * currently don't generate any VA database entities that are drafts.
+         * If this changes in future, revisit this code.
+        // Now, take into account the fact that this may be invoked
+        // as part of a "refresh" done by VersionsModel.populateSubmodels().
+        // There may now (temporarily) be some draft VA rows for which
+        // the corresponding draft Version row has just been deleted.
+        Set<Integer> versionIds = new HashSet<>();
+        versionIds.addAll(currentVersions.keySet());
+        versionIds.removeAll(draftVersions.keySet());
+        for (Integer versionId : versionIds) {
+            draftVAs.addAll(versionId,
+                    VersionArtefactDAO.getDraftVersionArtefactListForVersion(
+                            em(), versionId));
+        }
+        */
     }
 
     /** {@inheritDoc} */
