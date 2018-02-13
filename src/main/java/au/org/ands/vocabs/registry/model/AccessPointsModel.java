@@ -6,9 +6,11 @@ import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import javax.persistence.EntityManager;
 import javax.ws.rs.core.MultivaluedHashMap;
@@ -118,6 +120,18 @@ public class AccessPointsModel extends ModelBase {
 
         // Draft
         for (Integer versionId : draftVersions.keySet()) {
+            draftAPs.addAll(versionId,
+                    AccessPointDAO.getDraftAccessPointListForVersion(em(),
+                            versionId));
+        }
+        // Now, take into account the fact that this may be invoked
+        // as part of a "refresh" done by VersionsModel.populateSubmodels().
+        // There may now (temporarily) be some draft AP rows for which
+        // the corresponding draft Version row has just been deleted.
+        Set<Integer> versionIds = new HashSet<>();
+        versionIds.addAll(currentVersions.keySet());
+        versionIds.removeAll(draftVersions.keySet());
+        for (Integer versionId : versionIds) {
             draftAPs.addAll(versionId,
                     AccessPointDAO.getDraftAccessPointListForVersion(em(),
                             versionId));
