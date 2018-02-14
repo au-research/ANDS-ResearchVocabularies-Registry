@@ -5,7 +5,6 @@ package au.org.ands.vocabs.roles;
 import java.util.Set;
 
 import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import au.org.ands.vocabs.roles.db.entity.AuthenticationServiceId;
@@ -76,8 +75,7 @@ public class UserInfo {
     /** Get the value of parentRoles.
      * @return The value of parentRoles.
      */
-    @XmlElementWrapper(name = "parentRoles")
-    @XmlElement(name = "role")
+    @XmlElement(name = "parentRole")
     public Set<Role> getParentRoles() {
         return this.parentRoles;
     }
