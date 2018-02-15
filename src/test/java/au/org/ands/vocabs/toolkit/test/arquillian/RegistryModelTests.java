@@ -1638,6 +1638,56 @@ public class RegistryModelTests extends ArquillianBaseTest {
                 + "test-registry-results.xml");
     }
 
+    /** Test of updating a draft of a vocabulary
+     * that already has both existing published and draft instances.
+     * Vocabulary, VocabularyRelatedEntity, Version and Access Point
+     * model elements are used.
+     * @throws DatabaseUnitException If a problem with DbUnit.
+     * @throws IOException If a problem getting test data for DbUnit,
+     *          or reading JSON from the correct and test output files.
+     * @throws SQLException If DbUnit has a problem performing
+     *           performing JDBC operations.
+     * @throws JAXBException If a problem loading vocabulary data.
+     *  */
+    @Test
+    public final void testApplyChangesDraftVoVREVeAP2() throws
+    DatabaseUnitException, IOException, SQLException, JAXBException {
+        ArquillianTestUtils.clearDatabase(REGISTRY);
+        ArquillianTestUtils.loadDbUnitTestFile(REGISTRY, CLASS_NAME_PREFIX
+                + "testApplyChangesDraftVoVREVeAP2");
+        Vocabulary vocabulary = RegistryTestUtils.
+                getValidatedVocabularyFromFile(
+                "test/tests/"
+                        + CLASS_NAME_PREFIX
+                        + "testApplyChangesDraftVoVREVeAP2/"
+                        + "test-vocabulary.xml", ValidationMode.UPDATE);
+        EntityManager em = null;
+        try {
+            em = DBContext.getEntityManager();
+            em.getTransaction().begin();
+            VocabularyModel vm = ModelMethods.createVocabularyModel(em, 1);
+            ModelMethods.applyChanges(vm, "TEST", nowTime1, vocabulary);
+            em.getTransaction().commit();
+        } catch (Exception e) {
+            logger.error("Exception :",e);
+            if (em != null) {
+                em.getTransaction().rollback();
+                throw e;
+            }
+        } finally {
+            if (em != null) {
+                em.close();
+            }
+        }
+        ArquillianTestUtils.exportFullDbUnitData(REGISTRY,"output.xml");
+        ArquillianTestUtils.compareDatabaseCurrentAndExpectedContents(
+                REGISTRY,
+                "test/tests/"
+                + CLASS_NAME_PREFIX
+                + "testApplyChangesDraftVoVREVeAP2/"
+                + "test-registry-results.xml");
+    }
+
     /** Test of getting the draft of a vocabulary in registry schema format,
      * where the vocabulary has only a draft instance.
      * Only Vocabulary and VocabularyRelatedEntity
