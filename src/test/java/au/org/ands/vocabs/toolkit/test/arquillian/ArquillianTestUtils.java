@@ -11,6 +11,10 @@ import java.io.Writer;
 import java.lang.invoke.MethodHandles;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -26,9 +30,12 @@ import javax.persistence.EntityManager;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status.Family;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.dbunit.Assertion;
 import org.dbunit.DatabaseUnitException;
+import org.dbunit.assertion.comparer.value.ValueComparer;
+import org.dbunit.assertion.comparer.value.ValueComparers;
 import org.dbunit.database.DatabaseConfig;
 import org.dbunit.database.IDatabaseConnection;
 import org.dbunit.dataset.IDataSet;
@@ -49,6 +56,8 @@ import org.testng.FileAssert;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import au.org.ands.vocabs.registry.utils.PropertyConstants;
+import au.org.ands.vocabs.registry.utils.RegistryProperties;
 import au.org.ands.vocabs.toolkit.test.utils.DatabaseSelector;
 import au.org.ands.vocabs.toolkit.test.utils.NetClientUtils;
 import au.org.ands.vocabs.toolkit.utils.ApplicationContextListener;
@@ -107,6 +116,132 @@ public final class ArquillianTestUtils {
         }
     }
 
+    /** The registry temporary path. */
+    private static String tempPath =
+        RegistryProperties.getProperty(PropertyConstants.REGISTRY_TEMPPATH);
+
+    /** The registry temporary path, as a path. */
+    private static Path tempPathPath = Paths.get(tempPath);
+
+    /** Get the path to use for a test-specific temporary directory.
+     * @param testName The name of the test method. It will be used
+     *      as part of the path.
+     * @return The full path to the temporary directory for the test.
+     */
+    public static Path getTempPathForTest(final String testName) {
+        return tempPathPath.resolve(testName);
+    }
+
+    /** Copy all of the test data files for a test. The test-specific
+     * temporary directory is created (having been removed, if it already
+     * exists) and the files are copied into it.
+     * @param testName The name of the test method.
+     * @throws IOException If there is an error copying a file.
+     */
+    public static void copyTempFilesForTest(final String testName)
+        throws IOException {
+        Path testTempPath = getTempPathForTest(testName);
+        File testTempPathFile = testTempPath.toFile();
+        FileUtils.deleteQuietly(testTempPathFile);
+        testTempPathFile.mkdirs();
+        String sourceDirectory = classLoader.getResource(
+                "test/tests/" + testName + "/files").getPath();
+        try (DirectoryStream<Path> stream =
+                Files.newDirectoryStream(Paths.get(sourceDirectory))) {
+            // Iterate over every file in the test source directory.
+            for (Path entry: stream) {
+                // Copy the file to the temporary directory.
+                Files.copy(entry, testTempPath.resolve(entry.getFileName()));
+            }
+        }
+    }
+
+    /** Assert that the temporary directory for a test is not empty,
+     * i.e., it contains at least one file.
+     * @param testName The name of the test method.
+     */
+    public static void assertTempForTestNotEmpty(final String testName) {
+        Path tempDir = getTempPathForTest(testName);
+        Assert.assertTrue(Files.isDirectory(tempDir),
+                "Temporary directory expected to exist, but does not: "
+                + tempDir);
+        try {
+            Assert.assertTrue(Files.list(tempDir).findAny().isPresent(),
+                    "Temporary directory expected to be non-empty, "
+                    + "but is empty: " + tempDir);
+        } catch (IOException e) {
+            Assert.fail("IOException while opening temp directory", e);
+        }
+    }
+
+    /** Assert that the temporary directory for a test has a particular
+     * number of files in it.
+     * @param testName The name of the test method.
+     * @param expectedNumberOfFiles The expected number of files.
+     */
+    public static void assertTempForTestHasFiles(final String testName,
+            final int expectedNumberOfFiles) {
+        Path tempDir = getTempPathForTest(testName);
+        Assert.assertTrue(Files.isDirectory(tempDir),
+                "Temporary directory expected to exist, but does not: "
+                + tempDir);
+        try {
+            Assert.assertEquals(Files.list(tempDir).count(),
+                    expectedNumberOfFiles,
+                    "Temporary directory expected to have "
+                    + expectedNumberOfFiles
+                    + " but did not: " + tempDir);
+        } catch (IOException e) {
+            Assert.fail("IOException while opening temp directory", e);
+        }
+    }
+
+    /** Assert that the temporary directory for a test is empty.
+     * @param testName The name of the test method.
+     */
+    public static void assertTempForTestEmpty(final String testName) {
+        Path tempDir = getTempPathForTest(testName);
+        Assert.assertTrue(Files.isDirectory(tempDir),
+                "Temporary directory expected to exist, but does not: "
+                + tempDir);
+        try {
+            Assert.assertTrue(!Files.list(tempDir).findAny().isPresent(),
+                    "Temporary directory expected to be empty, "
+                    + "but is not: " + tempDir);
+        } catch (IOException e) {
+            Assert.fail("IOException while opening temp directory", e);
+        }
+    }
+
+    /** The registry uploads path. */
+    private static String uploadsPath =
+        RegistryProperties.getProperty(PropertyConstants.REGISTRY_UPLOADSPATH);
+
+    /** The registry uploads path, as a path. */
+    private static Path uploadsPathPath = Paths.get(uploadsPath);
+
+    /** Copy all of the upload data files for a test. Any existing
+     * files in the uploads directory are removed first.
+     * @param testName The name of the test method.
+     * @throws IOException If there is an error copying a file.
+     */
+    public static void copyUploadsFilesForTest(final String testName)
+        throws IOException {
+        File uploadsPathFile = uploadsPathPath.toFile();
+        FileUtils.deleteQuietly(uploadsPathFile);
+        uploadsPathFile.mkdirs();
+        String sourceDirectory = classLoader.getResource(
+                "test/tests/" + testName + "/uploads").getPath();
+        try (DirectoryStream<Path> stream =
+                Files.newDirectoryStream(Paths.get(sourceDirectory))) {
+            // Iterate over every file in the test source directory.
+            for (Path entry: stream) {
+                // Copy the file to the temporary directory.
+                Files.copy(entry, uploadsPathPath.resolve(entry.getFileName()));
+            }
+        }
+    }
+
     /** Get the absolute path to {@code /WEB-INF/classes} within the web app.
      * Only works within the container.
      * @return The absolute path to the {@code /WEB-INF/classes} directory
@@ -119,9 +254,15 @@ public final class ArquillianTestUtils {
 
     /** Add our standard replacement settings to the dataset.
      * For now, we support: replacing two consecutive apostrophes ({@code ''})
-     * with a double-quote ({@code "}), and replacing the string
+     * with a double-quote ({@code "}), replacing the string
      * {@code {CLASSES}} with the absolute path to the {@code /WEB-INF/classes}
-     * directory in the running webapp.
+     * directory in the running webapp, replacing the string
+     * {@code {TEMP}} with the absolute path to the registry temporary path,
+     * replacing the string
+     * {@code {VOCABS}} with the path to the registry vocabs path,
+     * and
+     * replacing the string
+     * {@code {DOWNLOADPREFIX}} with the path to the registry download prefix.
      * @param dataset The dataset to which the replacement settings
      * are to be added.
      */
@@ -130,6 +271,13 @@ public final class ArquillianTestUtils {
         dataset.addReplacementSubstring("''", "\"");
         String classesPath = getClassesPath();
         dataset.addReplacementSubstring("{CLASSES}", classesPath);
+        dataset.addReplacementSubstring("{TEMP}", tempPath);
+        dataset.addReplacementSubstring("{VOCABS}",
+                RegistryProperties.getProperty(
+                        PropertyConstants.REGISTRY_VOCABSPATH));
+        dataset.addReplacementSubstring("{DOWNLOADPREFIX}",
+                RegistryProperties.getProperty(
+                        PropertyConstants.REGISTRY_DOWNLOADPREFIX));
     }
 
     /* Methods for the database(s). */
@@ -562,7 +710,7 @@ public final class ArquillianTestUtils {
     }
 
     /** Get the current contents of a database and the expected
-     * contents, and assert their equality..
+     * contents, and assert their equality.
      * @param dbs The database from which the data is to be fetched.
      * @param filename The filename of the file containing the expected
      *      database contents.
@@ -589,6 +737,53 @@ public final class ArquillianTestUtils {
                 new ReplacementDataSet(xmlDataset);
         addReplacementSubstringsToDataset(expectedDataset);
         Assertion.assertEquals(expectedDataset, databaseDataSet);
+    }
+
+    /** Map of ValueComparers to use when comparing tasks. */
+    private static Map<String, Map<String, ValueComparer>>
+        valueComparersForTasks;
+
+    static {
+        valueComparersForTasks = new HashMap<>();
+        Map<String, ValueComparer> innerMap = new HashMap<>();
+        TaskComparer taskComparer = new TaskComparer();
+        innerMap.put("PARAMS", taskComparer);
+        innerMap.put("RESPONSE", taskComparer);
+        valueComparersForTasks.put("TASKS", innerMap);
+    }
+
+    /** Get the current contents of a database and the expected
+     * contents, and assert their equality, apart from timestamps
+     * in the tasks table.
+     * @param dbs The database from which the data is to be fetched.
+     * @param filename The filename of the file containing the expected
+     *      database contents.
+     * @throws DatabaseUnitException If a problem with DbUnit.
+     * @throws HibernateException If a problem getting the underlying
+     *          JDBC connection.
+     * @throws SQLException If DbUnit has a problem performing
+     *           performing JDBC operations.
+     * @throws IOException If reading the DTD fails.
+     */
+    public static void
+    compareDatabaseCurrentAndExpectedContentsIgnoreTaskTimestamps(
+            final DatabaseSelector dbs,
+            final String filename) throws
+            DatabaseUnitException, HibernateException, SQLException,
+            IOException {
+        IDatabaseConnection connection = getIDatabaseConnectionForDbUnit(dbs);
+        IDataSet databaseDataSet = connection.createDataSet();
+        FlatXmlDataSet xmlDataset = new FlatXmlDataSetBuilder()
+                .setMetaDataSetFromDtd(getResourceAsInputStream(
+                        dbs.getDTDFilename()))
+                .build(getResourceAsInputStream(
+                        filename));
+        ReplacementDataSet expectedDataset =
+                new ReplacementDataSet(xmlDataset);
+        addReplacementSubstringsToDataset(expectedDataset);
+        Assertion.assertWithValueComparer(expectedDataset, databaseDataSet,
+                ValueComparers.isActualEqualToExpected,
+                valueComparersForTasks);
     }
 
     /** Compare two files containing JSON, asserting that they contain

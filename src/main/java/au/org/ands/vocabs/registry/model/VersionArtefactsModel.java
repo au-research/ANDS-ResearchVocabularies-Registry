@@ -281,11 +281,13 @@ public class VersionArtefactsModel extends ModelBase {
     /** {@inheritDoc} */
     @Override
     protected void deleteOnlyDraft() {
-        // TO DO: since we really shouldn't have any draft VAs,
+        // Since we really shouldn't have any draft VAs,
         // once we have correctly applied workflow processing in this
         // class, there should be nothing more to do, so delete
         // the following row (and the body of the deleteDraftDatabaseRows()
         // method itself).
+        // Nevertheless, leave it for now, and we even now have
+        // some tests that confirm that such a cleanup happens!
         deleteDraftDatabaseRows();
     }
 
@@ -294,6 +296,8 @@ public class VersionArtefactsModel extends ModelBase {
     protected void deleteDraftDatabaseRows() {
         // Hmm, this isn't right. VAs are system-generated, so
         // we shouldn't have database deletion in this class.
+        // Nevertheless, leave it for now, and we even now have
+        // some tests that confirm that such a cleanup happens!
         for (Integer vId : draftVAs.keySet()) {
             for (VersionArtefact va : ListUtils.emptyIfNull(
                     draftVAs.get(vId))) {
@@ -342,6 +346,8 @@ public class VersionArtefactsModel extends ModelBase {
                 // for a draft instance, no workflow is applied.
                 // Hmm, this isn't right. VAs are system-generated, so
                 // we shouldn't have database deletion in this class.
+                // Nevertheless, leave it for now, and we even now have
+                // some tests that confirm that such a cleanup happens!
                 VersionArtefactDAO.deleteVersionArtefact(em(), ap);
             }
             // Remove from our own records.
