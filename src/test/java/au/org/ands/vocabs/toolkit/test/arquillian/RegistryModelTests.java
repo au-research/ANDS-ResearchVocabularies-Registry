@@ -1741,6 +1741,7 @@ public class RegistryModelTests extends ArquillianBaseTest {
         }
     }
 
+
     /** Test of getting the draft of a vocabulary in registry schema format,
      * where the vocabulary has both a published and draft instance.
      * Only Vocabulary and VocabularyRelatedEntity
@@ -1941,6 +1942,46 @@ public class RegistryModelTests extends ArquillianBaseTest {
     }
 
     /** Test of getting the draft of a vocabulary in registry schema format,
+     * where the vocabulary has only a draft instance.
+     * Vocabulary, VocabularyRelatedEntity, Access Point and Version
+     * model elements are used.
+     * @throws DatabaseUnitException If a problem with DbUnit.
+     * @throws IOException If a problem getting test data for DbUnit,
+     *          or reading JSON from the correct and test output files.
+     * @throws SQLException If DbUnit has a problem performing
+     *           performing JDBC operations.
+     * @throws JAXBException If a problem loading vocabulary data.
+     *  */
+    @Test
+    public final void testGetDraftVoVREVeAP1() throws
+    DatabaseUnitException, IOException, SQLException, JAXBException {
+        ArquillianTestUtils.clearDatabase(REGISTRY);
+        ArquillianTestUtils.loadDbUnitTestFile(REGISTRY, CLASS_NAME_PREFIX
+                + "testGetDraftVoVREVeAP1");
+        EntityManager em = null;
+        try {
+            em = DBContext.getEntityManager();
+            VocabularyModel vm = ModelMethods.createVocabularyModel(em, 1);
+            Vocabulary vocabularyAsSchema = ModelMethods.getDraft(vm,
+                    true, true, false);
+            String expectedString = ArquillianTestUtils.getResourceAsString(
+                    "test/tests/"
+                            + CLASS_NAME_PREFIX
+                            + "testGetDraftVoVREVeAP1/"
+                            + "test-vocabulary-output.xml");
+            String actualString =
+                    RegistryTestUtils.serializeVocabularySchemaEntityToXML(
+                            vocabularyAsSchema);
+            MatcherAssert.assertThat(actualString,
+                    Matchers.equalToIgnoringWhiteSpace(expectedString));
+        } finally {
+            if (em != null) {
+                em.close();
+            }
+        }
+    }
+
+    /** Test of getting the draft of a vocabulary in registry schema format,
      * where the vocabulary has both a published and draft instance.
      * Vocabulary, VocabularyRelatedEntity, and Version
      * model elements are used.
@@ -1967,6 +2008,46 @@ public class RegistryModelTests extends ArquillianBaseTest {
                     "test/tests/"
                             + CLASS_NAME_PREFIX
                             + "testGetDraftVoVREVe2/"
+                            + "test-vocabulary-output.xml");
+            String actualString =
+                    RegistryTestUtils.serializeVocabularySchemaEntityToXML(
+                            vocabularyAsSchema);
+            MatcherAssert.assertThat(actualString,
+                    Matchers.equalToIgnoringWhiteSpace(expectedString));
+        } finally {
+            if (em != null) {
+                em.close();
+            }
+        }
+    }
+
+    /** Test of getting the draft of a vocabulary in registry schema format,
+     * where the vocabulary has both a published and draft instance.
+     * Vocabulary, VocabularyRelatedEntity, AccessPoints and Version
+     * model elements are used.
+     * @throws DatabaseUnitException If a problem with DbUnit.
+     * @throws IOException If a problem getting test data for DbUnit,
+     *          or reading JSON from the correct and test output files.
+     * @throws SQLException If DbUnit has a problem performing
+     *           performing JDBC operations.
+     * @throws JAXBException If a problem loading vocabulary data.
+     *  */
+    @Test
+    public final void testGetDraftVoVREVeAP2() throws
+    DatabaseUnitException, IOException, SQLException, JAXBException {
+        ArquillianTestUtils.clearDatabase(REGISTRY);
+        ArquillianTestUtils.loadDbUnitTestFile(REGISTRY, CLASS_NAME_PREFIX
+                + "testGetDraftVoVREVeAP2");
+        EntityManager em = null;
+        try {
+            em = DBContext.getEntityManager();
+            VocabularyModel vm = ModelMethods.createVocabularyModel(em, 1);
+            Vocabulary vocabularyAsSchema = ModelMethods.getDraft(vm,
+                    true, true, false);
+            String expectedString = ArquillianTestUtils.getResourceAsString(
+                    "test/tests/"
+                            + CLASS_NAME_PREFIX
+                            + "testGetDraftVoVREVeAP2/"
                             + "test-vocabulary-output.xml");
             String actualString =
                     RegistryTestUtils.serializeVocabularySchemaEntityToXML(
