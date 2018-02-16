@@ -88,24 +88,32 @@ public class JsonListTransformProvider implements WorkflowProvider {
             }
         }
 
-        String resultFileName = TaskUtils.getTaskOutputPath(taskInfo, true,
-                "concepts_list.json");
-        try {
-            File out = new File(resultFileName);
-            HashMap<String, HashMap<String, Object>> conceptMap =
-                    conceptHandler.getConceptMap();
-            FileUtils.writeStringToFile(out,
-                    JSONSerialization.serializeObjectAsJsonString(conceptMap),
-                    StandardCharsets.UTF_8);
-            VersionArtefactUtils.createConceptListVersionArtefact(taskInfo,
-                    resultFileName);
-        } catch (IOException ex) {
-            subtask.setStatus(TaskStatus.ERROR);
-            subtask.addResult(TaskRunner.ERROR,
-                    "Exception in JsonListTransform while Parsing RDF");
-            logger.error("Exception in JsonListTransform generating result:",
-                    ex);
-            return;
+        HashMap<String, HashMap<String, Object>> conceptMap =
+                conceptHandler.getConceptMap();
+
+        if (!conceptMap.isEmpty()) {
+            String resultFileName = TaskUtils.getTaskOutputPath(taskInfo, true,
+                    "concepts_list.json");
+            try {
+                File out = new File(resultFileName);
+                FileUtils.writeStringToFile(out,
+                        JSONSerialization.serializeObjectAsJsonString(
+                                conceptMap),
+                        StandardCharsets.UTF_8);
+                VersionArtefactUtils.createConceptListVersionArtefact(taskInfo,
+                        resultFileName);
+            } catch (IOException ex) {
+                subtask.setStatus(TaskStatus.ERROR);
+                subtask.addResult(TaskRunner.ERROR,
+                        "Exception in JsonListTransform while Parsing RDF");
+                logger.error("Exception in JsonListTransform "
+                        + "generating result:", ex);
+                return;
+            }
+        } else {
+            // Clear out any existing VA, because we did in fact succeed,
+            // and we don't want to leave around any previous non-empty VA.
+            untransform(taskInfo, subtask);
         }
         subtask.setStatus(TaskStatus.SUCCESS);
     }
@@ -164,6 +172,9 @@ public class JsonListTransformProvider implements WorkflowProvider {
     }
 
     /** Remove the JsonList version artefact for the version.
+     * NB: This method will also be invoked by
+     * {@link #transform(TaskInfo, Subtask)}, in the case of
+     * success that nevertheless produces an empty result.
      * @param taskInfo The top-level TaskInfo for the subtask.
      * @param subtask The subtask to be performed.
      */
