@@ -1,3 +1,4 @@
+// CHECKSTYLE_FILE:OFF: FileLength
 /** See the file "LICENSE" for the full license governing this code. */
 
 package au.org.ands.vocabs.toolkit.test.arquillian;
@@ -1669,7 +1670,7 @@ public class RegistryModelTests extends ArquillianBaseTest {
             ModelMethods.applyChanges(vm, "TEST", nowTime1, vocabulary);
             em.getTransaction().commit();
         } catch (Exception e) {
-            logger.error("Exception :",e);
+            logger.error("Exception :", e);
             if (em != null) {
                 em.getTransaction().rollback();
                 throw e;
@@ -1679,7 +1680,7 @@ public class RegistryModelTests extends ArquillianBaseTest {
                 em.close();
             }
         }
-        ArquillianTestUtils.exportFullDbUnitData(REGISTRY,"output.xml");
+        ArquillianTestUtils.exportFullDbUnitData(REGISTRY, "output.xml");
         ArquillianTestUtils.compareDatabaseCurrentAndExpectedContents(
                 REGISTRY,
                 "test/tests/"
