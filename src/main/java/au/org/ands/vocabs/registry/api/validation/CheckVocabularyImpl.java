@@ -4,6 +4,7 @@ package au.org.ands.vocabs.registry.api.validation;
 
 import static au.org.ands.vocabs.registry.api.validation.CheckVocabulary.INTERFACE_NAME;
 
+import java.io.StringWriter;
 import java.lang.invoke.MethodHandles;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -12,6 +13,9 @@ import java.util.Set;
 
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
 
 import org.apache.commons.lang3.BooleanUtils;
 import org.slf4j.Logger;
@@ -61,6 +65,23 @@ public class CheckVocabularyImpl
         mode = cnv.mode();
     }
 
+    /** Serialize a registry schema format Vocabulary instance into
+     * an XML String.
+     * @param vocabulary The Vocabulary instance to be serialized.
+     * @return The Vocabulary instance serialized as XML.
+     * @throws JAXBException If a problem loading vocabulary data.
+     */
+    private static String serializeVocabularySchemaEntityToXML(
+            final Vocabulary vocabulary) throws JAXBException {
+        JAXBContext jaxbContext = JAXBContext.newInstance(Vocabulary.class);
+        Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
+        // Make it pretty, for easier reading.
+        jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+        StringWriter stringWriter = new StringWriter();
+        jaxbMarshaller.marshal(vocabulary, stringWriter);
+        return stringWriter.toString();
+    }
+
     /** Validate a proposed new or updated vocabulary.
      * @param newVocabulary The vocabulary that is being validated.
      * @return true, if newVocabulary represents a valid vocabulary.
@@ -71,7 +92,15 @@ public class CheckVocabularyImpl
             final ConstraintValidatorContext constraintContext) {
 
         boolean valid = true;
-        logger.info("In CheckVocabularyImpl.isValid()");
+        logger.debug("In CheckVocabularyImpl.isValid()");
+        if (logger.isDebugEnabled()) {
+            try {
+                logger.debug("Validating: "
+                        + serializeVocabularySchemaEntityToXML(newVocabulary));
+            } catch (JAXBException e) {
+                logger.error("Exception while trying to output debugging!");
+            }
+        }
 
         // Table of contents of this method:
         // id
@@ -717,7 +746,7 @@ public class CheckVocabularyImpl
             final Version newVersion,
             final ConstraintValidatorContext constraintContext) {
         boolean valid = true;
-        logger.info("In CheckVocabularyImpl.isValidVersion("
+        logger.debug("In CheckVocabularyImpl.isValidVersion("
                 + versionIndex + ")");
 
         // Table of contents of this method:
@@ -925,7 +954,7 @@ public class CheckVocabularyImpl
             final AccessPoint newAccessPoint,
             final ConstraintValidatorContext constraintContext) {
         boolean valid = true;
-        logger.info("In CheckVocabularyImpl.isValidAccessPoint("
+        logger.debug("In CheckVocabularyImpl.isValidAccessPoint("
                 + accessPointIndex + ")");
 
         // Table of contents of this method:
