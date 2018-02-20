@@ -425,6 +425,7 @@ public final class ValidationUtils {
     static {
         validWhitelist = Whitelist.basic();
         validWhitelist.removeEnforcedAttribute("a", "rel");
+        validWhitelist.addAttributes("a", "href", "rel", "target");
     }
 
     /** Whitelist for jsoup to use to clean HTML. Initialized
