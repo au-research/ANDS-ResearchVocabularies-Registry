@@ -424,7 +424,19 @@ public final class ValidationUtils {
 
     static {
         validWhitelist = Whitelist.basic();
-        validWhitelist.addEnforcedAttribute("a", "target", "_blank");
+        validWhitelist.removeEnforcedAttribute("a", "rel");
+    }
+
+    /** Whitelist for jsoup to use to clean HTML. Initialized
+     * in a static block to {@link Whitelist#basic()},
+     * and customized further with regard to "a" tags. */
+    private static Whitelist cleanWhitelist;
+
+    static {
+        cleanWhitelist = Whitelist.basic();
+        cleanWhitelist.addEnforcedAttribute("a", "target", "_blank");
+        cleanWhitelist.addEnforcedAttribute("a", "rel",
+                "nofollow noopener noreferrer");
     }
 
     /** Utility method to determine if a String value contains
@@ -443,7 +455,7 @@ public final class ValidationUtils {
      * @return The cleaned string.
      */
     public static String cleanHTML(final String stringToClean) {
-        return Jsoup.clean(stringToClean, validWhitelist);
+        return Jsoup.clean(stringToClean, cleanWhitelist);
     }
 
     /** Check that a field of a bean contains only acceptable HTML.

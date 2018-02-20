@@ -227,20 +227,31 @@ public class CheckVocabularyImpl
         // acronym: optional
 
         // description: required, and must be valid HTML
+        String description = newVocabulary.getDescription();
         valid = ValidationUtils.requireFieldNotEmptyString(
                 INTERFACE_NAME,
-                newVocabulary.getDescription(), "description",
+                description, "description",
                 constraintContext, valid);
         valid = ValidationUtils.requireFieldValidHTML(
                 INTERFACE_NAME,
-                newVocabulary.getDescription(), "description",
+                description, "description",
                 constraintContext, valid);
+        // And now, if it was supplied, clean it.
+        if (description != null) {
+            newVocabulary.setDescription(ValidationUtils.cleanHTML(
+                    description));
+        }
 
         // note: optional, but, if specified, must be valid HTML
+        String note = newVocabulary.getNote();
         valid = ValidationUtils.requireFieldValidHTML(
                 INTERFACE_NAME,
-                newVocabulary.getNote(), "note",
+                note, "note",
                 constraintContext, valid);
+        // And now, if it was supplied, clean it.
+        if (note != null) {
+            newVocabulary.setNote(ValidationUtils.cleanHTML(note));
+        }
 
         // subject: at least one from ANZSRC-FOR required
         valid = isValidSubjects(valid, newVocabulary, constraintContext);
@@ -799,14 +810,19 @@ public class CheckVocabularyImpl
         }
 
         // note: optional, but, if specified, must be valid HTML
+        String note = newVersion.getNote();
         valid = ValidationUtils.requireFieldValidHTML(
                 INTERFACE_NAME,
-                newVersion.getNote(), "version.note",
+                note, "version.note",
                 constraintContext,
                 cvb -> cvb.addPropertyNode("version").
                     addPropertyNode("note").inIterable().
                     atIndex(versionIndex).addConstraintViolation(),
                 valid);
+        // And now, if it was supplied, clean it.
+        if (note != null) {
+            newVersion.setNote(ValidationUtils.cleanHTML(note));
+        }
 
         // releaseDate: required
         // Must match a regular expression: YYYY, or YYYY-MM, or YYYY-MM-DD.
