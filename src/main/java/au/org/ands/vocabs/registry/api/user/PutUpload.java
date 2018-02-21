@@ -122,6 +122,9 @@ public class PutUpload {
             @ApiResponse(code = HttpStatus.SC_REQUEST_TOO_LONG,
                     message = "Uploaded content too large",
                     response = Void.class),
+            @ApiResponse(code = HttpStatus.SC_INTERNAL_SERVER_ERROR,
+                    message = "Internal server error",
+                    response = ErrorResult.class)
             })
     public final Response createUpload(
             @Context final HttpServletRequest request,

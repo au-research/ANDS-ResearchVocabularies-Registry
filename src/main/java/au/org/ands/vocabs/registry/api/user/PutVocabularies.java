@@ -105,6 +105,9 @@ public class PutVocabularies {
                             }),
             @ApiResponse(code = HttpStatus.SC_FORBIDDEN,
                     message = "Not authenticated, or not authorized",
+                    response = ErrorResult.class),
+            @ApiResponse(code = HttpStatus.SC_INTERNAL_SERVER_ERROR,
+                    message = "Internal server error",
                     response = ErrorResult.class)
             })
     public final Response createVocabulary(
@@ -256,6 +259,9 @@ public class PutVocabularies {
                             }),
             @ApiResponse(code = HttpStatus.SC_FORBIDDEN,
                     message = "Not authenticated, or not authorized",
+                    response = ErrorResult.class),
+            @ApiResponse(code = HttpStatus.SC_INTERNAL_SERVER_ERROR,
+                    message = "Internal server error",
                     response = ErrorResult.class)
             })
     public final Response updateVocabulary(
