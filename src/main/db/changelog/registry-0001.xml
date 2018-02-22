@@ -180,6 +180,17 @@
        https://web.archive.org/web/20080208072328/http://dev.mysql.com/tech-resources/articles/mysql-enforcing-foreign-keys.html
   -->
 
+  <!-- Don't use for now, as they require careful handling in the Java
+       code. To be specific: in the code, you need to do em().flush()
+       after updating vocabulary entities in order for the trigger
+       to see them.
+       In other words: if we want to make use of triggers such as
+       these, it will be necessary to go through the model subsystem
+       and add em().flush() in quite a few places in the code.
+  -->
+
+  <!--
+
   <changeSet id="0001-versions-trigger-mysql"
              author="Richard.Walker@ands.org.au"
              dbms="mysql">
@@ -262,6 +273,8 @@
       DROP FUNCTION versions_vocabulary_id_function()
     </rollback>
   </changeSet>
+
+  -->
 
   <changeSet id="0001-version_artefacts-createTable"
              author="Richard.Walker@ands.org.au">
