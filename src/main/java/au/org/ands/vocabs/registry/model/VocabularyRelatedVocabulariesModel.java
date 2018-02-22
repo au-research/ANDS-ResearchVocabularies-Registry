@@ -147,22 +147,25 @@ public class VocabularyRelatedVocabulariesModel extends ModelBase {
                 VocabularyDbRelatedVocabularySchemaMapper.INSTANCE;
 
         for (Integer reId : currentRVsAndRelations.keySet()) {
-            RelatedVocabularyRef rvRef = null;
-            for (VocabularyRelatedVocabulary vrv
-                    : ListUtils.emptyIfNull(
-                            currentRVsAndRelations.get(reId))) {
-                if (rvRef == null) {
-                    rvRef = vrvdbMapper.sourceToTarget(vrv);
+            List<VocabularyRelatedVocabulary> currentRVsAndRelationsForRvId =
+                    currentRVsAndRelations.get(reId);
+            if (!currentRVsAndRelationsForRvId.isEmpty()) {
+                RelatedVocabularyRef rvRef = null;
+                for (VocabularyRelatedVocabulary vrv
+                        : currentRVsAndRelationsForRvId) {
+                    if (rvRef == null) {
+                        rvRef = vrvdbMapper.sourceToTarget(vrv);
+                    }
+                    rvRef.getRelation().add(vrv.getRelation());
                 }
-                rvRef.getRelation().add(vrv.getRelation());
+                if (includeRelatedEntitiesAndVocabularies) {
+                    au.org.ands.vocabs.registry.schema.vocabulary201701.
+                    RelatedVocabulary targetRelatedVocabulary =
+                    getRelatedVocabulary(reId, rvMapper);
+                    rvRef.setRelatedVocabulary(targetRelatedVocabulary);
+                }
+                rvrList.add(rvRef);
             }
-            if (includeRelatedEntitiesAndVocabularies) {
-                au.org.ands.vocabs.registry.schema.vocabulary201701.
-                RelatedVocabulary targetRelatedVocabulary =
-                getRelatedVocabulary(reId, rvMapper);
-                rvRef.setRelatedVocabulary(targetRelatedVocabulary);
-            }
-            rvrList.add(rvRef);
         }
     }
 
@@ -183,21 +186,25 @@ public class VocabularyRelatedVocabulariesModel extends ModelBase {
                 VocabularyDbRelatedVocabularySchemaMapper.INSTANCE;
 
         for (Integer reId : draftRVsAndRelations.keySet()) {
-            RelatedVocabularyRef rvRef = null;
-            for (VocabularyRelatedVocabulary vrv
-                    : ListUtils.emptyIfNull(draftRVsAndRelations.get(reId))) {
-                if (rvRef == null) {
-                    rvRef = vrvdbMapper.sourceToTarget(vrv);
+            List<VocabularyRelatedVocabulary> draftRVsAndRelationsForRvId =
+                    draftRVsAndRelations.get(reId);
+            if (!draftRVsAndRelationsForRvId.isEmpty()) {
+                RelatedVocabularyRef rvRef = null;
+                for (VocabularyRelatedVocabulary vrv
+                        : draftRVsAndRelationsForRvId) {
+                    if (rvRef == null) {
+                        rvRef = vrvdbMapper.sourceToTarget(vrv);
+                    }
+                    rvRef.getRelation().add(vrv.getRelation());
                 }
-                rvRef.getRelation().add(vrv.getRelation());
+                if (includeRelatedEntitiesAndVocabularies) {
+                    au.org.ands.vocabs.registry.schema.vocabulary201701.
+                    RelatedVocabulary targetRelatedVocabulary =
+                    getRelatedVocabulary(reId, rvMapper);
+                    rvRef.setRelatedVocabulary(targetRelatedVocabulary);
+                }
+                rvrList.add(rvRef);
             }
-            if (includeRelatedEntitiesAndVocabularies) {
-                au.org.ands.vocabs.registry.schema.vocabulary201701.
-                RelatedVocabulary targetRelatedVocabulary =
-                getRelatedVocabulary(reId, rvMapper);
-                rvRef.setRelatedVocabulary(targetRelatedVocabulary);
-            }
-            rvrList.add(rvRef);
         }
     }
 
