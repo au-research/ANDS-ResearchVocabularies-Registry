@@ -39,6 +39,7 @@ import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.HttpSolrClient.RemoteSolrException;
 import org.apache.solr.common.SolrInputDocument;
+import org.jsoup.Jsoup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -174,8 +175,10 @@ public final class EntityIndexer {
         addDataToDocument(document, LICENCE,
                 licenceGroups.get(vocabularyData.getLicence()));
         addDataToDocument(document, ACRONYM, vocabularyData.getAcronym());
+        // Strip HTML tags, and convert HTML elements into their
+        // corresponding Unicode characters.
         addDataToDocument(document, DESCRIPTION,
-                vocabularyData.getDescription());
+                Jsoup.parse(vocabularyData.getDescription()).text());
         // languages
         ArrayList<String> languages = new ArrayList<>();
         ULocale loc = new ULocale(vocabularyData.getPrimaryLanguage());
