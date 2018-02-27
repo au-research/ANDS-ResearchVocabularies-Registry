@@ -5,7 +5,7 @@
   <subject source="anzsrc-for" label="MATHEMATICAL SCIENCES" iri="http://purl.org/au-research/vocabulary/anzsrc-for/2008/01" />
   <version id="1" status="superseded" title="Version 1" note="Note for v1" release-date="2014-01">
     <access-point id="1" discriminator="file" source="user">
-      <ap-file upload-id="1" format="TEXT" />
+      <ap-file upload-id="1" format="TXT" />
     </access-point>
   </version>
   <version status="current" title="Version 2" note="Note for v2" release-date="2015-01">

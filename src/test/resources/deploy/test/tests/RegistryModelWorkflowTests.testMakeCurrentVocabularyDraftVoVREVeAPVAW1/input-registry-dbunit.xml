@@ -46,12 +46,12 @@
   <ACCESS_POINTS ID="1" ACCESS_POINT_ID="1" VERSION_ID="1"
             START_DATE="2014-10-01 10:10:00.0" END_DATE="9999-12-01 00:00:00.0"
             MODIFIED_BY="SYSTEM" SOURCE="USER" TYPE="FILE"
-            DATA="{''format'':''TEXT'',''upload-id'':1,''path'':''{TEMP}/RegistryModelWorkflowTests.testMakeCurrentVocabularyDraftVoVREVeAPVAW1/1'',''url'':''http://something''}"
+            DATA="{''format'':''TXT'',''upload-id'':1,''path'':''{TEMP}/RegistryModelWorkflowTests.testMakeCurrentVocabularyDraftVoVREVeAPVAW1/1'',''url'':''http://something''}"
             />
   <ACCESS_POINTS ID="2" ACCESS_POINT_ID="2" VERSION_ID="2"
             START_DATE="2015-10-01 10:10:00.0" END_DATE="9999-12-01 00:00:00.0"
             MODIFIED_BY="SYSTEM" SOURCE="USER" TYPE="FILE"
-            DATA="{''format'':''TEXT'',''upload-id'':2,''path'':''{TEMP}/RegistryModelWorkflowTests.testMakeCurrentVocabularyDraftVoVREVeAPVAW1/2'',''url'':''http://something''}"
+            DATA="{''format'':''TXT'',''upload-id'':2,''path'':''{TEMP}/RegistryModelWorkflowTests.testMakeCurrentVocabularyDraftVoVREVeAPVAW1/2'',''url'':''http://something''}"
             />
 
   <VERSION_ARTEFACT_IDS ID="1"/>

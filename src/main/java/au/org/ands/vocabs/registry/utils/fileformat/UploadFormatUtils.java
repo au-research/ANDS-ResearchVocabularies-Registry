@@ -44,7 +44,8 @@ public final class UploadFormatUtils {
         addFileFormat("RDF/XML", "rdf", "application/rdf+xml");
         addFileFormat("TSV", "tsv", "text/tab-separated-values");
         addFileFormat("TXT", "txt", "text/plain");
-        addFileFormat("TEXT", "txt", "text/plain");
+        // Sigh, can't support both "TXT" and "TEXT" here.
+//        addFileFormat("TEXT", "txt", "text/plain");
         addFileFormat("TriG", "trig", "application/x-trig");
         addFileFormat("TriX", "trix", "application/trix");
         addFileFormat("TTL", "ttl", "text/turtle");

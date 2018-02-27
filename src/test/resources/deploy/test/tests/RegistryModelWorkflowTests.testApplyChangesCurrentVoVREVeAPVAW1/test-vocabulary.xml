@@ -6,16 +6,16 @@
   <version id="1" status="superseded" title="Version 1" note="Note for v1"
            release-date="2014-01">
     <access-point id="1" discriminator="file" source="user">
-      <ap-file upload-id="1" format="TEXT" />
+      <ap-file upload-id="1" format="TXT" />
     </access-point>
   </version>
   <version id="2" status="current" title="Version 2" note="Note for v2"
            release-date="2015-01">
     <access-point id="2" discriminator="file" source="user">
-      <ap-file upload-id="2" format="TEXT" />
+      <ap-file upload-id="2" format="TXT" />
     </access-point>
     <access-point discriminator="file" source="user">
-      <ap-file upload-id="3" format="TEXT" />
+      <ap-file upload-id="3" format="TXT" />
     </access-point>
   </version>
   <related-entity-ref id="1">

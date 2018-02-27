@@ -48,13 +48,13 @@
             />
 
   <UPLOADS ID="1" MODIFIED_BY="SYSTEM" OWNER="ANDS-Curated"
-           FORMAT="TEXT" FILENAME="test1.txt" />
+           FORMAT="TXT" FILENAME="test1.txt" />
   <UPLOADS ID="2" MODIFIED_BY="SYSTEM" OWNER="ANDS-Curated"
-           FORMAT="TEXT" FILENAME="test2.txt" />
+           FORMAT="TXT" FILENAME="test2.txt" />
   <UPLOADS ID="3" MODIFIED_BY="SYSTEM" OWNER="ANDS-Curated"
-           FORMAT="TEXT" FILENAME="test3.txt" />
+           FORMAT="TXT" FILENAME="test3.txt" />
   <UPLOADS ID="4" MODIFIED_BY="SYSTEM" OWNER="ANDS-Curated"
-           FORMAT="TEXT" FILENAME="test4.txt" />
+           FORMAT="TXT" FILENAME="test4.txt" />
 
   <ACCESS_POINT_IDS ID="1"/>
   <ACCESS_POINT_IDS ID="2"/>
@@ -64,22 +64,22 @@
   <ACCESS_POINTS ID="1" ACCESS_POINT_ID="1" VERSION_ID="1"
             START_DATE="2013-10-01 10:10:00.0" END_DATE="2017-10-01 10:10:00.0"
             MODIFIED_BY="TEST" SOURCE="USER" TYPE="FILE"
-            DATA="{''format'':''TEXT'',''path'':''{TEMP}/RegistryModelWorkflowTests.testApplyChangesCurrentVoVREVeAPVAW3/1.txt'',''upload-id'':1,''url'':''http://something''}"
+            DATA="{''format'':''TXT'',''path'':''{TEMP}/RegistryModelWorkflowTests.testApplyChangesCurrentVoVREVeAPVAW3/1.txt'',''upload-id'':1,''url'':''http://something''}"
             />
   <ACCESS_POINTS ID="2" ACCESS_POINT_ID="2" VERSION_ID="2"
             START_DATE="2014-10-01 10:10:00.0" END_DATE="9999-12-01 00:00:00.0"
             MODIFIED_BY="SYSTEM" SOURCE="USER" TYPE="FILE"
-            DATA="{''format'':''TEXT'',''path'':''{TEMP}/RegistryModelWorkflowTests.testApplyChangesCurrentVoVREVeAPVAW3/2.txt'',''upload-id'':2,''url'':''http://something''}"
+            DATA="{''format'':''TXT'',''path'':''{TEMP}/RegistryModelWorkflowTests.testApplyChangesCurrentVoVREVeAPVAW3/2.txt'',''upload-id'':2,''url'':''http://something''}"
             />
   <ACCESS_POINTS ID="3" ACCESS_POINT_ID="3" VERSION_ID="3"
             START_DATE="2015-10-01 10:10:00.0" END_DATE="9999-12-01 00:00:00.0"
             MODIFIED_BY="SYSTEM" SOURCE="USER" TYPE="FILE"
-            DATA="{''format'':''TEXT'',''path'':''{TEMP}/RegistryModelWorkflowTests.testApplyChangesCurrentVoVREVeAPVAW3/3.txt'',''upload-id'':3,''url'':''http://something''}"
+            DATA="{''format'':''TXT'',''path'':''{TEMP}/RegistryModelWorkflowTests.testApplyChangesCurrentVoVREVeAPVAW3/3.txt'',''upload-id'':3,''url'':''http://something''}"
             />
   <ACCESS_POINTS ID="4" ACCESS_POINT_ID="4" VERSION_ID="3"
             START_DATE="2017-10-01 10:10:00.0" END_DATE="9999-12-01 00:00:00.0"
             MODIFIED_BY="TEST" SOURCE="USER" TYPE="FILE"
-            DATA="{''format'':''TEXT'',''path'':''{VOCABS}/ands-curated/1/3/20171001T1010/harvest_data/4.txt'',''upload-id'':4,''url'':''{DOWNLOADPREFIX}4/test4.txt''}"
+            DATA="{''format'':''TXT'',''path'':''{VOCABS}/ands-curated/1/3/20171001T1010/harvest_data/4.txt'',''upload-id'':4,''url'':''{DOWNLOADPREFIX}4/test4.txt''}"
             />
 
   <VERSION_ARTEFACT_IDS ID="1"/>
