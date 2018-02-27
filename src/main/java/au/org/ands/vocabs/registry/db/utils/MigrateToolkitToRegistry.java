@@ -2314,26 +2314,45 @@ public final class MigrateToolkitToRegistry {
      */
     private void migrateResourceMap(final EntityManager toolkitEm) {
         List<ResourceMapEntry> rmes;
-        rmes =
-                toolkitEm.createQuery("SELECT rme FROM ResourceMapEntry rme",
-                        ResourceMapEntry.class).
+        rmes = toolkitEm.createQuery("SELECT rme FROM ResourceMapEntry rme",
+                ResourceMapEntry.class).
                 getResultList();
         logger.info("Got " + rmes.size() + " resource map entry(s).");
-        for (ResourceMapEntry rme : rmes) {
-            logger.info("Processing resource map entry with id: "
-                    + rme.getId());
-            au.org.ands.vocabs.registry.db.entity.ResourceMapEntry
-            registryRme =
+
+        EntityManager em = null;
+        try {
+            em = au.org.ands.vocabs.registry.db.context.DBContext.
+                    getEntityManager();
+            em.getTransaction().begin();
+
+            for (ResourceMapEntry rme : rmes) {
+                logger.info("Processing resource map entry with id: "
+                        + rme.getId());
+                au.org.ands.vocabs.registry.db.entity.ResourceMapEntry
+                registryRme =
                 new au.org.ands.vocabs.registry.db.entity.ResourceMapEntry();
 
-            registryRme.setIri(rme.getIri());
-            registryRme.setAccessPointId(migratedAccessPoints.get(
-                    rme.getAccessPointId()));
-            registryRme.setOwned(rme.getOwned());
-            registryRme.setResourceType(rme.getResourceType());
-            registryRme.setDeprecated(rme.getDeprecated());
-            ResourceMapEntryDAO.saveResourceMapEntry(registryRme);
+                registryRme.setIri(rme.getIri());
+                registryRme.setAccessPointId(migratedAccessPoints.get(
+                        rme.getAccessPointId()));
+                registryRme.setOwned(rme.getOwned());
+                registryRme.setResourceType(rme.getResourceType());
+                registryRme.setDeprecated(rme.getDeprecated());
+                ResourceMapEntryDAO.saveResourceMapEntry(em, registryRme);
+            }
+
+            em.getTransaction().commit();
+        } catch (Exception e) {
+            if (em != null) {
+                em.getTransaction().rollback();
+                throw e;
+            }
+        } finally {
+            if (em != null) {
+                em.close();
+            }
         }
+
     }
 
     /** Migrate the resource owner hosts.
