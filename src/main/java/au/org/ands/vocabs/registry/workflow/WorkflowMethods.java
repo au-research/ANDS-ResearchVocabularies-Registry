@@ -385,19 +385,30 @@ public final class WorkflowMethods {
     /** Create a new Subtask to represent harvesting from PoolParty.
      * @param operation The operation to be performed; either INSERT or DELETE.
      * @param vocabulary The Vocabulary entity which holds the details
-     *      of the PoolParty project.
-     * @return The newly-created Subtask.
+     *      of the PoolParty project, if operation is INSERT. If
+     *      operation is DELETE, there does not need to be a PoolParty
+     *      project specified.
+     * @return The newly-created Subtask. If vocabulary does not specify a
+     *      PoolParty project, null is returned.
      */
     public static Subtask createHarvestPoolPartySubtask(
             final SubtaskOperationType operation,
             final Vocabulary vocabulary) {
         Subtask subtask = new Subtask(SubtaskProviderType.HARVEST,
                 operation, PoolPartyHarvestProvider.class);
+        if (operation == SubtaskOperationType.DELETE) {
+            // Nothing else required.
+            return subtask;
+        }
         VocabularyJson vocabularyJson =
                 JSONSerialization.deserializeStringAsJson(
                         vocabulary.getData(), VocabularyJson.class);
         PoolpartyProject poolpartyProject =
                 vocabularyJson.getPoolpartyProject();
+        if (poolpartyProject == null) {
+            throw new IllegalArgumentException("Harvest requested, but "
+                    + "no project specified.");
+        }
         subtask.addSubtaskProperty(PoolPartyHarvestProvider.SERVER_ID,
                 poolpartyProject.getServerId().toString());
         subtask.addSubtaskProperty(PoolPartyHarvestProvider.PROJECT_ID,

@@ -715,6 +715,8 @@ public class VersionsModel extends ModelBase {
                                             SubtaskOperationType.PERFORM));
                         }
                     } else {
+                        // If this is not even a PoolParty project, this
+                        // will schedule a subtask which does nothing.
                         task.addSubtask(WorkflowMethods.
                                 createHarvestPoolPartySubtask(
                                         SubtaskOperationType.DELETE,
