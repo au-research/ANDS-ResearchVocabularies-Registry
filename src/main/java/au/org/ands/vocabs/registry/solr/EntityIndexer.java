@@ -317,12 +317,18 @@ public final class EntityIndexer {
                 case SESAME_DOWNLOAD:
                     break;
                 case SISSVOC:
-                    widgetable = true;
-                    ApSissvoc apSissvoc = JSONSerialization.
-                            deserializeStringAsJson(
-                            accessPoint.getData(), ApSissvoc.class);
-                    document.addField(SISSVOC_ENDPOINT,
-                            apSissvoc.getUrlPrefix());
+                    // Be careful not to try to add a second SISSVOC_ENDPOINT,
+                    // since there can only be one. So sneakily use the
+                    // widgetable flag to determine that we've been here
+                    // before.
+                    if (!widgetable) {
+                        widgetable = true;
+                        ApSissvoc apSissvoc = JSONSerialization.
+                                deserializeStringAsJson(
+                                        accessPoint.getData(), ApSissvoc.class);
+                        document.addField(SISSVOC_ENDPOINT,
+                                apSissvoc.getUrlPrefix());
+                    }
                     break;
                 case WEB_PAGE:
                     break;
