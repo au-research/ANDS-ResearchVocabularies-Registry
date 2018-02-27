@@ -31,7 +31,10 @@ import au.org.ands.vocabs.toolkit.test.utils.RegistrySchemaValidationHelper;
 @Test
 public class RegistryCheckVocabularyTests extends ArquillianBaseTest {
 
+    // Leave logger here, though it is unused. We might want to use
+    // it later.
     /** Logger for this class. */
+    @SuppressWarnings("unused")
     private Logger logger = LoggerFactory.getLogger(
             MethodHandles.lookup().lookupClass());
 

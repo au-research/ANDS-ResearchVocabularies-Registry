@@ -59,7 +59,10 @@ import au.org.ands.vocabs.registry.schema.vocabulary201701.Vocabulary;
 @Test
 public class RegistryModelWorkflowTests extends ArquillianBaseTest {
 
+    // Leave logger here, though it is unused. We might want to use
+    // it later.
     /** Logger. */
+    @SuppressWarnings("unused")
     private static Logger logger;
 
     static {

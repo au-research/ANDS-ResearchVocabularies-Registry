@@ -23,7 +23,10 @@ import au.org.ands.vocabs.registry.schema.vocabulary201701.Vocabulary;
  * are required. */
 public final class AuthorizationValidationUtils {
 
+    // Leave logger here, though it is unused. We might want to use
+    // it later.
     /** Logger for this class. */
+    @SuppressWarnings("unused")
     private static Logger logger = LoggerFactory.getLogger(
             MethodHandles.lookup().lookupClass());
 

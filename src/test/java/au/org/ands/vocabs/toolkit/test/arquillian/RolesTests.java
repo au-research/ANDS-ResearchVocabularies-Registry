@@ -38,7 +38,10 @@ import au.org.ands.vocabs.toolkit.test.utils.NetClientUtils;
 @Test
 public class RolesTests extends ArquillianBaseTest {
 
+    // Leave logger here, though it is unused. We might want to use
+    // it later.
     /** Logger. */
+    @SuppressWarnings("unused")
     private static Logger logger;
 
     static {
