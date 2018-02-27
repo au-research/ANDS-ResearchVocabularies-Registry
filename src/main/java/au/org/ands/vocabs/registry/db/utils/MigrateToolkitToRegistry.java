@@ -5,6 +5,7 @@
 package au.org.ands.vocabs.registry.db.utils;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.nio.file.DirectoryIteratorException;
@@ -351,6 +352,8 @@ public final class MigrateToolkitToRegistry {
         uploadsPath = java.nio.file.Paths.get(uploadsDirectoryName);
         try {
             FileUtils.forceDelete(new File(RegistryConfig.DATA_FILES_PATH));
+        } catch (FileNotFoundException e) {
+            // No problem.
         } catch (IOException e) {
             logger.error("Unable to remove existing registry data directory",
                     e);
@@ -2479,7 +2482,11 @@ public final class MigrateToolkitToRegistry {
         try (DirectoryStream<java.nio.file.Path> stream =
                 Files.newDirectoryStream(toolkitSpecsPath)) {
             // Ensure target directory exists but is empty.
-            FileUtils.forceDelete(new File(registrySpecsDir));
+            try {
+                FileUtils.forceDelete(new File(registrySpecsDir));
+            } catch (FileNotFoundException e) {
+                // No problem.
+            }
             RegistryFileUtils.requireDirectory(registrySpecsDir);
 
             // Iterate over every file in the specs directory.
