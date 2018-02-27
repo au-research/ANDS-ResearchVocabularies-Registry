@@ -364,13 +364,17 @@ public final class MigrateToolkitToRegistry {
         migrateSpecFiles();
 
         // Now migrate all the database.
-        migratePublishedAndDeprecatedVocabularies(formatter, toolkitEm);
-        migrateDraftVocabularies(formatter, toolkitEm);
-        migrateInternallyRelatedVocabularies();
-        migrateTasks(toolkitEm);
-        migrateResourceOwnerHosts(toolkitEm);
-        migrateResourceMap(toolkitEm);
-        toolkitEm.close();
+        try {
+            migratePublishedAndDeprecatedVocabularies(formatter, toolkitEm);
+            migrateDraftVocabularies(formatter, toolkitEm);
+            migrateInternallyRelatedVocabularies();
+            migrateTasks(toolkitEm);
+            migrateResourceOwnerHosts(toolkitEm);
+            migrateResourceMap(toolkitEm);
+            toolkitEm.close();
+        } catch (Throwable e) {
+            logger.error("Exception during migration:", e);
+        }
         return "Done.";
     }
 
