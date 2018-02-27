@@ -6,7 +6,7 @@
 # Standard JPA properties
 # Replace [path to DB] with something like localhost/vocabs_registry
 # The connection parameters for datetime/timezone are important; don't adjust them!
-javax.persistence.jdbc.url=jdbc:mysql://[path to DB]?zeroDateTimeBehavior=convertToNull&serverTimezone=UTC&useLegacyDatetimeCode=false
+javax.persistence.jdbc.url=jdbc:mysql://[path to DB]?zeroDateTimeBehavior=convertToNull&serverTimezone=UTC&useLegacyDatetimeCode=false&characterEncoding=UTF-8
 javax.persistence.jdbc.driver=com.mysql.jdbc.Driver
 javax.persistence.jdbc.user=[db_username]
 javax.persistence.jdbc.password=[db_password]
