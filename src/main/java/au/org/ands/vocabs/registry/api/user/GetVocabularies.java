@@ -381,7 +381,9 @@ public class GetVocabularies {
                     })
             })
     public final Response ownsVocabularyById(
+            @SuppressWarnings("unused")
             @Context final HttpServletRequest request,
+            @SuppressWarnings("unused")
             @Context final UriInfo uriInfo,
             @ApiParam(hidden = true) @Pac4JProfile final CommonProfile profile,
             @ApiParam(value = "The ID of the vocabulary to check ownership.")

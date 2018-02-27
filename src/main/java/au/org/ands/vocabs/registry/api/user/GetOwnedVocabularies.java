@@ -85,7 +85,9 @@ public class GetOwnedVocabularies {
                             })
             })
     public final OwnedVocabularyList getOwnedVocabularies(
+            @SuppressWarnings("unused")
             @Context final HttpServletRequest request,
+            @SuppressWarnings("unused")
             @Context final UriInfo uriInfo,
             @ApiParam(hidden = true) @Pac4JProfile
             final CommonProfile profile) {
