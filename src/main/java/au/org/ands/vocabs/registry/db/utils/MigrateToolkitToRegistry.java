@@ -2297,8 +2297,14 @@ public final class MigrateToolkitToRegistry {
                 // Cope with a null status.
                 task.setStatus("error");
             }
-            registryTask.setStatus(TaskStatus.fromValue(
-                    task.getStatus().toLowerCase(Locale.ROOT)));
+            try {
+                registryTask.setStatus(TaskStatus.fromValue(
+                        task.getStatus().toLowerCase(Locale.ROOT)));
+            } catch (IllegalArgumentException e) {
+                // E.g., if the original was "TRANSFORMING", etc.
+                // Fall back to "PARTIAL".
+                registryTask.setStatus(TaskStatus.PARTIAL);
+            }
             TaskDAO.saveTask(registryTask);
         }
     }
