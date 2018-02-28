@@ -27,10 +27,12 @@ public class TestPutUpload {
                 "passwd");
         Assert.assertEquals(PutUpload.sanitizeFilename("C:\\Document\\abc.ttl"),
                 "abc.ttl");
+        Assert.assertEquals(PutUpload.sanitizeFilename("abc#2.xml"),
+                "abc_2.xml");
         // This one isn't so pretty. But we don't expect to see it
         // in real life.
         Assert.assertEquals(PutUpload.sanitizeFilename(
-                "http://xyz/abc%20def.ttl#abc"), "abc_20def.ttl#abc");
+                "http://xyz/abc%20def.ttl#abc"), "abc_20def.ttl_abc");
     }
 
     /** Tests of the {@link PutUpload#FILENAME_PATTERN} regular expression. */
