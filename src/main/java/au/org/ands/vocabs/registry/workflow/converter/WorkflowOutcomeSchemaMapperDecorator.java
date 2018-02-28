@@ -5,7 +5,7 @@ package au.org.ands.vocabs.registry.workflow.converter;
 import java.util.List;
 import java.util.Map;
 
-import au.org.ands.vocabs.registry.schema.vocabulary201701.Result;
+import au.org.ands.vocabs.registry.schema.vocabulary201701.ResultPair;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.WorkflowOutcome;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.WorkflowOutcome.TaskOutcome;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.WorkflowOutcome.TaskOutcome.SubtaskOutcome;
@@ -69,9 +69,9 @@ public abstract class WorkflowOutcomeSchemaMapperDecorator
         TaskOutcome target = delegate.sourceToTarget(source);
         Map<String, String> results = source.getResults();
         if (results != null && !results.isEmpty()) {
-            List<Result> targetResults = target.getTaskResult();
+            List<ResultPair> targetResults = target.getTaskResult();
             for (Map.Entry<String, String> result : results.entrySet()) {
-                Result oneResult = new Result();
+                ResultPair oneResult = new ResultPair();
                 oneResult.setResultKey(result.getKey());
                 oneResult.setResultValue(result.getValue());
                 targetResults.add(oneResult);
@@ -108,7 +108,7 @@ public abstract class WorkflowOutcomeSchemaMapperDecorator
         SubtaskOutcome target = delegate.sourceToTarget(source);
         Map<String, String> results = source.getResults();
         if (results != null && !results.isEmpty()) {
-            List<Result> targetResults = target.getSubtaskResult();
+            List<ResultPair> targetResults = target.getSubtaskResult();
             results.entrySet().stream().map(this::mapResult).
                 forEach(targetResults::add);
         }

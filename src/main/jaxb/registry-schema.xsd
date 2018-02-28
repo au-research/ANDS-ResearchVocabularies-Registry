@@ -328,7 +328,7 @@
                                 <xs:complexType>
                                     <xs:sequence>
                                         <xs:element maxOccurs="unbounded" minOccurs="0"
-                                            name="subtask-result" type="result"/>
+                                            name="subtask-result" type="result-pair"/>
                                     </xs:sequence>
                                     <xs:attribute name="status" type="common:task-status"/>
                                     <xs:attribute name="subtask-provider-type"
@@ -339,7 +339,7 @@
                                 </xs:complexType>
                             </xs:element>
                             <xs:element maxOccurs="unbounded" minOccurs="0" name="task-result"
-                                type="result"/>
+                                type="result-pair"/>
                         </xs:sequence>
                         <xs:attribute name="version-id" type="id-type"/>
                         <xs:attribute name="status" type="common:task-status"/>
@@ -349,7 +349,7 @@
             <xs:attribute name="vocabulary-id" type="id-type"/>
         </xs:complexType>
     </xs:element>
-    <xs:complexType name="result">
+    <xs:complexType name="result-pair">
         <xs:attribute name="result-key" type="xs:token"/>
         <xs:attribute name="result-value" type="xs:token"/>
     </xs:complexType>
