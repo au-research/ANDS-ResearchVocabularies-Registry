@@ -16,6 +16,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
+import org.apache.http.HttpStatus;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,6 +29,8 @@ import au.org.ands.vocabs.registry.utils.Logging;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 
 /** REST web services for searching. */
 @Path(ApiPaths.API_SERVICES)
@@ -50,6 +53,11 @@ public class Search {
     @Produces({MediaType.APPLICATION_JSON})
     @POST
     @ApiOperation(value = "Perform a search.", response = Object.class)
+    @ApiResponses(value = {
+            @ApiResponse(code = HttpStatus.SC_BAD_REQUEST,
+                    message = "Invalid input",
+                    response = ErrorResult.class)
+    })
     public final Response search(
             @Context final HttpServletRequest request,
             @Context final UriInfo uriInfo,
@@ -75,6 +83,9 @@ public class Search {
         } catch (IOException | SolrServerException e) {
             return ResponseUtils.generateInternalServerError(
                     "Error response from Solr");
+        } catch (IllegalArgumentException e) {
+            return ErrorResultUtils.badRequest("Error in request: "
+                    + e.getMessage());
         }
     }
 
