@@ -654,7 +654,8 @@ public class VersionsModel extends ModelBase {
             schemaVersion = updatedVersions.get(versionId);
 
             if (!ComparisonUtils.isEqualVersion(existingVersion,
-                    schemaVersion)) {
+                    schemaVersion)
+                    || BooleanUtils.isTrue(schemaVersion.isForceWorkflow())) {
                 TemporalUtils.makeHistorical(existingVersion, nowTime());
                 existingVersion.setModifiedBy(modifiedBy());
                 VersionDAO.updateVersion(em(), existingVersion);
