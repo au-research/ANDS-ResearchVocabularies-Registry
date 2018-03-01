@@ -2236,8 +2236,9 @@ public final class MigrateToolkitToRegistry {
             if (url.startsWith(expectedPrefix)) {
                 // Make an upload.
                 Upload upload = makeUpload(toolkitVocabulary, fileData);
-                String newUrl = ToolkitProperties.getProperty(
-                        PropertyConstants.TOOLKIT_DOWNLOADPREFIX)
+                String newUrl = RegistryProperties.getProperty(
+                        au.org.ands.vocabs.registry.utils.PropertyConstants.
+                        REGISTRY_DOWNLOADPREFIX)
                         + newAP.getAccessPointId() + "/"
                         + url.substring(expectedPrefix.length());
                 logger.info("fixUpAccessPoints: rewrote file AP: "
@@ -2281,8 +2282,9 @@ public final class MigrateToolkitToRegistry {
                     PropertyConstants.TOOLKIT_DOWNLOADPREFIX)
                     + originalAP.getId() + "/";
             if (urlPrefix.startsWith(expectedPrefix)) {
-                String newUrlPrefix = ToolkitProperties.getProperty(
-                        PropertyConstants.TOOLKIT_DOWNLOADPREFIX)
+                String newUrlPrefix = RegistryProperties.getProperty(
+                        au.org.ands.vocabs.registry.utils.PropertyConstants.
+                        REGISTRY_DOWNLOADPREFIX)
                         + newAP.getAccessPointId() + "/"
                         + urlPrefix.substring(expectedPrefix.length());
                 logger.info("fixUpAccessPointWithinURLs: rewrote sd AP: "
