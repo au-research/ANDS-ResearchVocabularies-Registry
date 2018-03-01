@@ -225,6 +225,17 @@ public final class MigrateToolkitToRegistry {
      */
     private HashMap<String, Integer> relatedEntitiesSeen = new HashMap<>();
 
+    /** A map of owner/type/title projections of related entities
+     * we have already migrated, to the count of the number of instances
+     * of that combination.
+     * The keys of the HashMap are the JSON data of the projection of
+     * the related entity.
+     * To make this work, the related entity should have been parsed and
+     * then the owner, type, and title reserialized in a canonical way,
+     * i.e., with keys in alphabetical order.
+     */
+    private HashMap<String, Integer> ottRelatedEntitiesSeen = new HashMap<>();
+
     /** Internally-related vocabularies can only be matched up once
      * we have migrated all of the vocabularies. So, they are stored
      * here along the way, and the relationships are created in
@@ -1055,7 +1066,24 @@ public final class MigrateToolkitToRegistry {
 
         String canonicalRelatedEntity = canonicalizeRelatedEntityJson(
                 relatedEntityJson, vocabulary);
+        String canonicalOwnerTypeTitle = ottRelatedEntityJson(
+                relatedEntityJson, vocabulary);
+
         logger.info("canonicalRelatedEntity = " + canonicalRelatedEntity);
+        logger.info("canonicalOwnerTypeTitle = " + canonicalOwnerTypeTitle);
+        // A number to append to the title, if we see a duplicate.
+        int numberToAppend = 0;
+        if (ottRelatedEntitiesSeen.containsKey(canonicalOwnerTypeTitle)) {
+            // Found it. Increment the count.
+            numberToAppend = ottRelatedEntitiesSeen.get(
+                    canonicalOwnerTypeTitle);
+            numberToAppend++;
+            ottRelatedEntitiesSeen.put(canonicalOwnerTypeTitle,
+                    numberToAppend);
+        } else {
+            ottRelatedEntitiesSeen.put(canonicalOwnerTypeTitle, 1);
+        }
+
         if (relatedEntitiesSeen.containsKey(canonicalRelatedEntity)) {
             logger.info("Found an existing party related entity that will do.");
             relatedEntity = RelatedEntityDAO.getRelatedEntityById(
@@ -1109,7 +1137,11 @@ public final class MigrateToolkitToRegistry {
                     extractRelations(entry.getValue(), relations);
                     break;
                 case "title":
-                    relatedEntity.setTitle(entry.getValue().asText());
+                    String title = entry.getValue().asText();
+                    if (numberToAppend > 0) {
+                        title = title + " " + numberToAppend;
+                    }
+                    relatedEntity.setTitle(title);
                 case "type":
                     // We already know what type it is
                     break;
@@ -1182,6 +1214,26 @@ public final class MigrateToolkitToRegistry {
         String canonicalRelatedEntity =
                 serializeJsonAsString(canonicalRelatedEntityJson);
         return canonicalRelatedEntity;
+    }
+
+    /** Extract from a related entity a canonical representation of
+     * the components, the combination of which is required to be unique.
+     * For now, that is the combination of owner, type, and title.
+     * (Hence the name of the method, beginning with "ott".)
+     * @param relatedEntityJson The JSON representation of the related entity,
+     *      from the "toolkit" database.
+     * @param vocabulary The "toolkit" vocabulary object that "owns" this
+     *      related entity.
+     * @return The canonical representation of this related entity.
+     */
+    private String ottRelatedEntityJson(
+            final JsonNode relatedEntityJson, final Vocabulary vocabulary) {
+        final ObjectNode ott = jsonMapper.createObjectNode();
+        ott.put("owner", vocabulary.getOwner());
+        ott.put("type", relatedEntityJson.get("type").asText());
+        ott.put("title", relatedEntityJson.get("title").asText());
+        String ottRelatedEntity = serializeJsonAsString(ott);
+        return ottRelatedEntity;
     }
 
     /** Extract the identifiers from the related entity, and create
@@ -1390,7 +1442,24 @@ public final class MigrateToolkitToRegistry {
 
         String canonicalRelatedEntity = canonicalizeRelatedEntityJson(
                 relatedEntityJson, vocabulary);
+        String canonicalOwnerTypeTitle = ottRelatedEntityJson(
+                relatedEntityJson, vocabulary);
+
         logger.info("canonicalRelatedEntity = " + canonicalRelatedEntity);
+        logger.info("canonicalOwnerTypeTitle = " + canonicalOwnerTypeTitle);
+        // A number to append to the title, if we see a duplicate.
+        int numberToAppend = 0;
+        if (ottRelatedEntitiesSeen.containsKey(canonicalOwnerTypeTitle)) {
+            // Found it. Increment the count.
+            numberToAppend = ottRelatedEntitiesSeen.get(
+                    canonicalOwnerTypeTitle);
+            numberToAppend++;
+            ottRelatedEntitiesSeen.put(canonicalOwnerTypeTitle,
+                    numberToAppend);
+        } else {
+            ottRelatedEntitiesSeen.put(canonicalOwnerTypeTitle, 1);
+        }
+
         if (relatedEntitiesSeen.containsKey(canonicalRelatedEntity)) {
             logger.info("Found an existing service related entity "
                     + "that will do.");
@@ -1439,7 +1508,11 @@ public final class MigrateToolkitToRegistry {
                     extractRelations(entry.getValue(), relations);
                     break;
                 case "title":
-                    relatedEntity.setTitle(entry.getValue().asText());
+                    String title = entry.getValue().asText();
+                    if (numberToAppend > 0) {
+                        title = title + " " + numberToAppend;
+                    }
+                    relatedEntity.setTitle(title);
                 case "type":
                     // We already know what type it is
                     break;
@@ -1532,7 +1605,24 @@ public final class MigrateToolkitToRegistry {
 
         String canonicalRelatedEntity = canonicalizeRelatedEntityJson(
                 relatedEntityJson, vocabulary);
+        String canonicalOwnerTypeTitle = ottRelatedEntityJson(
+                relatedEntityJson, vocabulary);
+
         logger.info("canonicalRelatedEntity = " + canonicalRelatedEntity);
+        logger.info("canonicalOwnerTypeTitle = " + canonicalOwnerTypeTitle);
+        // A number to append to the title, if we see a duplicate.
+        int numberToAppend = 0;
+        if (ottRelatedEntitiesSeen.containsKey(canonicalOwnerTypeTitle)) {
+            // Found it. Increment the count.
+            numberToAppend = ottRelatedEntitiesSeen.get(
+                    canonicalOwnerTypeTitle);
+            numberToAppend++;
+            ottRelatedEntitiesSeen.put(canonicalOwnerTypeTitle,
+                    numberToAppend);
+        } else {
+            ottRelatedEntitiesSeen.put(canonicalOwnerTypeTitle, 1);
+        }
+
         if (relatedEntitiesSeen.containsKey(canonicalRelatedEntity)) {
             logger.info("Found an existing service related entity "
                     + "that will do.");
@@ -1582,7 +1672,11 @@ public final class MigrateToolkitToRegistry {
                     extractRelations(entry.getValue(), relations);
                     break;
                 case "title":
-                    relatedEntity.setTitle(entry.getValue().asText());
+                    String title = entry.getValue().asText();
+                    if (numberToAppend > 0) {
+                        title = title + " " + numberToAppend;
+                    }
+                    relatedEntity.setTitle(title);
                 case "type":
                     // We already know what type it is.
                     break;
