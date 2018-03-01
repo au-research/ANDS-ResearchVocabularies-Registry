@@ -152,6 +152,8 @@ public final class MigrateToolkitToRegistry {
                 RelatedEntityIdentifierType.RESEARCHER_ID);
         reiPrefixes.put("http://viaf.org/viaf/",
                 RelatedEntityIdentifierType.VIAF);
+        reiPrefixes.put("https://viaf.org/viaf/",
+                RelatedEntityIdentifierType.VIAF);
     }
 
     /** Map of related entity identifier types, to prefixes that should
@@ -163,30 +165,30 @@ public final class MigrateToolkitToRegistry {
      * easier to see that the value is correct.
      * The contents are initialized in a static initialization block.
      */
-    private static HashMap<RelatedEntityIdentifierType, String>
+    private static HashMap<RelatedEntityIdentifierType, Pattern>
         reiPrefixesToRemove = new HashMap<>();
 
     static {
         reiPrefixesToRemove.put(RelatedEntityIdentifierType.AU_ANL_PEAU,
-                "http://nla.gov.au/");
+                Pattern.compile("^http://nla.gov.au/"));
         reiPrefixesToRemove.put(RelatedEntityIdentifierType.DOI,
-                "http://dx.doi.org/");
+                Pattern.compile("^http://dx.doi.org/"));
         reiPrefixesToRemove.put(RelatedEntityIdentifierType.HANDLE,
-                "http://hdl.handle.net/");
+                Pattern.compile("^http://hdl.handle.net/"));
         // info: not removed.
 //        reiPrefixesToRemove.put(RelatedEntityIdentifierType.INFOURI,
 //                "info:");
         reiPrefixesToRemove.put(RelatedEntityIdentifierType.ISNI,
-                "http://isni.org/isni/");
+                Pattern.compile("^http://isni.org/isni/"));
         reiPrefixesToRemove.put(RelatedEntityIdentifierType.ORCID,
-                "http://orcid.org/");
+                Pattern.compile("^http://orcid.org/"));
         // PURL: not removed.
 //        reiPrefixesToRemove.put(RelatedEntityIdentifierType.PURL,
 //                "http://purl.org/");
         reiPrefixesToRemove.put(RelatedEntityIdentifierType.RESEARCHER_ID,
-                "http://www.researcherid.com/rid/");
+                Pattern.compile("^http://www.researcherid.com/rid/"));
         reiPrefixesToRemove.put(RelatedEntityIdentifierType.VIAF,
-                "http://viaf.org/viaf/");
+                Pattern.compile("^https?://viaf.org/viaf/"));
     }
 
     /** A map of vocabularies that we have migrated.
@@ -1340,11 +1342,11 @@ public final class MigrateToolkitToRegistry {
                 : reiPrefixes.entrySet()) {
             if (identifierText.startsWith(entry.getKey())) {
                 identifierType = entry.getValue();
-                String prefixToRemove =
+                Pattern prefixToRemove =
                         reiPrefixesToRemove.get(identifierType);
                 if (prefixToRemove != null) {
-                    identifierText =
-                            identifierText.substring(prefixToRemove.length());
+                    identifierText = prefixToRemove.matcher(identifierText).
+                            replaceFirst("");
                 }
                 break;
             }
