@@ -363,7 +363,7 @@ public final class WorkflowMethods {
      * @param subtaskList An existing list of subtasks. It must not be null,
      *      but it may be empty.
      */
-    private static void addConceptTransformSubtasks(
+    public static void addConceptTransformSubtasks(
             final List<Subtask> subtaskList) {
         Subtask subtask = new Subtask();
         subtask.setSubtaskProviderType(SubtaskProviderType.TRANSFORM);

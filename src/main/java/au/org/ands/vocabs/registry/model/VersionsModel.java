@@ -38,6 +38,7 @@ import au.org.ands.vocabs.registry.model.sequence.VersionElement;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.WorkflowOutcome;
 import au.org.ands.vocabs.registry.workflow.WorkflowMethods;
 import au.org.ands.vocabs.registry.workflow.converter.WorkflowOutcomeSchemaMapper;
+import au.org.ands.vocabs.registry.workflow.provider.harvest.PoolPartyHarvestProvider;
 import au.org.ands.vocabs.registry.workflow.provider.importer.SesameImporterProvider;
 import au.org.ands.vocabs.registry.workflow.provider.publish.SISSVocPublishProvider;
 import au.org.ands.vocabs.registry.workflow.provider.transform.ResourceMapTransformProvider;
@@ -915,15 +916,25 @@ public class VersionsModel extends ModelBase {
 
     /** To any existing Tasks, add subtasks that are implied by
      * the subtasks already present. For now, that means adding
-     * subtasks for the ResourceMapTransform provider.
+     * subtasks for the JsonList, JsonTree, and ResourceMapTransform providers.
      */
     private void addImpliedSubtasks() {
         for (Task task : versionTasks.values()) {
+            boolean hasHarvestInsert = false;
             boolean hasImportInsert = false;
             boolean hasPublishInsert = false;
+            boolean hasHarvestDelete = false;
             boolean hasImportDelete = false;
             boolean hasPublishDelete = false;
             for (Subtask subtask : task.getSubtasks()) {
+                if (subtask.getProviderClass().equals(
+                        PoolPartyHarvestProvider.class)) {
+                    if (subtask.getOperation() == SubtaskOperationType.DELETE) {
+                        hasHarvestDelete = true;
+                    } else {
+                        hasHarvestInsert = true;
+                    }
+                }
                 if (subtask.getProviderClass().equals(
                         SesameImporterProvider.class)) {
                     if (subtask.getOperation() == SubtaskOperationType.DELETE) {
@@ -940,6 +951,22 @@ public class VersionsModel extends ModelBase {
                         hasPublishInsert = true;
                     }
                 }
+            }
+            // Revisit the following conditional after we've had some
+            // experience of the behaviour!
+            // The idea is: for now, if there's any change to harvesting,
+            // we redo the concept transforms. We rely on the fact
+            // that both of the concept transforms do an "untransform"
+            // in the case that there's no vocabulary data.
+            // This has the acceptable/desirable side-effect of adding
+            // these concept transforms in the
+            // case of "force workflow", because force workflow always adds
+            // either a PoolParty harvest or an unharvest!
+            if (hasHarvestDelete || hasHarvestInsert) {
+                List<Subtask> conceptTransformSubtasks = new ArrayList<>();
+                WorkflowMethods.addConceptTransformSubtasks(
+                        conceptTransformSubtasks);
+                task.addSubtasks(conceptTransformSubtasks);
             }
             // We would "normally" require _both_ hasImportInsert and
             // hasPublishInsert to justify running the transform.
