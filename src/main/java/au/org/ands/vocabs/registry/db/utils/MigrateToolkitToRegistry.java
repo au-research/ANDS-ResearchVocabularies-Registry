@@ -852,7 +852,10 @@ public final class MigrateToolkitToRegistry {
                             // vocabs_cms.js.
                             language = "en";
                         }
-                        otherLanguages.add(language);
+                        if (!otherLanguages.contains(language)) {
+                            // Don't add a duplicate.
+                            otherLanguages.add(language);
+                        }
                         if ("en".equals(language)) {
                             // Give preference to English.
                             primaryLanguage = "en";
