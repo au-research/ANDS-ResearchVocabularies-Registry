@@ -262,7 +262,9 @@ public class JsonTreeTransformProvider implements WorkflowProvider {
                             "Alert: Either a polyhierarchy or cycle was "
                             + "detected "
                             + "in the vocabulary data.<br />The concept browse "
-                            + "tree will not be visible for this vocabulary."
+                            + "tree will not be visible for this version ("
+                            + taskInfo.getVersion().getSlug()
+                            + ")."
                             + "<br />For more information, please see "
                             + "<a target=\"_blank\" "
                             + "href=\"https://documentation."
