@@ -721,7 +721,7 @@
          the "iri" column.
 
          In the former case, index fields are limited to 767 bytes. In
-         utf8 encoding, that means 255 characters. See:
+         utf8mb4 encoding, that means 191 characters. See:
          https://dev.mysql.com/doc/refman/5.7/en/innodb-parameters.html
 
          In the latter case, MySQL requires a field length, because
@@ -734,7 +734,7 @@
          innodb_large_prefix) and the varchar type for the iri column.
     -->
     <modifySql dbms="mysql">
-      <replace replace="(iri)" with="(iri(255))"/>
+      <replace replace="(iri)" with="(iri(191))"/>
     </modifySql>
   </changeSet>
 

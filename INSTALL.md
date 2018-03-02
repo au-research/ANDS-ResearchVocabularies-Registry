@@ -136,7 +136,7 @@ a database administrator user.
 Create the `registry-user` database user, if it does not already exist.
 
 ```
-CREATE DATABASE `vocabs_registry` DEFAULT CHARACTER SET utf8;
+CREATE DATABASE `vocabs_registry` DEFAULT CHARACTER SET utf8mb4;
 GRANT ALL PRIVILEGES ON `vocabs_registry`.* TO 'registry-user'@'localhost';
 ```
 
