@@ -2127,10 +2127,8 @@ public final class MigrateToolkitToRegistry {
             String migratedFilePathString =
                     migratedFilePath.toString();
             logger.info("Migrating file: " + oldPath
-                    + "; target: " + migratedFilePath);
+                    + "; target: " + migratedFilePathString);
             try {
-                logger.error("Migrating file: " + oldPath
-                        + "; target: " + migratedFilePathString);
                 Files.copy(oldPath, migratedFilePath,
                         StandardCopyOption.COPY_ATTRIBUTES,
                         StandardCopyOption.REPLACE_EXISTING);
