@@ -348,6 +348,7 @@ public class SesameImporterProvider implements WorkflowProvider {
             if (repository == null) {
                 // No such repository; nothing to do.
                  logger.debug("Sesame unimport: nothing to do.");
+                 subtask.setStatus(TaskStatus.SUCCESS);
                 return;
             }
             manager.removeRepository(repositoryID);
