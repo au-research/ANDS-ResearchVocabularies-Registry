@@ -247,6 +247,13 @@ public class JsonTreeTransformProvider implements WorkflowProvider {
                     VersionArtefactUtils.createConceptTreeVersionArtefact(
                             taskInfo, resultFileNameTree);
                 } else {
+                    // We aren't going to provide a concept tree.
+                    // However, there might be an existing one left over,
+                    // which we must now remove. Call untransform() here,
+                    // because it sets the task status, and we want to
+                    // override that below.
+                    untransform(taskInfo, subtask);
+
                     String reason;
                     if (conceptHandler.isCycle()) {
                         // In giving a reason, cycles take priority.
