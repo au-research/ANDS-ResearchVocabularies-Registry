@@ -514,7 +514,7 @@ public class CheckVocabularyImpl
                             cvb -> cvb.addPropertyNode("subject").
                                 addPropertyNode("source").inIterable().
                                 atIndex(index).addConstraintViolation(),
-                                valid);
+                                newValid);
             newValid = ValidationUtils.
                     requireFieldNotEmptyString(
                             INTERFACE_NAME,
@@ -523,7 +523,7 @@ public class CheckVocabularyImpl
                             cvb -> cvb.addPropertyNode("subject").
                                 addPropertyNode("label").inIterable().
                                 atIndex(index).addConstraintViolation(),
-                                valid);
+                                newValid);
             if (SubjectSources.subjectRequiresIRI(subject)
                     && !SubjectSources.subjectHasValidIRI(subject)) {
                 newValid = false;
