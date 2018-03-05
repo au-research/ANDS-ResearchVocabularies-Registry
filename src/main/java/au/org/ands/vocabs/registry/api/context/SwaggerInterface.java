@@ -47,6 +47,8 @@ import io.swagger.annotations.Tag;
         schemes = {SwaggerDefinition.Scheme.HTTP,
                 SwaggerDefinition.Scheme.HTTPS},
         tags = {
+                @Tag(name = SwaggerInterface.TAG_ADMIN,
+                        description = "System administration operations"),
                 @Tag(name = SwaggerInterface.TAG_RESOURCES,
                         description = "Operations with resources"),
                 @Tag(name = SwaggerInterface.TAG_SERVICES,
@@ -71,6 +73,11 @@ import io.swagger.annotations.Tag;
                 )
 )
 public interface SwaggerInterface {
+
+    /** The name of the tag used to group admin-level methods.
+     * Use this within
+     * {@link io.swagger.annotations.Api} annotations. */
+    String TAG_ADMIN = "admin";
 
     /** The name of the tag used to group methods that work with
      * resources. Use this within

@@ -113,7 +113,7 @@ public class SwaggerBootstrapper extends HttpServlet {
         // Now define the top-level Swagger properties.
         BeanConfig beanConfig = new BeanConfig();
         beanConfig.setTitle("Vocabulary Registry API");
-        beanConfig.setVersion("0.1.0");
+        beanConfig.setVersion("0.2.0");
         // Schemes are set in SwaggerInterface.
 //        beanConfig.setSchemes(new String[] {"https"});
         beanConfig.setHost(RegistryProperties.getProperty(
@@ -122,7 +122,9 @@ public class SwaggerBootstrapper extends HttpServlet {
         beanConfig.setBasePath(RegistryProperties.getProperty(
                 PropertyConstants.REGISTRY_SWAGGER_BASEPATH,
                 REGISTRY_SWAGGER_BASEPATH_DEFAULT));
-        beanConfig.setResourcePackage("au.org.ands.vocabs.registry.api");
+        beanConfig.setResourcePackage("au.org.ands.vocabs.registry.api"
+                + ",au.org.ands.vocabs.registry.solr"
+                + ",au.org.ands.vocabs.registry.workflow");
         // Without scan=true, the top-level properties set in the previous
         // lines don't make their way into the generated swagger.json!
         beanConfig.setScan(true);

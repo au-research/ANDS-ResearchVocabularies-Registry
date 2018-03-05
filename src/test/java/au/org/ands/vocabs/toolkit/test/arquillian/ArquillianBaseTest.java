@@ -207,6 +207,15 @@ public class ArquillianBaseTest extends Arquillian {
                     "registry-h2-bamboo.properties");
             addOptionalResource(war, "conf/roles-h2-bamboo.properties",
                     "roles-h2-bamboo.properties");
+            // Some developers want to have separate config files
+            // to distinguish between running on a remote server
+            // and on the desktop (Mac):
+            addOptionalResource(war, "conf/toolkit-h2-mac.properties",
+                    "toolkit-h2-mac.properties");
+            addOptionalResource(war, "conf/registry-h2-mac.properties",
+                    "registry-h2-mac.properties");
+            addOptionalResource(war, "conf/roles-h2-mac.properties",
+                    "roles-h2-mac.properties");
             war.addAsResource(new File("conf/version.properties"),
                     "version.properties");
 

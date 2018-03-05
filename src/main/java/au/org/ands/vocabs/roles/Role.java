@@ -4,6 +4,8 @@ package au.org.ands.vocabs.roles;
 
 import javax.xml.bind.annotation.XmlType;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+
 import au.org.ands.vocabs.roles.db.entity.RoleTypeId;
 
 /** Representation of one role. */
@@ -80,6 +82,31 @@ public class Role {
     public void setFullName(
             final String aFullName) {
         fullName = aFullName;
+    }
+
+    /** {@inheritDoc}
+     * Equality test based on all properties.
+     */
+    @Override
+    public boolean equals(final Object other) {
+        if (other == null
+                || !(other instanceof Role)) {
+            return false;
+        }
+        Role otherRole = (Role) other;
+        return new EqualsBuilder().
+                append(id, otherRole.getId()).
+                append(typeId, otherRole.getTypeId()).
+                append(fullName, otherRole.getFullName()).
+                isEquals();
+    }
+
+    /** {@inheritDoc}
+     * The hash code returned is that of the id.
+     */
+    @Override
+    public int hashCode() {
+        return id.hashCode();
     }
 
 }

@@ -33,6 +33,10 @@ public final class ModelMethods {
 
     /** Get the current instance of the vocabulary, in registry schema
      * format. If there is no current instance, null is returned.
+     * If this method is called after another method in this class that
+     * has performed an update, and there is an incomplete or failed task,
+     * the details of that are included in the result as a workflow-outcome
+     * element.
      * @param vm The VocabularyModel representing the vocabulary.
      * @param includeVersions Whether or not to include version elements.
      * @param includeAccessPoints Whether or not to include access point
@@ -128,8 +132,6 @@ public final class ModelMethods {
 
     /** Apply changes to a vocabulary model using data specified
      * in registry schema format.
-     * TO DO: work out how to return a failure response (e.g., from
-     * running a task).
      * @param vm The VocabularyModel representing the vocabulary.
      * @param modifiedBy The value to use for "modifiedBy" when adding
      *      or updating rows of the database.

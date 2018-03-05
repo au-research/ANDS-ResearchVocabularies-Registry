@@ -28,7 +28,10 @@ import au.org.ands.vocabs.toolkit.test.utils.NetClientUtils;
 /** Client-side tests of the Registry API. */
 public class RegistryAPITests extends ArquillianBaseTest {
 
+    // Leave logger here, though it is unused. We might want to use
+    // it later.
     /** Logger. */
+    @SuppressWarnings("unused")
     private static Logger logger;
 
     static {

@@ -49,7 +49,8 @@ public final class ComparisonUtils {
     /** Compare two versions to see if they should be considered
      * "different" for the sake of the registry database.
      * The fields that are compared are:
-     * status, slug, release date, title, note.
+     * status, slug, release date, title, note, and the flags:
+     * PoolParty harvest, import, and publish.
      * @param v1 A version that is an existing database entity.
      * @param v2 A version in registry schema format.
      * @return true, if the two versions should be considered
@@ -66,7 +67,12 @@ public final class ComparisonUtils {
                 append(v1.getSlug(), v2.getSlug()).
                 append(v1.getReleaseDate(), v2.getReleaseDate()).
                 append(versionJson.getTitle(), v2.getTitle()).
-                append(versionJson.getNote(), v2.getNote()).isEquals();
+                append(versionJson.getNote(), v2.getNote()).
+                append(versionJson.isDoPoolpartyHarvest(),
+                        v2.isDoPoolpartyHarvest()).
+                append(versionJson.isDoImport(), v2.isDoImport()).
+                append(versionJson.isDoPublish(), v2.isDoPublish()).
+                isEquals();
     }
 
     /** Compare two access points to see if they should be considered

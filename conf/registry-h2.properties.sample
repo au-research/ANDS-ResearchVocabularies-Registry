@@ -105,7 +105,7 @@ Registry.metadataRewriteMapPath = ${Registry.storagePath}/conf/metadatarewritema
 ## Downloads and public-facing APIs
 
 # Prefix to all public-facing URLs to downloads from the Registry.
-Registry.downloadPrefix = ${Registry.swagger.defaultScheme}://${Registry.swagger.host}${Registry.swagger.basePath}/download/
+Registry.downloadPrefix = ${Registry.swagger.defaultScheme}://${Registry.swagger.host}${Registry.swagger.basePath}/api/resource/downloads/
 
 # URL of the API of the Sesame server
 #SesameImporter.serverUrl = http://localhost:8080/openrdf-sesame/

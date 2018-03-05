@@ -50,7 +50,10 @@ import au.org.ands.vocabs.toolkit.test.utils.NetClientUtils;
 @Test
 public class ToolkitTests extends ArquillianBaseTest {
 
+    // Leave logger here, though it is unused. We might want to use
+    // it later.
     /** Logger. */
+    @SuppressWarnings("unused")
     private static Logger logger;
 
     static {
@@ -58,7 +61,10 @@ public class ToolkitTests extends ArquillianBaseTest {
                 MethodHandles.lookup().lookupClass());
     }
 
+    // Leave here, though it is unused. We might want to use
+    // it later.
     /** Name of this class, used in paths to test data files. */
+    @SuppressWarnings("unused")
     private static final String CLASS_NAME_PREFIX = "ToolkitTests.";
 
     // Server-side tests go here. Client-side tests later on.

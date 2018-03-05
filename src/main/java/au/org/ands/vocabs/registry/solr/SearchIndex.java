@@ -121,6 +121,13 @@ public final class SearchIndex {
                     JSONSerialization.deserializeStringAsJson(filtersJson,
                             new TypeReference<Map<String, Object>>() { });
 
+            if (filters == null) {
+                // NB: If invalid JSON, the previous deserializeStringAsJson()
+                // will have logged an exception, but returned null.
+                throw new IllegalArgumentException("Filter specification is "
+                        + "not valid JSON");
+            }
+
             // Since there are filters, always apply highlighting.
             // addHighlightField() does solrQuery.setHighlight(true) for us.
             solrQuery.addHighlightField("*");
@@ -173,7 +180,18 @@ public final class SearchIndex {
                     }
                     break;
                 case "p":
-                    int page = (Integer) (filterEntry.getValue());
+                    // Support both "p":2 and "p":"2".
+                    int page;
+                    Object pValueAsObject = filterEntry.getValue();
+                    if (pValueAsObject instanceof Integer) {
+                        page = (Integer) (pValueAsObject);
+                    } else if (pValueAsObject instanceof String) {
+                        page = Integer.parseInt((String) pValueAsObject);
+                    } else {
+                        throw new IllegalArgumentException("p parameter must "
+                                + "be specified as either an integer or a "
+                                + "string");
+                    }
                     if (page > 1) {
                         int start = rows * (page - 1);
                         solrQuery.setStart(start);

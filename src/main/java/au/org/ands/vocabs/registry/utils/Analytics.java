@@ -177,8 +177,15 @@ public final class Analytics {
         try {
             response = geoDbReader.city(ipAddress);
         } catch (IOException | GeoIp2Exception e) {
+            // Don't need to log a full stacktrace, as you typically
+            // just need to see something like:
+            // 2018-02-12 16:26:21,251 [http-bio-8080-exec-7]
+            //  ERROR au.org.ands.vocabs.registry.utils.Analytics -
+            //  Unable to look up IP address in GeoIP database:
+            //  com.maxmind.geoip2.exception.AddressNotFoundException:
+            //  The address 0:0:0:0:0:0:0:1 is not in the database.
             logger.error("Unable to look up IP address in "
-                    + "GeoIP database", e);
+                    + "GeoIP database: " + e);
             return;
         }
 

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!DOCTYPE vocabulary>
+<vocabulary xmlns="http://vocabs.ands.org.au/registry/schema/2017/01/vocabulary" id="1" status="published" owner="ANDS-Curated" slug="rifcs" title="Registry Interchange Format - Collections and Services (Vocabularies)" acronym="RIF-CS" description="The RIF-CS schema is a data interchange format that supports the electronic exchange of collection and service descriptions. It organises information about collections and services into a format used by the Australian National Data Service (ANDS) Collections Registry. &#xA;&#xA;More information on the RIF-CS Schema can be found at http://ands.org.au/guides/cpguide/cpgrifcs.html. &#xA;&#xA;With assistance from the RIF-CS Advisory Board and user community, ANDS has developed a suggested vocabulary for use with the RIF-CS Schema. The vocabulary is comprised of suggested terms for specific elements of the schema. Use of the ANDS vocabulary with the RIF-CS Schema is not mandatory but is however recommended. Use of consistent terminology improves data discoverability and the precision of search operations. &#xA;&#xA;The ANDS vocabularies are expected to be informed and developed further by the RIF-CS user community. Please contact services@ands.org.au if you have candidate vocabulary terms to be evaluated for possible inclusion in the ANDS vocabularies. Published." revision-cycle="Updated as required" creation-date="2008-12-31" primary-language="en" licence="CC-BY">
+  <subject source="anzsrc-for" label="INFORMATION AND COMPUTING SCIENCES" iri="http://purl.org/au-research/vocabulary/anzsrc-for/2008/08" />
+  <subject source="anzsrc-for" label="MATHEMATICAL SCIENCES" iri="http://purl.org/au-research/vocabulary/anzsrc-for/2008/01" />
+  <version id="1" status="superseded" title="Version 1" note="Note for v1" release-date="2014-01">
+    <access-point id="1" discriminator="file" source="user">
+      <ap-file upload-id="1" format="TXT" />
+    </access-point>
+  </version>
+  <version status="current" title="Version 2" note="Note for v2" release-date="2015-01">
+    <access-point discriminator="file" source="user">
+      <ap-file upload-id="2" format="TTL" />
+    </access-point>
+  </version>
+  <related-entity-ref id="1">
+    <relation>publishedBy</relation>
+    <relation>hasAuthor</relation>
+    <relation>pointOfContact</relation>
+  </related-entity-ref>
+  <related-entity-ref id="3">
+    <relation>publishedBy</relation>
+  </related-entity-ref>
+  <related-entity-ref id="4">
+    <relation>publishedBy</relation>
+  </related-entity-ref>
+</vocabulary>

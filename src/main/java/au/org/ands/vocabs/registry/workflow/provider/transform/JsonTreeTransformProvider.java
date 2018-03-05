@@ -218,76 +218,97 @@ public class JsonTreeTransformProvider implements WorkflowProvider {
 
         // Extract the result, save in results Set and store in the
         // file system.
-        String resultFileNameTree = TaskUtils.getTaskOutputPath(taskInfo,
-                true, "concepts_tree.json");
-        try {
-            Set<Concept> conceptTree = conceptHandler.buildForest();
 
-            // Future work: either (a) make the returned JSON not
-            // just an array, but an object in which the concept tree
-            // is the value of one key/value pair, and the
-            // other key/value pairs are this sort of diagnostic information,
-            // or (b) return an array as usual, if everything is OK,
-            // or a string containing diagnostic information if
-            // something went wrong.
-            // For now, generate a JSON tree _only_ if there are only
-            // tree edges.
-            if (conceptHandler.isOnlyTreeEdges()) {
-                // Serialize the tree and write to the file system.
-                // Jackson will serialize TreeSets in sorted order of values
-                // (i.e., the Concept objects' prefLabels).
-                File out = new File(resultFileNameTree);
-                FileUtils.writeStringToFile(out,
-                        JSONSerialization.serializeObjectAsJsonString(
-                                conceptTree),
-                        StandardCharsets.UTF_8);
-                VersionArtefactUtils.createConceptTreeVersionArtefact(taskInfo,
-                        resultFileNameTree);
-            } else {
-                String reason;
-                if (conceptHandler.isCycle()) {
-                    // In giving a reason, cycles take priority.
-                    reason = "there is a cycle";
+        Set<Concept> conceptTree = conceptHandler.buildForest();
+
+        if (!conceptTree.isEmpty()) {
+            String resultFileNameTree = TaskUtils.getTaskOutputPath(taskInfo,
+                    true, "concepts_tree.json");
+            try {
+                // Future work: either (a) make the returned JSON not
+                // just an array, but an object in which the concept tree
+                // is the value of one key/value pair, and the
+                // other key/value pairs are this sort of diagnostic
+                // information,
+                // or (b) return an array as usual, if everything is OK,
+                // or a string containing diagnostic information if
+                // something went wrong.
+                // For now, generate a JSON tree _only_ if there are only
+                // tree edges.
+                if (conceptHandler.isOnlyTreeEdges()) {
+                    // Serialize the tree and write to the file system.
+                    // Jackson will serialize TreeSets in sorted order of values
+                    // (i.e., the Concept objects' prefLabels).
+                    File out = new File(resultFileNameTree);
+                    FileUtils.writeStringToFile(out,
+                            JSONSerialization.serializeObjectAsJsonString(
+                                    conceptTree),
+                            StandardCharsets.UTF_8);
+                    VersionArtefactUtils.createConceptTreeVersionArtefact(
+                            taskInfo, resultFileNameTree);
                 } else {
-                    reason = "there is a forward or cross edge";
+                    // We aren't going to provide a concept tree.
+                    // However, there might be an existing one left over,
+                    // which we must now remove. Call untransform() here,
+                    // because it sets the task status, and we want to
+                    // override that below.
+                    untransform(taskInfo, subtask);
+
+                    String reason;
+                    if (conceptHandler.isCycle()) {
+                        // In giving a reason, cycles take priority.
+                        reason = "there is a cycle";
+                    } else {
+                        reason = "there is a forward or cross edge";
+                    }
+                    subtask.setStatus(TaskStatus.PARTIAL);
+                    subtask.addResult(CONCEPTS_TREE_NOT_PROVIDED,
+                            "No concepts tree "
+                            + "provided, because " + reason + ".");
+                    subtask.addResult(TaskRunner.ALERT_HTML,
+                            "Alert: Either a polyhierarchy or cycle was "
+                            + "detected "
+                            + "in the vocabulary data.<br />The concept browse "
+                            + "tree will not be visible for this version ("
+                            + taskInfo.getVersion().getSlug()
+                            + ")."
+                            + "<br />For more information, please see "
+                            + "<a target=\"_blank\" "
+                            + "href=\"https://documentation."
+                            + "ands.org.au/display/DOC/Support+for+concept+"
+                            + "browsing+within+the+portal\">Portal concept "
+                            + "browsing</a>.");
+                    logger.error("JsonTreeTransform: not providing a concept "
+                            + "tree because " + reason + ".");
+                    // Future work:
+                    // write something else, e.g., a JSON string.
+                    //    FileUtils.writeStringToFile(out, "something");
+                    return;
                 }
-                subtask.setStatus(TaskStatus.PARTIAL);
-                subtask.addResult(CONCEPTS_TREE_NOT_PROVIDED,
-                        "No concepts tree "
-                        + "provided, because " + reason + ".");
-                subtask.addResult(TaskRunner.ALERT_HTML,
-                        "Alert: Either a polyhierarchy or cycle was detected "
-                        + "in the vocabulary data.<br />The concept browse "
-                        + "tree will not be visible for this vocabulary."
-                        + "<br />For more information, please see "
-                        + "<a target=\"_blank\" href=\"https://documentation."
-                        + "ands.org.au/display/DOC/Support+for+concept+"
-                        + "browsing+within+the+portal\">Portal concept "
-                        + "browsing</a>.");
-                logger.error("JsonTreeTransform: not providing a concept "
-                        + "tree because " + reason + ".");
-                // Future work:
-                // write something else, e.g., a JSON string.
-                //    FileUtils.writeStringToFile(out, "something");
+            } catch (IOException ex) {
+                subtask.setStatus(TaskStatus.ERROR);
+                subtask.addResult(TaskRunner.ERROR,
+                        "IO exception in JsonTreeTransform while "
+                        + "generating result");
+                logger.error("IO exception in JsonTreeTransform "
+                        + "generating result:", ex);
+                return;
+            } catch (Exception ex) {
+                // Any other possible cause?
+                subtask.setStatus(TaskStatus.ERROR);
+                subtask.addResult(TaskRunner.ERROR,
+                        "Exception in JsonTreeTransform while "
+                        + "generating result");
+                logger.error("Exception in JsonTreeTransform "
+                        + "generating result:", ex);
                 return;
             }
-        } catch (IOException ex) {
-            subtask.setStatus(TaskStatus.ERROR);
-            subtask.addResult(TaskRunner.ERROR,
-                    "IO exception in JsonTreeTransform while "
-                    + "generating result");
-            logger.error("IO exception in JsonTreeTransform generating result:",
-                    ex);
-            return;
-        } catch (Exception ex) {
-            // Any other possible cause?
-            subtask.setStatus(TaskStatus.ERROR);
-            subtask.addResult(TaskRunner.ERROR,
-                    "Exception in JsonTreeTransform while generating result");
-            logger.error("Exception in JsonTreeTransform generating result:",
-                    ex);
-            return;
+        } else {
+            // Clear out any existing VA, because we did in fact succeed,
+            // and we don't want to leave around any previous non-empty VA.
+            untransform(taskInfo, subtask);
         }
+
         subtask.setStatus(TaskStatus.SUCCESS);
     }
 
@@ -903,6 +924,9 @@ public class JsonTreeTransformProvider implements WorkflowProvider {
     }
 
     /** Remove the JsonTree version artefact for the version.
+     * NB: This method will also be invoked by
+     * {@link #transform(TaskInfo, Subtask)}, in the case of
+     * success that nevertheless produces an empty result.
      * @param taskInfo The top-level TaskInfo for the subtask.
      * @param subtask The subtask to be performed.
      */
@@ -923,6 +947,7 @@ public class JsonTreeTransformProvider implements WorkflowProvider {
             Files.deleteIfExists(Paths.get(vaConceptTree.getPath()));
             */
             TemporalUtils.makeHistorical(va, taskInfo.getNowTime());
+            va.setModifiedBy(taskInfo.getModifiedBy());
             VersionArtefactDAO.updateVersionArtefact(taskInfo.getEm(), va);
         }
         subtask.setStatus(TaskStatus.SUCCESS);

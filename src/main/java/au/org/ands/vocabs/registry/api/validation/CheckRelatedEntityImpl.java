@@ -53,7 +53,7 @@ public class CheckRelatedEntityImpl
     public boolean isValid(final RelatedEntity relatedEntity,
             final ConstraintValidatorContext constraintContext) {
 
-        logger.info("In CheckRelatedEntityImpl.isValid()");
+        logger.debug("In CheckRelatedEntityImpl.isValid()");
 
         // Start by assuming validity.
         boolean valid = true;

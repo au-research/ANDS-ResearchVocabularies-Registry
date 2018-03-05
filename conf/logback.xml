@@ -33,7 +33,9 @@
       <!-- Keep 31 days' worth of history -->
       <!-- <maxHistory>31</maxHistory> -->
     </rollingPolicy>
-    <encoder class="net.logstash.logback.encoder.LogstashEncoder" />
+    <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+      <timeZone>UTC</timeZone>
+    </encoder>
   </appender>
 
   <root level="${root-level:-INFO}">

@@ -4,9 +4,15 @@
 
 package au.org.ands.vocabs.registry.db.utils;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
+import java.nio.file.DirectoryIteratorException;
+import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
+import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
@@ -27,6 +33,8 @@ import javax.persistence.TypedQuery;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -73,6 +81,7 @@ import au.org.ands.vocabs.registry.db.internal.RelatedVocabularyJson;
 import au.org.ands.vocabs.registry.db.internal.VaCommon;
 import au.org.ands.vocabs.registry.db.internal.VaConceptList;
 import au.org.ands.vocabs.registry.db.internal.VaConceptTree;
+import au.org.ands.vocabs.registry.db.internal.VaHarvestPoolparty;
 import au.org.ands.vocabs.registry.db.internal.VersionJson;
 import au.org.ands.vocabs.registry.db.internal.VocabularyJson;
 import au.org.ands.vocabs.registry.enums.AccessPointType;
@@ -86,8 +95,10 @@ import au.org.ands.vocabs.registry.enums.VersionArtefactStatus;
 import au.org.ands.vocabs.registry.enums.VersionArtefactType;
 import au.org.ands.vocabs.registry.enums.VersionStatus;
 import au.org.ands.vocabs.registry.enums.VocabularyStatus;
+import au.org.ands.vocabs.registry.utils.RegistryConfig;
 import au.org.ands.vocabs.registry.utils.RegistryFileUtils;
 import au.org.ands.vocabs.registry.utils.RegistryProperties;
+import au.org.ands.vocabs.registry.utils.SlugGenerator;
 import au.org.ands.vocabs.toolkit.db.AccessPointUtils;
 import au.org.ands.vocabs.toolkit.db.DBContext;
 import au.org.ands.vocabs.toolkit.db.TaskUtils;
@@ -98,6 +109,7 @@ import au.org.ands.vocabs.toolkit.db.model.Task;
 import au.org.ands.vocabs.toolkit.db.model.Version;
 import au.org.ands.vocabs.toolkit.db.model.Vocabulary;
 import au.org.ands.vocabs.toolkit.utils.PropertyConstants;
+import au.org.ands.vocabs.toolkit.utils.ToolkitConfig;
 import au.org.ands.vocabs.toolkit.utils.ToolkitFileUtils;
 import au.org.ands.vocabs.toolkit.utils.ToolkitProperties;
 
@@ -140,6 +152,8 @@ public final class MigrateToolkitToRegistry {
                 RelatedEntityIdentifierType.RESEARCHER_ID);
         reiPrefixes.put("http://viaf.org/viaf/",
                 RelatedEntityIdentifierType.VIAF);
+        reiPrefixes.put("https://viaf.org/viaf/",
+                RelatedEntityIdentifierType.VIAF);
     }
 
     /** Map of related entity identifier types, to prefixes that should
@@ -151,30 +165,30 @@ public final class MigrateToolkitToRegistry {
      * easier to see that the value is correct.
      * The contents are initialized in a static initialization block.
      */
-    private static HashMap<RelatedEntityIdentifierType, String>
+    private static HashMap<RelatedEntityIdentifierType, Pattern>
         reiPrefixesToRemove = new HashMap<>();
 
     static {
         reiPrefixesToRemove.put(RelatedEntityIdentifierType.AU_ANL_PEAU,
-                "http://nla.gov.au/");
+                Pattern.compile("^http://nla.gov.au/"));
         reiPrefixesToRemove.put(RelatedEntityIdentifierType.DOI,
-                "http://dx.doi.org/");
+                Pattern.compile("^http://dx.doi.org/"));
         reiPrefixesToRemove.put(RelatedEntityIdentifierType.HANDLE,
-                "http://hdl.handle.net/");
+                Pattern.compile("^http://hdl.handle.net/"));
         // info: not removed.
 //        reiPrefixesToRemove.put(RelatedEntityIdentifierType.INFOURI,
 //                "info:");
         reiPrefixesToRemove.put(RelatedEntityIdentifierType.ISNI,
-                "http://isni.org/isni/");
+                Pattern.compile("^http://isni.org/isni/"));
         reiPrefixesToRemove.put(RelatedEntityIdentifierType.ORCID,
-                "http://orcid.org/");
+                Pattern.compile("^http://orcid.org/"));
         // PURL: not removed.
 //        reiPrefixesToRemove.put(RelatedEntityIdentifierType.PURL,
 //                "http://purl.org/");
         reiPrefixesToRemove.put(RelatedEntityIdentifierType.RESEARCHER_ID,
-                "http://www.researcherid.com/rid/");
+                Pattern.compile("^http://www.researcherid.com/rid/"));
         reiPrefixesToRemove.put(RelatedEntityIdentifierType.VIAF,
-                "http://viaf.org/viaf/");
+                Pattern.compile("^https?://viaf.org/viaf/"));
     }
 
     /** A map of vocabularies that we have migrated.
@@ -211,6 +225,17 @@ public final class MigrateToolkitToRegistry {
      */
     private HashMap<String, Integer> relatedEntitiesSeen = new HashMap<>();
 
+    /** A map of owner/type/title projections of related entities
+     * we have already migrated, to the count of the number of instances
+     * of that combination.
+     * The keys of the HashMap are the JSON data of the projection of
+     * the related entity.
+     * To make this work, the related entity should have been parsed and
+     * then the owner, type, and title reserialized in a canonical way,
+     * i.e., with keys in alphabetical order.
+     */
+    private HashMap<String, Integer> ottRelatedEntitiesSeen = new HashMap<>();
+
     /** Internally-related vocabularies can only be matched up once
      * we have migrated all of the vocabularies. So, they are stored
      * here along the way, and the relationships are created in
@@ -218,6 +243,9 @@ public final class MigrateToolkitToRegistry {
      */
     private HashMap<au.org.ands.vocabs.registry.db.entity.Vocabulary,
         JsonNode> relatedVocabularies = new HashMap<>();
+
+    /** The time at which migration started, as a String. */
+    private String nowTimeString;
 
     /** Convert a {@link Date} extracted from the "toolkit" database
      * to a {@link LocalDateTime} in UTC. Note that JDBC has already
@@ -233,6 +261,9 @@ public final class MigrateToolkitToRegistry {
 
     /** The Path to the directory in which registry uploads are stored. */
     private java.nio.file.Path uploadsPath;
+
+    /** A set containing the filenames of files that have been migrated. */
+    private Set<String> migratedFiles = new HashSet<>();
 
     /** Get the published or deprecated verion of a migrated Vocabulary
      * by its slug, if there is one. Otherwise, return null. This method can be
@@ -313,7 +344,8 @@ public final class MigrateToolkitToRegistry {
     }
 
     /** Migrate the contents of the "toolkit" database to
-     * the "registry" database.
+     * the "registry" database, and the "toolkit" data to the "registry"
+     * data storage.
      * @return Text indicating success.
      */
     @Path("migrateToolkitToRegistry")
@@ -321,6 +353,9 @@ public final class MigrateToolkitToRegistry {
     public String migrateToolkitToRegistry() {
         SimpleDateFormat formatter =
                 new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        nowTimeString = replaceCharactersInTimestamp(
+                TemporalUtils.nowUTC().toString());
+
         EntityManager toolkitEm = DBContext.getEntityManager();
 
         String uploadsDirectoryName = RegistryProperties.getProperty(
@@ -328,14 +363,31 @@ public final class MigrateToolkitToRegistry {
                 REGISTRY_UPLOADSPATH);
         RegistryFileUtils.requireDirectory(uploadsDirectoryName);
         uploadsPath = java.nio.file.Paths.get(uploadsDirectoryName);
+        try {
+            FileUtils.forceDelete(new File(RegistryConfig.DATA_FILES_PATH));
+        } catch (FileNotFoundException e) {
+            // No problem.
+        } catch (IOException e) {
+            logger.error("Unable to remove existing registry data directory",
+                    e);
+        }
 
-        migratePublishedAndDeprecatedVocabularies(formatter, toolkitEm);
-        migrateDraftVocabularies(formatter, toolkitEm);
-        migrateInternallyRelatedVocabularies();
-        migrateTasks(toolkitEm);
-        migrateResourceOwnerHosts(toolkitEm);
-        migrateResourceMap(toolkitEm);
-        toolkitEm.close();
+        // Do spec files first, so that their final location can
+        // be included in migrated access points.
+        migrateSpecFiles();
+
+        // Now migrate all the database.
+        try {
+            migratePublishedAndDeprecatedVocabularies(formatter, toolkitEm);
+            migrateDraftVocabularies(formatter, toolkitEm);
+            migrateInternallyRelatedVocabularies();
+            migrateTasks(toolkitEm);
+            migrateResourceOwnerHosts(toolkitEm);
+            migrateResourceMap(toolkitEm);
+            toolkitEm.close();
+        } catch (Throwable e) {
+            logger.error("Exception during migration:", e);
+        }
         return "Done.";
     }
 
@@ -509,6 +561,74 @@ public final class MigrateToolkitToRegistry {
                     version, registryVersion);
             migrateAccessPoints(toolkitEm, toolkitVocabulary,
                     version, registryVersion, isDraft);
+            if (!isDraft) {
+                migrateRemainingHarvestedFiles(registryVocabulary,
+                        registryVersion);
+            }
+        }
+    }
+
+    /** Migrate so-far-unmigrated files remaining in the harvest_data
+     * directory for a currently-valid version.
+     * @param registryVocabulary The vocabulary record
+     *      as it has been migrated to the registry database.
+     * @param registryVersion The version record
+     *      as it has been migrated to the registry database.
+     */
+    private void migrateRemainingHarvestedFiles(
+            final au.org.ands.vocabs.registry.db.entity.Vocabulary
+            registryVocabulary,
+            final au.org.ands.vocabs.registry.db.entity.Version
+            registryVersion) {
+        VocabularyJson vocabularyJson =
+                JSONSerialization.deserializeStringAsJson(
+                        registryVocabulary.getData(), VocabularyJson.class);
+        if (vocabularyJson.getPoolpartyProject() == null) {
+            // Not a PoolParty project, so nothing remaining to be
+            // migrated.
+            return;
+        }
+        java.nio.file.Path toolkitHarvestDir =
+                getToolkitHarvestOutputPath(registryVocabulary,
+                        registryVersion);
+        java.nio.file.Path registryHarvestDir =
+                getRegistryHarvestOutputPath(registryVocabulary.getOwner(),
+                        registryVocabulary.getVocabularyId(),
+                        registryVersion.getVersionId(), true);
+        String registryHarvestDirString = registryHarvestDir.toString();
+
+        try (DirectoryStream<java.nio.file.Path> stream =
+                Files.newDirectoryStream(toolkitHarvestDir)) {
+            // Iterate over every file in the toolkit harvest directory.
+            for (java.nio.file.Path entry: stream) {
+                String entryString = entry.toString();
+                if (migratedFiles.contains(entryString)) {
+                    // Already migrated as a file access point.
+                    continue;
+                }
+                migratedFiles.add(entryString);
+                // Don't bother to copy empty files.
+                if (entry.toFile().length() > 0) {
+                    RegistryFileUtils.requireDirectory(
+                            registryHarvestDirString);
+                    java.nio.file.Path targetPath =
+                            registryHarvestDir.resolve(entry.getFileName());
+                    logger.info("Migrating file as VA: " + entry
+                            + "; target: " + targetPath);
+                    Files.copy(entry, targetPath,
+                            StandardCopyOption.COPY_ATTRIBUTES,
+                            StandardCopyOption.REPLACE_EXISTING);
+                    VaHarvestPoolparty vahp = new VaHarvestPoolparty();
+                    vahp.setPath(targetPath.toString());
+                    addVersionArtefact(registryVocabulary, registryVersion,
+                            VersionArtefactType.HARVEST_POOLPARTY, vahp);
+                }
+            }
+        } catch (NoSuchFileException nsfe) {
+            // No harvest_data directory for this version, so nothing to do.
+        } catch (DirectoryIteratorException | IOException ex) {
+            logger.error("Exception in migrateRemainingHarvestedFiles "
+                    + "while copying files:", ex);
         }
     }
 
@@ -732,7 +852,10 @@ public final class MigrateToolkitToRegistry {
                             // vocabs_cms.js.
                             language = "en";
                         }
-                        otherLanguages.add(language);
+                        if (!otherLanguages.contains(language)) {
+                            // Don't add a duplicate.
+                            otherLanguages.add(language);
+                        }
                         if ("en".equals(language)) {
                             // Give preference to English.
                             primaryLanguage = "en";
@@ -946,7 +1069,24 @@ public final class MigrateToolkitToRegistry {
 
         String canonicalRelatedEntity = canonicalizeRelatedEntityJson(
                 relatedEntityJson, vocabulary);
+        String canonicalOwnerTypeTitle = ottRelatedEntityJson(
+                relatedEntityJson, vocabulary);
+
         logger.info("canonicalRelatedEntity = " + canonicalRelatedEntity);
+        logger.info("canonicalOwnerTypeTitle = " + canonicalOwnerTypeTitle);
+        // A number to append to the title, if we see a duplicate.
+        int numberToAppend = 0;
+        if (ottRelatedEntitiesSeen.containsKey(canonicalOwnerTypeTitle)) {
+            // Found it. Increment the count.
+            numberToAppend = ottRelatedEntitiesSeen.get(
+                    canonicalOwnerTypeTitle);
+            numberToAppend++;
+            ottRelatedEntitiesSeen.put(canonicalOwnerTypeTitle,
+                    numberToAppend);
+        } else {
+            ottRelatedEntitiesSeen.put(canonicalOwnerTypeTitle, 1);
+        }
+
         if (relatedEntitiesSeen.containsKey(canonicalRelatedEntity)) {
             logger.info("Found an existing party related entity that will do.");
             relatedEntity = RelatedEntityDAO.getRelatedEntityById(
@@ -1000,7 +1140,11 @@ public final class MigrateToolkitToRegistry {
                     extractRelations(entry.getValue(), relations);
                     break;
                 case "title":
-                    relatedEntity.setTitle(entry.getValue().asText());
+                    String title = entry.getValue().asText();
+                    if (numberToAppend > 0) {
+                        title = title + " " + numberToAppend;
+                    }
+                    relatedEntity.setTitle(title);
                 case "type":
                     // We already know what type it is
                     break;
@@ -1073,6 +1217,26 @@ public final class MigrateToolkitToRegistry {
         String canonicalRelatedEntity =
                 serializeJsonAsString(canonicalRelatedEntityJson);
         return canonicalRelatedEntity;
+    }
+
+    /** Extract from a related entity a canonical representation of
+     * the components, the combination of which is required to be unique.
+     * For now, that is the combination of owner, type, and title.
+     * (Hence the name of the method, beginning with "ott".)
+     * @param relatedEntityJson The JSON representation of the related entity,
+     *      from the "toolkit" database.
+     * @param vocabulary The "toolkit" vocabulary object that "owns" this
+     *      related entity.
+     * @return The canonical representation of this related entity.
+     */
+    private String ottRelatedEntityJson(
+            final JsonNode relatedEntityJson, final Vocabulary vocabulary) {
+        final ObjectNode ott = jsonMapper.createObjectNode();
+        ott.put("owner", vocabulary.getOwner());
+        ott.put("type", relatedEntityJson.get("type").asText());
+        ott.put("title", relatedEntityJson.get("title").asText());
+        String ottRelatedEntity = serializeJsonAsString(ott);
+        return ottRelatedEntity;
     }
 
     /** Extract the identifiers from the related entity, and create
@@ -1233,11 +1397,11 @@ public final class MigrateToolkitToRegistry {
                 : reiPrefixes.entrySet()) {
             if (identifierText.startsWith(entry.getKey())) {
                 identifierType = entry.getValue();
-                String prefixToRemove =
+                Pattern prefixToRemove =
                         reiPrefixesToRemove.get(identifierType);
                 if (prefixToRemove != null) {
-                    identifierText =
-                            identifierText.substring(prefixToRemove.length());
+                    identifierText = prefixToRemove.matcher(identifierText).
+                            replaceFirst("");
                 }
                 break;
             }
@@ -1281,7 +1445,24 @@ public final class MigrateToolkitToRegistry {
 
         String canonicalRelatedEntity = canonicalizeRelatedEntityJson(
                 relatedEntityJson, vocabulary);
+        String canonicalOwnerTypeTitle = ottRelatedEntityJson(
+                relatedEntityJson, vocabulary);
+
         logger.info("canonicalRelatedEntity = " + canonicalRelatedEntity);
+        logger.info("canonicalOwnerTypeTitle = " + canonicalOwnerTypeTitle);
+        // A number to append to the title, if we see a duplicate.
+        int numberToAppend = 0;
+        if (ottRelatedEntitiesSeen.containsKey(canonicalOwnerTypeTitle)) {
+            // Found it. Increment the count.
+            numberToAppend = ottRelatedEntitiesSeen.get(
+                    canonicalOwnerTypeTitle);
+            numberToAppend++;
+            ottRelatedEntitiesSeen.put(canonicalOwnerTypeTitle,
+                    numberToAppend);
+        } else {
+            ottRelatedEntitiesSeen.put(canonicalOwnerTypeTitle, 1);
+        }
+
         if (relatedEntitiesSeen.containsKey(canonicalRelatedEntity)) {
             logger.info("Found an existing service related entity "
                     + "that will do.");
@@ -1330,7 +1511,11 @@ public final class MigrateToolkitToRegistry {
                     extractRelations(entry.getValue(), relations);
                     break;
                 case "title":
-                    relatedEntity.setTitle(entry.getValue().asText());
+                    String title = entry.getValue().asText();
+                    if (numberToAppend > 0) {
+                        title = title + " " + numberToAppend;
+                    }
+                    relatedEntity.setTitle(title);
                 case "type":
                     // We already know what type it is
                     break;
@@ -1423,7 +1608,24 @@ public final class MigrateToolkitToRegistry {
 
         String canonicalRelatedEntity = canonicalizeRelatedEntityJson(
                 relatedEntityJson, vocabulary);
+        String canonicalOwnerTypeTitle = ottRelatedEntityJson(
+                relatedEntityJson, vocabulary);
+
         logger.info("canonicalRelatedEntity = " + canonicalRelatedEntity);
+        logger.info("canonicalOwnerTypeTitle = " + canonicalOwnerTypeTitle);
+        // A number to append to the title, if we see a duplicate.
+        int numberToAppend = 0;
+        if (ottRelatedEntitiesSeen.containsKey(canonicalOwnerTypeTitle)) {
+            // Found it. Increment the count.
+            numberToAppend = ottRelatedEntitiesSeen.get(
+                    canonicalOwnerTypeTitle);
+            numberToAppend++;
+            ottRelatedEntitiesSeen.put(canonicalOwnerTypeTitle,
+                    numberToAppend);
+        } else {
+            ottRelatedEntitiesSeen.put(canonicalOwnerTypeTitle, 1);
+        }
+
         if (relatedEntitiesSeen.containsKey(canonicalRelatedEntity)) {
             logger.info("Found an existing service related entity "
                     + "that will do.");
@@ -1473,7 +1675,11 @@ public final class MigrateToolkitToRegistry {
                     extractRelations(entry.getValue(), relations);
                     break;
                 case "title":
-                    relatedEntity.setTitle(entry.getValue().asText());
+                    String title = entry.getValue().asText();
+                    if (numberToAppend > 0) {
+                        title = title + " " + numberToAppend;
+                    }
+                    relatedEntity.setTitle(title);
                 case "type":
                     // We already know what type it is.
                     break;
@@ -1909,7 +2115,29 @@ public final class MigrateToolkitToRegistry {
             ApFile apFile = new ApFile();
             apFile.setFormat(portalDataJson.get("format").asText());
             apFile.setUrl(portalDataJson.get("uri").asText());
-            apFile.setPath(toolkitDataJson.get("path").asText());
+            java.nio.file.Path oldPath =
+                    Paths.get(toolkitDataJson.get("path").asText());
+            java.nio.file.Path basename = oldPath.getFileName();
+            java.nio.file.Path migratedFileDirectory =
+                    getRegistryHarvestOutputPath(vocabulary.getOwner(),
+                    registryVersion.getVocabularyId(),
+                    registryVersion.getVersionId(), true);
+            java.nio.file.Path migratedFilePath =
+                    migratedFileDirectory.resolve(basename);
+            String migratedFilePathString =
+                    migratedFilePath.toString();
+            logger.info("Migrating file: " + oldPath
+                    + "; target: " + migratedFilePathString);
+            try {
+                Files.copy(oldPath, migratedFilePath,
+                        StandardCopyOption.COPY_ATTRIBUTES,
+                        StandardCopyOption.REPLACE_EXISTING);
+            } catch (IOException e) {
+                logger.error("Error when migrating file: " + oldPath
+                        + "; target: " + migratedFilePath, e);
+            }
+            migratedFiles.add(migratedFilePathString);
+            apFile.setPath(migratedFilePathString);
             apData = apFile;
             break;
         case "sesameDownload":
@@ -1935,6 +2163,12 @@ public final class MigrateToolkitToRegistry {
             ApSissvoc apSissvoc = new ApSissvoc();
             registryAccessPoint.setSource(ApSource.fromValue(
                     portalDataJson.get("source").asText()));
+            java.nio.file.Path specFilePath =
+                    getSpecFilePath(vocabulary, registryVersion);
+            logger.info("specFilePath: " + specFilePath);
+            if (Files.exists(specFilePath)) {
+                apSissvoc.setPath(specFilePath.toString());
+            }
             apSissvoc.setUrlPrefix(portalDataJson.get("uri").asText());
             apData = apSissvoc;
             break;
@@ -2000,14 +2234,35 @@ public final class MigrateToolkitToRegistry {
             if (url.startsWith(expectedPrefix)) {
                 // Make an upload.
                 Upload upload = makeUpload(toolkitVocabulary, fileData);
-                String newUrl = ToolkitProperties.getProperty(
-                        PropertyConstants.TOOLKIT_DOWNLOADPREFIX)
+                String newUrl = RegistryProperties.getProperty(
+                        au.org.ands.vocabs.registry.utils.PropertyConstants.
+                        REGISTRY_DOWNLOADPREFIX)
                         + newAP.getAccessPointId() + "/"
                         + url.substring(expectedPrefix.length());
                 logger.info("fixUpAccessPoints: rewrote file AP: "
                         + newAP.getAccessPointId());
                 fileData.setUrl(newUrl);
                 fileData.setUploadId(upload.getId());
+                // Move the path so it has the upload ID.
+                String existingPathString = fileData.getPath();
+                java.nio.file.Path existingPath = Paths.get(existingPathString);
+                java.nio.file.Path existingDir = existingPath.getParent();
+                java.nio.file.Path existingFileName =
+                        existingPath.getFileName();
+                String existingFileNameString = existingFileName.toString();
+                String extension = FilenameUtils.getExtension(
+                        existingFileNameString);
+                String newFilename = upload.getId().toString()
+                        + "." + extension;
+                java.nio.file.Path newPath = existingDir.resolve(newFilename);
+                String newPathString = newPath.toString();
+                try {
+                    Files.move(existingPath, newPath);
+                } catch (IOException e) {
+                    logger.error("Unable to rename file, from: "
+                            + existingPath + " to " + newPath, e);
+                }
+                fileData.setPath(newPathString);
                 newAP.setData(serializeJsonAsString(fileData));
                 AccessPointDAO.updateAccessPoint(newAP);
             } else {
@@ -2025,8 +2280,9 @@ public final class MigrateToolkitToRegistry {
                     PropertyConstants.TOOLKIT_DOWNLOADPREFIX)
                     + originalAP.getId() + "/";
             if (urlPrefix.startsWith(expectedPrefix)) {
-                String newUrlPrefix = ToolkitProperties.getProperty(
-                        PropertyConstants.TOOLKIT_DOWNLOADPREFIX)
+                String newUrlPrefix = RegistryProperties.getProperty(
+                        au.org.ands.vocabs.registry.utils.PropertyConstants.
+                        REGISTRY_DOWNLOADPREFIX)
                         + newAP.getAccessPointId() + "/"
                         + urlPrefix.substring(expectedPrefix.length());
                 logger.info("fixUpAccessPointWithinURLs: rewrote sd AP: "
@@ -2140,8 +2396,14 @@ public final class MigrateToolkitToRegistry {
                 // Cope with a null status.
                 task.setStatus("error");
             }
-            registryTask.setStatus(TaskStatus.fromValue(
-                    task.getStatus().toLowerCase(Locale.ROOT)));
+            try {
+                registryTask.setStatus(TaskStatus.fromValue(
+                        task.getStatus().toLowerCase(Locale.ROOT)));
+            } catch (IllegalArgumentException e) {
+                // E.g., if the original was "TRANSFORMING", etc.
+                // Fall back to "PARTIAL".
+                registryTask.setStatus(TaskStatus.PARTIAL);
+            }
             TaskDAO.saveTask(registryTask);
         }
     }
@@ -2151,26 +2413,45 @@ public final class MigrateToolkitToRegistry {
      */
     private void migrateResourceMap(final EntityManager toolkitEm) {
         List<ResourceMapEntry> rmes;
-        rmes =
-                toolkitEm.createQuery("SELECT rme FROM ResourceMapEntry rme",
-                        ResourceMapEntry.class).
+        rmes = toolkitEm.createQuery("SELECT rme FROM ResourceMapEntry rme",
+                ResourceMapEntry.class).
                 getResultList();
         logger.info("Got " + rmes.size() + " resource map entry(s).");
-        for (ResourceMapEntry rme : rmes) {
-            logger.info("Processing resource map entry with id: "
-                    + rme.getId());
-            au.org.ands.vocabs.registry.db.entity.ResourceMapEntry
-            registryRme =
+
+        EntityManager em = null;
+        try {
+            em = au.org.ands.vocabs.registry.db.context.DBContext.
+                    getEntityManager();
+            em.getTransaction().begin();
+
+            for (ResourceMapEntry rme : rmes) {
+                logger.info("Processing resource map entry with id: "
+                        + rme.getId());
+                au.org.ands.vocabs.registry.db.entity.ResourceMapEntry
+                registryRme =
                 new au.org.ands.vocabs.registry.db.entity.ResourceMapEntry();
 
-            registryRme.setIri(rme.getIri());
-            registryRme.setAccessPointId(migratedAccessPoints.get(
-                    rme.getAccessPointId()));
-            registryRme.setOwned(rme.getOwned());
-            registryRme.setResourceType(rme.getResourceType());
-            registryRme.setDeprecated(rme.getDeprecated());
-            ResourceMapEntryDAO.saveResourceMapEntry(registryRme);
+                registryRme.setIri(rme.getIri());
+                registryRme.setAccessPointId(migratedAccessPoints.get(
+                        rme.getAccessPointId()));
+                registryRme.setOwned(rme.getOwned());
+                registryRme.setResourceType(rme.getResourceType());
+                registryRme.setDeprecated(rme.getDeprecated());
+                ResourceMapEntryDAO.saveResourceMapEntry(em, registryRme);
+            }
+
+            em.getTransaction().commit();
+        } catch (Exception e) {
+            if (em != null) {
+                em.getTransaction().rollback();
+                throw e;
+            }
+        } finally {
+            if (em != null) {
+                em.close();
+            }
         }
+
     }
 
     /** Migrate the resource owner hosts.
@@ -2195,6 +2476,185 @@ public final class MigrateToolkitToRegistry {
             registryRoh.setHost(roh.getHost());
             ResourceOwnerHostDAO.saveResourceOwnerHost(registryRoh);
         }
+    }
+
+    // Below here are copies of some of the attributes of the TaskUtils class.
+    // Some have been copied as-is; others have been modified for use
+    // in this class.
+
+    /** Pattern that matches characters that should be replaced when
+     * converting a timestamp into a file path component. Use with
+     * {@link java.util.regex.Matcher#replaceAll(String)}. */
+    private static final Pattern TIMESTAMP_PATTERN =
+            Pattern.compile("[^0-9A-Z]");
+
+    /** Sanitize a timestamp String by removing characters we don't want
+     * to appear in a directory name.
+     * @param timestamp The timestamp String to be sanitized.
+     * @return The sanitized timestamp String.
+     */
+    private static String replaceCharactersInTimestamp(final String timestamp) {
+        return TIMESTAMP_PATTERN.matcher(timestamp).replaceAll("");
+    }
+
+    /** Get the full path of the toolkit storage directory used to store all
+     * the files referred to by a version.
+     * @param registryVocabulary The vocabulary as it is in the registry
+     * @param registryVersion The version as it is in the registry
+     * @param extraPath An optional additional path component to be added
+     * at the end. If not required, pass in null or an empty string.
+     * @return The full path of the directory used to store the
+     * vocabulary data.
+     */
+    public static java.nio.file.Path getToolkitOutputPath(
+            final au.org.ands.vocabs.registry.db.entity.Vocabulary
+            registryVocabulary,
+            final au.org.ands.vocabs.registry.db.entity.Version
+            registryVersion,
+            final String extraPath) {
+        java.nio.file.Path path = Paths.get(ToolkitConfig.DATA_FILES_PATH)
+                .resolve(ToolkitFileUtils.makeSlug(
+                        registryVocabulary.getOwner()))
+                .resolve(registryVocabulary.getSlug())
+                .resolve(registryVersion.getSlug());
+        if (extraPath != null && (!extraPath.isEmpty())) {
+            path = path.resolve(extraPath);
+        }
+        return path;
+    }
+
+    /** Get the full path of the toolkit storage directory containing the
+     * data that has been harvest for a version.
+     * @param registryVocabulary The vocabulary as it is in the registry
+     * @param registryVersion The version as it is in the registry
+     * @return The full path of the directory used to store the
+     * vocabulary data.
+     */
+    public static java.nio.file.Path getToolkitHarvestOutputPath(
+            final au.org.ands.vocabs.registry.db.entity.Vocabulary
+            registryVocabulary,
+            final au.org.ands.vocabs.registry.db.entity.Version
+            registryVersion) {
+        return getToolkitOutputPath(registryVocabulary,
+                registryVersion, ToolkitConfig.HARVEST_DATA_PATH);
+    }
+
+    /** Get the full path of the registry directory used to store all
+     * the files referred to by a version.
+     * @param vocabularyOwner The vocabulary owner.
+     * @param vocabularyId The vocabulary Id as it is in the registry.
+     * @param versionId The version Id as it is in the registry
+     * @param requireDirectory If true, make the directory exist.
+     * @param extraPath An optional additional path component to be added
+     * at the end. If not required, pass in null or an empty string.
+     * @return The full path of the directory used to store the
+     * vocabulary data.
+     */
+    private java.nio.file.Path getRegistryOutputPath(
+            final String vocabularyOwner,
+            final Integer vocabularyId,
+            final Integer versionId,
+            final boolean requireDirectory,
+            final String extraPath) {
+        java.nio.file.Path path = Paths.get(RegistryConfig.DATA_FILES_PATH)
+                .resolve(SlugGenerator.generateSlug(vocabularyOwner))
+                .resolve(vocabularyId.toString())
+                .resolve(versionId.toString())
+                .resolve(nowTimeString);
+        if (requireDirectory) {
+            RegistryFileUtils.requireDirectory(path.toString());
+        }
+        if (extraPath != null && (!extraPath.isEmpty())) {
+            path = path.resolve(extraPath);
+        }
+        return path;
+    }
+
+    /** Get the full path of the directory used to store all
+     * harvested data referred to by the task.
+     * @param vocabularyOwner The vocabulary owner.
+     * @param vocabularyId The vocabulary Id as it is in the registry.
+     * @param versionId The version Id as it is in the registry
+     * @param requireDirectory If true, make the directory exist.
+     * @return The full path of the directory used to store the
+     * vocabulary data.
+     */
+    private java.nio.file.Path getRegistryHarvestOutputPath(
+            final String vocabularyOwner,
+            final Integer vocabularyId,
+            final Integer versionId,
+            final boolean requireDirectory) {
+        java.nio.file.Path taskHarvestOutputPath = getRegistryOutputPath(
+                vocabularyOwner,
+                vocabularyId, versionId, false,
+                RegistryConfig.HARVEST_DATA_PATH);
+        if (requireDirectory) {
+            RegistryFileUtils.requireDirectory(
+                    taskHarvestOutputPath.toString());
+        }
+        return taskHarvestOutputPath;
+    }
+
+    /** Migrate the SISSVoc spec files from the Toolkit directory
+     * to the Registry directory.
+     */
+    private void migrateSpecFiles() {
+        String toolkitSpecsDir = ToolkitProperties.getProperty(
+                PropertyConstants.SISSVOC_SPECSPATH);
+        java.nio.file.Path toolkitSpecsPath = Paths.get(toolkitSpecsDir);
+        String registrySpecsDir = RegistryProperties.getProperty(
+                au.org.ands.vocabs.registry.utils.PropertyConstants.
+                SISSVOC_SPECSPATH);
+        java.nio.file.Path registrySpecsPath = Paths.get(registrySpecsDir);
+
+        try (DirectoryStream<java.nio.file.Path> stream =
+                Files.newDirectoryStream(toolkitSpecsPath)) {
+            // Ensure target directory exists but is empty.
+            try {
+                FileUtils.forceDelete(new File(registrySpecsDir));
+            } catch (FileNotFoundException e) {
+                // No problem.
+            }
+            RegistryFileUtils.requireDirectory(registrySpecsDir);
+
+            // Iterate over every file in the specs directory.
+            for (java.nio.file.Path entry: stream) {
+                // Don't bother to migrate empty files.
+                if (entry.toFile().length() > 0) {
+                    Files.copy(entry,
+                            registrySpecsPath.resolve(entry.getFileName()),
+                            StandardCopyOption.COPY_ATTRIBUTES,
+                            StandardCopyOption.REPLACE_EXISTING);
+                }
+            }
+        } catch (DirectoryIteratorException | IOException ex) {
+            logger.error("Exception in migrateSpecFiles while copying files:",
+                    ex);
+        }
+    }
+
+    /** Get the full path to what should be the migrated SISSVoc spec file
+     * for a version.
+     * @param vocabulary The Vocabulary instance used to create the path.
+     * @param registryVersion The Version instance used to create the path.
+     * @return The full path to the what should be the migrated SISSVoc
+     *      spec file.
+     */
+    private java.nio.file.Path getSpecFilePath(final Vocabulary vocabulary,
+            final au.org.ands.vocabs.registry.db.entity.Version
+            registryVersion) {
+        String registrySpecsDir = RegistryProperties.getProperty(
+                au.org.ands.vocabs.registry.utils.PropertyConstants.
+                SISSVOC_SPECSPATH);
+        java.nio.file.Path specPath = Paths.get(registrySpecsDir).
+                resolve(SlugGenerator.generateSlug(
+                        vocabulary.getOwner())
+                        + "_"
+                        + vocabulary.getSlug()
+                        + "_"
+                        + registryVersion.getSlug()
+                        + ".ttl");
+        return specPath;
     }
 
     /** Jackson ObjectMapper used for serializing JSON data into Strings.

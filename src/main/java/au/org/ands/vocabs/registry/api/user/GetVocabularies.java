@@ -45,6 +45,7 @@ import au.org.ands.vocabs.registry.db.dao.RelatedEntityDAO;
 import au.org.ands.vocabs.registry.db.dao.RelatedEntityIdentifierDAO;
 import au.org.ands.vocabs.registry.db.dao.VersionDAO;
 import au.org.ands.vocabs.registry.db.dao.VocabularyDAO;
+import au.org.ands.vocabs.registry.enums.ApSource;
 import au.org.ands.vocabs.registry.enums.RelatedVocabularyRelation;
 import au.org.ands.vocabs.registry.model.ModelMethods;
 import au.org.ands.vocabs.registry.model.VocabularyModel;
@@ -87,7 +88,6 @@ public class GetVocabularies {
      * published and deprecated vocabularies.
      * @param request The HTTP request.
      * @param uriInfo The UriInfo of the request.
-     * @param includeDraft If true, also include draft vocabularies.
      * @return The list of vocabularies, in either XML or JSON format. */
     @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     @GET
@@ -95,13 +95,7 @@ public class GetVocabularies {
             + "both published and deprecated vocabularies.")
     public final VocabularyList getVocabularies(
             @Context final HttpServletRequest request,
-            @Context final UriInfo uriInfo,
-            @ApiParam(value = "If true, also include draft vocabulary records.")
-            @QueryParam("includeDraft")
-            @DefaultValue("false") final boolean includeDraft) {
-        if (includeDraft) {
-            return getVocabulariesIncludingDraft();
-        }
+            @Context final UriInfo uriInfo) {
         logger.debug("called getVocabularies");
         List<au.org.ands.vocabs.registry.db.entity.Vocabulary>
             dbVocabularies = VocabularyDAO.getAllCurrentVocabulary();
@@ -118,34 +112,6 @@ public class GetVocabularies {
 
         Logging.logRequest(true, request, uriInfo, null,
                 "Get all vocabularies");
-        return outputVocabularyList;
-    }
-
-    /** Get all the current vocabularies, of all status values,
-     * including draft.
-     * @return The list of vocabularies of all status values,
-     *      including draft. */
-    public final VocabularyList getVocabulariesIncludingDraft() {
-        logger.debug("called getVocabulariesIncludingDraft");
-        List<au.org.ands.vocabs.registry.db.entity.Vocabulary>
-            dbVocabularies = VocabularyDAO.getAllCurrentVocabulary();
-        List<au.org.ands.vocabs.registry.db.entity.Vocabulary>
-            dbDraftVocabularies = VocabularyDAO.getAllDraftVocabulary();
-        VocabularyList outputVocabularyList = new VocabularyList();
-        List<Vocabulary> outputVocabularies =
-                outputVocabularyList.getVocabulary();
-
-        VocabularyDbSchemaMapper mapper =
-                VocabularyDbSchemaMapper.INSTANCE;
-        for (au.org.ands.vocabs.registry.db.entity.Vocabulary dbVocabulary
-                : dbVocabularies) {
-            outputVocabularies.add(mapper.sourceToTarget(dbVocabulary, true));
-        }
-        for (au.org.ands.vocabs.registry.db.entity.Vocabulary dbVocabulary
-                : dbDraftVocabularies) {
-            outputVocabularies.add(mapper.sourceToTarget(dbVocabulary, true));
-        }
-
         return outputVocabularyList;
     }
 
@@ -282,6 +248,7 @@ public class GetVocabularies {
      * The caller must be authenticated, and authorized to modify the
      * vocabulary. If there is a draft instance, that is returned.
      * Otherwise, the current instance is returned.
+     * Access points that have source SYSTEM are stripped out.
      * @param request The HTTP request.
      * @param uriInfo The UriInfo of the request.
      * @param profile The caller's security profile.
@@ -293,6 +260,7 @@ public class GetVocabularies {
     @Pac4JSecurity
     @GET
     @ApiOperation(value = "Get a vocabulary by its id, for editing.",
+            notes = "Access points that have source=SYSTEM are stripped out.",
             response = Vocabulary.class,
             authorizations = {@Authorization(
                     value = SwaggerInterface.BASIC_AUTH),
@@ -335,6 +303,10 @@ public class GetVocabularies {
                         vocabularyId);
                 vocabularyAsSchema = ModelMethods.getDraft(vm,
                         true, true, true);
+                // Strip out access points with source=SYSTEM.
+                vocabularyAsSchema.getVersion().forEach(
+                        v -> v.getAccessPoint().removeIf(
+                                ap -> ap.getSource() == ApSource.SYSTEM));
             } catch (Exception e) {
                 return ResponseUtils.generateInternalServerError(
                         "Unable to get draft instance");
@@ -362,8 +334,19 @@ public class GetVocabularies {
 
         // No draft, and the caller is authorized. Defer to
         // getVocabularyById().
-        return getVocabularyById(request, uriInfo, vocabularyId,
-                true, true, true);
+        Response getVocabResponse = getVocabularyById(request, uriInfo,
+                vocabularyId, true, true, true);
+        // But now need to unpack the response ...
+        Object responseEntity = getVocabResponse.getEntity();
+        if (responseEntity instanceof Vocabulary) {
+            Vocabulary responseVocabulary = (Vocabulary) responseEntity;
+            // ... and remove access points with source=SYSTEM.
+            responseVocabulary.getVersion().forEach(
+                    v -> v.getAccessPoint().removeIf(
+                            ap -> ap.getSource() == ApSource.SYSTEM));
+            Response.ok().entity(responseVocabulary).build();
+        }
+        return getVocabResponse;
     }
 
     /** Query if the user profile is authorized to modify the
@@ -398,7 +381,9 @@ public class GetVocabularies {
                     })
             })
     public final Response ownsVocabularyById(
+            @SuppressWarnings("unused")
             @Context final HttpServletRequest request,
+            @SuppressWarnings("unused")
             @Context final UriInfo uriInfo,
             @ApiParam(hidden = true) @Pac4JProfile final CommonProfile profile,
             @ApiParam(value = "The ID of the vocabulary to check ownership.")
@@ -505,7 +490,7 @@ public class GetVocabularies {
      * @return The map of related entities, from related entity id
      *      to the related entity.
      */
-    private Map<Integer, RelatedEntity>
+    static Map<Integer, RelatedEntity>
     getRelatedEntitiesForVocabularyByIdHelper(
             final Integer vocabularyId) {
         List<au.org.ands.vocabs.registry.db.entity.RelatedEntity>
@@ -547,7 +532,7 @@ public class GetVocabularies {
      * @return The map of related vocabularies, from vocabulary id
      *      to the related vocabulary.
      */
-    private Map<Integer, RelatedVocabulary>
+    static Map<Integer, RelatedVocabulary>
     getRelatedVocabulariesForVocabularyByIdHelper(
             final Integer vocabularyId) {
         List<au.org.ands.vocabs.registry.db.entity.Vocabulary>

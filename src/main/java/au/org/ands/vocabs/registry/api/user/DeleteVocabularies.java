@@ -96,6 +96,9 @@ public class DeleteVocabularies {
                             }),
             @ApiResponse(code = HttpStatus.SC_FORBIDDEN,
                     message = "Not authenticated, or not authorized",
+                    response = ErrorResult.class),
+            @ApiResponse(code = HttpStatus.SC_INTERNAL_SERVER_ERROR,
+                    message = "Internal server error",
                     response = ErrorResult.class)
             })
     public final Response deleteVocabulary(
@@ -164,8 +167,8 @@ public class DeleteVocabularies {
         // an exception).
         if (draftDbVocabulary == null && currentDbVocabulary == null) {
             return ErrorResultUtils.badRequest(
-                    "Vocabulary does not exist in either current "
-                    + "or draft form.");
+                    "Vocabulary does not exist in the form(s) requested "
+                    + "for deletion.");
         }
 
         EntityManager em = null;

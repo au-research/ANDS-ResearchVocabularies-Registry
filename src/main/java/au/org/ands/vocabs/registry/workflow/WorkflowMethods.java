@@ -145,8 +145,11 @@ public final class WorkflowMethods {
             ap.setVersionId(versionId);
             ap.setSource(ApSource.USER);
             ApFile apFile = new ApFile();
-            apFile.setFormat(schemaAP.getApFile().getFormat());
             Integer uploadId = schemaAP.getApFile().getUploadId();
+            Upload upload = UploadDAO.getUploadById(em, uploadId);
+            // Override whatever format was specified by the user, and
+            // use the upload format.
+            apFile.setFormat(upload.getFormat());
             apFile.setUploadId(uploadId);
             if (isDraft) {
                 TemporalUtils.makeDraft(ap);
@@ -171,7 +174,6 @@ public final class WorkflowMethods {
                 }
                 String harvestOutputPath =
                         TaskUtils.getTaskHarvestOutputPath(taskInfo, true);
-                Upload upload = UploadDAO.getUploadById(em, uploadId);
                 // We create our own filename, e.g., 17.ttl.
                 // Here, we don't trust the extension of the original filename
                 // (e.g., it could be in upper case).
@@ -361,7 +363,7 @@ public final class WorkflowMethods {
      * @param subtaskList An existing list of subtasks. It must not be null,
      *      but it may be empty.
      */
-    private static void addConceptTransformSubtasks(
+    public static void addConceptTransformSubtasks(
             final List<Subtask> subtaskList) {
         Subtask subtask = new Subtask();
         subtask.setSubtaskProviderType(SubtaskProviderType.TRANSFORM);
@@ -383,19 +385,30 @@ public final class WorkflowMethods {
     /** Create a new Subtask to represent harvesting from PoolParty.
      * @param operation The operation to be performed; either INSERT or DELETE.
      * @param vocabulary The Vocabulary entity which holds the details
-     *      of the PoolParty project.
-     * @return The newly-created Subtask.
+     *      of the PoolParty project, if operation is INSERT. If
+     *      operation is DELETE, there does not need to be a PoolParty
+     *      project specified.
+     * @return The newly-created Subtask. If vocabulary does not specify a
+     *      PoolParty project, null is returned.
      */
     public static Subtask createHarvestPoolPartySubtask(
             final SubtaskOperationType operation,
             final Vocabulary vocabulary) {
         Subtask subtask = new Subtask(SubtaskProviderType.HARVEST,
                 operation, PoolPartyHarvestProvider.class);
+        if (operation == SubtaskOperationType.DELETE) {
+            // Nothing else required.
+            return subtask;
+        }
         VocabularyJson vocabularyJson =
                 JSONSerialization.deserializeStringAsJson(
                         vocabulary.getData(), VocabularyJson.class);
         PoolpartyProject poolpartyProject =
                 vocabularyJson.getPoolpartyProject();
+        if (poolpartyProject == null) {
+            throw new IllegalArgumentException("Harvest requested, but "
+                    + "no project specified.");
+        }
         subtask.addSubtaskProperty(PoolPartyHarvestProvider.SERVER_ID,
                 poolpartyProject.getServerId().toString());
         subtask.addSubtaskProperty(PoolPartyHarvestProvider.PROJECT_ID,

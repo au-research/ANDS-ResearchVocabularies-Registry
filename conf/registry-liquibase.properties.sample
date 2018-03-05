@@ -2,6 +2,6 @@
 # URL, username, and password should match what's in registry.properties.
 
 driver: com.mysql.jdbc.Driver
-url: jdbc:mysql://localhost/vocabs_registry?zeroDateTimeBehavior=convertToNull&serverTimezone=UTC&useLegacyDatetimeCode=false
+url: jdbc:mysql://localhost/vocabs_registry?zeroDateTimeBehavior=convertToNull&serverTimezone=UTC&useLegacyDatetimeCode=false&characterEncoding=UTF-8
 username: registry-user
 password: registry-password

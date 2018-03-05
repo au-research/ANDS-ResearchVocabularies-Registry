@@ -878,6 +878,8 @@
       <jvmarg
           value="-DREGISTRY_PROPS_FILE=WEB-INF/classes/registry-h2-bamboo.properties" />
       <jvmarg
+          value="-DREGISTRY_PROPS_FILE_CLIENT_MODE=conf/registry-h2-bamboo.properties" />
+      <jvmarg
           value="-DROLES_PROPS_FILE=WEB-INF/classes/roles-h2-bamboo.properties" />
       <jvmarg
           value="-DVERSION_PROPS_FILE=conf/version.properties" />
@@ -993,6 +995,8 @@
       <jvmarg
           value="-DREGISTRY_PROPS_FILE=WEB-INF/classes/registry-h2.properties" />
       <jvmarg
+          value="-DREGISTRY_PROPS_FILE_CLIENT_MODE=conf/registry-h2.properties" />
+      <jvmarg
           value="-DROLES_PROPS_FILE=WEB-INF/classes/roles-h2.properties" />
       <jvmarg
           value="-DVERSION_PROPS_FILE=conf/version.properties" />
@@ -1089,6 +1093,8 @@
           value="-DPROPS_FILE_CLIENT_MODE=conf/toolkit-h2-bamboo.properties" />
       <jvmarg
           value="-DREGISTRY_PROPS_FILE=WEB-INF/classes/registry-h2-bamboo.properties" />
+      <jvmarg
+          value="-DREGISTRY_PROPS_FILE_CLIENT_MODE=conf/registry-h2-bamboo.properties" />
       <jvmarg
           value="-DROLES_PROPS_FILE=WEB-INF/classes/roles-h2-bamboo.properties" />
       <jvmarg

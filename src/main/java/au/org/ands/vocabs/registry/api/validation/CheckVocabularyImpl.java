@@ -4,6 +4,7 @@ package au.org.ands.vocabs.registry.api.validation;
 
 import static au.org.ands.vocabs.registry.api.validation.CheckVocabulary.INTERFACE_NAME;
 
+import java.io.StringWriter;
 import java.lang.invoke.MethodHandles;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -12,6 +13,9 @@ import java.util.Set;
 
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
 
 import org.apache.commons.lang3.BooleanUtils;
 import org.slf4j.Logger;
@@ -21,12 +25,14 @@ import au.org.ands.vocabs.registry.db.dao.PoolPartyServerDAO;
 import au.org.ands.vocabs.registry.db.dao.RelatedEntityDAO;
 import au.org.ands.vocabs.registry.db.dao.VocabularyDAO;
 import au.org.ands.vocabs.registry.db.entity.RelatedEntity;
+import au.org.ands.vocabs.registry.enums.AccessPointType;
 import au.org.ands.vocabs.registry.enums.ApSource;
 import au.org.ands.vocabs.registry.enums.RelatedEntityRelation;
 import au.org.ands.vocabs.registry.enums.RelatedVocabularyRelation;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.AccessPoint;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.ApApiSparql;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.ApFile;
+import au.org.ands.vocabs.registry.schema.vocabulary201701.ApSesameDownload;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.ApSissvoc;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.ApWebPage;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.Version;
@@ -59,6 +65,23 @@ public class CheckVocabularyImpl
         mode = cnv.mode();
     }
 
+    /** Serialize a registry schema format Vocabulary instance into
+     * an XML String.
+     * @param vocabulary The Vocabulary instance to be serialized.
+     * @return The Vocabulary instance serialized as XML.
+     * @throws JAXBException If a problem loading vocabulary data.
+     */
+    private static String serializeVocabularySchemaEntityToXML(
+            final Vocabulary vocabulary) throws JAXBException {
+        JAXBContext jaxbContext = JAXBContext.newInstance(Vocabulary.class);
+        Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
+        // Make it pretty, for easier reading.
+        jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+        StringWriter stringWriter = new StringWriter();
+        jaxbMarshaller.marshal(vocabulary, stringWriter);
+        return stringWriter.toString();
+    }
+
     /** Validate a proposed new or updated vocabulary.
      * @param newVocabulary The vocabulary that is being validated.
      * @return true, if newVocabulary represents a valid vocabulary.
@@ -69,7 +92,15 @@ public class CheckVocabularyImpl
             final ConstraintValidatorContext constraintContext) {
 
         boolean valid = true;
-        logger.info("In CheckVocabularyImpl.isValid()");
+        logger.debug("In CheckVocabularyImpl.isValid()");
+        if (logger.isDebugEnabled()) {
+            try {
+                logger.debug("Validating: "
+                        + serializeVocabularySchemaEntityToXML(newVocabulary));
+            } catch (JAXBException e) {
+                logger.error("Exception while trying to output debugging!");
+            }
+        }
 
         // Table of contents of this method:
         // id
@@ -140,7 +171,7 @@ public class CheckVocabularyImpl
         // slug: optional, but if specified, must not already exist
         String slug = newVocabulary.getSlug();
         if (mode == ValidationMode.CREATE) {
-            // For creation, the slug must be omitted.
+            // For creation, the slug may be omitted.
             // But if specified, it must be valid, and not already in use.
             if (slug != null) {
                 if (!ValidationUtils.isValidSlug(slug)) {
@@ -149,7 +180,8 @@ public class CheckVocabularyImpl
                             "{" + INTERFACE_NAME + ".slug}").
                     addPropertyNode("slug").
                     addConstraintViolation();
-                } else if (VocabularyDAO.isSlugInUse(slug)) {
+                }
+                if (VocabularyDAO.isSlugInUse(slug)) {
                     valid = false;
                     constraintContext.buildConstraintViolationWithTemplate(
                             "{" + INTERFACE_NAME + ".slug.inUse}").
@@ -195,20 +227,39 @@ public class CheckVocabularyImpl
         // acronym: optional
 
         // description: required, and must be valid HTML
+        String description = newVocabulary.getDescription();
         valid = ValidationUtils.requireFieldNotEmptyString(
                 INTERFACE_NAME,
-                newVocabulary.getDescription(), "description",
+                description, "description",
                 constraintContext, valid);
         valid = ValidationUtils.requireFieldValidHTML(
                 INTERFACE_NAME,
-                newVocabulary.getDescription(), "description",
+                description, "description",
                 constraintContext, valid);
+        // And now, if it was supplied, check length and clean it.
+        if (description != null) {
+            valid = ValidationUtils.requireFieldLessThanMaxLength(
+                    INTERFACE_NAME,
+                    description, "description",
+                    constraintContext, valid);
+            newVocabulary.setDescription(ValidationUtils.cleanHTML(
+                    description));
+        }
 
         // note: optional, but, if specified, must be valid HTML
+        String note = newVocabulary.getNote();
         valid = ValidationUtils.requireFieldValidHTML(
                 INTERFACE_NAME,
-                newVocabulary.getNote(), "note",
+                note, "note",
                 constraintContext, valid);
+        // And now, if it was supplied, check length and clean it.
+        if (note != null) {
+            valid = ValidationUtils.requireFieldLessThanMaxLength(
+                    INTERFACE_NAME,
+                    note, "note",
+                    constraintContext, valid);
+            newVocabulary.setNote(ValidationUtils.cleanHTML(note));
+        }
 
         // subject: at least one from ANZSRC-FOR required
         valid = isValidSubjects(valid, newVocabulary, constraintContext);
@@ -266,7 +317,8 @@ public class CheckVocabularyImpl
         // licence: optional
 
         // poolpartyProject: optional
-        // If specified, check it is a project in the server specified
+        // If specified, check it is a project in the server specified.
+        // TO DO: check against the PoolParty server.
         PoolpartyProject poolpartyProject =
                 newVocabulary.getPoolpartyProject();
         if (poolpartyProject != null) {
@@ -279,6 +331,14 @@ public class CheckVocabularyImpl
                 addPropertyNode("serverId").
                 addConstraintViolation();
             }
+            valid = ValidationUtils.requireFieldNotEmptyString(
+                    INTERFACE_NAME,
+                    poolpartyProject.getProjectId(),
+                    "poolpartyProject.projectId",
+                    constraintContext,
+                    cvb -> cvb.addPropertyNode("poolpartyProject").
+                        addPropertyNode("projectId").
+                        addConstraintViolation(), valid);
         }
 
         // topConcept: optional
@@ -454,7 +514,7 @@ public class CheckVocabularyImpl
                             cvb -> cvb.addPropertyNode("subject").
                                 addPropertyNode("source").inIterable().
                                 atIndex(index).addConstraintViolation(),
-                                valid);
+                                newValid);
             newValid = ValidationUtils.
                     requireFieldNotEmptyString(
                             INTERFACE_NAME,
@@ -463,7 +523,7 @@ public class CheckVocabularyImpl
                             cvb -> cvb.addPropertyNode("subject").
                                 addPropertyNode("label").inIterable().
                                 atIndex(index).addConstraintViolation(),
-                                valid);
+                                newValid);
             if (SubjectSources.subjectRequiresIRI(subject)
                     && !SubjectSources.subjectHasValidIRI(subject)) {
                 newValid = false;
@@ -699,12 +759,13 @@ public class CheckVocabularyImpl
      *      validation errors are reported.
      * @return true, if newVersion represents a valid version.
      */
+    @SuppressWarnings("checkstyle:MethodLength")
     private boolean isValidVersion(final Vocabulary newVocabulary,
             final int versionIndex,
             final Version newVersion,
             final ConstraintValidatorContext constraintContext) {
         boolean valid = true;
-        logger.info("In CheckVocabularyImpl.isValidVersion("
+        logger.debug("In CheckVocabularyImpl.isValidVersion("
                 + versionIndex + ")");
 
         // Table of contents of this method:
@@ -757,14 +818,27 @@ public class CheckVocabularyImpl
         }
 
         // note: optional, but, if specified, must be valid HTML
+        String note = newVersion.getNote();
         valid = ValidationUtils.requireFieldValidHTML(
                 INTERFACE_NAME,
-                newVersion.getNote(), "version.note",
+                note, "version.note",
                 constraintContext,
                 cvb -> cvb.addPropertyNode("version").
                     addPropertyNode("note").inIterable().
                     atIndex(versionIndex).addConstraintViolation(),
                 valid);
+        // And now, if it was supplied, check length and clean it.
+        if (note != null) {
+            valid = ValidationUtils.requireFieldLessThanMaxLength(
+                    INTERFACE_NAME,
+                    note, "version.note",
+                    constraintContext,
+                    cvb -> cvb.addPropertyNode("version").
+                        addPropertyNode("note").inIterable().
+                        atIndex(versionIndex).addConstraintViolation(),
+                    valid);
+            newVersion.setNote(ValidationUtils.cleanHTML(note));
+        }
 
         // releaseDate: required
         // Must match a regular expression: YYYY, or YYYY-MM, or YYYY-MM-DD.
@@ -792,8 +866,39 @@ public class CheckVocabularyImpl
         }
 
         // doImport
+        // For now: if doImport is set, require that there be something
+        // to import. For now, that means having a file AP, or
+        // that doPoolpartyHarvest be true.
+        if (BooleanUtils.isTrue(newVersion.isDoImport())) {
+            if (BooleanUtils.isNotTrue(newVersion.isDoPoolpartyHarvest())
+                    && !newVersion.getAccessPoint().stream().anyMatch(
+                            ap -> ap.getDiscriminator()
+                                == AccessPointType.FILE)) {
+                valid = false;
+                constraintContext.buildConstraintViolationWithTemplate(
+                        "{" + INTERFACE_NAME
+                        + ".version.doImportButNothingToImport}").
+                    addPropertyNode("version").
+                    addPropertyNode("doImport").inIterable().
+                    atIndex(versionIndex).
+                    addConstraintViolation();
+            }
+        }
 
         // doPublish
+        // For now: if doPublish is set, require doImport.
+        // If we later support publishing from a SPARQL endpoint
+        // not our own, revisit this.
+        if (BooleanUtils.isTrue(newVersion.isDoPublish())
+                && BooleanUtils.isNotTrue(newVersion.isDoImport())) {
+            valid = false;
+            constraintContext.buildConstraintViolationWithTemplate(
+                    "{" + INTERFACE_NAME + ".version.doPublishButNotDoImport}").
+                addPropertyNode("version").
+                addPropertyNode("doPublish").inIterable().
+                atIndex(versionIndex).
+                addConstraintViolation();
+        }
 
         // accessPoint
         int accessPointIndex = 0;
@@ -804,6 +909,29 @@ public class CheckVocabularyImpl
             if (!isValidAccessPoint(versionIndex, newVersion.getId(),
                     accessPointIndex, ap, constraintContext)) {
                 valid = false;
+            }
+        }
+
+        // Ensure there will be at least one access point.
+        // This requirement can be met by the doing a PoolParty harvest
+        // and an import (which will lead to the generation of
+        // a ApiSparql and Sesame APs), or by there being at least one
+        // access point specified with source==USER.
+        // First, check the combination of doPoolpartyHarvest and doImport.
+        if (BooleanUtils.isNotTrue(newVersion.isDoPoolpartyHarvest())
+                || BooleanUtils.isNotTrue(newVersion.isDoImport())) {
+            // No PoolParty harvest and import, so check if there are
+            // user-specified access points.
+            if (!newVersion.getAccessPoint().stream().anyMatch(
+                    ap -> ap.getSource() == ApSource.USER)) {
+                // No user-specified access points either.
+                valid = false;
+                constraintContext.buildConstraintViolationWithTemplate(
+                        "{" + INTERFACE_NAME + ".version.noAccessPoint}").
+                    addPropertyNode("version").
+                    addBeanNode().inIterable().
+                    atIndex(versionIndex).
+                    addConstraintViolation();
             }
         }
 
@@ -858,16 +986,30 @@ public class CheckVocabularyImpl
             final AccessPoint newAccessPoint,
             final ConstraintValidatorContext constraintContext) {
         boolean valid = true;
-        logger.info("In CheckVocabularyImpl.isValidAccessPoint("
+        logger.debug("In CheckVocabularyImpl.isValidAccessPoint("
                 + accessPointIndex + ")");
 
         // Table of contents of this method:
         // id
+        // source
         // discriminator
 
         // id: mode-specific validation.
         valid = isValidAccessPointId(valid, versionIndex, newVersionId,
                 newAccessPoint, accessPointIndex, constraintContext);
+
+        // source
+        if (newAccessPoint.getSource() == null) {
+            valid = false;
+            constraintContext.buildConstraintViolationWithTemplate(
+                    "{" + INTERFACE_NAME + ".accessPoint.source}").
+                addPropertyNode("version").
+                addPropertyNode("accessPoint").
+                inIterable().atIndex(versionIndex).
+                addPropertyNode("source").
+                inIterable().atIndex(accessPointIndex).
+                addConstraintViolation();
+        }
 
         // discriminator
         if (newAccessPoint.getDiscriminator() == null) {
@@ -921,6 +1063,27 @@ public class CheckVocabularyImpl
             }
             valid = isValidAccessPointFile(valid, versionIndex,
                     accessPointIndex, newAccessPoint, apFile,
+                    constraintContext);
+            break;
+        case SESAME_DOWNLOAD:
+            ApSesameDownload apSesameDownload =
+                newAccessPoint.getApSesameDownload();
+            if (apSesameDownload == null) {
+                valid = false;
+                constraintContext.buildConstraintViolationWithTemplate(
+                        "{" + INTERFACE_NAME
+                            + ".accessPoint.apSesameDownload}").
+                    addPropertyNode("version").
+                    addPropertyNode("accessPoint").
+                    inIterable().atIndex(versionIndex).
+                    addPropertyNode("apSesameDownload").
+                    inIterable().atIndex(accessPointIndex).
+                    addConstraintViolation();
+                // In this case, we can't go any further.
+                break;
+            }
+            valid = isValidAccessPointSesameDownload(valid, versionIndex,
+                    accessPointIndex, newAccessPoint, apSesameDownload,
                     constraintContext);
             break;
         case SISSVOC:
@@ -1056,11 +1219,12 @@ public class CheckVocabularyImpl
             final ApApiSparql apApiSparql,
             final ConstraintValidatorContext constraintContext) {
         boolean newValid = valid;
-        if (newAccessPoint.getSource() != ApSource.USER) {
+        if (mode == ValidationMode.CREATE
+                && newAccessPoint.getSource() != ApSource.USER) {
             newValid = false;
             constraintContext.buildConstraintViolationWithTemplate(
                     "{" + INTERFACE_NAME
-                    + ".accessPoint.apApiSparql.source}").
+                    + ".accessPoint.apApiSparql.source.create}").
                 addPropertyNode("version").
                 addPropertyNode("accessPoint").
                 inIterable().atIndex(versionIndex).
@@ -1121,17 +1285,67 @@ public class CheckVocabularyImpl
         // NB: we can't do authorization checks here; they must
         // be done later. (See PutVocabularies.)
 
+        if (apFile.getUploadId() <= 0) {
+            newValid = false;
+            constraintContext.buildConstraintViolationWithTemplate(
+                    "{" + INTERFACE_NAME + ".accessPoint.apFile.uploadId}").
+            addPropertyNode("version").
+            addPropertyNode("accessPoint").
+            inIterable().atIndex(versionIndex).
+            addPropertyNode("apFile").
+            inIterable().atIndex(accessPointIndex).
+            addPropertyNode("uploadId").
+            addConstraintViolation();
+        }
+
+        return newValid;
+    }
+
+    /** Validate a SesameDownload access point.
+     * @param valid The current validity status.
+     * @param versionIndex The index of the version within the vocabulary
+     * @param accessPointIndex The index of the access point within
+     *      the version.
+     * @param newAccessPoint The access point that is being validated.
+     * @param apSesameDownload The ap-sesame-download element within the
+     *      access point that is being validated.
+     * @param constraintContext The constraint context, into which
+     *      validation errors are reported.
+     * @return The updated validity status.
+     */
+    private boolean isValidAccessPointSesameDownload(final boolean valid,
+            final int versionIndex, final int accessPointIndex,
+            final AccessPoint newAccessPoint,
+            final ApSesameDownload apSesameDownload,
+            final ConstraintValidatorContext constraintContext) {
+        boolean newValid = valid;
+        if (mode == ValidationMode.CREATE
+                && newAccessPoint.getSource() != ApSource.USER) {
+            newValid = false;
+            constraintContext.buildConstraintViolationWithTemplate(
+                    "{" + INTERFACE_NAME
+                    + ".accessPoint.apSesameDownload.source.create}").
+                addPropertyNode("version").
+                addPropertyNode("accessPoint").
+                inIterable().atIndex(versionIndex).
+                addPropertyNode("apSesameDownload").
+                inIterable().atIndex(accessPointIndex).
+                addPropertyNode("source").
+                addConstraintViolation();
+        }
         newValid = ValidationUtils.
-                requireFieldNotNull(
+                requireFieldNotEmptyStringAndSatisfiesPredicate(
                 INTERFACE_NAME,
-                apFile.getUploadId(), "accessPoint.apFile.uploadId",
+                apSesameDownload.getUrlPrefix(),
+                    "accessPoint.apSesameDownload.urlPrefix",
+                ValidationUtils::isValidURL,
                 constraintContext,
                 cvb -> cvb.addPropertyNode("version").
                 addPropertyNode("accessPoint").
                 inIterable().atIndex(versionIndex).
-                addPropertyNode("apFile").
+                addPropertyNode("apSissvoc").
                 inIterable().atIndex(accessPointIndex).
-                addPropertyNode("uploadId").
+                addPropertyNode("url").
                 addConstraintViolation(),
                 newValid);
         return newValid;
@@ -1154,11 +1368,12 @@ public class CheckVocabularyImpl
             final AccessPoint newAccessPoint, final ApSissvoc apSissvoc,
             final ConstraintValidatorContext constraintContext) {
         boolean newValid = valid;
-        if (newAccessPoint.getSource() != ApSource.USER) {
+        if (mode == ValidationMode.CREATE
+                && newAccessPoint.getSource() != ApSource.USER) {
             newValid = false;
             constraintContext.buildConstraintViolationWithTemplate(
                     "{" + INTERFACE_NAME
-                    + ".accessPoint.apSissvoc.source}").
+                    + ".accessPoint.apSissvoc.source.create}").
                 addPropertyNode("version").
                 addPropertyNode("accessPoint").
                 inIterable().atIndex(versionIndex).

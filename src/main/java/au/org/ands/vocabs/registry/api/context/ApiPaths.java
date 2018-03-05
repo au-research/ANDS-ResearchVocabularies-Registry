@@ -36,6 +36,9 @@ public final class ApiPaths {
     /** Subpath for owned vocabulary resources. */
     public static final String OWNED_VOCABULARIES = "ownedVocabularies";
 
+    /** Subpath for vocabulary resources, by slug. */
+    public static final String VOCABULARIES_BY_SLUG = "vocabulariesBySlug";
+
     /** Subpath for version resources. */
     public static final String VERSIONS = "versions";
 
@@ -54,6 +57,9 @@ public final class ApiPaths {
     /** Subpath for file uploads. */
     public static final String UPLOADS = "uploads";
 
+    /** Subpath for download resources. */
+    public static final String DOWNLOADS = "downloads";
+
 //  /** Subpath for  resources. */
 //  public static final String  = "";
 
@@ -67,6 +73,9 @@ public final class ApiPaths {
 
     /** Path parameter name for a related entity resource. */
     public static final String RELATED_ENTITY_ID = "{relatedEntityId}";
+
+    /** Path parameter name for a slug. */
+    public static final String SLUG = "{slug}";
 
 //    /** Path parameter name for a  resource. */
 //    public static final String _ID = "{Id}";

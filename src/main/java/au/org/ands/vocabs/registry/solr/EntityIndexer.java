@@ -37,7 +37,9 @@ import javax.ws.rs.core.MultivaluedMap;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrServerException;
+import org.apache.solr.client.solrj.impl.HttpSolrClient.RemoteSolrException;
 import org.apache.solr.common.SolrInputDocument;
+import org.jsoup.Jsoup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -173,8 +175,10 @@ public final class EntityIndexer {
         addDataToDocument(document, LICENCE,
                 licenceGroups.get(vocabularyData.getLicence()));
         addDataToDocument(document, ACRONYM, vocabularyData.getAcronym());
+        // Strip HTML tags, and convert HTML elements into their
+        // corresponding Unicode characters.
         addDataToDocument(document, DESCRIPTION,
-                vocabularyData.getDescription());
+                Jsoup.parse(vocabularyData.getDescription()).text());
         // languages
         ArrayList<String> languages = new ArrayList<>();
         ULocale loc = new ULocale(vocabularyData.getPrimaryLanguage());
@@ -313,12 +317,18 @@ public final class EntityIndexer {
                 case SESAME_DOWNLOAD:
                     break;
                 case SISSVOC:
-                    widgetable = true;
-                    ApSissvoc apSissvoc = JSONSerialization.
-                            deserializeStringAsJson(
-                            accessPoint.getData(), ApSissvoc.class);
-                    document.addField(SISSVOC_ENDPOINT,
-                            apSissvoc.getUrlPrefix());
+                    // Be careful not to try to add a second SISSVOC_ENDPOINT,
+                    // since there can only be one. So sneakily use the
+                    // widgetable flag to determine that we've been here
+                    // before.
+                    if (!widgetable) {
+                        widgetable = true;
+                        ApSissvoc apSissvoc = JSONSerialization.
+                                deserializeStringAsJson(
+                                        accessPoint.getData(), ApSissvoc.class);
+                        document.addField(SISSVOC_ENDPOINT,
+                                apSissvoc.getUrlPrefix());
+                    }
                     break;
                 case WEB_PAGE:
                     break;
@@ -346,9 +356,11 @@ public final class EntityIndexer {
      * @throws IOException If the Solr API generated an IOException.
      * @throws SolrServerException If the Solr API generated a
      *      SolrServerException.
+     * @throws RemoteSolrException If there is a problem communicating with
+     *      Zookeeper.
      */
     public static void indexVocabulary(final int vocabularyId)
-            throws IOException, SolrServerException {
+            throws IOException, SolrServerException, RemoteSolrException {
         Vocabulary vocabulary =
                 VocabularyDAO.getCurrentVocabularyByVocabularyId(vocabularyId);
         if (vocabulary == null) {
@@ -359,7 +371,7 @@ public final class EntityIndexer {
         SolrInputDocument document = createSolrDocument(vocabulary);
         try {
             SOLR_CLIENT.add(document);
-        } catch (IOException | SolrServerException e) {
+        } catch (IOException | SolrServerException | RemoteSolrException e) {
             LOGGER.error("Exception when adding document to Solr index", e);
             throw e;
         }
@@ -369,9 +381,11 @@ public final class EntityIndexer {
      * @throws IOException If the Solr API generated an IOException.
      * @throws SolrServerException If the Solr API generated a
      *      SolrServerException.
+     * @throws RemoteSolrException If there is a problem communicating with
+     *      Zookeeper.
      */
     public static void indexAllVocabularies()
-            throws IOException, SolrServerException {
+            throws IOException, SolrServerException, RemoteSolrException {
         List<Vocabulary> allVocabularies =
                 VocabularyDAO.getAllCurrentVocabulary();
         List<SolrInputDocument> documents = new ArrayList<>();
@@ -382,7 +396,7 @@ public final class EntityIndexer {
             // In this case, we do do a commit immediately (by specifying 0
             // as the second parameter).
             SOLR_CLIENT.add(documents, 0);
-        } catch (IOException | SolrServerException e) {
+        } catch (IOException | SolrServerException | RemoteSolrException e) {
             LOGGER.error("Exception when adding document to Solr index", e);
             throw e;
         }
@@ -395,12 +409,14 @@ public final class EntityIndexer {
      * @throws IOException If the Solr API generated an IOException.
      * @throws SolrServerException If the Solr API generated a
      *      SolrServerException.
+     * @throws RemoteSolrException If there is a problem communicating with
+     *      Zookeeper.
      */
     public static void unindexVocabulary(final int vocabularyId)
-            throws IOException, SolrServerException {
+            throws IOException, SolrServerException, RemoteSolrException {
         try {
             SOLR_CLIENT.deleteById(Integer.toString(vocabularyId));
-        } catch (IOException | SolrServerException e) {
+        } catch (IOException | SolrServerException | RemoteSolrException e) {
             LOGGER.error("Exception when removing document from Solr index", e);
             throw e;
         }
@@ -410,15 +426,17 @@ public final class EntityIndexer {
      * @throws IOException If the Solr API generated an IOException.
      * @throws SolrServerException If the Solr API generated a
      *      SolrServerException.
+     * @throws RemoteSolrException If there is a problem communicating with
+     *      Zookeeper.
      */
     public static void unindexAllVocabularies()
-            throws IOException, SolrServerException {
+            throws IOException, SolrServerException, RemoteSolrException {
         try {
             // Delete by matching all documents.
             // In this case, we do do a commit immediately (by specifying 0
             // as the second parameter).
             SOLR_CLIENT.deleteByQuery("*:*", 0);
-        } catch (IOException | SolrServerException e) {
+        } catch (IOException | SolrServerException | RemoteSolrException e) {
             LOGGER.error("Exception when removing all documents "
                     + "from Solr index", e);
             throw e;

@@ -38,6 +38,7 @@ import au.org.ands.vocabs.registry.model.sequence.VersionElement;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.WorkflowOutcome;
 import au.org.ands.vocabs.registry.workflow.WorkflowMethods;
 import au.org.ands.vocabs.registry.workflow.converter.WorkflowOutcomeSchemaMapper;
+import au.org.ands.vocabs.registry.workflow.provider.harvest.PoolPartyHarvestProvider;
 import au.org.ands.vocabs.registry.workflow.provider.importer.SesameImporterProvider;
 import au.org.ands.vocabs.registry.workflow.provider.publish.SISSVocPublishProvider;
 import au.org.ands.vocabs.registry.workflow.provider.transform.ResourceMapTransformProvider;
@@ -75,7 +76,9 @@ public class VersionsModel extends ModelBase {
      * The keys are version Ids. */
     private Map<Integer, Version> draftVersions = new HashMap<>();
 
-    /** Used by applyChanges() to keep track of whether a version has both
+    /** Used by {@link
+     * #applyChanges(au.org.ands.vocabs.registry.schema.vocabulary201701.Vocabulary)}
+     * to keep track of whether a version has both
      * the doImport and doPublish flags set. This is then used by
      * {@link #addImpliedSubtasks()} to determine
      * whether to add or delete additional workflow subtasks. */
@@ -98,6 +101,13 @@ public class VersionsModel extends ModelBase {
     /** The tasks to be performed for versions, if there are any.
      * The keys are version Ids. */
     private Map<Integer, Task> versionTasks = new HashMap<>();
+
+    /** Flag used to keep track of whether a version was updated during
+     * {@link
+     * #applyChanges(au.org.ands.vocabs.registry.schema.vocabulary201701.Vocabulary)}.
+     * Used to determine whether or not to invoke {@link #populateSubmodels()}.
+     */
+    private boolean versionsUpdated;
 
     /** Construct versions model for a vocabulary.
      * @param anEm The EntityManager to be used to fetch and update
@@ -168,6 +178,8 @@ public class VersionsModel extends ModelBase {
         vaModel = new VersionArtefactsModel(em(), vocabularyId(),
                 vocabularyModel, this, currentVersions, draftVersions);
         subModels.add(vaModel);
+        notifySetNowTime(nowTime());
+        notifySetModifiedBy(modifiedBy());
     }
 
     /** {@inheritDoc} */
@@ -387,6 +399,13 @@ public class VersionsModel extends ModelBase {
             applyChangesCurrent(updatedVocabulary);
         }
 
+        if (versionsUpdated) {
+            // We may have added a new version, so we need to refresh
+            // the sub-models before we delegate to their applyChanges().
+            populateSubmodels();
+            // Reset, "just in case".
+            versionsUpdated = false;
+        }
         // Sub-models.
         subModels.forEach(sm ->
             sm.applyChanges(updatedVocabulary));
@@ -515,22 +534,26 @@ public class VersionsModel extends ModelBase {
                     // we do need to add a draft row for it.
                     Version newVersion = mapper.sourceToTarget(
                             schemaVersion, nowTime());
+                    newVersion.setVocabularyId(vocabularyId());
                     newVersion.setVersionId(versionId);
                     TemporalUtils.makeDraft(newVersion);
                     newVersion.setModifiedBy(modifiedBy());
                     VersionDAO.saveVersion(em(), newVersion);
+                    draftVersions.put(versionId, newVersion);
+                    versionsUpdated = true;
                 } else {
                     // Error: we don't know about this version Id.
                     // (Well, it might be a historical version that
                     // the user wanted to restore, but we don't support that.)
                     throw new IllegalArgumentException(
                             "Attempt to update version that does not "
-                            + "belong to this vocabulary");
+                            + "belong to this vocabulary; Id = " + versionId);
                 }
             } else {
                 // This is a new version.
                 Version newVersion = mapper.sourceToTarget(
                         ve.getSchemaVersion(), nowTime());
+                newVersion.setVocabularyId(vocabularyId());
                 TemporalUtils.makeDraft(newVersion);
                 newVersion.setModifiedBy(modifiedBy());
                 VersionDAO.saveVersionWithId(em(), newVersion);
@@ -542,6 +565,7 @@ public class VersionsModel extends ModelBase {
 //                      BooleanUtils.isTrue(schemaVersion.isDoImport())
 //                      && BooleanUtils.isTrue(schemaVersion.isDoPublish()));
                 draftVersions.put(newVersionId, newVersion);
+                versionsUpdated = true;
                 // And this is a tricky bit: we modify the input data
                 // so that the version Id can be seen by submodels.
                 schemaVersion.setId(newVersionId);
@@ -631,20 +655,24 @@ public class VersionsModel extends ModelBase {
             schemaVersion = updatedVersions.get(versionId);
 
             if (!ComparisonUtils.isEqualVersion(existingVersion,
-                    schemaVersion)) {
+                    schemaVersion)
+                    || BooleanUtils.isTrue(schemaVersion.isForceWorkflow())) {
                 TemporalUtils.makeHistorical(existingVersion, nowTime());
+                existingVersion.setModifiedBy(modifiedBy());
                 VersionDAO.updateVersion(em(), existingVersion);
                 // Make new current instance with updated details.
                 VersionRegistrySchemaMapper mapper =
                         VersionRegistrySchemaMapper.INSTANCE;
                 Version newCurrentVersion = mapper.sourceToTarget(
                         schemaVersion);
+                newCurrentVersion.setVocabularyId(vocabularyId());
                 TemporalUtils.makeCurrentlyValid(newCurrentVersion, nowTime());
                 newCurrentVersion.setModifiedBy(modifiedBy());
-                VersionDAO.updateVersion(em(), existingVersion);
+                VersionDAO.saveVersion(em(), newCurrentVersion);
                 // Update our records (i.e., in this case, overwriting
                 // the previous value).
                 currentVersions.put(versionId, newCurrentVersion);
+                versionsUpdated = true;
                 // TO DO: mark this as requiring workflow processing.
                 workflowRequired(vocabularyModel.getCurrentVocabulary(),
                         newCurrentVersion);
@@ -689,6 +717,8 @@ public class VersionsModel extends ModelBase {
                                             SubtaskOperationType.PERFORM));
                         }
                     } else {
+                        // If this is not even a PoolParty project, this
+                        // will schedule a subtask which does nothing.
                         task.addSubtask(WorkflowMethods.
                                 createHarvestPoolPartySubtask(
                                         SubtaskOperationType.DELETE,
@@ -760,6 +790,15 @@ public class VersionsModel extends ModelBase {
                 // set of draft instances.
                 if (draftVersions.containsKey(versionId)) {
                     // Reuse this draft row, making it no longer a draft.
+                    // Oops, be very aware that this causes a temporary
+                    // inconsistency between this model and sub-models,
+                    // and it gets worse when we return to applyChanges()
+                    // and dispose of the current instances of sub-models
+                    // by invoking populateSubmodels(): there are then
+                    // "orphan" database rows (for now, just AccessPoints).
+                    // So see the last part of
+                    // AccessPointsMode.populateModel() to see how this
+                    // inconsistency is dealt with.
                     Version existingDraft = draftVersions.remove(versionId);
                     mapper.updateTargetFromSource(schemaVersion,
                             existingDraft);
@@ -767,6 +806,7 @@ public class VersionsModel extends ModelBase {
                     existingDraft.setModifiedBy(modifiedBy());
                     VersionDAO.updateVersion(em(), existingDraft);
                     currentVersions.put(versionId, existingDraft);
+                    versionsUpdated = true;
                     workflowRequired(vocabularyModel.getCurrentVocabulary(),
                             existingDraft);
                 } else {
@@ -795,6 +835,7 @@ public class VersionsModel extends ModelBase {
                         && BooleanUtils.isTrue(schemaVersion.isDoPublish()));
 
                 currentVersions.put(newVersionId, newCurrentVersion);
+                versionsUpdated = true;
                 // And this is a tricky bit: we modify the input data
                 // so that the version Id can be seen by submodels.
                 schemaVersion.setId(newVersionId);
@@ -875,15 +916,25 @@ public class VersionsModel extends ModelBase {
 
     /** To any existing Tasks, add subtasks that are implied by
      * the subtasks already present. For now, that means adding
-     * subtasks for the ResourceMapTransform provider.
+     * subtasks for the JsonList, JsonTree, and ResourceMapTransform providers.
      */
     private void addImpliedSubtasks() {
         for (Task task : versionTasks.values()) {
+            boolean hasHarvestInsert = false;
             boolean hasImportInsert = false;
             boolean hasPublishInsert = false;
+            boolean hasHarvestDelete = false;
             boolean hasImportDelete = false;
             boolean hasPublishDelete = false;
             for (Subtask subtask : task.getSubtasks()) {
+                if (subtask.getProviderClass().equals(
+                        PoolPartyHarvestProvider.class)) {
+                    if (subtask.getOperation() == SubtaskOperationType.DELETE) {
+                        hasHarvestDelete = true;
+                    } else {
+                        hasHarvestInsert = true;
+                    }
+                }
                 if (subtask.getProviderClass().equals(
                         SesameImporterProvider.class)) {
                     if (subtask.getOperation() == SubtaskOperationType.DELETE) {
@@ -900,6 +951,22 @@ public class VersionsModel extends ModelBase {
                         hasPublishInsert = true;
                     }
                 }
+            }
+            // Revisit the following conditional after we've had some
+            // experience of the behaviour!
+            // The idea is: for now, if there's any change to harvesting,
+            // we redo the concept transforms. We rely on the fact
+            // that both of the concept transforms do an "untransform"
+            // in the case that there's no vocabulary data.
+            // This has the acceptable/desirable side-effect of adding
+            // these concept transforms in the
+            // case of "force workflow", because force workflow always adds
+            // either a PoolParty harvest or an unharvest!
+            if (hasHarvestDelete || hasHarvestInsert) {
+                List<Subtask> conceptTransformSubtasks = new ArrayList<>();
+                WorkflowMethods.addConceptTransformSubtasks(
+                        conceptTransformSubtasks);
+                task.addSubtasks(conceptTransformSubtasks);
             }
             // We would "normally" require _both_ hasImportInsert and
             // hasPublishInsert to justify running the transform.

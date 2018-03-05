@@ -37,6 +37,24 @@ public final class RegistryTestUtils {
     }
 
     /** Get vocabulary data from a file, in registry schema format.
+     * Don't validate it.
+     * @param filename The filename of the file to be loaded.
+     * @return The parsed vocabulary data.
+     * @throws JAXBException If a problem loading vocabulary data.
+     */
+    public static Vocabulary getUnvalidatedVocabularyFromFile(
+            final String filename) throws JAXBException {
+        InputStream is = ArquillianTestUtils.getResourceAsInputStream(
+                filename);
+        JAXBContext jaxbContext = JAXBContext.newInstance(Vocabulary.class);
+        Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
+        Vocabulary vocabulary = (Vocabulary) jaxbUnmarshaller.unmarshal(is);
+
+        // Return as is, without validation.
+        return vocabulary;
+    }
+
+    /** Get vocabulary data from a file, in registry schema format.
      * Validate it according to the specified mode.
      * @param filename The filename of the file to be loaded.
      * @param validationMode The validation mode to be used.

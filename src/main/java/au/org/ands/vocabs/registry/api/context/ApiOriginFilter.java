@@ -64,7 +64,8 @@ public class ApiOriginFilter implements Filter {
                     + Analytics.PORTAL_ID);
             hsResponse.addHeader("Access-Control-Expose-Headers",
 //                  "Content-Type, api_key, Authorization");
-                    "WWW-Authenticate, Location");
+                    // Content-Disposition added to support downloads.
+                    "WWW-Authenticate, Location, Content-Disposition");
         }
         chain.doFilter(request, response);
     }

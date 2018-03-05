@@ -6,7 +6,7 @@
 # Standard JPA properties
 # Replace [path to DB] with something like localhost/vocabs_registry
 # The connection parameters for datetime/timezone are important; don't adjust them!
-javax.persistence.jdbc.url=jdbc:mysql://[path to DB]?zeroDateTimeBehavior=convertToNull&serverTimezone=UTC&useLegacyDatetimeCode=false
+javax.persistence.jdbc.url=jdbc:mysql://[path to DB]?zeroDateTimeBehavior=convertToNull&serverTimezone=UTC&useLegacyDatetimeCode=false&characterEncoding=UTF-8
 javax.persistence.jdbc.driver=com.mysql.jdbc.Driver
 javax.persistence.jdbc.user=[db_username]
 javax.persistence.jdbc.password=[db_password]
@@ -88,7 +88,7 @@ Registry.metadataRewriteMapPath = ${Registry.storagePath}/conf/metadatarewritema
 ## Downloads and public-facing APIs
 
 # Prefix to all public-facing URLs to downloads from the Registry.
-Registry.downloadPrefix = ${Registry.swagger.defaultScheme}://${Registry.swagger.host}${Registry.swagger.basePath}/download/
+Registry.downloadPrefix = ${Registry.swagger.defaultScheme}://${Registry.swagger.host}${Registry.swagger.basePath}/api/resource/downloads/
 
 # Local OpenRDF Sesame server
 SesameImporter.serverUrl = [Sesame API URL]

@@ -10,7 +10,7 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
 
-import au.org.ands.vocabs.registry.schema.vocabulary201701.Result;
+import au.org.ands.vocabs.registry.schema.vocabulary201701.ResultPair;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.WorkflowOutcome;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.WorkflowOutcome.TaskOutcome;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.WorkflowOutcome.TaskOutcome.SubtaskOutcome;
@@ -66,5 +66,5 @@ public interface WorkflowOutcomeSchemaMapper {
      */
     @Mapping(source = "key", target = "resultKey")
     @Mapping(source = "value", target = "resultValue")
-    Result mapResult(Map.Entry<String, String> result);
+    ResultPair mapResult(Map.Entry<String, String> result);
 }

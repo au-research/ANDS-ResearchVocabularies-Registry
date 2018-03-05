@@ -87,10 +87,6 @@ public class TransformProviderTests extends ArquillianBaseTest {
     @SuppressWarnings({"checkstyle:MethodLength", "checkstyle:MagicNumber"})
     public final void testJsonTreeTransformProvider1() throws
         DatabaseUnitException, HibernateException, IOException, SQLException {
-
-        // TO DO: turn this into a registry test!
-        // (If you were to run it now, it would fail.)
-
         String testsPath = ArquillianTestUtils.getClassesPath()
                 + "/test/tests/";
         ArquillianTestUtils.clearDatabase(REGISTRY);
@@ -239,6 +235,7 @@ public class TransformProviderTests extends ArquillianBaseTest {
                     + CLASS_NAME_PREFIX
                     + "testJsonTreeTransformProvider1/"
                     + "test-data5-concepts_tree.json");
+            txn.commit();
         } catch (Throwable t) {
             if (txn != null && txn.isActive()) {
                 try {

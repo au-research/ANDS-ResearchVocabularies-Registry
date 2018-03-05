@@ -122,6 +122,9 @@ public class PutUpload {
             @ApiResponse(code = HttpStatus.SC_REQUEST_TOO_LONG,
                     message = "Uploaded content too large",
                     response = Void.class),
+            @ApiResponse(code = HttpStatus.SC_INTERNAL_SERVER_ERROR,
+                    message = "Internal server error",
+                    response = ErrorResult.class)
             })
     public final Response createUpload(
             @Context final HttpServletRequest request,
@@ -271,7 +274,7 @@ public class PutUpload {
      * {@link java.util.regex.Matcher#replaceAll(String)}.
      */
     private static final Pattern RESERVED_CHARACTERS_PATTERN =
-            Pattern.compile("\\?|%|\\*|:|\\||\"|<|>|\\p{Space}|\\p{Cntrl}");
+            Pattern.compile("#|\\?|%|\\*|:|\\||\"|<|>|\\p{Space}|\\p{Cntrl}");
 
     /** Pattern that matches contiguous sequences of underscores. Use with
      * {@link java.util.regex.Matcher#replaceAll(String)}. */
@@ -284,7 +287,7 @@ public class PutUpload {
      * but who knows?)
      * Enforce at most one extension, by replacing all but the last period
      * with an underscore.
-     * Replace all occurrences of ?, %, *, :, |, &quot;, &lt;, &gt;,
+     * Replace all occurrences of #, ?, %, *, :, |, &quot;, &lt;, &gt;,
      * Unicode whitespace, and Unicode control characters with an underscore.
      * (Any slashes and backslashes were already removed in the first step.)
      * The list of characters to be replaced is based on the

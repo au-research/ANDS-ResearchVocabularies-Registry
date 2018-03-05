@@ -148,9 +148,6 @@ public final class TaskUtils {
     public static String getTaskOutputPath(final TaskInfo taskInfo,
             final boolean requireDirectory,
             final String extraPath) {
-        // NB: We call makeSlug() on the vocabulary slug, which should
-        // (as of ANDS-Registry-Core commit e365392831ae)
-        // not really be necessary.
         Path path = Paths.get(RegistryConfig.DATA_FILES_PATH)
                 .resolve(SlugGenerator.generateSlug(
                         taskInfo.getVocabulary().getOwner()))

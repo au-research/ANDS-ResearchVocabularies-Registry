@@ -21,7 +21,19 @@ public final class AdminApiPaths {
     /** Subpath for model methods. */
     public static final String MODEL = "model";
 
+    /** Subpath for resource methods. */
+    public static final String RESOURCE = "resource";
+
     /** Subpath for Solr methods. */
     public static final String SOLR = "solr";
+
+    /** Subpath for workflow methods. */
+    public static final String WORKFLOW = "workflow";
+
+    /** Subpath for task resources. */
+    public static final String TASKS = "tasks";
+
+    /** Path parameter name for a task resource. */
+    public static final String TASK_ID = "{taskId}";
 
 }

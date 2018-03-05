@@ -411,6 +411,7 @@ public class PoolPartyHarvestProvider implements WorkflowProvider {
             Files.deleteIfExists(Paths.get(vaHarvestPoolparty.getPath()));
             */
             TemporalUtils.makeHistorical(va, taskInfo.getNowTime());
+            va.setModifiedBy(taskInfo.getModifiedBy());
             VersionArtefactDAO.updateVersionArtefact(taskInfo.getEm(), va);
         }
     }
