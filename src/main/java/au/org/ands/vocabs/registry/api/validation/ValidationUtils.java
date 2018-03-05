@@ -78,6 +78,10 @@ public final class ValidationUtils {
             DateTimeFormatter.ISO_LOCAL_DATE;
     /* Reuse ISO_LOCAL_DATE, which is already set to STRICT resolution. */
 
+    /** Maximum length of some fields. Intended to keep length of
+     * vocabulary and version JSON data under control. */
+    private static final int MAX_FIELD_LENGTH = 10000;
+
     /** Check that a field of a bean is not null. If it is in fact
      * null, register a constraint violation.
      * @param constraintInterfaceName The name of the interface
@@ -426,6 +430,7 @@ public final class ValidationUtils {
         validWhitelist = Whitelist.basic();
         validWhitelist.removeEnforcedAttribute("a", "rel");
         validWhitelist.addAttributes("a", "href", "rel", "target");
+        validWhitelist.preserveRelativeLinks(true);
     }
 
     /** Whitelist for jsoup to use to clean HTML. Initialized
@@ -438,6 +443,7 @@ public final class ValidationUtils {
         cleanWhitelist.addEnforcedAttribute("a", "target", "_blank");
         cleanWhitelist.addEnforcedAttribute("a", "rel",
                 "nofollow noopener noreferrer");
+        validWhitelist.preserveRelativeLinks(true);
     }
 
     /** Utility method to determine if a String value contains
@@ -532,6 +538,84 @@ public final class ValidationUtils {
                     buildConstraintViolationWithTemplate(
                     "{" + constraintInterfaceName + "." + fieldName
                     + ".html}");
+            if (nodeModifier != null) {
+                nodeModifier.accept(cvb);
+            } else {
+                cvb.addPropertyNode(fieldName).addConstraintViolation();
+            }
+        }
+        return validToReturn;
+    }
+
+    /** Check that a field of a bean contains text that is "not too long",
+     * so that it will be able to be persisted in the JSON data field.
+     * @param constraintInterfaceName The name of the interface
+     *      for the constraint.
+     * @param stringToTest The String that is required to be less than
+     *      or equal to a maximum length.
+     *      It must already have been checked to be a non-empty
+     *      string. If null, or an empty string is passed in, return
+     *      immediately with the value of valid.
+     * @param fieldName The name of the field that is being tested.
+     * @param constraintContext The constraint context. If there is a
+     *      violation, it is recorded here.
+     * @param valid The state of validity, up to this point.
+     * @return The updated validity state.
+    */
+    public static boolean requireFieldLessThanMaxLength(
+            final String constraintInterfaceName,
+            final String stringToTest,
+            final String fieldName,
+            final ConstraintValidatorContext constraintContext,
+            final boolean valid) {
+        return requireFieldLessThanMaxLength(constraintInterfaceName,
+                stringToTest, fieldName, constraintContext, null,
+                valid);
+    }
+
+    /** Check that a field of a bean contains text that is "not too long",
+     * so that it will be able to be persisted in the JSON data field.
+     * @param constraintInterfaceName The name of the interface
+     *      for the constraint.
+     * @param stringToTest The String that is required to be less than
+     *      or equal to a maximum length.
+     *      It must already have been checked to be a non-empty
+     *      string. If null, or an empty string is passed in, return
+     *      immediately with the value of valid.
+     * @param fieldName The name of the field that is being tested.
+     * @param constraintContext The constraint context. If there is a
+     *      violation, it is recorded here.
+     * @param nodeModifier If null, the generated ConstraintViolationBuilder
+     *      has {@code addPropertyNode(fieldName).addConstraintViolation()}
+     *      invoked.
+     *      If not null, this is taken to be a consumer of the
+     *      ConstraintViolationBuilder
+     *      to qualify the location of the error, and the caller is then
+     *      responsible for specying a consumer that adds all location
+     *      information, including,
+     *      e.g., invoking {@code addPropertyNode()},
+     *      and for invoking {@code addConstraintViolation()} at the end.
+     * @param valid The state of validity, up to this point.
+     * @return The updated validity state.
+    */
+    public static boolean requireFieldLessThanMaxLength(
+            final String constraintInterfaceName,
+            final String stringToTest,
+            final String fieldName,
+            final ConstraintValidatorContext constraintContext,
+            final Consumer<ConstraintViolationBuilder> nodeModifier,
+            final boolean valid) {
+        if (stringToTest == null || stringToTest.isEmpty()) {
+            return valid;
+        }
+        boolean validToReturn = valid;
+
+        if (stringToTest.length() > MAX_FIELD_LENGTH) {
+            validToReturn = false;
+            ConstraintViolationBuilder cvb = constraintContext.
+                    buildConstraintViolationWithTemplate(
+                    "{" + constraintInterfaceName + "." + fieldName
+                    + ".length}");
             if (nodeModifier != null) {
                 nodeModifier.accept(cvb);
             } else {

@@ -236,8 +236,12 @@ public class CheckVocabularyImpl
                 INTERFACE_NAME,
                 description, "description",
                 constraintContext, valid);
-        // And now, if it was supplied, clean it.
+        // And now, if it was supplied, check length and clean it.
         if (description != null) {
+            valid = ValidationUtils.requireFieldLessThanMaxLength(
+                    INTERFACE_NAME,
+                    description, "description",
+                    constraintContext, valid);
             newVocabulary.setDescription(ValidationUtils.cleanHTML(
                     description));
         }
@@ -248,8 +252,12 @@ public class CheckVocabularyImpl
                 INTERFACE_NAME,
                 note, "note",
                 constraintContext, valid);
-        // And now, if it was supplied, clean it.
+        // And now, if it was supplied, check length and clean it.
         if (note != null) {
+            valid = ValidationUtils.requireFieldLessThanMaxLength(
+                    INTERFACE_NAME,
+                    note, "note",
+                    constraintContext, valid);
             newVocabulary.setNote(ValidationUtils.cleanHTML(note));
         }
 
@@ -819,8 +827,16 @@ public class CheckVocabularyImpl
                     addPropertyNode("note").inIterable().
                     atIndex(versionIndex).addConstraintViolation(),
                 valid);
-        // And now, if it was supplied, clean it.
+        // And now, if it was supplied, check length and clean it.
         if (note != null) {
+            valid = ValidationUtils.requireFieldLessThanMaxLength(
+                    INTERFACE_NAME,
+                    note, "version.note",
+                    constraintContext,
+                    cvb -> cvb.addPropertyNode("version").
+                        addPropertyNode("note").inIterable().
+                        atIndex(versionIndex).addConstraintViolation(),
+                    valid);
             newVersion.setNote(ValidationUtils.cleanHTML(note));
         }
 
