@@ -40,10 +40,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationModule;
 
@@ -2684,6 +2684,8 @@ public final class MigrateToolkitToRegistry {
         // methods.
         jsonMapper.configure(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY,
                 true);
+        jsonMapper.configure(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS,
+                true);
     }
 
     /** Serialize one of our custom JSON storage objects as a String,
@@ -2699,8 +2701,19 @@ public final class MigrateToolkitToRegistry {
      */
     private String serializeJsonAsString(final Object jsonObject) {
         try {
-            return jsonMapper.writeValueAsString(jsonObject);
-        } catch (JsonProcessingException e) {
+            // See:
+            // https://stackoverflow.com/questions/18952571/
+            //   jackson-jsonnode-to-string-with-sorted-keys/34816342
+            String firstSerialization =
+                    jsonMapper.writeValueAsString(jsonObject);
+            // Now parse again.
+            JsonNode jn = jsonMapper.readTree(firstSerialization);
+
+            Object obj = jsonMapper.treeToValue(jn, Object.class);
+            String secondSerialization = jsonMapper.writeValueAsString(obj);
+
+            return secondSerialization;
+        } catch (IOException e) {
             logger.error("Unable to serialize JSON", e);
             return "";
         }
