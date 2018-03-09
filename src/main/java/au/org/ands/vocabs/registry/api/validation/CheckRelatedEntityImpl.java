@@ -4,6 +4,7 @@ package au.org.ands.vocabs.registry.api.validation;
 
 import static au.org.ands.vocabs.registry.api.validation.CheckRelatedEntity.INTERFACE_NAME;
 
+import java.io.StringWriter;
 import java.lang.invoke.MethodHandles;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -14,6 +15,9 @@ import java.util.Set;
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 import javax.validation.ConstraintViolation;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,11 +32,23 @@ public class CheckRelatedEntityImpl
     implements ConstraintValidator<CheckRelatedEntity, RelatedEntity> {
 
     /** Logger for this class. */
-    private Logger logger = LoggerFactory.getLogger(
+    private static Logger logger = LoggerFactory.getLogger(
             MethodHandles.lookup().lookupClass());
 
     /** The validation mode to be used during validation. */
     private ValidationMode mode;
+
+    /** JAXB Context for debug logging of incoming data to be validated. */
+    private static JAXBContext reJaxbContext;
+
+    static {
+        try {
+            reJaxbContext = JAXBContext.newInstance(RelatedEntity.class);
+        } catch (JAXBException e) {
+            reJaxbContext = null;
+            logger.error("Exception initializing reJaxbContext", e);
+        }
+    }
 
     /** Initialize this instance of the validator.
      * That means: copy the value of the mode parameter into a private field,
@@ -42,6 +58,31 @@ public class CheckRelatedEntityImpl
     @Override
     public void initialize(final CheckRelatedEntity cnv) {
         mode = cnv.mode();
+    }
+
+    /** Serialize a registry schema format RelatedEntity instance into
+     * an XML String.
+     * @param relatedEntity The RelatedEntity instance to be serialized.
+     * @return The RelatedEntity instance serialized as XML.
+     * @throws JAXBException If a problem loading vocabulary data.
+     */
+    private static String serializeRelatedEntitySchemaEntityToXML(
+            final RelatedEntity relatedEntity) throws JAXBException {
+        if (reJaxbContext == null) {
+            logger.error("Can't serialize schema entity. See earlier "
+                    + "exception about initializing reJaxbContext.");
+            return null;
+        }
+        // According to
+        // https://javaee.github.io/jaxb-v2/doc/user-guide/ch06.html,
+        // Marshallers aren't thread safe. For now, just make a
+        // new one each time.
+        Marshaller jaxbMarshaller = reJaxbContext.createMarshaller();
+        // Make it pretty, for easier reading.
+        jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+        StringWriter stringWriter = new StringWriter();
+        jaxbMarshaller.marshal(relatedEntity, stringWriter);
+        return stringWriter.toString();
     }
 
     /** Validate a proposed new or updated related entity.
@@ -54,6 +95,15 @@ public class CheckRelatedEntityImpl
             final ConstraintValidatorContext constraintContext) {
 
         logger.debug("In CheckRelatedEntityImpl.isValid()");
+        if (logger.isDebugEnabled()) {
+            try {
+                logger.debug("Validating: "
+                        + serializeRelatedEntitySchemaEntityToXML(
+                                relatedEntity));
+            } catch (JAXBException e) {
+                logger.error("Exception while trying to output debugging!", e);
+            }
+        }
 
         // Start by assuming validity.
         boolean valid = true;
