@@ -183,6 +183,11 @@ public class DeleteRelatedEntities {
                 Analytics.TITLE_FIELD, relatedEntity.getTitle(),
                 Analytics.OWNER_FIELD, relatedEntity.getOwner());
 
+        // For noting: because above we required that this RE
+        // not be used by any current vocabulary instance, there
+        // are no occurrences of this as a vocabulary's publisher in Solr,
+        // so no re-indexing needs to be done.
+
         // Successful deletion, and no response body. noContent() creates
         // status code 204.
         return Response.noContent().build();

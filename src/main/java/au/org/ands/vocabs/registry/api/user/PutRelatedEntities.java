@@ -24,6 +24,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
@@ -52,12 +53,16 @@ import au.org.ands.vocabs.registry.db.converter.RelatedEntityIdentifierDbSchemaM
 import au.org.ands.vocabs.registry.db.dao.RegistryEventDAO;
 import au.org.ands.vocabs.registry.db.dao.RelatedEntityDAO;
 import au.org.ands.vocabs.registry.db.dao.RelatedEntityIdentifierDAO;
+import au.org.ands.vocabs.registry.db.dao.VocabularyDAO;
 import au.org.ands.vocabs.registry.db.entity.ComparisonUtils;
 import au.org.ands.vocabs.registry.db.entity.RegistryEvent;
+import au.org.ands.vocabs.registry.db.entity.Vocabulary;
 import au.org.ands.vocabs.registry.enums.RegistryEventElementType;
 import au.org.ands.vocabs.registry.enums.RegistryEventEventType;
+import au.org.ands.vocabs.registry.enums.RelatedEntityRelation;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.RelatedEntity;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.RelatedEntityIdentifier;
+import au.org.ands.vocabs.registry.solr.EntityIndexer;
 import au.org.ands.vocabs.registry.utils.Analytics;
 import au.org.ands.vocabs.registry.utils.Logging;
 import io.swagger.annotations.Api;
@@ -655,6 +660,35 @@ public class PutRelatedEntities {
                     Analytics.RELATED_ENTITY_ID_FIELD, relatedEntityId,
                     Analytics.TITLE_FIELD, updatedDbRelatedEntity.getTitle(),
                     Analytics.OWNER_FIELD, updatedDbRelatedEntity.getOwner());
+
+            // Check https://intranet.ands.org.au/display/PROJ/
+            //   Vocabulary+Solr+documents+and+queries
+            // (and the EntityIndexer class!)
+            // to see how REs are involved in Solr indexing.
+            // It seems: only publisher titles are indexed.
+            // Therefore, re-index of a vocabulary is needed when and only when:
+            //       (a) this RE is a publisher of the vocabulary,
+            //   AND (b) the RE's title has changed.
+            // So now, see if/what we need to re-index.
+            if (!existingDbRelatedEntity.getTitle().equals(
+                    updatedDbRelatedEntity.getTitle())) {
+                // The title has changed. Find all uses of this as a publisher.
+                MultivaluedMap<Vocabulary, RelatedEntityRelation> dbRVs =
+                VocabularyDAO.getCurrentVocabulariesForRelatedEntity(
+                        relatedEntityId);
+                for (Map.Entry<Vocabulary, List<RelatedEntityRelation>>
+                    mapElement : dbRVs.entrySet()) {
+                    if (mapElement.getValue().contains(
+                            RelatedEntityRelation.PUBLISHED_BY)) {
+                        Integer vocabularyId =
+                                mapElement.getKey().getVocabularyId();
+                        logger.info("RE with ID " + relatedEntityId
+                                + " was updated; re-indexing vocabulary "
+                                + "with ID: " + vocabularyId);
+                        EntityIndexer.indexVocabulary(vocabularyId);
+                    }
+                }
+            }
 
             return Response.ok().entity(reReturned).build();
         } catch (Throwable t) {
