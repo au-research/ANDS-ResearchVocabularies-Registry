@@ -443,7 +443,7 @@ public final class ValidationUtils {
         cleanWhitelist.addEnforcedAttribute("a", "target", "_blank");
         cleanWhitelist.addEnforcedAttribute("a", "rel",
                 "nofollow noopener noreferrer");
-        validWhitelist.preserveRelativeLinks(true);
+        cleanWhitelist.preserveRelativeLinks(true);
     }
 
     /** Utility method to determine if a String value contains
