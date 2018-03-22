@@ -4,7 +4,7 @@
   <subject source="anzsrc-for" label="INFORMATION AND COMPUTING SCIENCES" iri="http://purl.org/au-research/vocabulary/anzsrc-for/2008/08" />
   <subject source="anzsrc-for" label="MATHEMATICAL SCIENCES" iri="http://purl.org/au-research/vocabulary/anzsrc-for/2008/01" />
   <version id="1" status="superseded" title="Version 1" note="Note for v1" release-date="2014-01">
-  <access-point id="1" discriminator="webPage" source="user" >
+    <access-point id="1" discriminator="webPage" source="user" >
       <ap-web-page url="http://www.researchdata.ands.org.au/"/>
     </access-point>
   </version>
