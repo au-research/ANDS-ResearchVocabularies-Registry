@@ -13,12 +13,12 @@ The ANDS vocabularies are expected to be informed and developed further by the R
     xmlns="http://vocabs.ands.org.au/registry/schema/2017/01/vocabulary">
   <subject source="anzsrc-for" label="INFORMATION AND COMPUTING SCIENCES" iri="http://purl.org/au-research/vocabulary/anzsrc-for/2008/08"/>
   <version id="2" status="superseded" title="Version 2" slug="version-2" note="Note for v2 draft" release-date="2015-01">
-    <access-point id="1" source="user"  discriminator="webPage">
+    <access-point id="1" source="user" discriminator="webPage">
       <ap-web-page url="http://www.researchdata.ands.org.au/"/>
     </access-point>
   </version>
   <version id="3" status="current" title="Version 3" slug="version-3" note="Note for v3" release-date="2016-01">
-    <access-point id="2" source="user"  discriminator="webPage">
+    <access-point id="2" source="user" discriminator="webPage">
       <ap-web-page url="http://www.ands.org.au/"/>
     </access-point>
   </version>
