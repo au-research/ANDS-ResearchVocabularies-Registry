@@ -137,7 +137,7 @@ public class GetRelatedEntities {
     public final RelatedEntityList getRelatedEntities(
             @Context final HttpServletRequest request,
             @Context final UriInfo uriInfo,
-            @ApiParam(value = "The ID of the related entity to get ")
+            @ApiParam(value = "The type of the related entities to get.")
             @QueryParam("relatedEntityType") final RelatedEntityType
                 relatedEntityType) {
         logger.debug("called getRelatedEntities: relatedEntityType = "

@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory;
 
 import au.org.ands.vocabs.registry.api.user.ErrorResult;
 import au.org.ands.vocabs.registry.api.validation.ValidationUtils;
+import au.org.ands.vocabs.registry.db.converter.JSONSerialization;
 
 /** An {@link ExceptionMapper} that intercepts
  * {@link ConstraintViolationException}s,
@@ -65,6 +66,9 @@ public class ConstraintViolationExceptionMapper
         // them anyway).
         errorResult.setConstraintViolation(
                 ValidationUtils.constraintViolationToValidationErrors(cve));
+
+        logger.debug("Returning constraint violations: "
+                + JSONSerialization.serializeObjectAsJsonString(errorResult));
 
         return Response.status(Response.Status.BAD_REQUEST).
                 entity(errorResult).build();

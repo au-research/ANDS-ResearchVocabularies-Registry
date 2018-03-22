@@ -10,7 +10,7 @@ public final class AdminApiPaths {
 
     /** Admin methods of the registry. Doesn't begin with "/api",
      * so that these can be "hidden" to outside users. */
-    public static final String API_ADMIN = "/registry/admin";
+    public static final String API_ADMIN = "/adminApi";
 
     /** Subpath for backup methods. */
     public static final String BACKUP = "backup";

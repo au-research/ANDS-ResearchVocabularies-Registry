@@ -49,11 +49,24 @@ public class CheckVocabularyImpl
     implements ConstraintValidator<CheckVocabulary, Vocabulary> {
 
     /** Logger for this class. */
-    private Logger logger = LoggerFactory.getLogger(
+    private static Logger logger = LoggerFactory.getLogger(
             MethodHandles.lookup().lookupClass());
 
     /** The validation mode to be used during validation. */
     private ValidationMode mode;
+
+    /** JAXB Context for debug logging of incoming data to be validated. */
+    private static JAXBContext vocabularyJaxbContext;
+
+    static {
+        try {
+            vocabularyJaxbContext =
+                    JAXBContext.newInstance(Vocabulary.class);
+        } catch (JAXBException e) {
+            vocabularyJaxbContext = null;
+            logger.error("Exception initializing vocabularyJaxbContext", e);
+        }
+    }
 
     /** Initialize this instance of the validator.
      * That means: copy the value of the mode parameter into a private field,
@@ -73,8 +86,16 @@ public class CheckVocabularyImpl
      */
     private static String serializeVocabularySchemaEntityToXML(
             final Vocabulary vocabulary) throws JAXBException {
-        JAXBContext jaxbContext = JAXBContext.newInstance(Vocabulary.class);
-        Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
+        if (vocabularyJaxbContext == null) {
+            logger.error("Can't serialize schema entity. See earlier "
+                    + "exception about initializing reJaxbContext.");
+            return null;
+        }
+        // According to
+        // https://javaee.github.io/jaxb-v2/doc/user-guide/ch06.html,
+        // Marshallers aren't thread safe. For now, just make a
+        // new one each time.
+        Marshaller jaxbMarshaller = vocabularyJaxbContext.createMarshaller();
         // Make it pretty, for easier reading.
         jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
         StringWriter stringWriter = new StringWriter();
@@ -98,7 +119,7 @@ public class CheckVocabularyImpl
                 logger.debug("Validating: "
                         + serializeVocabularySchemaEntityToXML(newVocabulary));
             } catch (JAXBException e) {
-                logger.error("Exception while trying to output debugging!");
+                logger.error("Exception while trying to output debugging!", e);
             }
         }
 

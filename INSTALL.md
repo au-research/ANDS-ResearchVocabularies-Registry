@@ -178,7 +178,7 @@ Migrate the content from the "old-style" database into the new, blank
 Registry database:
 
 ```
-wget -O - http://localhost:8080/registry-context/registry/admin/database/migrateToolkitToRegistry
+wget -O - http://localhost:8080/registry-context/adminApi/database/migrateToolkitToRegistry
 ```
 
 It is crucial to check the log file of the Registry to see if there
@@ -218,7 +218,7 @@ INSERT INTO subject_resolver_sources(source,iri) VALUES ('gcmd', 'http://vocabs.
 Now run:
 
 ```
-wget -O - http://localhost:8080/registry-context/registry/admin/database/populateSubjectResolver
+wget -O - http://localhost:8080/registry-context/adminApi/database/populateSubjectResolver
 ```
 
 # Create Solr collection and install schema
@@ -243,7 +243,7 @@ ant create-solr-schema
 Run:
 
 ```
-wget -O - http://localhost:8080/registry-context/registry/admin/solr/index
+wget -O - http://localhost:8080/registry-context/adminApi/solr/index
 ```
 
 Once again, it is crucial to check the log file of the Registry to see

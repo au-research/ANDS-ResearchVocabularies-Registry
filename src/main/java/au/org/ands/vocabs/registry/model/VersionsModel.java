@@ -695,9 +695,9 @@ public class VersionsModel extends ModelBase {
                 // The "tricky" bit is managing any follow-on. For now,
                 // means that a (re-)harvest can also force a (re-)import.
                 if (BooleanUtils.isTrue(schemaVersion.isForceWorkflow())
-                        || (newCurrentVersionJson.isDoPoolpartyHarvest()
-                                != existingVersionJson.
-                                isDoPoolpartyHarvest())) {
+                        || (changedBoolean(
+                                newCurrentVersionJson.isDoPoolpartyHarvest(),
+                                existingVersionJson.isDoPoolpartyHarvest()))) {
                     if (BooleanUtils.isTrue(
                             newCurrentVersionJson.isDoPoolpartyHarvest())) {
                         task.addSubtask(WorkflowMethods.
@@ -727,8 +727,9 @@ public class VersionsModel extends ModelBase {
                     }
                 }
                 if (BooleanUtils.isTrue(schemaVersion.isForceWorkflow())
-                        || (newCurrentVersionJson.isDoImport()
-                                != existingVersionJson.isDoImport())) {
+                        || (changedBoolean(
+                                newCurrentVersionJson.isDoImport(),
+                                existingVersionJson.isDoImport()))) {
                     if (BooleanUtils.isTrue(
                             newCurrentVersionJson.isDoImport())) {
                         task.addSubtask(WorkflowMethods.
@@ -741,8 +742,9 @@ public class VersionsModel extends ModelBase {
                     }
                 }
                 if (BooleanUtils.isTrue(schemaVersion.isForceWorkflow())
-                        || (newCurrentVersionJson.isDoPublish()
-                                != existingVersionJson.isDoPublish())) {
+                        || (changedBoolean(
+                                newCurrentVersionJson.isDoPublish(),
+                                existingVersionJson.isDoPublish()))) {
                     if (BooleanUtils.isTrue(
                             newCurrentVersionJson.isDoPublish())) {
                         task.addSubtask(WorkflowMethods.
@@ -1032,6 +1034,23 @@ public class VersionsModel extends ModelBase {
                     + JSONSerialization.serializeObjectAsJsonString(
                             workflowOutcome));
         }
+    }
+
+    /** Compare two Boolean values, returning true if their canonical
+     * representations are different.
+     * For the purposes of this method, the canonical representation
+     * of null is null; otherwise, the canonical representation of
+     * a non-null value is either Boolean.TRUE or Boolean.FALSE.
+     * The purpose of this method is to support a case where (somehow)
+     * one of the libraries we rely on creates a Boolean object that
+     * is not one of the two instances Boolean.TRUE or Boolean.FALSE.
+     * @param b1 One of the Boolean values to be compared; it may be null.
+     * @param b2 The other Boolean value to be compared; it may be null.
+     * @return True, iff the canonicalized values of b1 and b2 are equal.
+     */
+    public boolean changedBoolean(final Boolean b1, final Boolean b2) {
+        return BooleanUtils.toInteger(b1, 1, 0, 2)
+                != BooleanUtils.toInteger(b2, 1, 0, 2);
     }
 
 }

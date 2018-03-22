@@ -326,8 +326,8 @@ public class GetMetadataTransformProvider {
                 metadataRewriteConf = new HierarchicalINIConfiguration(
                         metadataRewriteMap);
             } catch (ConfigurationException e) {
-                logger.error("Toolkit.metadataRewriteMapPath is empty, or file"
-                        + " can not be loaded", e);
+                logger.error(PropertyConstants.REGISTRY_METADATAREWRITEMAPPATH
+                        + " is empty, or file can not be loaded", e);
             }
         }
 
@@ -338,8 +338,7 @@ public class GetMetadataTransformProvider {
 
         /** Map for users data. Maps from a URL (as a String) to
          * a "full name". */
-        private HashMap<String, String> usersMap =
-                new HashMap<>();
+        private HashMap<String, String> usersMap = new HashMap<>();
 
         @Override
         public void handleStatement(final Statement st) {

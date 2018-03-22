@@ -49,12 +49,29 @@ public final class JSONSerialization {
         // above, empty arrays that are values of a key/value pair
         // _would_ still be serialized.
         jsonMapper.setSerializationInclusion(Include.NON_NULL);
-        // We don't really care about alphabetical sorting for
-        // persisting values. Rather, we do this only so we
-        // can get a canonical representation of related entities.
-        // This is relied on by the canonicalizeRelatedEntityJson()
-        // method, used by the various migrateRelatedXXX()
-        // methods.
+        // The next setting is not obvious, and the results are not obvious.
+        // There is an interaction with the JaxbAnnotationModule
+        // (which, in turn, uses Jackson's JaxbAnnotationIntrospector).
+        // For one of our JAXB-generated classes, its effect seems to be
+        // as follows:
+        //  First, serialize the properties mentioned in the @XmlType
+        //    annotation's propOrder attribute, in that order.
+        //  Then, serialize all remaining properties in alpha order.
+        // So, for VocabularyJson, the order is currently:
+        //   poolpartyProject
+        //   subjects
+        //   otherLanguages
+        //   topConcepts
+        //   acronym
+        //   creation-date
+        //   description
+        //   draft-created-date
+        //   draft-modified-date
+        //   licence
+        //   note
+        //   primary-language
+        //   revision-cycle
+        //   title
         jsonMapper.configure(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY,
                 true);
     }

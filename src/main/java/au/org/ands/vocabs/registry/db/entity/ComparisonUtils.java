@@ -149,6 +149,12 @@ public final class ComparisonUtils {
      */
     public static boolean isEqualRelatedEntity(final RelatedEntity re1,
             final RelatedEntity re2) {
+        // Please note the dependence on a "canonical" order of the
+        // keys in the serialization of the JSON-flavoured data column.
+        // See the comment in the static
+        // block of JSONSerialization. And see also
+        // https://intranet.ands.org.au/display/PROJ/
+        //   Vocabulary+Registry+mappers+between+database+and+schema+objects
         return new EqualsBuilder().
                 append(re1.getType(), re2.getType()).
                 append(re1.getTitle(), re2.getTitle()).
