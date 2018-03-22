@@ -566,7 +566,7 @@ public class AccessPointsModel extends ModelBase {
                     schemaAP)) {
                 throw new IllegalArgumentException(
                         "Changing details of an existing access point "
-                        + "is not supported");
+                        + "is not supported; access point Id = " + apId);
             }
         }
 
