@@ -38,6 +38,12 @@ import io.swagger.annotations.ResponseHeader;
         @Authorization(value = SwaggerInterface.API_KEY_AUTH)})
 public class AdminRestMethods {
 
+    /** Top-level of path for PoolParty admin API methods. */
+    private static final String POOLPARTY = "PoolParty";
+
+    /** Path component for PoolParty project Id. */
+    private static final String PROJECT_ID = "projectId";
+
     /** Logger for this class. */
     private Logger logger = LoggerFactory.getLogger(
             MethodHandles.lookup().lookupClass());
@@ -47,7 +53,7 @@ public class AdminRestMethods {
      * @param pPProjectId A PoolParty project ID.
      * @return The result info, in JSON format,
      * containing all files and some metadata. */
-    @Path("PoolParty/{project_id}")
+    @Path(POOLPARTY + "/" + "{" + PROJECT_ID + "}")
     @Produces(MediaType.APPLICATION_JSON)
     @Pac4JSecurity
     @GET
@@ -69,7 +75,7 @@ public class AdminRestMethods {
     public final Response backupPoolPartyProject(
             @ApiParam(hidden = true) @Pac4JProfile
             final CommonProfile profile,
-            @PathParam("project_id")
+            @PathParam(PROJECT_ID)
             final String pPProjectId) {
         if (!AuthUtils.profileIsSuperuser(profile)) {
             return ResponseUtils.generateForbiddenResponseNotSuperuser();
@@ -84,7 +90,7 @@ public class AdminRestMethods {
      * @param profile The caller's security profile.
      * @return The result info, in JSON format,
      * containing all files and some metadata. */
-    @Path("PoolParty")
+    @Path(POOLPARTY)
     @Produces(MediaType.APPLICATION_JSON)
     @Pac4JSecurity
     @GET
