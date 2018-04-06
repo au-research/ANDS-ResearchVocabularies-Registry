@@ -126,12 +126,13 @@ public class DeleteRelatedEntities {
             return ResponseUtils.generateForbiddenResponseForOwner();
         }
 
-        // Check for uses by current vocabularies.
+        // Check for uses in both current and draft instances of vocabularies.
 
         List<ValidationError> validationErrors = new ArrayList<>();
         // Check REs with matching top-level properties.
         for (Integer vocabularyId
-                : VocabularyRelatedEntityDAO.getVocabularyIdsWithRelatedEntity(
+                : VocabularyRelatedEntityDAO.
+                getVocabIdsOfVocabsWithCurrentOrDraftInstanceWithRelatedEntity(
                         relatedEntityId)) {
             ValidationError ve = new ValidationError();
             ve.setMessage("Related entity in use; path "

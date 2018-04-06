@@ -835,17 +835,24 @@
       <extraQuery name="GET_VOCABULARY_IDS_WITH_RELATED_ENTITY">
         <extraQueryParameter name="relatedEntityId" />
         <queryText temporal="true">
-          SELECT entity.vocabularyId FROM VocabularyRelatedEntity
+          SELECT DISTINCT entity.vocabularyId FROM VocabularyRelatedEntity
           entity WHERE relatedEntityId = :relatedEntityId
-          #AND_TEMPORAL_QUERY_VALID_SUFFIX
+          AND ((
+          #TEMPORAL_QUERY_VALID_CLAUSE
+          ) OR (
+          #TEMPORAL_QUERY_ALL_DRAFT_CLAUSE
+          ))
         </queryText>
         <method>    /** Get the vocabulary ids of all vocabularies currently
-     * related to the given related entity.
+     * related to the given related entity, where "currently" here means
+     * vocabularies with either a current or draft instance that is
+     * related to the related entity.
      * @param relatedEntityId The related entity to be looked up.
      * @return a list of vocabulary ids of vocabularies related to the
      *   related entity.
      */
-    public static List&lt;Integer&gt; getVocabularyIdsWithRelatedEntity(
+    public static List&lt;Integer&gt;
+    getVocabIdsOfVocabsWithCurrentOrDraftInstanceWithRelatedEntity(
                 final int relatedEntityId) {
         EntityManager em = DBContext.getEntityManager();
         TypedQuery&lt;Integer&gt; q = em.createNamedQuery(
