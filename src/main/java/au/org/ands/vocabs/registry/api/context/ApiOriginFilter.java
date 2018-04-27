@@ -61,7 +61,10 @@ public class ApiOriginFilter implements Filter {
                     "Content-Type, Authorization, "
                     + AuthConfig.RDA_COOKIE_NAME
                     + ", "
-                    + Analytics.PORTAL_ID);
+                    + Analytics.PORTAL_ID
+                    + ", "
+                    + Analytics.PORTAL_REFERRER
+                    );
             hsResponse.addHeader("Access-Control-Expose-Headers",
 //                  "Content-Type, api_key, Authorization");
                     // Content-Disposition added to support downloads.

@@ -43,6 +43,10 @@ public final class Analytics {
     private static Logger logger = LoggerFactory.getLogger(
             MethodHandles.lookup().lookupClass());
 
+    /** The name of the HTTP header used to indicate the URL of the
+     * portal page that is responsible for generating this request. */
+    public static final String PORTAL_REFERRER = "portal-referrer";
+
     /** The name of the HTTP header used to indicate that the request
      * came from the portal. */
     public static final String PORTAL_ID = "portal-id";
