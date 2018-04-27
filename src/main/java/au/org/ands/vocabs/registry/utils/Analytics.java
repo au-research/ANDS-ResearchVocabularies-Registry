@@ -44,7 +44,13 @@ public final class Analytics {
             MethodHandles.lookup().lookupClass());
 
     /** The name of the HTTP header used to indicate the URL of the
-     * portal page that is responsible for generating this request. */
+     * portal page that is responsible for generating this request.
+     * The name "portal referrer" is slightly misleading. The
+     * value of this header may indeed correspond to the value of the
+     * original {@code HTTP_REFERER} header in some cases,
+     * but the value may also be that of the request URI. See
+     * the portal controller's {@code set_referrer_for_registry()}
+     * method.*/
     public static final String PORTAL_REFERRER = "portal-referrer";
 
     /** The name of the HTTP header used to indicate that the request
@@ -72,6 +78,14 @@ public final class Analytics {
     private static final String PATH_FIELD = "path";
     /** The name of the portal ID field inserted into log entries. */
     private static final String PORTAL_ID_FIELD = "portal_id";
+    /** The name of the IP address field inserted into log entries,
+     * where this is the IP address of the portal that made the request,
+     * and the value of the {@code IP_FIELD} is the IP address
+     * of the portal user. */
+    private static final String PORTAL_IP_FIELD = "portal_ip";
+    /** The name of the portal referrer field inserted into log entries. */
+    private static final String PORTAL_REFERRER_FIELD =
+            "portal_referrer";
     /** The name of the user agent field inserted into log entries. */
     private static final String USER_AGENT_FIELD = "user_agent";
     /** The name of the username field inserted into log entries. */
@@ -226,6 +240,18 @@ public final class Analytics {
      * and the path from the uriInfo. If there is a user profile,
      * the username is extracted.
      * Geolocation data is added, based on the IP address.
+     * There is an important trick to the handling of IP addresses.
+     * If the request contains a header "portal-remote-address",
+     * then this request is deemed to have been generated internally
+     * by the portal, and the value of this header is the "real"
+     * IP address of the client.
+     * The value of this header is used as the IP address of the request,
+     * and the IP address of the portal (i.e., the value of the
+     * request's "official" remote address) is stored in a separate field.
+     * If a header "portal-remote-address" is provided, there should
+     * also be headers "portal-referrer" containing the URL
+     * of the portal page, and "portal-user-agent", which is used
+     * as the log entry's user agent in place of the portal's own.
      * @param success Whether or not the operation was completed successfully.
      *      If false, the caller should then add more details
      *      of the failure to the returned LogstashMarker.
@@ -239,12 +265,44 @@ public final class Analytics {
             final HttpServletRequest request,
             final UriInfo uriInfo,
             final CommonProfile profile) {
+
+//        portal-remote-address=130.1.2.3
+//        portal-user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) ...
+//        portal-referrer=https://vocabs.../viewById/2
+
+        String requestRemoteAddress = request.getRemoteAddr();
+
+        String portalRemoteAddress =
+                request.getHeader("portal-remote-address");
+        String portalReferrer =
+                request.getHeader(PORTAL_REFERRER);
+        String remoteAddress;
+        if (portalRemoteAddress != null) {
+            remoteAddress = portalRemoteAddress;
+        } else {
+            remoteAddress = requestRemoteAddress;
+        }
+
         LogstashMarker lm = append(UUID_FIELD, UUID.randomUUID()).
                 and(append(SUCCESS_FIELD, success)).
-                and(append(IP_FIELD, request.getRemoteAddr())).
+                and(append(IP_FIELD, remoteAddress)).
                 and(append(METHOD_FIELD, request.getMethod())).
                 and(append(PATH_FIELD, uriInfo.getPath()));
-        String userAgent = request.getHeader("user-agent");
+        // If there's a portal-remote-address, store the portal's
+        // own IP address.
+        if (portalRemoteAddress != null) {
+            lm.and(append(PORTAL_IP_FIELD, requestRemoteAddress));
+        }
+        // If there's a portal-remote-referrer, store it.
+        if (portalReferrer != null) {
+            lm.and(append(PORTAL_REFERRER_FIELD, portalReferrer));
+        }
+
+        // Allow a portal-user-agent header to override user-agent.
+        String userAgent = request.getHeader("portal-user-agent");
+        if (userAgent == null) {
+            userAgent = request.getHeader("user-agent");
+        }
         if (userAgent != null) {
             // Log the user agent string, and whether it is a
             // known crawler/bot.
@@ -259,7 +317,7 @@ public final class Analytics {
         if (profile != null) {
             lm.and(append(USERNAME_FIELD, profile.getId()));
         }
-        addGeoIPInfo(lm, request.getRemoteAddr());
+        addGeoIPInfo(lm, remoteAddress);
         return lm;
     }
 
