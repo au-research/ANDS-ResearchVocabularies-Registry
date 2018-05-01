@@ -93,7 +93,7 @@
          innodb_large_prefix) and the varchar type for the iri column.
     -->
     <modifySql dbms="mysql">
-      <replace replace="(slug)" with="(slug(191))"/>
+      <replace replace="slug" with="slug(191)"/>
     </modifySql>
   </changeSet>
 
