@@ -75,6 +75,26 @@
       <column name="slug"/>
       <column name="end_date"/>
     </createIndex>
+    <!-- The following "modifySql" element is needed for MySQL version
+         5.6 with default settings, or if the "TEXT" type is used for
+         the "iri" column.
+
+         In the former case, index fields are limited to 767 bytes. In
+         utf8mb4 encoding, that means 191 characters. See:
+         https://dev.mysql.com/doc/refman/5.7/en/innodb-parameters.html
+
+         In the latter case, MySQL requires a field length, because
+         then the iri column is of a "blob" type.  See:
+         https://liquibase.jira.com/browse/CORE-1180
+         https://liquibase.jira.com/browse/CORE-1649
+
+         This is _not_ needed in MySQL 5.7 with default settings (or
+         in 5.6 with modified settings for innodb-file-format and
+         innodb_large_prefix) and the varchar type for the iri column.
+    -->
+    <modifySql dbms="mysql">
+      <replace replace="(iri)" with="(iri(191))"/>
+    </modifySql>
   </changeSet>
 
   <!-- And now tag the result. -->
