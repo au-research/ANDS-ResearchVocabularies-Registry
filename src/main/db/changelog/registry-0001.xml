@@ -826,36 +826,11 @@
     </createTable>
   </changeSet>
 
+  <!-- And now tag the result. -->
 
-
-
-<!--
-
-    <changeSet author="Richard.Walker@ands.org.au" id="1472081806630-3">
-        <createTable tableName="related">
-            <column autoIncrement="true" name="id" type="INTEGER">
-                <constraints primaryKey="true"/>
-            </column>
-            <column name="type" type="VARCHAR(45)"/>
-            <column name="relation" type="VARCHAR(45)"/>
-            <column name="title" type="VARCHAR(255)"/>
-            <column name="slug" type="VARCHAR(255)"/>
-            <column name="data" type="TEXT"/>
-        </createTable>
-    </changeSet>
-    <changeSet author="Richard.Walker@ands.org.au" id="1472081806630-6">
-        <createTable tableName="version_access_points">
-            <column autoIncrement="true" name="id" type="INTEGER">
-                <constraints primaryKey="true"/>
-            </column>
-            <column name="version_id" type="INTEGER"/>
-            <column name="identifier" type="VARCHAR(255)"/>
-            <column name="format" type="VARCHAR(45)"/>
-            <column name="type" type="VARCHAR(45)"/>
-            <column name="status" type="VARCHAR(45)"/>
-        </createTable>
-    </changeSet>
-
--->
+  <changeSet id="0001-tag"
+             author="Richard.Walker@ands.org.au">
+    <tagDatabase tag="version_0001"/>
+  </changeSet>
 
 </databaseChangeLog>

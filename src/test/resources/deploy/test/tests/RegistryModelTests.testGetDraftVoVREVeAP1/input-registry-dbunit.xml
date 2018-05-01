@@ -43,12 +43,12 @@
   <ACCESS_POINT_IDS ID="1"/>
   <ACCESS_POINT_IDS ID="2"/>
 
-  <ACCESS_POINTS ID="1" ACCESS_POINT_ID="1" DATA="{&quot;url&quot;:&quot;http://www.researchdata.ands.org.au/&quot;}" 
-                 END_DATE="9999-12-03 00:00:00.0" MODIFIED_BY="SYSTEM" SOURCE="USER" START_DATE="9999-12-02 00:00:00.0" 
+  <ACCESS_POINTS ID="1" ACCESS_POINT_ID="1" DATA="{&quot;url&quot;:&quot;http://www.researchdata.ands.org.au/&quot;}"
+                 START_DATE="9999-12-02 00:00:00.0" END_DATE="9999-12-03 00:00:00.0" MODIFIED_BY="SYSTEM" SOURCE="USER"
                  TYPE="WEB_PAGE" VERSION_ID="2"/>
 
-  <ACCESS_POINTS ID="2" ACCESS_POINT_ID="2" DATA="{&quot;url&quot;:&quot;http://www.ands.org.au/&quot;}" 
-                 END_DATE="9999-12-03 00:00:00.0" MODIFIED_BY="SYSTEM" SOURCE="USER" START_DATE="9999-12-02 00:00:00.0" 
+  <ACCESS_POINTS ID="2" ACCESS_POINT_ID="2" DATA="{&quot;url&quot;:&quot;http://www.ands.org.au/&quot;}"
+                 START_DATE="9999-12-02 00:00:00.0" END_DATE="9999-12-03 00:00:00.0" MODIFIED_BY="SYSTEM" SOURCE="USER"
                  TYPE="WEB_PAGE" VERSION_ID="3"/>
 
 </dataset>

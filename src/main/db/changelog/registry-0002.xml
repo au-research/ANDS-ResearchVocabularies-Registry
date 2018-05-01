@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation=
+    "http://www.liquibase.org/xml/ns/dbchangelog-ext
+     dbchangelog-ext.xsd
+     http://www.liquibase.org/xml/ns/dbchangelog
+     dbchangelog-3.5.xsd"
+    >
+
+  <!-- Create some indexes on vocabularies to improve query performance. -->
+
+  <changeSet id="0002-vocabularies_vocab_id_end_date-createIndex-rollback-1"
+             author="Richard.Walker@ands.org.au"
+             dbms="mysql">
+    <comment>Empty change with rollback for following create index</comment>
+    <!-- Explicit rollback code is required for MySQL, as the
+         creation of the next index modifies the table description
+         in such a way that you can't just drop the index.
+         This change puts back the foreign key constraint removed
+         by changeSet
+         0002-vocabularies_vocab_id_end_date-createIndex-rollback-2.
+    -->
+    <rollback>
+      ALTER TABLE vocabularies
+        ADD CONSTRAINT fk_vocabularies_vocabulary_id
+        FOREIGN KEY (`vocabulary_id`) REFERENCES `vocabulary_ids` (`id`);
+    </rollback>
+  </changeSet>
+
+  <changeSet id="0002-vocabularies_vocabulary_id_end_date-createIndex"
+             author="Richard.Walker@ands.org.au">
+    <comment>Create ix_vocabularies_vocabulary_id_end_date index on
+    vocabularies(vocabulary_id, end_date). Supports query
+    getCurrentVocabularyById, used by DAO method
+    getCurrentVocabularyByVocabularyId, used by several API methods.
+    This is a unique index.
+    </comment>
+    <createIndex indexName="ix_vocabularies_vocabulary_id_end_date"
+                 tableName="vocabularies"
+                 unique="true">
+      <column name="vocabulary_id"/>
+      <column name="end_date"/>
+    </createIndex>
+  </changeSet>
+
+  <changeSet id="0002-vocabularies_vocab_id_end_date-createIndex-rollback-2"
+             author="Richard.Walker@ands.org.au"
+             dbms="mysql">
+    <!-- Explicit rollback code is required for MySQL, as the
+         creation of the previous index modifies the table description
+         in such a way that you can't just drop the index.
+         This change removes the foreign key constraint, so that
+         the DROP TABLE succeeds.
+    -->
+    <comment>Empty change with rollback for preceding create index</comment>
+    <rollback>
+      ALTER TABLE vocabularies DROP FOREIGN KEY fk_vocabularies_vocabulary_id;
+    </rollback>
+  </changeSet>
+
+  <changeSet id="0002-vocabularies_slug_end_date-createIndex"
+             author="Richard.Walker@ands.org.au">
+    <comment>Create ix_vocabularies_slug_end_date index on
+    vocabularies(slug, end_date). Supports query
+    getCurrentVocabularyBySlug, used by API method
+    getVocabularyBySlug.  This is not a unique index, in case we
+    decide in future to allow multiple vocabularies with the same
+    vocabulary slug.
+    </comment>
+    <createIndex indexName="ix_vocabularies_slug_end_date"
+                 tableName="vocabularies">
+      <column name="slug"/>
+      <column name="end_date"/>
+    </createIndex>
+    <!-- The following "modifySql" element is needed for MySQL version
+         5.6 with default settings, or if the "TEXT" type is used for
+         the "iri" column.
+
+         In the former case, index fields are limited to 767 bytes. In
+         utf8mb4 encoding, that means 191 characters. See:
+         https://dev.mysql.com/doc/refman/5.7/en/innodb-parameters.html
+
+         In the latter case, MySQL requires a field length, because
+         then the iri column is of a "blob" type.  See:
+         https://liquibase.jira.com/browse/CORE-1180
+         https://liquibase.jira.com/browse/CORE-1649
+
+         This is _not_ needed in MySQL 5.7 with default settings (or
+         in 5.6 with modified settings for innodb-file-format and
+         innodb_large_prefix) and the varchar type for the iri column.
+    -->
+    <modifySql dbms="mysql">
+      <replace replace="(slug," with="(slug(191),"/>
+    </modifySql>
+  </changeSet>
+
+  <!-- And now tag the result. -->
+
+  <changeSet id="0002-tag"
+             author="Richard.Walker@ands.org.au">
+    <tagDatabase tag="version_0002"/>
+  </changeSet>
+
+</databaseChangeLog>

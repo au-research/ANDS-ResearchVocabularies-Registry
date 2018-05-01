@@ -299,3 +299,24 @@ Here is a summary of the steps involved to configure deployment:
   ```
 
 Now you can run `ant deploy`, `ant stop`, and `ant start`.
+
+# Subsequent updating of the database schema
+
+When updating the registry to a later version, there may be changes
+to the database schema. To apply them, run:
+
+```
+ant -Dregistrydb-properties=registry-liquibase-superuser.properties registry-database-update
+```
+
+## Rollback
+
+If necessary, it is possible to roll back the database schema to an
+earlier form. There are tags defined at the end of each stage of the
+schema definition; see the files in `src/main/db/changelog`.
+
+For example, to roll back to the tag `version_0001`, run:
+
+```
+tools/dist/liquibase-3.5.3/liquibase --defaultsFile=registry-liquibase-superuser.properties --changeLogFile=src/main/db/changelog/registry-master.xml rollback version_0001
+```

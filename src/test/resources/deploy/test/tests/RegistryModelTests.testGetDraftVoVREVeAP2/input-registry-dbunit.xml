@@ -61,13 +61,42 @@
 
   <ACCESS_POINT_IDS ID="1"/>
   <ACCESS_POINT_IDS ID="2"/>
+  <ACCESS_POINT_IDS ID="3"/>
+  <ACCESS_POINT_IDS ID="4"/>
 
-  <ACCESS_POINTS ID="1" ACCESS_POINT_ID="1" DATA="{&quot;url&quot;:&quot;http://www.researchdata.ands.org.au/&quot;}" 
-                 END_DATE="9999-12-03 00:00:00.0" MODIFIED_BY="SYSTEM" SOURCE="USER" START_DATE="9999-12-02 00:00:00.0" 
-                 TYPE="WEB_PAGE" VERSION_ID="2"/>
+  <ACCESS_POINTS ID="1" ACCESS_POINT_ID="1" VERSION_ID="1"
+                 DATA="{''url'':''http://www.url1.ands.org.au/''}"
+                 START_DATE="2014-01-01 10:10:00.0"
+                 END_DATE="2017-10-01 10:10:00.0"
+                 MODIFIED_BY="SYSTEM" SOURCE="USER"
+                 TYPE="WEB_PAGE"/>
 
-  <ACCESS_POINTS ID="2" ACCESS_POINT_ID="2" DATA="{&quot;url&quot;:&quot;http://www.ands.org.au/&quot;}" 
-                 END_DATE="9999-12-03 00:00:00.0" MODIFIED_BY="SYSTEM" SOURCE="USER" START_DATE="9999-12-02 00:00:00.0" 
-                 TYPE="WEB_PAGE" VERSION_ID="3"/>
+  <ACCESS_POINTS ID="2" ACCESS_POINT_ID="2" VERSION_ID="2"
+                 DATA="{''url'':''http://www.url2.ands.org.au/''}"
+                 START_DATE="2015-10-01 10:10:00.0"
+                 END_DATE="9999-12-01 00:00:00.0"
+                 MODIFIED_BY="SYSTEM" SOURCE="USER"
+                 TYPE="WEB_PAGE"/>
+
+  <ACCESS_POINTS ID="3" ACCESS_POINT_ID="2" VERSION_ID="2"
+                 DATA="{''url'':''http://www.url2.ands.org.au/''}"
+                 START_DATE="9999-12-02 00:00:00.0"
+                 END_DATE="9999-12-03 00:00:00.0"
+                 MODIFIED_BY="SYSTEM" SOURCE="USER"
+                 TYPE="WEB_PAGE"/>
+
+  <ACCESS_POINTS ID="4" ACCESS_POINT_ID="3" VERSION_ID="2"
+                 DATA="{''url'':''http://www.url2draft.ands.org.au/''}"
+                 START_DATE="9999-12-02 00:00:00.0"
+                 END_DATE="9999-12-03 00:00:00.0"
+                 MODIFIED_BY="SYSTEM" SOURCE="USER"
+                 TYPE="WEB_PAGE"/>
+
+  <ACCESS_POINTS ID="5" ACCESS_POINT_ID="4" VERSION_ID="3"
+                 DATA="{''url'':''http://www.url3.org.au/''}"
+                 START_DATE="9999-12-02 00:00:00.0"
+                 END_DATE="9999-12-03 00:00:00.0"
+                 MODIFIED_BY="SYSTEM" SOURCE="USER"
+                 TYPE="WEB_PAGE"/>
 
 </dataset>

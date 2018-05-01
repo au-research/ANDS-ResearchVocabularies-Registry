@@ -308,6 +308,7 @@ public class GetVocabularies {
                         v -> v.getAccessPoint().removeIf(
                                 ap -> ap.getSource() == ApSource.SYSTEM));
             } catch (Exception e) {
+                logger.error("Exception when trying to get draft instance", e);
                 return ResponseUtils.generateInternalServerError(
                         "Unable to get draft instance");
             } finally {

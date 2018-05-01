@@ -6,7 +6,7 @@
 # REGISTRY_ROOT to point to it.
 
 : ${catalina_base:=~tomcat}
-: ${REGISTRY_ROOT:=~tomcat/webapps/repository#api#registry}
+: ${REGISTRY_ROOT:=~tomcat/webapps/vocabs-registry}
 
 # NB, note use of custom logback configuration.
 # It must not allow any logging to go to the normal Toolkit log!

@@ -9,7 +9,7 @@
     </access-point>
   </version>
   <version status="current" title="Version 2" note="Note for v2" release-date="2015-01">
-     <access-point discriminator="webPage" source="user">
+    <access-point discriminator="webPage" source="user">
       <ap-web-page url="http://www.ands.org.au"/>
     </access-point>
   </version>
