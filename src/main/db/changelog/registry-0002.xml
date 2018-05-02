@@ -33,14 +33,25 @@
   <changeSet id="0002-vocabularies_vocabulary_id_end_date-createIndex"
              author="Richard.Walker@ands.org.au">
     <comment>Create ix_vocabularies_vocabulary_id_end_date index on
-    vocabularies(vocabulary_id, end_date). Supports query
-    getCurrentVocabularyById, used by DAO method
-    getCurrentVocabularyByVocabularyId, used by several API methods.
-    This is a unique index.
+    vocabularies(vocabulary_id, end_date).
     </comment>
+    <!-- Supports query getCurrentVocabularyById, used by DAO method
+         getCurrentVocabularyByVocabularyId, used by several API methods.
+         This could be a unique index, but it isn't for now.
+         The reason it's not a unique index: as the code stands,
+         you would get a constraint violation when you update the current
+         instance of a vocabulary, because Hibernate reorders instructions
+         to run inserts before updates.
+         See, e.g.,
+         https://vladmihalcea.com/
+         hibernate-facts-knowing-flush-operations-order-matters/
+         If you want this index to be a unique index, you need to change
+         VocabularyModel's applyChangesCurrent() (and possibly other methods
+         as well) to have an em().flush() after the updateVocabulary()
+         that makes the current vocabulary instance historical.
+    -->
     <createIndex indexName="ix_vocabularies_vocabulary_id_end_date"
-                 tableName="vocabularies"
-                 unique="true">
+                 tableName="vocabularies">
       <column name="vocabulary_id"/>
       <column name="end_date"/>
     </createIndex>
@@ -64,12 +75,13 @@
   <changeSet id="0002-vocabularies_slug_end_date-createIndex"
              author="Richard.Walker@ands.org.au">
     <comment>Create ix_vocabularies_slug_end_date index on
-    vocabularies(slug, end_date). Supports query
-    getCurrentVocabularyBySlug, used by API method
-    getVocabularyBySlug.  This is not a unique index, in case we
-    decide in future to allow multiple vocabularies with the same
-    vocabulary slug.
+    vocabularies(slug, end_date).
     </comment>
+    <!-- Supports query getCurrentVocabularyBySlug, used by API method
+         getVocabularyBySlug.  This is not a unique index, in case we
+         decide in future to allow multiple vocabularies with the same
+         vocabulary slug.
+    -->
     <createIndex indexName="ix_vocabularies_slug_end_date"
                  tableName="vocabularies">
       <column name="slug"/>
