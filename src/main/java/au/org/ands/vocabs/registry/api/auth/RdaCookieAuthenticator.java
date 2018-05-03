@@ -2,6 +2,7 @@
 
 package au.org.ands.vocabs.registry.api.auth;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.lang.invoke.MethodHandles;
 import java.net.URLDecoder;
@@ -22,7 +23,10 @@ import org.pac4j.core.util.CommonHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import au.org.ands.vocabs.registry.db.converter.JSONSerialization;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+
 import au.org.ands.vocabs.roles.db.context.RolesUtils;
 import au.org.ands.vocabs.roles.db.entity.AuthenticationServiceId;
 import au.org.ands.vocabs.roles.utils.PropertyConstants;
@@ -92,6 +96,29 @@ public class RdaCookieAuthenticator
     private static final String AUTH_METHOD =
             "AUTH_METHOD";
 
+    /** Private Jackson ObjectMapper used for logging of serialized JSON data
+     * of authentication tokens into Strings.
+     * It is initialized by a static block.
+     * We use this rather than the JSONSerialization because
+     * we need to adjust the FAIL_ON_EMPTY_BEANS setting. */
+    private static ObjectMapper jsonMapper;
+
+    static {
+        jsonMapper = new ObjectMapper();
+        // Don't serialize null values.  With this, but without the
+        // JaxbAnnotationModule module registration
+        // above, empty arrays that are values of a key/value pair
+        // _would_ still be serialized.
+        jsonMapper.setSerializationInclusion(Include.NON_NULL);
+        // Need this to cope with "empty"/"null" values in the cookie.
+        // For example, the cookie component 's:11:"AUTH_DOMAIN";N;'
+        // is parsed into a key/value in which the value is
+        // a SerializedPhpParser PhpObject, which can't be serialized
+        // into a string. With this setting, serialization will not
+        // fail, but will give an empty map, i.e., '"AUTH_DOMAIN":{}'.
+        jsonMapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
+    }
+
     /** Validate against the RDA-issued authentication cookie. */
     @Override
     public void validate(final TokenCredentials credentials,
@@ -158,8 +185,7 @@ public class RdaCookieAuthenticator
         }
 
         logger.info("Credentials as JSON: "
-                + JSONSerialization.serializeObjectAsJsonString(
-                        result));
+                + serializeObjectAsJsonString(result));
         if (!(result instanceof Map)) {
             logger.error("Unpacked credentials were not a map.");
             throw new CredentialsException(
@@ -170,8 +196,11 @@ public class RdaCookieAuthenticator
         try {
             map = (Map<?, ?>) result;
         } catch (ClassCastException e) {
-
+            logger.info("ClassCastException that should not happen!", e);
+            throw new CredentialsException(
+                    "Unpacked credentials were not a map");
         }
+
         if (!map.containsKey(LAST_ACTIVITY)) {
             logger.error("Credentials don't contain key "
                     + LAST_ACTIVITY);
@@ -241,6 +270,22 @@ public class RdaCookieAuthenticator
     protected void throwsException(final String message)
             throws CredentialsException {
         throw new CredentialsException(message);
+    }
+
+    /** Serialize an object into a String in JSON format.
+     * This is a private version of the method in JSONSerialization,
+     * needed, because we have our own private mapper configured
+     * differently.
+     * @param object The Object to be serialized.
+     * @return The serialization as a JSON String of object.
+     */
+    private static String serializeObjectAsJsonString(final Object object) {
+        try {
+            return jsonMapper.writeValueAsString(object);
+        } catch (IOException e) {
+            logger.error("Unable to serialize as JSON", e);
+            return null;
+        }
     }
 
 }
