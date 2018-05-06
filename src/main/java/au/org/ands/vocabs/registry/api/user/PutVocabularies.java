@@ -41,13 +41,9 @@ import au.org.ands.vocabs.registry.api.validation.CheckVocabulary;
 import au.org.ands.vocabs.registry.api.validation.ValidationMode;
 import au.org.ands.vocabs.registry.db.context.DBContext;
 import au.org.ands.vocabs.registry.db.context.TemporalUtils;
-import au.org.ands.vocabs.registry.db.dao.RegistryEventDAO;
 import au.org.ands.vocabs.registry.db.dao.VocabularyDAO;
 import au.org.ands.vocabs.registry.db.dao.VocabularyIdDAO;
-import au.org.ands.vocabs.registry.db.entity.RegistryEvent;
 import au.org.ands.vocabs.registry.db.entity.VocabularyId;
-import au.org.ands.vocabs.registry.enums.RegistryEventElementType;
-import au.org.ands.vocabs.registry.enums.RegistryEventEventType;
 import au.org.ands.vocabs.registry.enums.VocabularyStatus;
 import au.org.ands.vocabs.registry.model.ModelMethods;
 import au.org.ands.vocabs.registry.model.VocabularyModel;
@@ -182,16 +178,6 @@ public class PutVocabularies {
                         ModelMethods.getCurrent(vm, true, true, true);
                 // Solr indexing.
                 EntityIndexer.indexVocabulary(newVocabularyId);
-                // Create and persist a registry event.
-                RegistryEvent re = new RegistryEvent();
-                re.setElementType(RegistryEventElementType.VOCABULARIES);
-                re.setElementId(newVocabularyId);
-                re.setEventDate(now);
-                re.setEventType(RegistryEventEventType.CREATED);
-                re.setEventUser(profile.getUsername());
-                // To be done: put something sensible in the details.
-                re.setEventDetails("");
-                RegistryEventDAO.saveRegistryEvent(re);
             }
             return Response.created(EntityPaths.getURIOfEntity(
                     newVocabularyResponse)).
@@ -361,16 +347,6 @@ public class PutVocabularies {
                         ModelMethods.getCurrent(vm, true, true, true);
                 // Solr indexing.
                 EntityIndexer.indexVocabulary(updatedVocabularyId);
-                // Create and persist a registry event.
-                RegistryEvent re = new RegistryEvent();
-                re.setElementType(RegistryEventElementType.VOCABULARIES);
-                re.setElementId(updatedVocabularyId);
-                re.setEventDate(now);
-                re.setEventType(RegistryEventEventType.UPDATED);
-                re.setEventUser(profile.getUsername());
-                // To be done: put something sensible in the details.
-                re.setEventDetails("");
-                RegistryEventDAO.saveRegistryEvent(re);
             }
             return Response.created(EntityPaths.getURIOfEntity(
                     updatedVocabularyResponse)).

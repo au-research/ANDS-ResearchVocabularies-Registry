@@ -24,12 +24,16 @@ import au.org.ands.vocabs.registry.api.converter.VersionRegistrySchemaMapper;
 import au.org.ands.vocabs.registry.db.context.TemporalUtils;
 import au.org.ands.vocabs.registry.db.converter.JSONSerialization;
 import au.org.ands.vocabs.registry.db.converter.VersionDbSchemaMapper;
+import au.org.ands.vocabs.registry.db.dao.RegistryEventDAO;
 import au.org.ands.vocabs.registry.db.dao.VersionDAO;
 import au.org.ands.vocabs.registry.db.entity.ComparisonUtils;
+import au.org.ands.vocabs.registry.db.entity.RegistryEvent;
 import au.org.ands.vocabs.registry.db.entity.Version;
 import au.org.ands.vocabs.registry.db.entity.Vocabulary;
 import au.org.ands.vocabs.registry.db.entity.clone.VersionClone;
 import au.org.ands.vocabs.registry.db.internal.VersionJson;
+import au.org.ands.vocabs.registry.enums.RegistryEventElementType;
+import au.org.ands.vocabs.registry.enums.RegistryEventEventType;
 import au.org.ands.vocabs.registry.enums.SubtaskOperationType;
 import au.org.ands.vocabs.registry.enums.SubtaskProviderType;
 import au.org.ands.vocabs.registry.enums.TaskStatus;
@@ -64,8 +68,9 @@ public class VersionsModel extends ModelBase {
     private Logger logger = LoggerFactory.getLogger(
             MethodHandles.lookup().lookupClass());
 
-    /** The parent VocabularyModel of this instance. Passed down
-     * by VersionsModel. */
+    /** The parent VocabularyModel of this instance. Passed in to
+     * this class's constructor, and passed down to constructors
+     * of sub-models. */
     private VocabularyModel vocabularyModel;
 
     /** The current instances of versions, if there are any.
@@ -304,6 +309,16 @@ public class VersionsModel extends ModelBase {
             TemporalUtils.makeHistorical(version, nowTime());
             version.setModifiedBy(modifiedBy());
             VersionDAO.updateVersion(em(), version);
+            // Add a registry event.
+            RegistryEvent re = new RegistryEvent();
+            re.setElementType(RegistryEventElementType.VERSIONS);
+            re.setElementId(version.getVersionId());
+            re.setEventDate(nowTime());
+            re.setEventType(RegistryEventEventType.DELETED);
+            re.setEventUser(modifiedBy());
+            // To be done: put something sensible in the details.
+            re.setEventDetails("");
+            RegistryEventDAO.saveRegistryEvent(em(), re);
         }
         // TO DO: workflow processing is done here, but need to confirm
         // if this is the right place/way to do it.
@@ -673,7 +688,6 @@ public class VersionsModel extends ModelBase {
                 // the previous value).
                 currentVersions.put(versionId, newCurrentVersion);
                 versionsUpdated = true;
-                // TO DO: mark this as requiring workflow processing.
                 workflowRequired(vocabularyModel.getCurrentVocabulary(),
                         newCurrentVersion);
                 Task task = getTaskForVersion(versionId);
@@ -756,6 +770,17 @@ public class VersionsModel extends ModelBase {
                                         SubtaskOperationType.DELETE));
                     }
                 }
+
+                // Add a registry event.
+                RegistryEvent re = new RegistryEvent();
+                re.setElementType(RegistryEventElementType.VERSIONS);
+                re.setElementId(versionId);
+                re.setEventDate(nowTime());
+                re.setEventType(RegistryEventEventType.UPDATED);
+                re.setEventUser(modifiedBy());
+                // To be done: put something sensible in the details.
+                re.setEventDetails("");
+                RegistryEventDAO.saveRegistryEvent(em(), re);
             }
         }
 
@@ -777,6 +802,17 @@ public class VersionsModel extends ModelBase {
             // E.g., we don't need to examine the various doXYZ flags here, as
             // AccessPointsModel takes care of creating the necessary
             // DELETE subtasks.
+
+            // Add a registry event.
+            RegistryEvent re = new RegistryEvent();
+            re.setElementType(RegistryEventElementType.VERSIONS);
+            re.setElementId(versionId);
+            re.setEventDate(nowTime());
+            re.setEventType(RegistryEventEventType.DELETED);
+            re.setEventUser(modifiedBy());
+            // To be done: put something sensible in the details.
+            re.setEventDetails("");
+            RegistryEventDAO.saveRegistryEvent(em(), re);
         }
 
         /** {@inheritDoc} */
@@ -871,6 +907,16 @@ public class VersionsModel extends ModelBase {
                 task.addSubtask(WorkflowMethods.createPublishSissvocSubtask(
                         SubtaskOperationType.INSERT));
             }
+            // Add registry event.
+            RegistryEvent re = new RegistryEvent();
+            re.setElementType(RegistryEventElementType.VERSIONS);
+            re.setElementId(versionId);
+            re.setEventDate(nowTime());
+            re.setEventType(RegistryEventEventType.CREATED);
+            re.setEventUser(modifiedBy());
+            // To be done: put something sensible in the details.
+            re.setEventDetails("");
+            RegistryEventDAO.saveRegistryEvent(em(), re);
         }
     }
 

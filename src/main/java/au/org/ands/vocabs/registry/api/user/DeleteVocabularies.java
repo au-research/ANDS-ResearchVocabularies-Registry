@@ -35,13 +35,9 @@ import au.org.ands.vocabs.registry.api.context.SwaggerInterface;
 import au.org.ands.vocabs.registry.db.context.DBContext;
 import au.org.ands.vocabs.registry.db.context.TemporalUtils;
 import au.org.ands.vocabs.registry.db.converter.JSONSerialization;
-import au.org.ands.vocabs.registry.db.dao.RegistryEventDAO;
 import au.org.ands.vocabs.registry.db.dao.VocabularyDAO;
-import au.org.ands.vocabs.registry.db.entity.RegistryEvent;
 import au.org.ands.vocabs.registry.db.entity.Vocabulary;
 import au.org.ands.vocabs.registry.db.internal.VocabularyJson;
-import au.org.ands.vocabs.registry.enums.RegistryEventElementType;
-import au.org.ands.vocabs.registry.enums.RegistryEventEventType;
 import au.org.ands.vocabs.registry.enums.VocabularyStatus;
 import au.org.ands.vocabs.registry.model.ModelMethods;
 import au.org.ands.vocabs.registry.model.VocabularyModel;
@@ -212,16 +208,6 @@ public class DeleteVocabularies {
                         Analytics.OWNER_FIELD, currentOwner);
                 // Solr unindexing.
                 EntityIndexer.unindexVocabulary(vocabularyId);
-                // Create and persist a registry event.
-                RegistryEvent re = new RegistryEvent();
-                re.setElementType(RegistryEventElementType.VOCABULARIES);
-                re.setElementId(vocabularyId);
-                re.setEventDate(now);
-                re.setEventType(RegistryEventEventType.DELETED);
-                re.setEventUser(profile.getUsername());
-                // To be done: put something sensible in the details.
-                re.setEventDetails("");
-                RegistryEventDAO.saveRegistryEvent(re);
             }
             // Successful deletion, and no response body. noContent() creates
             // status code 204.

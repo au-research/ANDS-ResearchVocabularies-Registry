@@ -15,10 +15,14 @@ import org.slf4j.LoggerFactory;
 import au.org.ands.vocabs.registry.api.converter.VocabularyRegistrySchemaMapper;
 import au.org.ands.vocabs.registry.db.context.TemporalUtils;
 import au.org.ands.vocabs.registry.db.converter.VocabularyDbSchemaMapper;
+import au.org.ands.vocabs.registry.db.dao.RegistryEventDAO;
 import au.org.ands.vocabs.registry.db.dao.VocabularyDAO;
 import au.org.ands.vocabs.registry.db.dao.VocabularyIdDAO;
+import au.org.ands.vocabs.registry.db.entity.RegistryEvent;
 import au.org.ands.vocabs.registry.db.entity.Vocabulary;
 import au.org.ands.vocabs.registry.db.entity.clone.VocabularyClone;
+import au.org.ands.vocabs.registry.enums.RegistryEventElementType;
+import au.org.ands.vocabs.registry.enums.RegistryEventEventType;
 import au.org.ands.vocabs.registry.enums.VocabularyStatus;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.WorkflowOutcome;
 import au.org.ands.vocabs.registry.utils.SlugGenerator;
@@ -305,6 +309,16 @@ public class VocabularyModel extends ModelBase {
         currentVocabulary.setModifiedBy(modifiedBy());
         VocabularyDAO.updateVocabulary(em(), currentVocabulary);
         currentVocabulary = null;
+
+        RegistryEvent re = new RegistryEvent();
+        re.setElementType(RegistryEventElementType.VOCABULARIES);
+        re.setElementId(vocabularyId());
+        re.setEventDate(nowTime());
+        re.setEventType(RegistryEventEventType.DELETED);
+        re.setEventUser(modifiedBy());
+        // To be done: put something sensible in the details.
+        re.setEventDetails("");
+        RegistryEventDAO.saveRegistryEvent(em(), re);
     }
 
     /** {@inheritDoc} */
@@ -434,6 +448,16 @@ public class VocabularyModel extends ModelBase {
     private void applyChangesCurrent(
             final au.org.ands.vocabs.registry.schema.vocabulary201701.
             Vocabulary updatedVocabulary) {
+        // Flag used to distinguish creation and update; used at the end to
+        // determine the type of registry event to generate.
+        // I changed my mind about the expression used to compute
+        // the value of isCreationEvent. I started with:
+//        boolean isCreationEvent =
+//                (currentVocabulary == null) && (draftVocabulary == null);
+        // but now it is the following. With the previous expression,
+        // if you started with a draft before publishing it, you wouldn't
+        // see a creation event.
+        boolean isCreationEvent = currentVocabulary == null;
         if (currentVocabulary != null) {
             TemporalUtils.makeHistorical(currentVocabulary, nowTime());
             currentVocabulary.setModifiedBy(modifiedBy());
@@ -461,6 +485,20 @@ public class VocabularyModel extends ModelBase {
             currentVocabulary.setModifiedBy(modifiedBy());
             VocabularyDAO.saveVocabulary(em(), currentVocabulary);
         }
+
+        RegistryEvent re = new RegistryEvent();
+        re.setElementType(RegistryEventElementType.VOCABULARIES);
+        re.setElementId(vocabularyId());
+        re.setEventDate(nowTime());
+        if (isCreationEvent) {
+            re.setEventType(RegistryEventEventType.CREATED);
+        } else {
+            re.setEventType(RegistryEventEventType.UPDATED);
+        }
+        re.setEventUser(modifiedBy());
+        // To be done: put something sensible in the details.
+        re.setEventDetails("");
+        RegistryEventDAO.saveRegistryEvent(em(), re);
     }
 
 }

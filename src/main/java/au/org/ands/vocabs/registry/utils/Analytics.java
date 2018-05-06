@@ -97,22 +97,25 @@ public final class Analytics {
     // These are public fields.
     // The following fields are defined in alphabetical order
     // of field name.
-    /** The name of the success field inserted into log entries. */
-    public static final String SUCCESS_FIELD = "success";
-    /** The name of the failure reason field inserted into log entries. */
-    public static final String FAILURE_REASON = "failure_reason";
-    /** The name of the owner field inserted into log entries. */
-    public static final String OWNER_FIELD = "owner";
     /** The name of the entity status field inserted into log entries.
      * This is used to represent a <i>registry entity's</i> status, e.g.,
      * that a vocabulary has "deprecated" status. */
     public static final String ENTITY_STATUS_FIELD = "entity_status";
+    /** The name of the failure reason field inserted into log entries. */
+    public static final String FAILURE_REASON = "failure_reason";
+    /** The name of the owner field inserted into log entries. */
+    public static final String OWNER_FIELD = "owner";
+    /** The name of the related entity ID field inserted into log entries. */
+    public static final String RELATED_ENTITY_ID_FIELD = "relatedEntity_id";
+    /** The name of the success field inserted into log entries. */
+    public static final String SUCCESS_FIELD = "success";
     /** The name of the title field inserted into log entries. */
     public static final String TITLE_FIELD = "title";
     /** The name of the vocabulary ID field inserted into log entries. */
     public static final String VOCABULARY_ID_FIELD = "vocabulary_id";
-    /** The name of the related entity ID field inserted into log entries. */
-    public static final String RELATED_ENTITY_ID_FIELD = "relatedEntity_id";
+    /** The name of the field inserted into log entries that indicates
+     *  whether or not data was modified. */
+    public static final String WAS_MODIFIED_FIELD = "was_modified";
 
 
     // Names of registry events. These go into the "message" field of the log
