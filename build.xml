@@ -617,6 +617,7 @@
              linksource="true"
              includenosourcepackages="true"
              private="true"
+             failonerror="true"
              >
     </javadoc>
   </target>
