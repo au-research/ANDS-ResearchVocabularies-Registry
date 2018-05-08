@@ -42,7 +42,7 @@ import au.org.ands.vocabs.registry.api.context.SwaggerInterface;
 import au.org.ands.vocabs.registry.db.context.DBContext;
 import au.org.ands.vocabs.registry.db.dao.UploadDAO;
 import au.org.ands.vocabs.registry.db.entity.Upload;
-import au.org.ands.vocabs.registry.utils.Logging;
+import au.org.ands.vocabs.registry.log.Logging;
 import au.org.ands.vocabs.registry.utils.RegistryFileUtils;
 import au.org.ands.vocabs.registry.utils.fileformat.FileFormat;
 import au.org.ands.vocabs.registry.utils.fileformat.UploadFormatUtils;

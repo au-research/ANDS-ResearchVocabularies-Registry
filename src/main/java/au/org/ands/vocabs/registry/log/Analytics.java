@@ -1,6 +1,6 @@
 /** See the file "LICENSE" for the full license governing this code. */
 
-package au.org.ands.vocabs.registry.utils;
+package au.org.ands.vocabs.registry.log;
 
 import static net.logstash.logback.marker.Markers.append;
 import static net.logstash.logback.marker.Markers.appendArray;
@@ -27,10 +27,13 @@ import com.maxmind.geoip2.record.Country;
 import com.maxmind.geoip2.record.Location;
 import com.maxmind.geoip2.record.Subdivision;
 
+import au.org.ands.vocabs.registry.utils.BotDetector;
+import au.org.ands.vocabs.registry.utils.PropertyConstants;
+import au.org.ands.vocabs.registry.utils.RegistryProperties;
 import net.logstash.logback.marker.LogstashMarker;
 
 /** Support for analytics. Because it supports the
- * {@link au.org.ands.vocabs.registry.utils.Logging} class,
+ * {@link au.org.ands.vocabs.registry.log.Logging} class,
  * it makes use of the Logstash-Logback utility classes.
  */
 public final class Analytics {

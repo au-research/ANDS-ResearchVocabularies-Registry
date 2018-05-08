@@ -1,6 +1,6 @@
 /** See the file "LICENSE" for the full license governing this code. */
 
-package au.org.ands.vocabs.registry.utils;
+package au.org.ands.vocabs.registry.log;
 
 import static net.logstash.logback.marker.Markers.append;
 

@@ -32,7 +32,7 @@ import au.org.ands.vocabs.registry.api.context.SwaggerInterface;
 import au.org.ands.vocabs.registry.api.user.ErrorResult;
 import au.org.ands.vocabs.registry.db.converter.JSONSerialization;
 import au.org.ands.vocabs.registry.db.dao.TaskDAO;
-import au.org.ands.vocabs.registry.utils.Logging;
+import au.org.ands.vocabs.registry.log.Logging;
 import au.org.ands.vocabs.registry.workflow.provider.ProviderUtils;
 import au.org.ands.vocabs.registry.workflow.provider.importer.SesameImporterProvider;
 import au.org.ands.vocabs.registry.workflow.tasks.Subtask;
