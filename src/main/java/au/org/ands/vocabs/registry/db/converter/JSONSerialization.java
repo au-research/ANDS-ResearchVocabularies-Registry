@@ -13,6 +13,7 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationModule;
 
 import au.org.ands.vocabs.registry.db.internal.VersionJson;
@@ -73,6 +74,14 @@ public final class JSONSerialization {
         //   revision-cycle
         //   title
         jsonMapper.configure(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY,
+                true);
+        // The following setting applies when serializing a (Hash)Map;
+        // keys/values are sorted alphabetically by key.
+        // This is currently only important to achieve really consistent
+        // results for the test suite. (The behaviour was probably consistent
+        // anyway, but the behaviour might change across JVM version
+        // and implementation.)
+        jsonMapper.configure(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS,
                 true);
     }
 
