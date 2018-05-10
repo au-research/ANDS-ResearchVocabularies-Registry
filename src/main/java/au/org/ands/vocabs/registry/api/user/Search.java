@@ -48,7 +48,7 @@ public class Search {
      *      in JSON format.
      * @return The search results, as a JSON object.
      */
-    @Path("search")
+    @Path(ApiPaths.SEARCH)
     @Consumes({MediaType.APPLICATION_FORM_URLENCODED})
     @Produces({MediaType.APPLICATION_JSON})
     @POST

@@ -24,6 +24,8 @@ public final class ApiPaths {
     /** Utility methods of the API. */
     public static final String API_UTILITIES = "/api/utilities";
 
+    /* Resource API methods. */
+
     /* Model elements. */
 
     /** Subpath for vocabulary resources. */
@@ -80,6 +82,16 @@ public final class ApiPaths {
 //    /** Path parameter name for a  resource. */
 //    public static final String _ID = "{Id}";
 
+    /* Service API methods. */
+
+    /** Subpath for PoolParty services. */
+    public static final String POOLPARTY = "PoolParty";
+
+    /** Subpath for resolution services. */
+    public static final String RESOLVE = "resolve";
+
+    /** Subpath for search services. */
+    public static final String SEARCH = "search";
 
 
 }
