@@ -34,8 +34,11 @@ import au.org.ands.vocabs.registry.db.entity.Vocabulary;
 import au.org.ands.vocabs.registry.db.entity.clone.AccessPointClone;
 import au.org.ands.vocabs.registry.enums.AccessPointType;
 import au.org.ands.vocabs.registry.enums.ApSource;
+import au.org.ands.vocabs.registry.enums.RegistryEventElementType;
+import au.org.ands.vocabs.registry.enums.RegistryEventEventType;
 import au.org.ands.vocabs.registry.enums.SubtaskOperationType;
 import au.org.ands.vocabs.registry.enums.VocabularyStatus;
+import au.org.ands.vocabs.registry.log.RegistryEventUtils;
 import au.org.ands.vocabs.registry.model.sequence.AccessPointElement;
 import au.org.ands.vocabs.registry.workflow.WorkflowMethods;
 import au.org.ands.vocabs.registry.workflow.tasks.Subtask;
@@ -264,6 +267,12 @@ public class AccessPointsModel extends ModelBase {
                     TemporalUtils.makeHistorical(ap, nowTime());
                     ap.setModifiedBy(modifiedBy());
                     AccessPointDAO.updateAccessPoint(em(), ap);
+                    // Add a registry event.
+                    RegistryEventUtils.createRegistryEvent(
+                            em(), RegistryEventElementType.ACCESS_POINTS,
+                            ap.getAccessPointId(), nowTime(),
+                            RegistryEventEventType.DELETED, modifiedBy(),
+                            ap, null);
                 } else {
                     accumulateSubtasks(vocabularyModel.getCurrentVocabulary(),
                             currentVersions.get(vId), subtaskList);
@@ -349,6 +358,12 @@ public class AccessPointsModel extends ModelBase {
                         TemporalUtils.makeHistorical(ap, nowTime());
                         ap.setModifiedBy(modifiedBy());
                         AccessPointDAO.updateAccessPoint(em(), ap);
+                        // Add a registry event for deletion of the current row.
+                        RegistryEventUtils.createRegistryEvent(
+                                em(), RegistryEventElementType.ACCESS_POINTS,
+                                ap.getAccessPointId(), nowTime(),
+                                RegistryEventEventType.DELETED, modifiedBy(),
+                                ap, null);
                         apsToRemove.add(ap);
                         // Now make a new draft record.
                         AccessPoint newAP = new AccessPoint();
@@ -360,6 +375,12 @@ public class AccessPointsModel extends ModelBase {
                         newAP.setModifiedBy(modifiedBy());
                         TemporalUtils.makeDraft(newAP);
                         AccessPointDAO.saveAccessPoint(em(), newAP);
+                        // Add a registry event for creation of the draft row.
+                        RegistryEventUtils.createRegistryEvent(
+                                em(), RegistryEventElementType.ACCESS_POINTS,
+                                ap.getAccessPointId(), nowTime(),
+                                RegistryEventEventType.CREATED, modifiedBy(),
+                                null, newAP);
                         draftAPs.add(vId, newAP);
                     } else {
                         // Need the workflow to remove it.
@@ -387,6 +408,12 @@ public class AccessPointsModel extends ModelBase {
         for (Integer vId : draftAPs.keySet()) {
             for (AccessPoint ap : ListUtils.emptyIfNull(draftAPs.get(vId))) {
                 AccessPointDAO.deleteAccessPoint(em(), ap);
+                // Add a registry event.
+                RegistryEventUtils.createRegistryEvent(
+                        em(), RegistryEventElementType.ACCESS_POINTS,
+                        ap.getAccessPointId(), nowTime(),
+                        RegistryEventEventType.DELETED, modifiedBy(),
+                        ap, null);
             }
         }
         draftAPs.clear();
@@ -407,6 +434,12 @@ public class AccessPointsModel extends ModelBase {
                     TemporalUtils.makeHistorical(ap, nowTime());
                     ap.setModifiedBy(modifiedBy());
                     AccessPointDAO.updateAccessPoint(em(), ap);
+                    // Add a registry event.
+                    RegistryEventUtils.createRegistryEvent(
+                            em(), RegistryEventElementType.ACCESS_POINTS,
+                            ap.getAccessPointId(), nowTime(),
+                            RegistryEventEventType.DELETED, modifiedBy(),
+                            ap, null);
                     // Remove from our own records.
                     apsToRemove.add(ap);
                 } else {
@@ -429,6 +462,12 @@ public class AccessPointsModel extends ModelBase {
                 // Just delete the row;
                 // for a draft instance, no workflow is applied.
                 AccessPointDAO.deleteAccessPoint(em(), ap);
+                // Add a registry event.
+                RegistryEventUtils.createRegistryEvent(
+                        em(), RegistryEventElementType.ACCESS_POINTS,
+                        ap.getAccessPointId(), nowTime(),
+                        RegistryEventEventType.DELETED, modifiedBy(),
+                        ap, null);
             }
             // Remove from our own records.
             draftAPs.remove(versionId);
@@ -576,6 +615,12 @@ public class AccessPointsModel extends ModelBase {
             AccessPoint draftAp = ape.getDbAP();
             AccessPointDAO.deleteAccessPoint(em(), draftAp);
             draftAPs.get(ape.getVersionId()).remove(draftAp);
+            // Add a registry event.
+            RegistryEventUtils.createRegistryEvent(
+                    em(), RegistryEventElementType.ACCESS_POINTS,
+                    draftAp.getAccessPointId(), nowTime(),
+                    RegistryEventEventType.DELETED, modifiedBy(),
+                    draftAp, null);
             // And that's all, since we are updating a draft.
         }
 
@@ -626,6 +671,12 @@ public class AccessPointsModel extends ModelBase {
 //                        draftAPs.add(versionId, insertedAP);
 //                    }
 //                    accumulateSubtasks(draftVersion, insertResult.getRight());
+                    // Add a registry event.
+                    RegistryEventUtils.createRegistryEvent(
+                            em(), RegistryEventElementType.ACCESS_POINTS,
+                            apId, nowTime(),
+                            RegistryEventEventType.CREATED, modifiedBy(),
+                            null, draftAP);
                 } else {
                     // Error: we don't know about this AP Id.
                     // (Well, it might be a historical version that
@@ -649,6 +700,12 @@ public class AccessPointsModel extends ModelBase {
                     draftAPs.add(versionId, insertedAP);
                 }
                 accumulateSubtasks(draftVersion, insertResult.getRight());
+                // Add a registry event.
+                RegistryEventUtils.createRegistryEvent(
+                        em(), RegistryEventElementType.ACCESS_POINTS,
+                        insertedAP.getAccessPointId(), nowTime(),
+                        RegistryEventEventType.CREATED, modifiedBy(),
+                        null, insertedAP);
                 // And that's all, because this is a draft.
             }
         }
@@ -808,6 +865,13 @@ public class AccessPointsModel extends ModelBase {
                 apToDelete.setModifiedBy(modifiedBy());
                 AccessPointDAO.updateAccessPoint(em(), apToDelete);
                 currentAPs.get(versionId).remove(apToDelete);
+
+                // Add a registry event.
+                RegistryEventUtils.createRegistryEvent(
+                        em(), RegistryEventElementType.ACCESS_POINTS,
+                        apToDelete.getAccessPointId(), nowTime(),
+                        RegistryEventEventType.DELETED, modifiedBy(),
+                        apToDelete, null);
             } else {
                 accumulateSubtasks(vocabularyModel.getCurrentVocabulary(),
                         currentVersions.get(versionId), subtaskList);
@@ -852,6 +916,14 @@ public class AccessPointsModel extends ModelBase {
                                 "Changing details of an existing access point "
                                 + "is not supported");
                     }
+
+                    // Add a registry event representing deletion of the draft.
+                    RegistryEventUtils.createRegistryEvent(
+                            em(), RegistryEventElementType.ACCESS_POINTS,
+                            apId, nowTime(),
+                            RegistryEventEventType.DELETED, modifiedBy(),
+                            draftAP, null);
+
                     // Reuse this draft row, making it no longer a draft.
                     versionsModel.workflowRequired(
                             vocabularyModel.getCurrentVocabulary(),
@@ -867,6 +939,13 @@ public class AccessPointsModel extends ModelBase {
                     accessPoint = draftAP;
                     // Possible future work required: check if there is
                     // any other subtask to be done.
+
+                    // Add a registry event.
+                    RegistryEventUtils.createRegistryEvent(
+                            em(), RegistryEventElementType.ACCESS_POINTS,
+                            apId, nowTime(),
+                            RegistryEventEventType.CREATED, modifiedBy(),
+                            null, accessPoint);
                 } else {
                     // Error: we don't know about this version Id.
                     // (Well, it might be a historical version that
@@ -893,7 +972,15 @@ public class AccessPointsModel extends ModelBase {
                 accessPoint = insertedAP;
                 // Possible future work required: check if there is
                 // any other subtask to be done.
+
+                // Add a registry event.
+                RegistryEventUtils.createRegistryEvent(
+                        em(), RegistryEventElementType.ACCESS_POINTS,
+                        insertedAP.getAccessPointId(), nowTime(),
+                        RegistryEventEventType.CREATED, modifiedBy(),
+                        null, insertedAP);
             }
+
             // Was a file access point added, and does the version have
             // the import flag set? If so, need to force importing.
             if (accessPoint.getType() == AccessPointType.FILE

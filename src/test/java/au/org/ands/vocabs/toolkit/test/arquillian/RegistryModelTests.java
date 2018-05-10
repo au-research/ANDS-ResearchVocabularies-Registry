@@ -163,6 +163,8 @@ public class RegistryModelTests extends ArquillianBaseTest {
                 em.close();
             }
         }
+//        ArquillianTestUtils.exportFullDbUnitData(REGISTRY,
+//                testName + "-out.xml");
         ArquillianTestUtils.compareDatabaseCurrentAndExpectedContents(
                 REGISTRY,
                 "test/tests/"
@@ -261,6 +263,8 @@ public class RegistryModelTests extends ArquillianBaseTest {
                 em.close();
             }
         }
+//        ArquillianTestUtils.exportFullDbUnitData(REGISTRY,
+//                testName + "-out.xml");
         ArquillianTestUtils.compareDatabaseCurrentAndExpectedContents(
                 REGISTRY,
                 "test/tests/"
@@ -364,6 +368,8 @@ public class RegistryModelTests extends ArquillianBaseTest {
             }
         }
 
+//        ArquillianTestUtils.exportFullDbUnitData(REGISTRY,
+//                testName + "-out.xml");
         ArquillianTestUtils.compareDatabaseCurrentAndExpectedContents(
                 REGISTRY,
                 "test/tests/"
@@ -474,6 +480,8 @@ public class RegistryModelTests extends ArquillianBaseTest {
             }
         }
 
+//        ArquillianTestUtils.exportFullDbUnitData(REGISTRY,
+//                testName + "-out.xml");
         ArquillianTestUtils.compareDatabaseCurrentAndExpectedContents(
                 REGISTRY,
                 "test/tests/"
@@ -580,6 +588,8 @@ public class RegistryModelTests extends ArquillianBaseTest {
             }
         }
 
+//        ArquillianTestUtils.exportFullDbUnitData(REGISTRY,
+//                testName + "-out.xml");
         ArquillianTestUtils.compareDatabaseCurrentAndExpectedContents(
                 REGISTRY,
                 "test/tests/"
@@ -705,6 +715,8 @@ public class RegistryModelTests extends ArquillianBaseTest {
             }
         }
 
+//        ArquillianTestUtils.exportFullDbUnitData(REGISTRY,
+//                testName + "-out.xml");
         ArquillianTestUtils.compareDatabaseCurrentAndExpectedContents(
                 REGISTRY,
                 "test/tests/"
@@ -834,6 +846,8 @@ public class RegistryModelTests extends ArquillianBaseTest {
             }
         }
 
+//        ArquillianTestUtils.exportFullDbUnitData(REGISTRY,
+//                testName + "-out.xml");
         ArquillianTestUtils.compareDatabaseCurrentAndExpectedContents(
                 REGISTRY,
                 "test/tests/"
@@ -964,6 +978,8 @@ public class RegistryModelTests extends ArquillianBaseTest {
             }
         }
 
+//        ArquillianTestUtils.exportFullDbUnitData(REGISTRY,
+//                testName + "-1-out.xml");
         ArquillianTestUtils.compareDatabaseCurrentAndExpectedContents(
                 REGISTRY,
                 "test/tests/"
@@ -1002,6 +1018,8 @@ public class RegistryModelTests extends ArquillianBaseTest {
             }
         }
 
+//        ArquillianTestUtils.exportFullDbUnitData(REGISTRY,
+//                testName + "-2-out.xml");
         ArquillianTestUtils.compareDatabaseCurrentAndExpectedContents(
                 REGISTRY,
                 "test/tests/"
@@ -1136,6 +1154,8 @@ public class RegistryModelTests extends ArquillianBaseTest {
             }
         }
 
+//        ArquillianTestUtils.exportFullDbUnitData(REGISTRY,
+//                testName + "-out.xml");
         ArquillianTestUtils.compareDatabaseCurrentAndExpectedContents(
                 REGISTRY,
                 "test/tests/"

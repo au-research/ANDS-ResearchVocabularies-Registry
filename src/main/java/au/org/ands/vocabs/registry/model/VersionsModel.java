@@ -24,10 +24,8 @@ import au.org.ands.vocabs.registry.api.converter.VersionRegistrySchemaMapper;
 import au.org.ands.vocabs.registry.db.context.TemporalUtils;
 import au.org.ands.vocabs.registry.db.converter.JSONSerialization;
 import au.org.ands.vocabs.registry.db.converter.VersionDbSchemaMapper;
-import au.org.ands.vocabs.registry.db.dao.RegistryEventDAO;
 import au.org.ands.vocabs.registry.db.dao.VersionDAO;
 import au.org.ands.vocabs.registry.db.entity.ComparisonUtils;
-import au.org.ands.vocabs.registry.db.entity.RegistryEvent;
 import au.org.ands.vocabs.registry.db.entity.Version;
 import au.org.ands.vocabs.registry.db.entity.Vocabulary;
 import au.org.ands.vocabs.registry.db.entity.clone.VersionClone;
@@ -38,6 +36,7 @@ import au.org.ands.vocabs.registry.enums.SubtaskOperationType;
 import au.org.ands.vocabs.registry.enums.SubtaskProviderType;
 import au.org.ands.vocabs.registry.enums.TaskStatus;
 import au.org.ands.vocabs.registry.enums.VocabularyStatus;
+import au.org.ands.vocabs.registry.log.RegistryEventUtils;
 import au.org.ands.vocabs.registry.model.sequence.VersionElement;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.WorkflowOutcome;
 import au.org.ands.vocabs.registry.workflow.WorkflowMethods;
@@ -310,15 +309,11 @@ public class VersionsModel extends ModelBase {
             version.setModifiedBy(modifiedBy());
             VersionDAO.updateVersion(em(), version);
             // Add a registry event.
-            RegistryEvent re = new RegistryEvent();
-            re.setElementType(RegistryEventElementType.VERSIONS);
-            re.setElementId(version.getVersionId());
-            re.setEventDate(nowTime());
-            re.setEventType(RegistryEventEventType.DELETED);
-            re.setEventUser(modifiedBy());
-            // To be done: put something sensible in the details.
-            re.setEventDetails("");
-            RegistryEventDAO.saveRegistryEvent(em(), re);
+            RegistryEventUtils.createRegistryEvent(
+                    em(), RegistryEventElementType.VERSIONS,
+                    version.getVersionId(), nowTime(),
+                    RegistryEventEventType.DELETED, modifiedBy(),
+                    version, null);
         }
         // TO DO: workflow processing is done here, but need to confirm
         // if this is the right place/way to do it.
@@ -355,11 +350,23 @@ public class VersionsModel extends ModelBase {
             TemporalUtils.makeHistorical(version, nowTime());
             version.setModifiedBy(modifiedBy());
             VersionDAO.updateVersion(em(), version);
+            // Add a registry event for deletion of the current row.
+            RegistryEventUtils.createRegistryEvent(
+                    em(), RegistryEventElementType.VERSIONS,
+                    version.getVersionId(), nowTime(),
+                    RegistryEventEventType.DELETED, modifiedBy(),
+                    version, null);
             // Now make a new draft record.
             Version draftVersion = VersionClone.INSTANCE.clone(version);
             draftVersion.setModifiedBy(modifiedBy());
             TemporalUtils.makeDraft(draftVersion);
             VersionDAO.saveVersion(em(), draftVersion);
+            // Add a registry event.
+            RegistryEventUtils.createRegistryEvent(
+                    em(), RegistryEventElementType.VERSIONS,
+                    version.getVersionId(), nowTime(),
+                    RegistryEventEventType.CREATED, modifiedBy(),
+                    null, draftVersion);
             draftVersions.put(draftVersion.getVersionId(), draftVersion);
         }
         // TO DO: workflow processing is done here, but need to confirm
@@ -398,6 +405,12 @@ public class VersionsModel extends ModelBase {
             // In future, if the publication workflow is applied to
             // drafts, more work will have be done here.
             VersionDAO.deleteVersion(em(), version);
+            // Add a registry event.
+            RegistryEventUtils.createRegistryEvent(
+                    em(), RegistryEventElementType.VERSIONS,
+                    version.getVersionId(), nowTime(),
+                    RegistryEventEventType.DELETED, modifiedBy(),
+                    version, null);
         }
         draftVersions.clear();
     }
@@ -517,6 +530,12 @@ public class VersionsModel extends ModelBase {
                         nowTime());
                 existingVersion.setModifiedBy(modifiedBy());
                 VersionDAO.updateVersion(em(), existingVersion);
+                // Add a registry event.
+                RegistryEventUtils.createRegistryEvent(
+                        em(), RegistryEventElementType.VERSIONS,
+                        existingVersion.getVersionId(), nowTime(),
+                        RegistryEventEventType.UPDATED, modifiedBy(),
+                        existingVersion, existingVersion);
                 // And that's all, because this is a draft.
             }
         }
@@ -529,6 +548,12 @@ public class VersionsModel extends ModelBase {
             subModels.forEach(sm -> sm.notifyDeleteDraftVersion(
                     versionToDelete.getVersionId()));
             VersionDAO.deleteVersion(em(), versionToDelete);
+            // Add a registry event.
+            RegistryEventUtils.createRegistryEvent(
+                    em(), RegistryEventElementType.VERSIONS,
+                    versionToDelete.getVersionId(), nowTime(),
+                    RegistryEventEventType.DELETED, modifiedBy(),
+                    versionToDelete, null);
             draftVersions.remove(ve.getVersionId());
             // And that's all, since we are updating a draft.
         }
@@ -554,6 +579,12 @@ public class VersionsModel extends ModelBase {
                     TemporalUtils.makeDraft(newVersion);
                     newVersion.setModifiedBy(modifiedBy());
                     VersionDAO.saveVersion(em(), newVersion);
+                    // Add a registry event.
+                    RegistryEventUtils.createRegistryEvent(
+                            em(), RegistryEventElementType.VERSIONS,
+                            versionId, nowTime(),
+                            RegistryEventEventType.CREATED, modifiedBy(),
+                            null, newVersion);
                     draftVersions.put(versionId, newVersion);
                     versionsUpdated = true;
                 } else {
@@ -573,6 +604,12 @@ public class VersionsModel extends ModelBase {
                 newVersion.setModifiedBy(modifiedBy());
                 VersionDAO.saveVersionWithId(em(), newVersion);
                 Integer newVersionId = newVersion.getVersionId();
+                // Add a registry event.
+                RegistryEventUtils.createRegistryEvent(
+                        em(), RegistryEventElementType.VERSIONS,
+                        newVersionId, nowTime(),
+                        RegistryEventEventType.CREATED, modifiedBy(),
+                        null, newVersion);
                 // Future work: uncomment the following, if/when we
                 // support workflow for drafts:
 //              // And now we can put a value into versionHasImportAndPublish.
@@ -684,6 +721,12 @@ public class VersionsModel extends ModelBase {
                 TemporalUtils.makeCurrentlyValid(newCurrentVersion, nowTime());
                 newCurrentVersion.setModifiedBy(modifiedBy());
                 VersionDAO.saveVersion(em(), newCurrentVersion);
+                // Add a registry event.
+                RegistryEventUtils.createRegistryEvent(
+                        em(), RegistryEventElementType.VERSIONS,
+                        versionId, nowTime(),
+                        RegistryEventEventType.UPDATED, modifiedBy(),
+                        existingVersion, newCurrentVersion);
                 // Update our records (i.e., in this case, overwriting
                 // the previous value).
                 currentVersions.put(versionId, newCurrentVersion);
@@ -770,17 +813,6 @@ public class VersionsModel extends ModelBase {
                                         SubtaskOperationType.DELETE));
                     }
                 }
-
-                // Add a registry event.
-                RegistryEvent re = new RegistryEvent();
-                re.setElementType(RegistryEventElementType.VERSIONS);
-                re.setElementId(versionId);
-                re.setEventDate(nowTime());
-                re.setEventType(RegistryEventEventType.UPDATED);
-                re.setEventUser(modifiedBy());
-                // To be done: put something sensible in the details.
-                re.setEventDetails("");
-                RegistryEventDAO.saveRegistryEvent(em(), re);
             }
         }
 
@@ -804,15 +836,11 @@ public class VersionsModel extends ModelBase {
             // DELETE subtasks.
 
             // Add a registry event.
-            RegistryEvent re = new RegistryEvent();
-            re.setElementType(RegistryEventElementType.VERSIONS);
-            re.setElementId(versionId);
-            re.setEventDate(nowTime());
-            re.setEventType(RegistryEventEventType.DELETED);
-            re.setEventUser(modifiedBy());
-            // To be done: put something sensible in the details.
-            re.setEventDetails("");
-            RegistryEventDAO.saveRegistryEvent(em(), re);
+            RegistryEventUtils.createRegistryEvent(
+                    em(), RegistryEventElementType.VERSIONS,
+                    versionId, nowTime(),
+                    RegistryEventEventType.DELETED, modifiedBy(),
+                    versionToDelete, null);
         }
 
         /** {@inheritDoc} */
@@ -838,11 +866,25 @@ public class VersionsModel extends ModelBase {
                     // AccessPointsMode.populateModel() to see how this
                     // inconsistency is dealt with.
                     Version existingDraft = draftVersions.remove(versionId);
+                    // Add a registry event representing deletion of the draft.
+                    RegistryEventUtils.createRegistryEvent(
+                            em(), RegistryEventElementType.VERSIONS,
+                            versionId, nowTime(),
+                            RegistryEventEventType.DELETED, modifiedBy(),
+                            existingDraft, null);
+
                     mapper.updateTargetFromSource(schemaVersion,
                             existingDraft);
                     TemporalUtils.makeCurrentlyValid(existingDraft, nowTime());
                     existingDraft.setModifiedBy(modifiedBy());
                     VersionDAO.updateVersion(em(), existingDraft);
+                    // Add a registry event representing creation of the
+                    // current instance.
+                    RegistryEventUtils.createRegistryEvent(
+                            em(), RegistryEventElementType.VERSIONS,
+                            versionId, nowTime(),
+                            RegistryEventEventType.CREATED, modifiedBy(),
+                            null, existingDraft);
                     currentVersions.put(versionId, existingDraft);
                     versionsUpdated = true;
                     workflowRequired(vocabularyModel.getCurrentVocabulary(),
@@ -864,6 +906,12 @@ public class VersionsModel extends ModelBase {
                 newCurrentVersion.setModifiedBy(modifiedBy());
                 VersionDAO.saveVersionWithId(em(), newCurrentVersion);
                 Integer newVersionId = newCurrentVersion.getVersionId();
+                // Add a registry event.
+                RegistryEventUtils.createRegistryEvent(
+                        em(), RegistryEventElementType.VERSIONS,
+                        newVersionId, nowTime(),
+                        RegistryEventEventType.CREATED, modifiedBy(),
+                        null, newCurrentVersion);
                 // Update our records (i.e., in this case, adding
                 // a new entry).
                 versionId = newVersionId;
@@ -907,16 +955,6 @@ public class VersionsModel extends ModelBase {
                 task.addSubtask(WorkflowMethods.createPublishSissvocSubtask(
                         SubtaskOperationType.INSERT));
             }
-            // Add registry event.
-            RegistryEvent re = new RegistryEvent();
-            re.setElementType(RegistryEventElementType.VERSIONS);
-            re.setElementId(versionId);
-            re.setEventDate(nowTime());
-            re.setEventType(RegistryEventEventType.CREATED);
-            re.setEventUser(modifiedBy());
-            // To be done: put something sensible in the details.
-            re.setEventDetails("");
-            RegistryEventDAO.saveRegistryEvent(em(), re);
         }
     }
 
@@ -1092,7 +1130,7 @@ public class VersionsModel extends ModelBase {
      * is not one of the two instances Boolean.TRUE or Boolean.FALSE.
      * @param b1 One of the Boolean values to be compared; it may be null.
      * @param b2 The other Boolean value to be compared; it may be null.
-     * @return True, iff the canonicalized values of b1 and b2 are equal.
+     * @return True, iff the canonicalized values of b1 and b2 are different.
      */
     public boolean changedBoolean(final Boolean b1, final Boolean b2) {
         return BooleanUtils.toInteger(b1, 1, 0, 2)
