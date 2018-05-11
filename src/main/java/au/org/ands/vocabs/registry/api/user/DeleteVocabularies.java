@@ -63,14 +63,14 @@ public class DeleteVocabularies {
     private Logger logger = LoggerFactory.getLogger(
             MethodHandles.lookup().lookupClass());
 
-    /** Update a vocabulary.
+    /** Delete an instance of a vocabulary.
      * @param request The HTTP request.
      * @param uriInfo The UriInfo of the request.
      * @param profile The caller's security profile.
-     * @param vocabularyId The VocabularyId of the vocabulary to be updated.
+     * @param vocabularyId The VocabularyId of the vocabulary to be deleted.
      * @param deleteCurrent Whether or not to delete the current version.
      * @param deleteDraft Whether or not to delete the draft version.
-     * @return The new vocabulary, in either XML or JSON format. */
+     * @return An empty response for success, or an error response. */
     @Path(ApiPaths.VOCABULARY_ID)
     @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
