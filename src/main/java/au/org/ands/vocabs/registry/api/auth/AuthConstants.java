@@ -23,6 +23,11 @@ public final class AuthConstants {
     public static final String AUTH_FUNCTION_LOGGED_IN_ATTRIBUTE =
             "AUTHENTICATED_USER";
 
+    /* Constants related to data stored in the Registry database. */
+
+    /** Name of system user to use as modifiedBy value. */
+    public static final String SYSTEM_USER = "SYSTEM";
+
     /* Constants related to how we represent authentication/authorization
      * data. */
 

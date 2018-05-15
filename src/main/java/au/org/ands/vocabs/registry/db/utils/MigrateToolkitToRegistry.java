@@ -47,6 +47,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationModule;
 
+import au.org.ands.vocabs.registry.api.auth.AuthConstants;
 import au.org.ands.vocabs.registry.api.context.AdminApiPaths;
 import au.org.ands.vocabs.registry.db.context.TemporalUtils;
 import au.org.ands.vocabs.registry.db.converter.JSONSerialization;
@@ -118,9 +119,6 @@ import au.org.ands.vocabs.toolkit.utils.ToolkitProperties;
  */
 @Path(AdminApiPaths.API_ADMIN + "/" + AdminApiPaths.DATABASE)
 public final class MigrateToolkitToRegistry {
-
-    /** Name of system user to use as modifiedBy value. */
-    private static final String SYSTEM_USER = "SYSTEM";
 
     /** Logger for this class. */
     private Logger logger = LoggerFactory.getLogger(
@@ -971,7 +969,7 @@ public final class MigrateToolkitToRegistry {
             registryVocabulary.setModifiedBy(vocabulary.getModifiedWho());
         } else {
             logger.info("Setting modifiedBy value to SYSTEM");
-            registryVocabulary.setModifiedBy(SYSTEM_USER);
+            registryVocabulary.setModifiedBy(AuthConstants.SYSTEM_USER);
         }
 
         String poolPartyId = vocabulary.getPoolPartyId();
@@ -1177,7 +1175,7 @@ public final class MigrateToolkitToRegistry {
                 relatedEntity.setModifiedBy(vocabulary.getModifiedWho());
             } else {
                 logger.info("Setting modifiedBy value to SYSTEM");
-                relatedEntity.setModifiedBy(SYSTEM_USER);
+                relatedEntity.setModifiedBy(AuthConstants.SYSTEM_USER);
             }
             // The vocabulary owner also owns this related entity.
             relatedEntity.setOwner(vocabulary.getOwner());
@@ -1548,7 +1546,7 @@ public final class MigrateToolkitToRegistry {
                 relatedEntity.setModifiedBy(vocabulary.getModifiedWho());
             } else {
                 logger.info("Setting modifiedBy value to SYSTEM");
-                relatedEntity.setModifiedBy(SYSTEM_USER);
+                relatedEntity.setModifiedBy(AuthConstants.SYSTEM_USER);
             }
             // The vocabulary owner also owns this related entity.
             relatedEntity.setOwner(vocabulary.getOwner());
@@ -1712,7 +1710,7 @@ public final class MigrateToolkitToRegistry {
                 relatedEntity.setModifiedBy(vocabulary.getModifiedWho());
             } else {
                 logger.info("Setting modifiedBy value to SYSTEM");
-                relatedEntity.setModifiedBy(SYSTEM_USER);
+                relatedEntity.setModifiedBy(AuthConstants.SYSTEM_USER);
             }
             // The vocabulary owner also owns this related entity.
             relatedEntity.setOwner(vocabulary.getOwner());
@@ -2313,7 +2311,7 @@ public final class MigrateToolkitToRegistry {
         java.nio.file.Path sourcePath = java.nio.file.Paths.get(
                 fileData.getPath());
         Upload upload = new Upload();
-        upload.setModifiedBy(SYSTEM_USER);
+        upload.setModifiedBy(AuthConstants.SYSTEM_USER);
         upload.setOwner(toolkitVocabulary.getOwner());
         upload.setFormat(fileData.getFormat());
         upload.setFilename(sourcePath.getFileName().toString());
