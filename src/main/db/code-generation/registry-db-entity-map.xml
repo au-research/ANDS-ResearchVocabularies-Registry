@@ -258,8 +258,9 @@
         TypedQuery&lt;Vocabulary&gt; q = em.createNamedQuery(
                 Vocabulary.
                     GET_CURRENT_VOCABULARY_BY_SLUG,
-                Vocabulary.class)
-                .setParameter("slug", slug);
+                Vocabulary.class).
+                setParameter(Vocabulary.GET_CURRENT_VOCABULARY_BY_SLUG_SLUG,
+                    slug);
         q = TemporalUtils.setDatetimeConstantParameters(q);
         List&lt;Vocabulary&gt; entityList = q.getResultList();
         em.close();
@@ -494,8 +495,8 @@
         TypedQuery&lt;RelatedEntity&gt; q = em.createNamedQuery(
                 RelatedEntity.
                     GET_RELATED_ENTITY_LIST_FOR_VOCABULARY,
-                RelatedEntity.class)
-                .setParameter(RelatedEntity.
+                RelatedEntity.class).
+                setParameter(RelatedEntity.
                     GET_RELATED_ENTITY_LIST_FOR_VOCABULARY_VOCABULARYID,
                     vocabularyId);
         q = TemporalUtils.setDatetimeConstantParameters(q);
@@ -528,14 +529,14 @@
         TypedQuery&lt;RelatedEntity&gt; q = em.createNamedQuery(
                 RelatedEntity.
                     GET_MATCHING_RELATED_ENTITIES,
-                RelatedEntity.class)
-                .setParameter(RelatedEntity.
+                RelatedEntity.class).
+                setParameter(RelatedEntity.
                     GET_MATCHING_RELATED_ENTITIES_OWNER,
-                    relatedEntityToMatch.getOwner())
-                .setParameter(RelatedEntity.
+                    relatedEntityToMatch.getOwner()).
+                setParameter(RelatedEntity.
                     GET_MATCHING_RELATED_ENTITIES_TYPE,
-                    relatedEntityToMatch.getType())
-                .setParameter(RelatedEntity.
+                    relatedEntityToMatch.getType()).
+                setParameter(RelatedEntity.
                     GET_MATCHING_RELATED_ENTITIES_TITLE,
                     relatedEntityToMatch.getTitle());
         q = TemporalUtils.setDatetimeConstantParameters(q);
@@ -560,14 +561,14 @@
         TypedQuery&lt;RelatedEntity&gt; q = em.createNamedQuery(
                 RelatedEntity.
                     GET_MATCHING_RELATED_ENTITIES,
-                RelatedEntity.class)
-                .setParameter(RelatedEntity.
+                RelatedEntity.class).
+                setParameter(RelatedEntity.
                     GET_MATCHING_RELATED_ENTITIES_OWNER,
-                    relatedEntityToMatch.getOwner())
-                .setParameter(RelatedEntity.
+                    relatedEntityToMatch.getOwner()).
+                setParameter(RelatedEntity.
                     GET_MATCHING_RELATED_ENTITIES_TYPE,
-                    relatedEntityToMatch.getType())
-                .setParameter(RelatedEntity.
+                    relatedEntityToMatch.getType()).
+                setParameter(RelatedEntity.
                     GET_MATCHING_RELATED_ENTITIES_TITLE,
                     relatedEntityToMatch.getTitle());
         q = TemporalUtils.setDatetimeConstantParameters(q);
@@ -611,13 +612,13 @@
         TypedQuery&lt;RelatedEntity&gt; q = em.createNamedQuery(
                 RelatedEntity.
                     GET_RELATED_ENTITIES_MATCHING_IDENT,
-                RelatedEntity.class)
-                .setParameter(RelatedEntity.
-                    GET_RELATED_ENTITIES_MATCHING_IDENT_OWNER, owner)
-                .setParameter(RelatedEntity.
+                RelatedEntity.class).
+                setParameter(RelatedEntity.
+                    GET_RELATED_ENTITIES_MATCHING_IDENT_OWNER, owner).
+                setParameter(RelatedEntity.
                     GET_RELATED_ENTITIES_MATCHING_IDENT_IDENTIFIERTYPE,
-                    identifierType)
-                .setParameter(RelatedEntity.
+                    identifierType).
+                setParameter(RelatedEntity.
                     GET_RELATED_ENTITIES_MATCHING_IDENT_IDENTIFIERVALUE,
                     identifierValue);
         q = TemporalUtils.setDatetimeConstantParameters(q);
@@ -650,13 +651,13 @@
         TypedQuery&lt;RelatedEntity&gt; q = em.createNamedQuery(
                 RelatedEntity.
                     GET_RELATED_ENTITIES_MATCHING_IDENT,
-                RelatedEntity.class)
-                .setParameter(RelatedEntity.
-                    GET_RELATED_ENTITIES_MATCHING_IDENT_OWNER, owner)
-                .setParameter(RelatedEntity.
+                RelatedEntity.class).
+                setParameter(RelatedEntity.
+                    GET_RELATED_ENTITIES_MATCHING_IDENT_OWNER, owner).
+                setParameter(RelatedEntity.
                     GET_RELATED_ENTITIES_MATCHING_IDENT_IDENTIFIERTYPE,
-                    identifierType)
-                .setParameter(RelatedEntity.
+                    identifierType).
+                setParameter(RelatedEntity.
                     GET_RELATED_ENTITIES_MATCHING_IDENT_IDENTIFIERVALUE,
                     identifierValue);
         q = TemporalUtils.setDatetimeConstantParameters(q);
@@ -687,8 +688,8 @@
         TypedQuery&lt;RelatedEntity&gt; q = em.createNamedQuery(
                 RelatedEntity.
                     GET_CURRENT_RELATED_ENTITY_BY_TYPE,
-                RelatedEntity.class)
-                .setParameter(RelatedEntity.
+                RelatedEntity.class).
+                setParameter(RelatedEntity.
                     GET_CURRENT_RELATED_ENTITY_BY_TYPE_TYPE,
                     relatedEntityType);
         q = TemporalUtils.setDatetimeConstantParameters(q);
@@ -740,8 +741,8 @@
         TypedQuery&lt;VocabularyRelatedEntity&gt; q = em.createNamedQuery(
                 VocabularyRelatedEntity.
                     GET_VOC_RELATED_ENTITY_LIST_FOR_VOC,
-                VocabularyRelatedEntity.class)
-                .setParameter(VocabularyRelatedEntity.
+                VocabularyRelatedEntity.class).
+                setParameter(VocabularyRelatedEntity.
                     GET_VOC_RELATED_ENTITY_LIST_FOR_VOC_VOCABULARYID,
                     vocabularyId);
         q = TemporalUtils.setDatetimeConstantParameters(q);
@@ -774,8 +775,8 @@
         TypedQuery&lt;VocabularyRelatedEntity&gt; q = em.createNamedQuery(
                 VocabularyRelatedEntity.
                     GET_VOC_RELATED_ENTITY_LIST_FOR_VOC,
-                VocabularyRelatedEntity.class)
-                .setParameter(VocabularyRelatedEntity.
+                VocabularyRelatedEntity.class).
+                setParameter(VocabularyRelatedEntity.
                     GET_VOC_RELATED_ENTITY_LIST_FOR_VOC_VOCABULARYID,
                     vocabularyId);
         q = TemporalUtils.setDatetimeConstantParameters(q);
@@ -816,8 +817,8 @@
         TypedQuery&lt;VocabularyRelatedEntity&gt; q = em.createNamedQuery(
                 VocabularyRelatedEntity.
                     GET_DRAFT_VOC_RE_LIST_FOR_VOC,
-                VocabularyRelatedEntity.class)
-                .setParameter(VocabularyRelatedEntity.
+                VocabularyRelatedEntity.class).
+                setParameter(VocabularyRelatedEntity.
                     GET_DRAFT_VOC_RE_LIST_FOR_VOC_VOCABULARYID,
                     vocabularyId);
         q = TemporalUtils.setDatetimeConstantParameters(q);
@@ -857,8 +858,8 @@
         EntityManager em = DBContext.getEntityManager();
         TypedQuery&lt;Integer&gt; q = em.createNamedQuery(
                 VocabularyRelatedEntity.GET_VOCABULARY_IDS_WITH_RELATED_ENTITY,
-                Integer.class)
-                .setParameter(VocabularyRelatedEntity.
+                Integer.class).
+                setParameter(VocabularyRelatedEntity.
                 GET_VOCABULARY_IDS_WITH_RELATED_ENTITY_RELATEDENTITYID,
                 relatedEntityId);
         q = TemporalUtils.setDatetimeConstantParameters(q);
@@ -900,8 +901,8 @@
         TypedQuery&lt;VocabularyRelatedVocabulary&gt; q = em.createNamedQuery(
                 VocabularyRelatedVocabulary.
                     GET_VOC_RELATED_VOC_LIST_FOR_VOC,
-                VocabularyRelatedVocabulary.class)
-                .setParameter(VocabularyRelatedVocabulary.
+                VocabularyRelatedVocabulary.class).
+                setParameter(VocabularyRelatedVocabulary.
                     GET_VOC_RELATED_VOC_LIST_FOR_VOC_VOCABULARYID,
                     vocabularyId);
         q = TemporalUtils.setDatetimeConstantParameters(q);
@@ -936,8 +937,8 @@
         TypedQuery&lt;VocabularyRelatedVocabulary&gt; q = em.createNamedQuery(
                 VocabularyRelatedVocabulary.
                     GET_VOC_RELATED_VOC_LIST_FOR_VOC,
-                VocabularyRelatedVocabulary.class)
-                .setParameter(VocabularyRelatedVocabulary.
+                VocabularyRelatedVocabulary.class).
+                setParameter(VocabularyRelatedVocabulary.
                     GET_VOC_RELATED_VOC_LIST_FOR_VOC_VOCABULARYID,
                     vocabularyId);
         q = TemporalUtils.setDatetimeConstantParameters(q);
@@ -980,8 +981,8 @@
         TypedQuery&lt;VocabularyRelatedVocabulary&gt; q = em.createNamedQuery(
                 VocabularyRelatedVocabulary.
                     GET_DRAFT_VOC_RV_LIST_FOR_VOC,
-                VocabularyRelatedVocabulary.class)
-                .setParameter(VocabularyRelatedVocabulary.
+                VocabularyRelatedVocabulary.class).
+                setParameter(VocabularyRelatedVocabulary.
                     GET_DRAFT_VOC_RV_LIST_FOR_VOC_VOCABULARYID,
                     vocabularyId);
         q = TemporalUtils.setDatetimeConstantParameters(q);
@@ -1178,10 +1179,10 @@
         EntityManager em = DBContext.getEntityManager();
         TypedQuery&lt;Boolean&gt; q = em.createNamedQuery(
                 SubjectResolverEntry.DOES_SUBJECT_RESOLVE,
-                Boolean.class)
-                .setParameter(SubjectResolverEntry.
-                    DOES_SUBJECT_RESOLVE_SOURCE, source)
-                    .setParameter(SubjectResolverEntry.
+                Boolean.class).
+                setParameter(SubjectResolverEntry.
+                    DOES_SUBJECT_RESOLVE_SOURCE, source).
+                setParameter(SubjectResolverEntry.
                     DOES_SUBJECT_RESOLVE_IRI, iri);
         Boolean subjectValid = q.getSingleResult();
         em.close();
@@ -1208,11 +1209,11 @@
         TypedQuery&lt;SubjectResolverEntry&gt; q = em.createNamedQuery(
                 SubjectResolverEntry.
                     GET_SUBJECT_RESOLVED,
-                SubjectResolverEntry.class)
-                .setParameter(SubjectResolverEntry.
+                SubjectResolverEntry.class).
+                setParameter(SubjectResolverEntry.
                     GET_SUBJECT_RESOLVED_SOURCE,
-                    source)
-                .setParameter(SubjectResolverEntry.
+                    source).
+                setParameter(SubjectResolverEntry.
                     GET_SUBJECT_RESOLVED_IRI,
                     iri);
         List&lt;SubjectResolverEntry&gt; entityList = q.getResultList();
