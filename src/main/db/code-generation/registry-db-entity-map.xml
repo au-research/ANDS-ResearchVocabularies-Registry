@@ -1249,5 +1249,241 @@
        >
   </map>
 
+  <!-- Notification service -->
+
+  <map tableName="owners"
+       entityName="Owner"
+       serialVersionUID="8400634893908604367L"
+       >
+    <extraQueries>
+      <extraQuery name="GET_OWNER_BY_OWNER">
+        <extraQueryParameter name="ownerName" />
+        <queryText>
+          SELECT entity FROM Owner entity WHERE
+          entity.owner = :ownerName
+        </queryText>
+        <method>    /** Get an Owner instance by the owner name.
+     * If there is no such instance, returns null.
+     * This version of the method creates and uses its own EntityManager.
+     * @param ownerName The owner name of the instance to be fetched.
+     * @return The Owner instance with that owner name,
+     *     or null, if there is no such instance.
+     */
+    public static Owner getOwnerByOwner(final String ownerName) {
+        EntityManager em = DBContext.getEntityManager();
+        TypedQuery&lt;Owner&gt; q = em.createNamedQuery(
+                Owner.GET_OWNER_BY_OWNER, Owner.class).
+                setParameter(Owner.GET_OWNER_BY_OWNER_OWNERNAME, ownerName);
+        List&lt;Owner&gt; entityList = q.getResultList();
+        em.close();
+        if (entityList.isEmpty()) {
+            return null;
+        }
+        return entityList.get(0);
+    }
+
+</method>
+      </extraQuery>
+    </extraQueries>
+  </map>
+
+  <map tableName="subscriber_ids"
+       entityName="SubscriberId"
+       serialVersionUID="-7868517961305444371L"
+       >
+  </map>
+
+  <map tableName="subscriber_email_address_ids"
+       entityName="SubscriberEmailAddressId"
+       serialVersionUID="6816107973297320040L"
+       >
+  </map>
+
+  <map tableName="subscription_ids"
+       entityName="SubscriptionId"
+       serialVersionUID="5557190532019502787L"
+       >
+  </map>
+
+  <map tableName="subscribers"
+       entityName="Subscriber"
+       serialVersionUID="-3174014539150755160L"
+       >
+    <idKey keyColumn="subscriber_id" entityName="SubscriberId" />
+  </map>
+
+  <map tableName="subscriber_email_addresses"
+       entityName="SubscriberEmailAddress"
+       serialVersionUID="2126761184406673862L"
+       >
+    <idKey keyColumn="subscriber_email_address_id"
+           entityName="SubscriberEmailAddressId" />
+    <foreignKeyQueries>
+      <foreignKeyQuery keyColumn="subscriberId" entityName="Subscriber" />
+    </foreignKeyQueries>
+    <extraQueries>
+      <extraQuery name="GET_CURRENT_EMAIL_BY_EMAIL">
+        <extraQueryParameter name="emailAddress" />
+        <queryText temporal="true">
+          SELECT entity FROM SubscriberEmailAddress entity WHERE
+          entity.emailAddress = :emailAddress
+          #AND_TEMPORAL_QUERY_VALID_SUFFIX
+        </queryText>
+        <method>    /** Get current SubscriberEmailAddress instance by email address.
+     * If there is no such instance, returns null.
+     * This version of the method creates and uses its own EntityManager.
+     * @param emailAddress The email address of the instance to be fetched.
+     * @return The current SubscriberEmailAddress instance with that
+     *     email address, or null, if there is no such instance.
+     */
+    public static SubscriberEmailAddress
+        getCurrentSubscriberEmailAddressByEmailAddress(
+                final String emailAddress) {
+        EntityManager em = DBContext.getEntityManager();
+        TypedQuery&lt;SubscriberEmailAddress&gt; q = em.createNamedQuery(
+                SubscriberEmailAddress.
+                    GET_CURRENT_EMAIL_BY_EMAIL,
+                SubscriberEmailAddress.class).
+                setParameter("emailAddress", emailAddress);
+        q = TemporalUtils.setDatetimeConstantParameters(q);
+        List&lt;SubscriberEmailAddress&gt; entityList = q.getResultList();
+        em.close();
+        if (entityList.isEmpty()) {
+            return null;
+        }
+        return entityList.get(0);
+    }
+
+</method>
+      </extraQuery>
+    </extraQueries>
+  </map>
+
+  <map tableName="subscriptions"
+       entityName="Subscription"
+       serialVersionUID="4293930415776107616L"
+       >
+    <idKey keyColumn="subscription_id" entityName="SubscriberId" />
+    <column db="notification_mode" enum="NotificationMode" />
+    <column db="notification_element_type" enum="NotificationElementType" />
+    <foreignKeyQueries>
+      <foreignKeyQuery keyColumn="subscriberId" entityName="Subscriber" />
+    </foreignKeyQueries>
+    <extraQueries>
+      <extraQuery name="GET_CURR_SUB_LIST_FOR_SUB_NOTIF">
+        <extraQueryParameter name="subscriberId" />
+        <extraQueryParameter name="notificationMode" />
+        <extraQueryParameter name="notificationElementType" />
+        <extraQueryParameter name="notificationElementId" />
+        <queryText temporal="true">
+          SELECT entity FROM Subscription entity
+          WHERE entity.subscriberId = :subscriberId
+          AND entity.notificationMode = :notificationMode
+          AND entity.notificationElementType = :notificationElementType
+          AND entity.notificationElementId = :notificationElementId
+          #AND_TEMPORAL_QUERY_VALID_SUFFIX
+        </queryText>
+        <method>    /** Get all current Subscription instances for a Subscriber,
+     * that have a specified notification mode, notification element type,
+     * and notification element Id.
+     * This version of the method creates and uses its own EntityManager.
+     * @param subscriberId The subscriber Id.
+     * @param notificationMode The notification mode.
+     * @param notificationElementType The notification element type.
+     * @param notificationElementId The notification element Id.
+     * @return The list of current Subscription
+     *     instances for this Subscriber, that have the specified
+     *     notification mode, notification element type, and
+     *     notification element Id.
+     */
+    public static List&lt;Subscription&gt;
+    getCurrentSubscriptionForSubscriberAndNotification(
+            final Integer subscriberId,
+            final au.org.ands.vocabs.registry.enums.NotificationMode
+                notificationMode,
+            final au.org.ands.vocabs.registry.enums.NotificationElementType
+                notificationElementType,
+            final Integer notificationElementId) {
+        EntityManager em = DBContext.getEntityManager();
+        TypedQuery&lt;Subscription&gt; q = em.createNamedQuery(
+                Subscription.
+                    GET_CURR_SUB_LIST_FOR_SUB_NOTIF,
+                Subscription.class).
+                setParameter(
+                        Subscription.
+                            GET_CURR_SUB_LIST_FOR_SUB_NOTIF_SUBSCRIBERID,
+                        subscriberId).
+                setParameter(
+                        Subscription.
+                            GET_CURR_SUB_LIST_FOR_SUB_NOTIF_NOTIFICATIONMODE,
+                        notificationMode).
+                setParameter(
+                        Subscription.
+                    GET_CURR_SUB_LIST_FOR_SUB_NOTIF_NOTIFICATIONELEMENTTYPE,
+                        notificationElementType).
+                setParameter(
+                        Subscription.
+                    GET_CURR_SUB_LIST_FOR_SUB_NOTIF_NOTIFICATIONELEMENTID,
+                        notificationElementId);
+        q = TemporalUtils.setDatetimeConstantParameters(q);
+        List&lt;Subscription&gt; entityList = q.getResultList();
+        em.close();
+        return entityList;
+    }
+
+    /** Get all current Subscription instances for a Subscriber,
+     * that have a specified notification mode, notification element type,
+     * and notification element Id.
+     * This version of the method uses an existing EntityManager
+     * provided as a parameter; transaction begin/end must be
+     * managed by the caller.
+     * @param subscriberId The subscriber Id.
+     * @param notificationMode The notification mode.
+     * @param notificationElementType The notification element type.
+     * @param notificationElementId The notification element Id.
+     * @param em The EntityManager to be used.
+     * @return The list of current Subscription
+     *     instances for this Subscriber, that have the specified
+     *     notification mode, notification element type, and
+     *     notification element Id.
+     */
+    public static List&lt;Subscription&gt;
+    getCurrentSubscriptionForSubscriberAndNotification(
+            final Integer subscriberId,
+            final au.org.ands.vocabs.registry.enums.NotificationMode
+                notificationMode,
+            final au.org.ands.vocabs.registry.enums.NotificationElementType
+                notificationElementType,
+            final Integer notificationElementId,
+            final EntityManager em) {
+        TypedQuery&lt;Subscription&gt; q = em.createNamedQuery(
+                Subscription.
+                    GET_CURR_SUB_LIST_FOR_SUB_NOTIF,
+                Subscription.class).
+                setParameter(
+                        Subscription.
+                            GET_CURR_SUB_LIST_FOR_SUB_NOTIF_SUBSCRIBERID,
+                        subscriberId).
+                setParameter(
+                        Subscription.
+                            GET_CURR_SUB_LIST_FOR_SUB_NOTIF_NOTIFICATIONMODE,
+                        notificationMode).
+                setParameter(
+                        Subscription.
+                    GET_CURR_SUB_LIST_FOR_SUB_NOTIF_NOTIFICATIONELEMENTTYPE,
+                        notificationElementType).
+                setParameter(
+                        Subscription.
+                    GET_CURR_SUB_LIST_FOR_SUB_NOTIF_NOTIFICATIONELEMENTID,
+                        notificationElementId);
+        q = TemporalUtils.setDatetimeConstantParameters(q);
+        List&lt;Subscription&gt; entityList = q.getResultList();
+        return entityList;
+    }
+
+</method>
+      </extraQuery>
+    </extraQueries>
+  </map>
 
 </db-entity-map>

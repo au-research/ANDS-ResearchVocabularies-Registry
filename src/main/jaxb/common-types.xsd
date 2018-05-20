@@ -209,4 +209,16 @@ http://viaf.org/</xs:documentation>
             <xs:enumeration value="deleted"/>
         </xs:restriction>
     </xs:simpleType>
+    <xs:simpleType name="notification-mode">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="email"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="notification-element-type">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="system"/>
+            <xs:enumeration value="owner"/>
+            <xs:enumeration value="vocabulary"/>
+        </xs:restriction>
+    </xs:simpleType>
 </xs:schema>
