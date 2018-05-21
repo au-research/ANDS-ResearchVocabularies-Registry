@@ -19,8 +19,8 @@ import org.slf4j.LoggerFactory;
 import com.mchange.v2.c3p0.C3P0Registry;
 import com.mchange.v2.c3p0.PooledDataSource;
 
-import au.org.ands.vocabs.registry.utils.SlugGenerator;
 import au.org.ands.vocabs.registry.utils.RegistryNetUtils;
+import au.org.ands.vocabs.registry.utils.SlugGenerator;
 import au.org.ands.vocabs.toolkit.db.DBContext;
 
 /** Context listener for the Toolkit web application.
@@ -78,7 +78,12 @@ public class ApplicationContextListener implements ServletContextListener {
 
         // ... to be done ...
 
-        // Carefully close the JPA EntityManagerFactory.
+        // Close the cache system.
+        // No need to close individual caches, because they are _all_
+        // closed by ApplicationCacheProvider.shutdown().
+        ApplicationCacheProvider.shutdown();
+
+        // Carefully close the JPA EntityManagerFactories.
         dbShutdown();
 
         // Close any C3P0 DB connection pools.
