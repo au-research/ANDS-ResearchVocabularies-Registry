@@ -24,6 +24,7 @@ import au.org.ands.vocabs.registry.enums.RegistryEventEventType;
 import au.org.ands.vocabs.registry.enums.VocabularyStatus;
 import au.org.ands.vocabs.registry.log.RegistryEventUtils;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.WorkflowOutcome;
+import au.org.ands.vocabs.registry.subscription.Owners;
 import au.org.ands.vocabs.registry.utils.SlugGenerator;
 
 /** Vocabulary domain model.
@@ -406,6 +407,12 @@ public class VocabularyModel extends ModelBase {
         // in case they need it to make a TaskInfo object.
         subModels.forEach(sm ->
             sm.applyChanges(updatedVocabulary));
+
+        // And now do any updating of any other subsystems that need
+        // to "know" about new/updated vocabulary metadata.
+
+        // Subscription/notification subsystem.
+        Owners.requireOwner(updatedVocabulary.getOwner());
     }
 
     /** Incoming vocabulary metadata in registry schema may be incomplete.

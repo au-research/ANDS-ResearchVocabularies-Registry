@@ -99,5 +99,14 @@ public final class Owners {
         }
     }
 
+    /** Clear the cache. Don't call this method in normal use!
+     * It's provided for use by the test suite, so that the cache
+     * can be cleared between tests. See the
+     * <code>ArquillianTestUtils.clearDatabase(DatabaseSelector)</code>
+     * method.
+     */
+    public static synchronized void clear() {
+        cache.clear();
+    }
 
 }

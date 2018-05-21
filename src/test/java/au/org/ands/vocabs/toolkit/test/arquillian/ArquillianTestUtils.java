@@ -59,6 +59,7 @@ import org.testng.FileAssert;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import au.org.ands.vocabs.registry.subscription.Owners;
 import au.org.ands.vocabs.registry.utils.PropertyConstants;
 import au.org.ands.vocabs.registry.utils.RegistryProperties;
 import au.org.ands.vocabs.toolkit.test.utils.DatabaseSelector;
@@ -510,6 +511,12 @@ public final class ArquillianTestUtils {
         // Force commit at the JDBC level, as closing the EntityManager
         // does a rollback!
         conn.commit();
+
+        // And now flush any of our own caches. For now, that means the Owner
+        // cache on top of the Registry database.
+        if (dbs == DatabaseSelector.REGISTRY) {
+            Owners.clear();
+        }
     }
 
     /** Load a DbUnit test file into a database.
