@@ -176,16 +176,43 @@ public class ApplicationContextListener implements ServletContextListener {
                     "findLoadedClass", new Class[] {String.class});
             fLC.setAccessible(true);
             ClassLoader classLoader = getClass().getClassLoader();
-            // Now see if the DBContext class has been loaded
+            // Now see if the Toolkit DBContext class has been loaded
             Object dbContextClass =
                     fLC.invoke(classLoader,
                             "au.org.ands.vocabs.toolkit.db.DBContext");
             if (dbContextClass != null) {
                 // The class has indeed been loaded already.
-                logger.info("Calling DBContext.doShutdown");
+                logger.info("Calling Toolkit DBContext.doShutdown");
                 DBContext.doShutdown();
             } else {
-                logger.info("DBContext not loaded; no shutdown required");
+                logger.info("Toolkit DBContext not loaded; "
+                        + "no shutdown required");
+            }
+
+            // Now see if the Registry DBContext class has been loaded
+            dbContextClass =
+                    fLC.invoke(classLoader,
+                            "au.org.ands.vocabs.registry.db.context.DBContext");
+            if (dbContextClass != null) {
+                // The class has indeed been loaded already.
+                logger.info("Calling Registry DBContext.doShutdown");
+                au.org.ands.vocabs.registry.db.context.DBContext.doShutdown();
+            } else {
+                logger.info("Registry DBContext not loaded; "
+                        + "no shutdown required");
+            }
+
+            // Now see if the Roles DBContext class has been loaded
+            dbContextClass =
+                    fLC.invoke(classLoader,
+                            "au.org.ands.vocabs.roles.db.context.DBContext");
+            if (dbContextClass != null) {
+                // The class has indeed been loaded already.
+                logger.info("Calling Roles DBContext.doShutdown");
+                au.org.ands.vocabs.roles.db.context.DBContext.doShutdown();
+            } else {
+                logger.info("Roles DBContext not loaded; "
+                        + "no shutdown required");
             }
         } catch (NoSuchMethodException | SecurityException
                 | IllegalAccessException | IllegalArgumentException
