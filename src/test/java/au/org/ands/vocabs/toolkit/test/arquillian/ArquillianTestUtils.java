@@ -858,6 +858,59 @@ public final class ArquillianTestUtils {
                 valueComparersForTasks);
     }
 
+    /** Map of ValueComparers to use when comparing subscribers. */
+    private static Map<String, Map<String, ValueComparer>>
+        valueComparersForSubscribers;
+
+    static {
+        valueComparersForSubscribers = new HashMap<>();
+        Map<String, ValueComparer> innerMap = new HashMap<>();
+        SubscriberComparer subscriberComparer = new SubscriberComparer();
+        innerMap.put("TOKEN", subscriberComparer);
+        valueComparersForSubscribers.put("SUBSCRIBERS", innerMap);
+    }
+
+    /** Get the current contents of a database and the expected
+     * contents, and assert their equality, apart from tokens
+     * in the subscribers table.
+     * @param dbs The database from which the data is to be fetched.
+     * @param filename The filename of the file containing the expected
+     *      database contents.
+     * @throws DatabaseUnitException If a problem with DbUnit.
+     * @throws HibernateException If a problem getting the underlying
+     *          JDBC connection.
+     * @throws SQLException If DbUnit has a problem performing
+     *           performing JDBC operations.
+     * @throws IOException If reading the DTD fails.
+     */
+    public static void
+    compareDatabaseCurrentAndExpectedContentsIgnoreSubscriberTokens(
+            final DatabaseSelector dbs,
+            final String filename) throws
+            DatabaseUnitException, HibernateException, SQLException,
+            IOException {
+        IDatabaseConnection connection = getIDatabaseConnectionForDbUnit(dbs);
+        IDataSet databaseDataSet = connection.createDataSet();
+        FlatXmlDataSet xmlDataset = new FlatXmlDataSetBuilder()
+                .setMetaDataSetFromDtd(getResourceAsInputStream(
+                        dbs.getDTDFilename()))
+                .build(getResourceAsInputStream(
+                        filename));
+        ReplacementDataSet expectedDataset =
+                new ReplacementDataSet(xmlDataset);
+        addReplacementSubstringsToDataset(expectedDataset);
+
+        // Make a combined dataset that ensures that we have all of
+        // the tables defined. This means that the file doesn't have
+        // to mention tables that aren't used in the test.
+        IDataSet combinedDataSet = new CompositeDataSet(
+                getBlankIDataSetForDbUnit(dbs), expectedDataset);
+
+        Assertion.assertWithValueComparer(combinedDataSet, databaseDataSet,
+                ValueComparers.isActualEqualToExpected,
+                valueComparersForSubscribers);
+    }
+
     /** Compare two files containing JSON, asserting that they contain
      * the same content.
      * @param testFilename The filename of the file containing the generated

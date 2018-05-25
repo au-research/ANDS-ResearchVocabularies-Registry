@@ -24,4 +24,12 @@ public final class TemporalConstants {
     public static final LocalDateTime DRAFT_END_DATE =
             LocalDateTime.of(9999, 12, 3, 0, 0);
 
+    /** The special last notification date used to indicate that a
+     * subscriber has never been sent a notification for a subscription. */
+    // Maybe of interest: this was first tried as "0001-01-01 00:00".
+    // But when persisted (to H2, at least), this came back as
+    // "0001-01-03 00:00".
+    public static final LocalDateTime NEVER_NOTIFIED =
+            LocalDateTime.of(2000, 1, 1, 0, 0);
+
 }

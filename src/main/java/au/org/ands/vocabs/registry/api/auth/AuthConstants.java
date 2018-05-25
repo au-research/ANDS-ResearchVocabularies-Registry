@@ -48,6 +48,12 @@ public final class AuthConstants {
      * library. */
     public static final String RDA_COOKIE_CLIENT = "rdaCookie";
 
+    /** Name of the pac4j direct Client that authenticates subscribers using
+     * a query parameter that contains a token containing a subscriber ID
+     * and a "password-like" value. */
+    public static final String SUBSCRIBER_PARAMETER_CLIENT =
+            "subscriberParameter";
+
     /** List of clients that require authorization credentials.
      * Use this as the value of the clients parameter of the
      * Pac4JSecurity annotation, to require that the user log in

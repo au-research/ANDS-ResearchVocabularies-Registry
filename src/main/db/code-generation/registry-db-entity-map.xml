@@ -1363,7 +1363,7 @@
        entityName="Subscription"
        serialVersionUID="4293930415776107616L"
        >
-    <idKey keyColumn="subscription_id" entityName="SubscriberId" />
+    <idKey keyColumn="subscription_id" entityName="SubscriptionId" />
     <column db="notification_mode" enum="NotificationMode" />
     <column db="notification_element_type" enum="NotificationElementType" />
     <foreignKeyQueries>

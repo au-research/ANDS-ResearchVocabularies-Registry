@@ -93,5 +93,24 @@ public final class ApiPaths {
     /** Subpath for search services. */
     public static final String SEARCH = "search";
 
+    /** Subpath for subscription services. */
+    public static final String SUBSCRIPTIONS = "subscriptions";
+
+    /* Subpaths for subscription services. */
+
+    /** Subpath for email subscription services. */
+    public static final String EMAIL = "email";
+
+    /** Subpath for email subscription services for OWNER. */
+    public static final String OWNER = "owner";
+
+    /** Path parameter name for an owner. */
+    public static final String OWNER_ID = "{ownerId}";
+
+    /** Subpath for email subscription services for SYSTEM. */
+    public static final String SYSTEM = "system";
+
+    /** Subpath for email subscription services, for all subscription types. */
+    public static final String ALL = "all";
 
 }

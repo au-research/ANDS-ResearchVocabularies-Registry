@@ -13,6 +13,7 @@ import org.pac4j.core.credentials.authenticator.LocalCachingAuthenticator;
 import org.pac4j.http.client.direct.CookieClient;
 import org.pac4j.http.client.direct.DirectBasicAuthClient;
 import org.pac4j.http.client.direct.HeaderClient;
+import org.pac4j.http.client.direct.ParameterClient;
 import org.pac4j.jax.rs.pac4j.JaxRsConfig;
 import org.pac4j.jax.rs.pac4j.JaxRsUrlResolver;
 
@@ -74,6 +75,16 @@ public class AuthConfig implements ContextResolver<Config> {
                 CACHE_SIZE, CACHE_TIME, TimeUnit.MINUTES));
         rdaCookieClient.setName(AuthConstants.RDA_COOKIE_CLIENT);
 
+        // Parameter Client for subscription methods, that accepts a
+        // token that identifies a subscriber.
+        ParameterClient subscriberParameterClient = new ParameterClient(
+                SubscriberAuthenticator.TOKEN,
+                new LocalCachingAuthenticator<>(
+                        new SubscriberAuthenticator(),
+                        CACHE_SIZE, CACHE_TIME, TimeUnit.MINUTES));
+        subscriberParameterClient.setName(
+                AuthConstants.SUBSCRIBER_PARAMETER_CLIENT);
+
         // For a successful login, fetch the user's roles.
         userpassClient.addAuthorizationGenerator(new AuthorizationFetcher());
         rdaHeaderClient.addAuthorizationGenerator(new AuthorizationFetcher());
@@ -82,10 +93,13 @@ public class AuthConfig implements ContextResolver<Config> {
         // The list of clients should match the value of
         // AuthConstants.MUST_HAVE_CREDENTIALS and
         // AuthConstants.MAY_HAVE_CREDENTIALS.
+        // ... except, we now also include subscriberParameterClient
+        // here, but _not_ in AuthConstants.MUST_HAVE_CREDENTIALS!
         Clients clients = new Clients(
                 userpassClient,
                 rdaHeaderClient,
-                rdaCookieClient
+                rdaCookieClient,
+                subscriberParameterClient
                 );
 
           configInstance = new JaxRsConfig();
