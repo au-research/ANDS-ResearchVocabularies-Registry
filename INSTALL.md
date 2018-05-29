@@ -13,6 +13,7 @@ for LDA custom configuration.)
 
 * JDK for Java 8
 * Ant
+* gawk version 4
 * MySQL
 * Solr
 * Tomcat
@@ -41,6 +42,26 @@ or
 export LANG=C.UTF-8
 ```
 
+# gawk 4
+
+Gawk (i.e., GNU Awk) version 4 is required by the script
+`src/CrawlerDetect/generate-matcher.sh` to generate the Java source
+file
+`src/main/java/au/org/ands/vocabs/registry/utils/BotDetector.java`.
+If the output of the command `awk --version` does _not_ indicate that
+the `awk` command is gawk 4 or later, you may need to download and
+install gawk 4. You _don't_ need to install it as the default for
+`awk`; you only need to have it installed _somewhere_ in the file
+system.
+
+Once you have done that, configure the `GAWK` environment variable to
+point to the gawk 4 executable. For example, for bash, if the gawk 4
+executable is `/opt/gawk-4.2.1/bin`, add this to `.bashrc`:
+
+```
+# gawk 4 is needed to run generate-matcher.sh
+export GAWK=/opt/gawk-4.2.1/bin
+```
 
 # Configuration files
 
