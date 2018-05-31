@@ -20,6 +20,7 @@ import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
 
 import au.org.ands.vocabs.registry.db.context.DBContext;
+import au.org.ands.vocabs.registry.subscription.Owners;
 import au.org.ands.vocabs.registry.subscription.SubscriptionUtils;
 
 /** Tests of the subscription subsystem. */
@@ -193,7 +194,8 @@ public class SubscriptionTests extends ArquillianBaseTest {
     /** Test of {@link SubscriptionUtils#createEmailSubscriptionOwner(
      * String, String, EntityManager, LocalDateTime)} and {@link
      * SubscriptionUtils#deleteEmailSubscriptionOwner(Integer, String,
-     * EntityManager, LocalDateTime)}.
+     * EntityManager, LocalDateTime)}, where the owner name is
+     * a "real" owner.
      * @throws DatabaseUnitException If a problem with DbUnit.
      * @throws HibernateException If a problem getting the underlying
      *          JDBC connection.
@@ -209,6 +211,28 @@ public class SubscriptionTests extends ArquillianBaseTest {
                         "dummy@abc.com", "ANDS-Curated", em, nowTime1),
                 em -> SubscriptionUtils.deleteEmailSubscriptionOwner(
                         1, "ANDS-Curated", em, nowTime2));
+    }
+
+    /** Test of {@link SubscriptionUtils#createEmailSubscriptionOwner(
+     * String, String, EntityManager, LocalDateTime)} and {@link
+     * SubscriptionUtils#deleteEmailSubscriptionOwner(Integer, String,
+     * EntityManager, LocalDateTime)}, where the owner name is the
+     * special value {@link Owners#ALL_OWNERS}.
+     * @throws DatabaseUnitException If a problem with DbUnit.
+     * @throws HibernateException If a problem getting the underlying
+     *          JDBC connection.
+     * @throws IOException If a problem getting test data for DbUnit,
+     *          or reading JSON from the correct and test output files.
+     * @throws SQLException If DbUnit has a problem performing
+     *           performing JDBC operations.*/
+    @Test
+    public final void testSubscribeOwner2()
+            throws DatabaseUnitException, SQLException, IOException {
+        scriptRunner2("testSubscribeOwner2",
+                em -> SubscriptionUtils.createEmailSubscriptionOwner(
+                        "dummy@abc.com", Owners.ALL_OWNERS, em, nowTime1),
+                em -> SubscriptionUtils.deleteEmailSubscriptionOwner(
+                        1, Owners.ALL_OWNERS, em, nowTime2));
     }
 
     /** Test of {@link SubscriptionUtils#createEmailSubscriptionSystem(

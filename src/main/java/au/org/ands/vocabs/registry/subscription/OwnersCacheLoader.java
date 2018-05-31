@@ -20,10 +20,17 @@ public class OwnersCacheLoader implements CacheLoader<String, Integer> {
     /** {@inheritDoc}
      * Load an Owner entity from the database for the cache.
      * If it is not present in the database, it is <i>not</i> created.
+     * This method also handles the (impossible?) case of the special key
+     * {@link Owners#ALL_OWNERS} having been ejected from the cache.
      * @see javax.cache.integration.CacheLoader#load(java.lang.Object)
      */
     @Override
     public Integer load(final String ownerName) throws CacheLoaderException {
+        if (Owners.ALL_OWNERS.equals(ownerName)) {
+            // Hmm, somehow the key was ejected from the cache.
+            // Can't happen?
+            return Owners.ALL_OWNERS_OWNER_ID;
+        }
         Owner owner = OwnerDAO.getOwnerByOwner(ownerName);
         if (owner != null) {
             return owner.getOwnerId();

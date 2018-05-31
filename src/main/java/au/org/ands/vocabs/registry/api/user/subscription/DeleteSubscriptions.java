@@ -195,7 +195,12 @@ public class DeleteSubscriptions {
                     "The subscriber authentication token must be specified.")
             @QueryParam(SubscriberAuthenticator.TOKEN)
             @SuppressWarnings("unused") final String token,
-            @ApiParam(value = "Owner to unsubscribe from")
+            @ApiParam(value = "Owner to unsubscribe from. Specify "
+                    + Owners.ALL_OWNERS
+                    + " to remove a subscription to notifications "
+                    + "for all owners (in which case, any other "
+                    + "existing subscriptions to individual owners will "
+                    + "remain).")
             @QueryParam("owner") final String owner) {
         logger.debug("called deleteEmailSubscriptionOwner");
         logger.debug("profile: username: " + profile.getUsername()

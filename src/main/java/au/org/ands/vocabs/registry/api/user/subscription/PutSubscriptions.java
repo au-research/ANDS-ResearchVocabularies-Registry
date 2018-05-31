@@ -184,7 +184,9 @@ public class PutSubscriptions {
                     "The subscriber email address must be specified.")
             @QueryParam(SubscriberAuthenticator.SUBSCRIBER_EMAIL_ADDRESS)
             final String email,
-            @ApiParam(value = "Owner to subscribe to")
+            @ApiParam(value = "Owner to subscribe to. Specify "
+                    + Owners.ALL_OWNERS
+                    + " to subscribe to notifications for all owners.")
             @QueryParam("owner") final String owner) {
         logger.debug("called createEmailSubscriptionOwner");
         logger.debug("email: " + email);

@@ -19,6 +19,16 @@ import au.org.ands.vocabs.toolkit.utils.ApplicationCacheProvider;
 /** Cache of Owners for use in subscriptions. */
 public final class Owners {
 
+    /** Special owner name that means "all owners". It is cached
+     * with the owner Id {@link #ALL_OWNERS_OWNER_ID}.
+     */
+    public static final String ALL_OWNERS = "*";
+
+    /** Special owner Id that means "all owners". It is cached
+     * against the owner name {@link #ALL_OWNERS}.
+     */
+    public static final Integer ALL_OWNERS_OWNER_ID = 0;
+
     /** Logger for this class. */
     private static Logger logger = LoggerFactory.getLogger(
             MethodHandles.lookup().lookupClass());
@@ -64,6 +74,9 @@ public final class Owners {
                 + ehcacheConfig.getResourcePools().getPoolForResource(
                         ResourceType.Core.HEAP).getSize());
          */
+
+        // Add the "magic" key "*" -> 0.
+        cache.put(ALL_OWNERS, ALL_OWNERS_OWNER_ID);
     }
 
     /** Close the cache, if it is open. */
