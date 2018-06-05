@@ -47,7 +47,7 @@ public final class SubscriptionUtils {
         // database row if the subscriber is already subscribed to
         // this vocabulary.
         List<Subscription> subscriptionList = SubscriptionDAO.
-                getCurrentSubscriptionForSubscriberAndNotification(
+                getCurrentSubscriptionsForSubscriberAndNotification(
                         subscriberId, NotificationMode.EMAIL,
                         NotificationElementType.VOCABULARY, vocabularyId,
                         em);
@@ -90,7 +90,7 @@ public final class SubscriptionUtils {
         // database row if the subscriber is already subscribed to
         // this vocabulary.
         List<Subscription> subscriptionList = SubscriptionDAO.
-                getCurrentSubscriptionForSubscriberAndNotification(
+                getCurrentSubscriptionsForSubscriberAndNotification(
                         subscriberId, NotificationMode.EMAIL,
                         NotificationElementType.OWNER,
                         ownerId, em);
@@ -126,7 +126,7 @@ public final class SubscriptionUtils {
         // database row if the subscriber is already subscribed to
         // this vocabulary.
         List<Subscription> subscriptionList = SubscriptionDAO.
-                getCurrentSubscriptionForSubscriberAndNotification(
+                getCurrentSubscriptionsForSubscriberAndNotification(
                         subscriberId, NotificationMode.EMAIL,
                         NotificationElementType.SYSTEM, 0,
                         em);
@@ -159,7 +159,7 @@ public final class SubscriptionUtils {
             final Integer vocabularyId, final EntityManager em,
             final LocalDateTime nowTime) {
         List<Subscription> subscriptionList = SubscriptionDAO.
-                getCurrentSubscriptionForSubscriberAndNotification(
+                getCurrentSubscriptionsForSubscriberAndNotification(
                         subscriberId, NotificationMode.EMAIL,
                         NotificationElementType.VOCABULARY, vocabularyId,
                         em);
@@ -187,7 +187,7 @@ public final class SubscriptionUtils {
             throw new IllegalArgumentException("No such owner");
         }
         List<Subscription> subscriptionList = SubscriptionDAO.
-                getCurrentSubscriptionForSubscriberAndNotification(
+                getCurrentSubscriptionsForSubscriberAndNotification(
                         subscriberId, NotificationMode.EMAIL,
                         NotificationElementType.OWNER,
                         ownerId, em);
@@ -209,7 +209,7 @@ public final class SubscriptionUtils {
             final Integer subscriberId,
             final EntityManager em, final LocalDateTime nowTime) {
         List<Subscription> subscriptionList = SubscriptionDAO.
-                getCurrentSubscriptionForSubscriberAndNotification(
+                getCurrentSubscriptionsForSubscriberAndNotification(
                         subscriberId, NotificationMode.EMAIL,
                         NotificationElementType.SYSTEM, 0,
                         em);

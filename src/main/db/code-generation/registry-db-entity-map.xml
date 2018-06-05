@@ -1397,7 +1397,7 @@
      *     notification element Id.
      */
     public static List&lt;Subscription&gt;
-    getCurrentSubscriptionForSubscriberAndNotification(
+    getCurrentSubscriptionsForSubscriberAndNotification(
             final Integer subscriberId,
             final au.org.ands.vocabs.registry.enums.NotificationMode
                 notificationMode,
@@ -1448,7 +1448,7 @@
      *     notification element Id.
      */
     public static List&lt;Subscription&gt;
-    getCurrentSubscriptionForSubscriberAndNotification(
+    getCurrentSubscriptionsForSubscriberAndNotification(
             final Integer subscriberId,
             final au.org.ands.vocabs.registry.enums.NotificationMode
                 notificationMode,
