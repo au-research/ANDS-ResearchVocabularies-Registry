@@ -32,6 +32,9 @@ import javax.persistence.TemporalType;
             name = Role.GET_ROLES_FOR_ROLEID,
             query = Role.GET_ROLES_FOR_ROLEID_QUERY),
     @NamedQuery(
+            name = Role.GET_ORG_ROLES_FOR_ROLEID,
+            query = Role.GET_ORG_ROLES_FOR_ROLEID_QUERY),
+    @NamedQuery(
             name = Role.CHECK_ROLE_EXISTS_ENABLED,
             query = Role.CHECK_ROLE_EXISTS_ENABLED_QUERY),
     @NamedQuery(
@@ -55,6 +58,24 @@ public class Role {
             "SELECT role FROM Role role "
             + " WHERE roleId = :"
             + GET_ROLES_FOR_ROLEID_ROLEID
+            + " AND enabled = '1'";
+
+    /** Name of getOrgRolesForRoleId query. */
+    public static final String GET_ORG_ROLES_FOR_ROLEID =
+            "getOrgRolesForId";
+    /** Name of getOrgRolesForRoleId query's roleId parameter. */
+    public static final String GET_ORG_ROLES_FOR_ROLEID_ROLEID =
+            "roleId";
+    /** Query of getOrgRolesForRoleId query. */
+    protected static final String GET_ORG_ROLES_FOR_ROLEID_QUERY =
+            "SELECT DISTINCT"
+            + " NEW au.org.ands.vocabs.roles.Role"
+            + "(role.roleId, role.roleTypeId, role.name)"
+            + " FROM Role role "
+            + " WHERE roleId = :" + GET_ROLES_FOR_ROLEID_ROLEID
+            + " AND roleTypeId ="
+            + " au.org.ands.vocabs.roles.db.entity.RoleTypeId."
+            + "ROLE_ORGANISATIONAL"
             + " AND enabled = '1'";
 
     /** Name of checkRoleExistsEnabled query. */
