@@ -104,8 +104,8 @@ public final class ApiPaths {
     /** Subpath for email subscription services for OWNER. */
     public static final String OWNER = "owner";
 
-    /** Path parameter name for an owner. */
-    public static final String OWNER_ID = "{ownerId}";
+    /** Path parameter name for an owner name. */
+    public static final String OWNER_NAME = "{owner}";
 
     /** Subpath for email subscription services for SYSTEM. */
     public static final String SYSTEM = "system";

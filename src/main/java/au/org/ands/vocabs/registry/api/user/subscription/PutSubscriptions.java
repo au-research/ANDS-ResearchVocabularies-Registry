@@ -12,6 +12,7 @@ import javax.validation.constraints.NotNull;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
@@ -86,14 +87,14 @@ public class PutSubscriptions {
     public final Response createEmailSubscriptionVocabulary(
             @Context final HttpServletRequest request,
             @Context final UriInfo uriInfo,
+            @ApiParam(value = "The ID of the vocabulary to be "
+                    + "subscribed to.")
+            @PathParam("vocabularyId") final Integer vocabularyId,
             @ApiParam(value = "Subscriber email address")
             @NotNull(message =
                     "The subscriber email address must be specified.")
             @QueryParam(SubscriberAuthenticator.SUBSCRIBER_EMAIL_ADDRESS)
-            final String email,
-            @ApiParam(value = "The ID of the vocabulary to be "
-                    + "subscribed to.")
-            @QueryParam("vocabularyId") final Integer vocabularyId) {
+            final String email) {
         logger.debug("called createEmailSubscriptionVocabulary");
         logger.debug("email:  " + email);
 
@@ -150,7 +151,7 @@ public class PutSubscriptions {
      * @param owner The owner to subscribe to.
      * @return An empty response for success, or an error response. */
     @Path(ApiPaths.EMAIL + "/"
-            + ApiPaths.OWNER + "/" + ApiPaths.OWNER_ID)
+            + ApiPaths.OWNER + "/" + ApiPaths.OWNER_NAME)
     @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     // NB: we _don't_ require authentication for this method!
@@ -179,15 +180,15 @@ public class PutSubscriptions {
     public final Response createEmailSubscriptionOwner(
             @Context final HttpServletRequest request,
             @Context final UriInfo uriInfo,
+            @ApiParam(value = "Owner to subscribe to. Specify "
+                    + Owners.ALL_OWNERS
+                    + " to subscribe to notifications for all owners.")
+            @PathParam("owner") final String owner,
             @ApiParam(value = "Subscriber email address")
             @NotNull(message =
                     "The subscriber email address must be specified.")
             @QueryParam(SubscriberAuthenticator.SUBSCRIBER_EMAIL_ADDRESS)
-            final String email,
-            @ApiParam(value = "Owner to subscribe to. Specify "
-                    + Owners.ALL_OWNERS
-                    + " to subscribe to notifications for all owners.")
-            @QueryParam("owner") final String owner) {
+            final String email) {
         logger.debug("called createEmailSubscriptionOwner");
         logger.debug("email: " + email);
 

@@ -12,6 +12,7 @@ import javax.validation.constraints.NotNull;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
@@ -99,7 +100,7 @@ public class DeleteSubscriptions {
             @SuppressWarnings("unused") final String token,
             @ApiParam(value = "The ID of the vocabulary to be "
                     + "unsubscribed from.")
-            @QueryParam("vocabularyId") final Integer vocabularyId) {
+            @PathParam("vocabularyId") final Integer vocabularyId) {
         logger.debug("called deleteEmailSubscriptionVocabulary");
         logger.debug("profile: username: " + profile.getUsername()
                 + "; email: " + profile.getEmail());
@@ -160,7 +161,7 @@ public class DeleteSubscriptions {
      * @param owner The owner to unsubscribe from.
      * @return An empty response for success, or an error response. */
     @Path(ApiPaths.EMAIL + "/"
-            + ApiPaths.OWNER + "/" + ApiPaths.OWNER_ID)
+            + ApiPaths.OWNER + "/" + ApiPaths.OWNER_NAME)
     @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     @Pac4JSecurity(clients = AuthConstants.SUBSCRIBER_PARAMETER_CLIENT)
@@ -201,7 +202,7 @@ public class DeleteSubscriptions {
                     + "for all owners (in which case, any other "
                     + "existing subscriptions to individual owners will "
                     + "remain).")
-            @QueryParam("owner") final String owner) {
+            @PathParam("owner") final String owner) {
         logger.debug("called deleteEmailSubscriptionOwner");
         logger.debug("profile: username: " + profile.getUsername()
                 + "; email: " + profile.getEmail());
