@@ -46,6 +46,9 @@ public final class TemporalUtils {
      * class. */
     public static final String END_DATE = "endDate";
 
+    /** Parameter name used in fixed-time queries. */
+    public static final String FIXED_TIME_PARAMETER = "fixedTime";
+
     /** Clause for JPQL queries to select only currently-valid rows. */
     public static final String TEMPORAL_QUERY_VALID_CLAUSE =
             " " + END_DATE + " = :" + CURRENTLY_VALID_END_DATE;
@@ -110,6 +113,18 @@ public final class TemporalUtils {
      * have a WHERE clause. */
     public static final String WHERE_TEMPORAL_QUERY_ALL_DRAFT_SUFFIX =
             " WHERE " + TEMPORAL_QUERY_ALL_DRAFT_CLAUSE;
+
+    /** Clause for JPQL queries to select timed rows. */
+    public static final String TEMPORAL_QUERY_FIXED_TIME_CLAUSE =
+            " (" + START_DATE + " <= :" + FIXED_TIME_PARAMETER
+            + ") AND (" + END_DATE + " > :" + FIXED_TIME_PARAMETER
+            + ")";
+
+    /** Suffix for JPQL queries to select timed rows.
+     * This version of the suffix is for queries that already
+     * have a WHERE clause. */
+    public static final String AND_TEMPORAL_QUERY_FIXED_TIME_SUFFIX =
+            " AND " + TEMPORAL_QUERY_FIXED_TIME_CLAUSE;
 
     /** Suffix template for JPQL queries to select only currently-valid rows
      * of entity {@link #E1}. */

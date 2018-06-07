@@ -261,7 +261,12 @@ import javax.persistence.Table;
             name = <xsl:value-of select="$entityName" />.
                 GET_DRAFT_<xsl:value-of select="upper-case($entityName)" />_BY_ID,
             query = <xsl:value-of select="$entityName" />.
-                GET_DRAFT_<xsl:value-of select="upper-case($entityName)" />_BY_ID_QUERY)</xsl:if></xsl:if><xsl:apply-templates select="$foreignKeyQueries" mode="annotation">
+                GET_DRAFT_<xsl:value-of select="upper-case($entityName)" />_BY_ID_QUERY),
+    @NamedQuery(
+            name = <xsl:value-of select="$entityName" />.
+                GET_FIXED_TIME_<xsl:value-of select="upper-case($entityName)" />_BY_ID,
+            query = <xsl:value-of select="$entityName" />.
+                GET_FIXED_TIME_<xsl:value-of select="upper-case($entityName)" />_BY_ID_QUERY)</xsl:if></xsl:if><xsl:apply-templates select="$foreignKeyQueries" mode="annotation">
   <xsl:with-param name="entityName" select="$entityName" />
   <xsl:with-param name="addTemporalVersion" select="$idKey" />
 </xsl:apply-templates>
@@ -346,6 +351,19 @@ public class <xsl:value-of select="$entityName" />
           <xsl:with-param name="text" select="$idKey/@keyColumn" />
         </xsl:call-template> = :id"
         + TemporalUtils.AND_TEMPORAL_QUERY_ALL_DRAFT_SUFFIX;
+
+    /** Name of getFixedTimed<xsl:value-of select="$entityName" />ById query. */
+    public static final String GET_FIXED_TIME_<xsl:value-of select="upper-case($entityName)" />_BY_ID =
+            "getFixedTime<xsl:value-of select="$entityName" />ById";
+    /** Query of getFixedTime<xsl:value-of select="$entityName" />ById query. */
+    protected static final String
+        GET_FIXED_TIME_<xsl:value-of
+    select="upper-case($entityName)" />_BY_ID_QUERY =
+        "SELECT entity FROM <xsl:value-of select="$entityName" /> entity"
+        + " WHERE <xsl:call-template name="CamelCaseNotFirst">
+          <xsl:with-param name="text" select="$idKey/@keyColumn" />
+        </xsl:call-template> = :id"
+        + TemporalUtils.AND_TEMPORAL_QUERY_FIXED_TIME_SUFFIX;
 
 </xsl:if><xsl:apply-templates select="$foreignKeyQueries" mode="constants">
   <xsl:with-param name="entityName" select="$entityName" />
@@ -601,6 +619,40 @@ public final class <xsl:value-of select="$entityName" />DAO {
         return entityList;
     }
 
+    /** Get <xsl:value-of select="$entityName" /> instance by id,
+     * as it existed at a specified fixed time.
+     * If there is no such instance, returns null.
+     * This version of the method uses an existing EntityManager
+     * provided as a parameter; transaction begin/end must be
+     * managed by the caller.
+     * @param em The EntityManager to be used.
+     * @param id The <xsl:value-of select="$entityName" />Id of the instance
+     *     to be fetched.
+     * @param fixedTime The time of the instance to fetch. If an instance
+     *     is returned, its start date will be less than or equal to this
+     *     value, and its end date will be after this value.
+     * @return The <xsl:value-of select="$entityName" /> instance
+     *     with that <xsl:value-of select="$entityName" />Id as it was
+     *     at the specified fixed time, or null, if there is no such instance.
+     */
+    public static <xsl:value-of select="$entityName" />
+        getFixedTime<xsl:value-of select="$entityName" />By<xsl:value-of select="$entityName" />Id(
+        final EntityManager em,
+        final Integer id,
+        final java.time.LocalDateTime fixedTime) {
+        TypedQuery&lt;<xsl:value-of select="$entityName" />&gt; q = em.createNamedQuery(
+                <xsl:value-of select="$entityName" />.
+                    GET_FIXED_TIME_<xsl:value-of select="upper-case($entityName)" />_BY_ID,
+                <xsl:value-of select="$entityName" />.class).
+                setParameter("id", id).
+                setParameter(TemporalUtils.FIXED_TIME_PARAMETER, fixedTime);
+        List&lt;<xsl:value-of select="$entityName" />&gt; entityList = q.getResultList();
+        if (entityList.isEmpty()) {
+            return null;
+        }
+        return entityList.get(0);
+    }
+
 </xsl:if>
 
 <xsl:apply-templates select="$foreignKeyQueries" mode="method">
@@ -765,7 +817,12 @@ public final class <xsl:value-of select="$entityName" />DAO {
             name = <xsl:value-of select="$entityName" />.
                 GET_DRAFT_<xsl:value-of select="upper-case($entityName)" />_LIST_FOR_<xsl:value-of select="upper-case(@entityName)" />,
             query = <xsl:value-of select="$entityName" />.
-                GET_DRAFT_<xsl:value-of select="upper-case($entityName)" />_LIST_FOR_<xsl:value-of select="upper-case(@entityName)" />_QUERY)</xsl:when></xsl:choose></xsl:template>
+                GET_DRAFT_<xsl:value-of select="upper-case($entityName)" />_LIST_FOR_<xsl:value-of select="upper-case(@entityName)" />_QUERY),
+    @NamedQuery(
+            name = <xsl:value-of select="$entityName" />.
+                GET_FIXED_TIME_<xsl:value-of select="upper-case($entityName)" />_LIST_FOR_<xsl:value-of select="upper-case(@entityName)" />,
+            query = <xsl:value-of select="$entityName" />.
+                GET_FIXED_TIME_<xsl:value-of select="upper-case($entityName)" />_LIST_FOR_<xsl:value-of select="upper-case(@entityName)" />_QUERY)</xsl:when></xsl:choose></xsl:template>
 
 
   <!-- Generate constant definitions for a query to get a list of
@@ -797,14 +854,13 @@ public final class <xsl:value-of select="$entityName" />DAO {
             "SELECT entity FROM <xsl:value-of select="$entityName" /> entity "
             + "WHERE entity.<xsl:value-of select="@keyColumn" /> = :"
             + GET_<xsl:value-of select="upper-case($entityName)" />_LIST_FOR_<xsl:value-of select="upper-case(@entityName)" />_<xsl:value-of select="upper-case(@keyColumn)" />;
-// CHECKSTYLE:ON: LineLength
-
 <xsl:comment>Add a temporal version of the query, if this is a temporal table.</xsl:comment>
-<xsl:if test="$addTemporalVersion">    /** Name of getCurrent<xsl:value-of select="$entityName" />ListFor<xsl:value-of select="@entityName" /> query. */
+<xsl:if test="$addTemporalVersion">
+    /** Name of getCurrent<xsl:value-of select="$entityName" />ListFor<xsl:value-of select="@entityName" /> query. */
     public static final String
     GET_CURRENT_<xsl:value-of select="upper-case($entityName)" />_LIST_FOR_<xsl:value-of select="upper-case(@entityName)" /> =
             "getCurrent<xsl:value-of select="$entityName" />ListFor<xsl:value-of select="@entityName" />";
-    /** Query of get<xsl:value-of select="$entityName" />ListFor<xsl:value-of select="@entityName" />
+    /** Query of getCurrent<xsl:value-of select="$entityName" />ListFor<xsl:value-of select="@entityName" />
      * query. */
     protected static final String
         GET_CURRENT_<xsl:value-of select="upper-case($entityName)" />_LIST_FOR_<xsl:value-of select="upper-case(@entityName)" />_QUERY =
@@ -817,7 +873,7 @@ public final class <xsl:value-of select="$entityName" />DAO {
     public static final String
     GET_DRAFT_<xsl:value-of select="upper-case($entityName)" />_LIST_FOR_<xsl:value-of select="upper-case(@entityName)" /> =
             "getDraft<xsl:value-of select="$entityName" />ListFor<xsl:value-of select="@entityName" />";
-    /** Query of get<xsl:value-of select="$entityName" />ListFor<xsl:value-of select="@entityName" />
+    /** Query of getDraft<xsl:value-of select="$entityName" />ListFor<xsl:value-of select="@entityName" />
      * query. */
     protected static final String
         GET_DRAFT_<xsl:value-of select="upper-case($entityName)" />_LIST_FOR_<xsl:value-of select="upper-case(@entityName)" />_QUERY =
@@ -826,7 +882,21 @@ public final class <xsl:value-of select="$entityName" />DAO {
             + GET_<xsl:value-of select="upper-case($entityName)" />_LIST_FOR_<xsl:value-of select="upper-case(@entityName)" />_<xsl:value-of select="upper-case(@keyColumn)" />
             + TemporalUtils.AND_TEMPORAL_QUERY_ALL_DRAFT_SUFFIX;
 
+    /** Name of getFixedTime<xsl:value-of select="$entityName" />ListFor<xsl:value-of select="@entityName" /> query. */
+    public static final String
+    GET_FIXED_TIME_<xsl:value-of select="upper-case($entityName)" />_LIST_FOR_<xsl:value-of select="upper-case(@entityName)" /> =
+            "getFixedTime<xsl:value-of select="$entityName" />ListFor<xsl:value-of select="@entityName" />";
+    /** Query of getFixedTime<xsl:value-of select="$entityName" />ListFor<xsl:value-of select="@entityName" />
+     * query. */
+    protected static final String
+        GET_FIXED_TIME_<xsl:value-of select="upper-case($entityName)" />_LIST_FOR_<xsl:value-of select="upper-case(@entityName)" />_QUERY =
+            "SELECT entity FROM <xsl:value-of select="$entityName" /> entity "
+            + "WHERE entity.<xsl:value-of select="@keyColumn" /> = :"
+            + GET_<xsl:value-of select="upper-case($entityName)" />_LIST_FOR_<xsl:value-of select="upper-case(@entityName)" />_<xsl:value-of select="upper-case(@keyColumn)" />
+            + TemporalUtils.AND_TEMPORAL_QUERY_FIXED_TIME_SUFFIX;
 </xsl:if>
+// CHECKSTYLE:ON: LineLength
+
 </xsl:template>
 
   <!-- Generate a sorted, distinct list of imports of entities
@@ -972,6 +1042,39 @@ public final class <xsl:value-of select="$entityName" />DAO {
                             GET_<xsl:value-of select="upper-case($entityName)" />_LIST_FOR_<xsl:value-of select="upper-case(@entityName)" />_<xsl:value-of select="upper-case(@keyColumn)" />,
                         id);
         q = TemporalUtils.setDatetimeConstantParameters(q);
+        List&lt;<xsl:value-of select="$entityName" />&gt; entityList = q.getResultList();
+        return entityList;
+    }
+
+    /** Get all <xsl:value-of select="$entityName" /> instances for a <xsl:value-of select="@entityName" />,
+     * as they existed at a specified fixed time.
+     * This version of the method uses an existing EntityManager
+     * provided as a parameter; transaction begin/end must be
+     * managed by the caller.
+     * @param em The EntityManager to be used.
+     * @param id The <xsl:value-of select="@entityName" />.
+     * @param fixedTime The time of the instance to fetch. If an instance
+     *     is returned, its start date will be less than or equal to this
+     *     value, and its end date will be after this value.
+     * @return The list of <xsl:value-of select="$entityName" />
+     *     instances for this <xsl:value-of select="@entityName" />,
+     *     as they existed at the specified fixed time.
+     */
+    @SuppressWarnings("checkstyle:LineLength")
+    public static List&lt;<xsl:value-of select="$entityName" />&gt;
+    getFixedTime<xsl:value-of select="$entityName" />ListFor<xsl:value-of select="@entityName" />(
+            final EntityManager em,
+            final Integer id,
+        final java.time.LocalDateTime fixedTime) {
+        TypedQuery&lt;<xsl:value-of select="$entityName" />&gt; q = em.createNamedQuery(
+                <xsl:value-of select="$entityName" />.
+                    GET_FIXED_TIME_<xsl:value-of select="upper-case($entityName)" />_LIST_FOR_<xsl:value-of select="upper-case(@entityName)" />,
+                <xsl:value-of select="$entityName" />.class).
+                setParameter(
+                        <xsl:value-of select="$entityName" />.
+                            GET_<xsl:value-of select="upper-case($entityName)" />_LIST_FOR_<xsl:value-of select="upper-case(@entityName)" />_<xsl:value-of select="upper-case(@keyColumn)" />,
+                        id).
+                setParameter(TemporalUtils.FIXED_TIME_PARAMETER, fixedTime);
         List&lt;<xsl:value-of select="$entityName" />&gt; entityList = q.getResultList();
         return entityList;
     }
