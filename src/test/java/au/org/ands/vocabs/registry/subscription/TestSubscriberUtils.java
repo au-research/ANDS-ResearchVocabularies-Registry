@@ -19,7 +19,7 @@ public class TestSubscriberUtils {
 
     /** A Pattern that describes a valid subscriber token. */
     private static final Pattern TOKEN_PATTERN =
-            Pattern.compile("\\d+,[A-Za-z0-9]+");
+            Pattern.compile("\\d+_[A-Za-z0-9]+");
 
     /** Run tests of the {@link SubscriberUtils#createToken(Integer)}
      * method. */
@@ -32,7 +32,7 @@ public class TestSubscriberUtils {
         result = SubscriberUtils.createToken(1);
         logger.info("testCreateToken1 generated token 1: " + result);
 
-        Assert.assertTrue(result.startsWith("1,"),
+        Assert.assertTrue(result.startsWith("1_"),
                 "Token doesn't begin with subscriber Id");
         Assert.assertEquals(result.length(), SubscriberUtils.TOKEN_LENGTH + 2,
                 "Token is the wrong length");
@@ -42,7 +42,7 @@ public class TestSubscriberUtils {
         result = SubscriberUtils.createToken(23);
         logger.info("testCreateToken1 generated token 2: " + result);
 
-        Assert.assertTrue(result.startsWith("23,"),
+        Assert.assertTrue(result.startsWith("23_"),
                 "Token doesn't begin with subscriber Id");
         Assert.assertEquals(result.length(), SubscriberUtils.TOKEN_LENGTH + 3,
                 "Token is the wrong length");

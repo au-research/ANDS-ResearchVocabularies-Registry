@@ -16,7 +16,7 @@ public class SubscriberComparer implements ValueComparer {
 
     /** A Pattern that describes a valid subscriber token. */
     private static final Pattern TOKEN_PATTERN =
-            Pattern.compile("(\\d)+,[A-Za-z0-9]+");
+            Pattern.compile("(\\d)+_[A-Za-z0-9]+");
 
     /** Compare expected and actual values from a subscriber. */
     @Override

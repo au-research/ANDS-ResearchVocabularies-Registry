@@ -48,7 +48,7 @@ public final class SubscriberUtils {
      * @return The generated authentication token.
      */
     public static String createToken(final Integer subscriberId) {
-        return subscriberId.toString() + "," + randomString();
+        return subscriberId.toString() + "_" + randomString();
     }
 
     /** Length of random string to generate for use in tokens. */

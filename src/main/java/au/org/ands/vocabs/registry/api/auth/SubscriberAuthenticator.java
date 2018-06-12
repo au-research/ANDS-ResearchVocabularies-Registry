@@ -55,12 +55,12 @@ public class SubscriberAuthenticator
         // We have a token to check.
         logger.debug("Got a token. Will check it.");
 
-        // The format is expected to be "2,rf6FlQkBj", with a comma
+        // The format is expected to be "2_rf6FlQkBj", with an underscore
         // separating the subscriber ID from the "password-like" component.
         // Yes, 2 + 1 = 3. We expect 2 components, but we allow for
         // splitting into one additional component, so we can see if the
         // caller provided _exactly_ 2 components.
-        String[] tokenSplit =  token.split(",", 2 + 1);
+        String[] tokenSplit =  token.split("_", 2 + 1);
         if (tokenSplit.length != 2) {
             throwsException("Token not in correct format: "
                     + "wrong number of components");
