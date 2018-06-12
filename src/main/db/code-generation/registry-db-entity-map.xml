@@ -272,6 +272,47 @@
 
 </method>
       </extraQuery>
+      <extraQuery name="GET_LAST_NOT_DRAFT_VOCABULARY_BY_VID">
+        <extraQueryParameter name="vocabularyId" />
+        <queryText temporal="true">
+          SELECT entity FROM Vocabulary entity WHERE
+          vocabularyId = :vocabularyId
+          #AND_TEMPORAL_QUERY_ALL_NON_DRAFT_SUFFIX
+          ORDER BY startDate DESC
+        </queryText>
+        <method>    /** Get the last non-draft instance of a Vocabulary,
+     * by vocabulary Id.
+     * If there is no such instance, returns null.
+     * This version of the method uses an existing EntityManager
+     * provided as a parameter; transaction begin/end must be
+     * managed by the caller.
+     * @param vocabularyId The vocabulary id for which instances
+     *     are to be looked up.
+     * @param em The EntityManager to be used.
+     * @return The last non-draft instance of the Vocabulary with that
+     *     vocabulary Id, or null, if there is no such instance.
+     */
+    public static Vocabulary getLastNotDraftVocabularyByVocabularyId(
+            final Integer vocabularyId,
+            final EntityManager em) {
+        TypedQuery&lt;Vocabulary&gt; q = em.createNamedQuery(
+                Vocabulary.
+                    GET_LAST_NOT_DRAFT_VOCABULARY_BY_VID,
+                Vocabulary.class).
+                setParameter(Vocabulary.
+                        GET_LAST_NOT_DRAFT_VOCABULARY_BY_VID_VOCABULARYID,
+                    vocabularyId);
+        q = TemporalUtils.setDatetimeConstantParameters(q);
+        q.setMaxResults(1);
+        List&lt;Vocabulary&gt; entityList = q.getResultList();
+        if (entityList.isEmpty()) {
+            return null;
+        }
+        return entityList.get(0);
+    }
+
+</method>
+      </extraQuery>
     </extraQueries>
   </map>
   <map tableName="versions"
@@ -1024,6 +1065,71 @@
        >
     <column db="element_type" enum="RegistryEventElementType" />
     <column db="event_type" enum="RegistryEventEventType" />
+    <extraQueries>
+      <extraQuery name="GET_REGISTRY_EVENTS_FROM_DATE">
+        <extraQueryParameter name="fromDate" />
+        <queryText>
+          SELECT event FROM RegistryEvent event
+          WHERE event.eventDate &gt;= :fromDate
+          ORDER BY event.eventDate
+        </queryText>
+        <method>    /** Get all Registry Event instances
+     * from a given start date onwards.
+     * @param em The EntityManager to be used.
+     * @param fromDate The start date of Registry Event instances to get.
+     * @return A list of all Registry Event instances from the given
+     *     start date onwards. They are ordered by their eventDate values.
+     */
+    public static List&lt;RegistryEvent&gt;
+        getRegistryEventsFromDate(final EntityManager em,
+                final java.time.LocalDateTime fromDate) {
+        TypedQuery&lt;RegistryEvent&gt; q = em.createNamedQuery(
+                RegistryEvent.GET_REGISTRY_EVENTS_FROM_DATE,
+                        RegistryEvent.class).
+                setParameter(RegistryEvent.
+                        GET_REGISTRY_EVENTS_FROM_DATE_FROMDATE, fromDate);
+        List&lt;RegistryEvent&gt; entityList = q.getResultList();
+        return entityList;
+    }
+
+</method>
+      </extraQuery>
+      <extraQuery name="GET_REGISTRY_EVENTS_FROM_TO_DATE">
+        <extraQueryParameter name="fromDate" />
+        <extraQueryParameter name="toDate" />
+        <queryText>
+          SELECT event FROM RegistryEvent event
+          WHERE event.eventDate &gt;= :fromDate
+          AND event.eventDate &lt; :toDate
+          ORDER BY event.eventDate
+        </queryText>
+        <method>    /** Get all Registry Event instances
+     * between a given start date and end date. The time interval
+     * is closed-open.
+     * @param em The EntityManager to be used.
+     * @param fromDate The start date of Registry Event instances to get.
+     * @param toDate The end date of Registry Event instances to get.
+     * @return A list of all Registry Event instances between the given
+     *     start date and end date. They are ordered by their eventDate values.
+     */
+    public static List&lt;RegistryEvent&gt;
+        getRegistryEventsFromToDate(final EntityManager em,
+                final java.time.LocalDateTime fromDate,
+                final java.time.LocalDateTime toDate) {
+        TypedQuery&lt;RegistryEvent&gt; q = em.createNamedQuery(
+                RegistryEvent.GET_REGISTRY_EVENTS_FROM_TO_DATE,
+                        RegistryEvent.class).
+                setParameter(RegistryEvent.
+                        GET_REGISTRY_EVENTS_FROM_TO_DATE_FROMDATE, fromDate).
+                setParameter(RegistryEvent.
+                        GET_REGISTRY_EVENTS_FROM_TO_DATE_TODATE, toDate);
+        List&lt;RegistryEvent&gt; entityList = q.getResultList();
+        return entityList;
+    }
+
+</method>
+      </extraQuery>
+    </extraQueries>
   </map>
   <map tableName="resource_owner_hosts"
        entityName="ResourceOwnerHost"
@@ -1370,6 +1476,128 @@
       <foreignKeyQuery keyColumn="subscriberId" entityName="Subscriber" />
     </foreignKeyQueries>
     <extraQueries>
+
+      <extraQuery name="GET_CURR_SUB_LIST_FOR_NOTIF_MODE">
+        <extraQueryParameter name="notificationMode" />
+        <queryText temporal="true">
+          SELECT entity FROM Subscription entity
+          WHERE entity.notificationMode = :notificationMode
+          #AND_TEMPORAL_QUERY_VALID_SUFFIX
+        </queryText>
+        <method>    /** Get all current Subscription instances for a
+     * specified notification mode.
+     * This version of the method creates and uses its own EntityManager.
+     * @param notificationMode The notification mode.
+     * @return The list of current Subscription
+     *     instances for this notification mode.
+     */
+    public static List&lt;Subscription&gt;
+    getCurrentSubscriptionsForNotificationMode(
+            final au.org.ands.vocabs.registry.enums.NotificationMode
+                notificationMode) {
+        EntityManager em = DBContext.getEntityManager();
+        TypedQuery&lt;Subscription&gt; q = em.createNamedQuery(
+                Subscription.
+                    GET_CURR_SUB_LIST_FOR_NOTIF_MODE,
+                Subscription.class).
+                setParameter(
+                        Subscription.
+                            GET_CURR_SUB_LIST_FOR_NOTIF_MODE_NOTIFICATIONMODE,
+                        notificationMode);
+        q = TemporalUtils.setDatetimeConstantParameters(q);
+        List&lt;Subscription&gt; entityList = q.getResultList();
+        em.close();
+        return entityList;
+    }
+
+    /** Get all current Subscription instances for a
+     * specified notification mode.
+     * This version of the method uses an existing EntityManager
+     * provided as a parameter; transaction begin/end must be
+     * managed by the caller.
+     * @param notificationMode The notification mode.
+     * @param em The EntityManager to be used.
+     * @return The list of current Subscription
+     *     instances for this notification mode.
+     */
+    public static List&lt;Subscription&gt;
+    getCurrentSubscriptionsForNotificationMode(
+            final au.org.ands.vocabs.registry.enums.NotificationMode
+                notificationMode,
+            final EntityManager em) {
+        TypedQuery&lt;Subscription&gt; q = em.createNamedQuery(
+                Subscription.
+                    GET_CURR_SUB_LIST_FOR_NOTIF_MODE,
+                Subscription.class).
+                setParameter(
+                        Subscription.
+                            GET_CURR_SUB_LIST_FOR_SUB_NOTIF_NOTIFICATIONMODE,
+                        notificationMode);
+        q = TemporalUtils.setDatetimeConstantParameters(q);
+        List&lt;Subscription&gt; entityList = q.getResultList();
+        return entityList;
+    }
+
+</method>
+      </extraQuery>
+      <extraQuery name="GET_CURR_SUB_LIST_FOR_SUB">
+        <extraQueryParameter name="subscriberId" />
+        <queryText temporal="true">
+          SELECT entity FROM Subscription entity
+          WHERE entity.subscriberId = :subscriberId
+          #AND_TEMPORAL_QUERY_VALID_SUFFIX
+        </queryText>
+        <method>    /** Get all current Subscription instances for a Subscriber.
+     * This version of the method creates and uses its own EntityManager.
+     * @param subscriberId The subscriber Id.
+     * @return The list of current Subscription
+     *     instances for this Subscriber.
+     */
+    public static List&lt;Subscription&gt;
+    getCurrentSubscriptionsForSubscriber(final Integer subscriberId) {
+        EntityManager em = DBContext.getEntityManager();
+        TypedQuery&lt;Subscription&gt; q = em.createNamedQuery(
+                Subscription.
+                    GET_CURR_SUB_LIST_FOR_SUB,
+                Subscription.class).
+                setParameter(
+                        Subscription.
+                            GET_CURR_SUB_LIST_FOR_SUB_SUBSCRIBERID,
+                        subscriberId);
+        q = TemporalUtils.setDatetimeConstantParameters(q);
+        List&lt;Subscription&gt; entityList = q.getResultList();
+        em.close();
+        return entityList;
+    }
+
+    /** Get all current Subscription instances for a Subscriber.
+     * This version of the method uses an existing EntityManager
+     * provided as a parameter; transaction begin/end must be
+     * managed by the caller.
+     * @param subscriberId The subscriber Id.
+     * @param em The EntityManager to be used.
+     * @return The list of current Subscription
+     *     instances for this Subscriber.
+     */
+    public static List&lt;Subscription&gt;
+    getCurrentSubscriptionsForSubscriber(
+            final Integer subscriberId,
+            final EntityManager em) {
+        TypedQuery&lt;Subscription&gt; q = em.createNamedQuery(
+                Subscription.
+                    GET_CURR_SUB_LIST_FOR_SUB,
+                Subscription.class).
+                setParameter(
+                        Subscription.
+                            GET_CURR_SUB_LIST_FOR_SUB_SUBSCRIBERID,
+                        subscriberId);
+        q = TemporalUtils.setDatetimeConstantParameters(q);
+        List&lt;Subscription&gt; entityList = q.getResultList();
+        return entityList;
+    }
+
+</method>
+      </extraQuery>
       <extraQuery name="GET_CURR_SUB_LIST_FOR_SUB_NOTIF">
         <extraQueryParameter name="subscriberId" />
         <extraQueryParameter name="notificationMode" />

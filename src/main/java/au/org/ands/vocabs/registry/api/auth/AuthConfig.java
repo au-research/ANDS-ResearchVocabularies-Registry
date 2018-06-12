@@ -84,6 +84,8 @@ public class AuthConfig implements ContextResolver<Config> {
                         CACHE_SIZE, CACHE_TIME, TimeUnit.MINUTES));
         subscriberParameterClient.setName(
                 AuthConstants.SUBSCRIBER_PARAMETER_CLIENT);
+        // We do have a GET method that uses tokens.
+        subscriberParameterClient.setSupportGetRequest(true);
 
         // For a successful login, fetch the user's roles.
         userpassClient.addAuthorizationGenerator(new AuthorizationFetcher());

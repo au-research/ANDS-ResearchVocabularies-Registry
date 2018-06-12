@@ -114,6 +114,12 @@ public final class TemporalUtils {
     public static final String WHERE_TEMPORAL_QUERY_ALL_DRAFT_SUFFIX =
             " WHERE " + TEMPORAL_QUERY_ALL_DRAFT_CLAUSE;
 
+    /** Suffix for JPQL queries to select only non-draft rows.
+     * This version of the suffix is for queries that already
+     * have a WHERE clause. */
+    public static final String AND_TEMPORAL_QUERY_ALL_NON_DRAFT_SUFFIX =
+            " AND NOT " + TEMPORAL_QUERY_ALL_DRAFT_CLAUSE;
+
     /** Clause for JPQL queries to select timed rows. */
     public static final String TEMPORAL_QUERY_FIXED_TIME_CLAUSE =
             " (" + START_DATE + " <= :" + FIXED_TIME_PARAMETER
