@@ -6,7 +6,6 @@ import java.lang.invoke.MethodHandles;
 import java.util.List;
 
 import javax.persistence.EntityManager;
-import javax.persistence.EntityTransaction;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.GET;
@@ -99,12 +98,9 @@ public class GetSubscriptions {
         Integer subscriberId = Integer.valueOf(profile.getId());
 
         EntityManager em = null;
-        EntityTransaction txn = null;
 
         try {
             em = DBContext.getEntityManager();
-            txn = em.getTransaction();
-            txn.begin();
 
             List<au.org.ands.vocabs.registry.db.entity.Subscription>
             dbSubscriptions = SubscriptionDAO.
@@ -127,18 +123,7 @@ public class GetSubscriptions {
             // status code 204.
             return Response.ok().entity(subscriptionList).build();
         } catch (Throwable t) {
-            if (txn != null && txn.isActive()) {
-                try {
-                    logger.error("Exception during transaction; rolling back",
-                            t);
-                    txn.rollback();
-                } catch (Exception e) {
-                    logger.error("Rollback failure!", e);
-                }
-            } else {
-                logger.error("Exception, either during rollback, or "
-                        + "outside active transaction", t);
-            }
+            logger.error("Exception while fetching subcriptions", t);
             // Don't throw, but fall through so that the user sees
             // an error message.
 //            throw t;
