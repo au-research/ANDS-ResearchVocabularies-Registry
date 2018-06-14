@@ -11,9 +11,9 @@ import au.org.ands.vocabs.registry.api.auth.AuthConstants;
 import au.org.ands.vocabs.registry.db.context.TemporalConstants;
 import au.org.ands.vocabs.registry.db.context.TemporalUtils;
 import au.org.ands.vocabs.registry.db.dao.SubscriptionDAO;
-import au.org.ands.vocabs.registry.db.dao.VocabularyIdDAO;
+import au.org.ands.vocabs.registry.db.dao.VocabularyDAO;
 import au.org.ands.vocabs.registry.db.entity.Subscription;
-import au.org.ands.vocabs.registry.db.entity.VocabularyId;
+import au.org.ands.vocabs.registry.db.entity.Vocabulary;
 import au.org.ands.vocabs.registry.enums.NotificationElementType;
 import au.org.ands.vocabs.registry.enums.NotificationMode;
 
@@ -25,6 +25,8 @@ public final class SubscriptionUtils {
     }
 
     /** Create an email subscription for a subscriber email, for a vocabulary.
+     * There must be a current instance of the vocabulary with the specified
+     * vocabulary Id; otherwise, an IllegalArgumentException is thrown.
      * @param email The subscriber email address.
      * @param vocabularyId The vocabulary Id.
      * @param em The EntityManager to use.
@@ -34,10 +36,11 @@ public final class SubscriptionUtils {
     public static void createEmailSubscriptionVocabulary(final String email,
             final Integer vocabularyId, final EntityManager em,
             final LocalDateTime nowTime) {
-        VocabularyId vId = VocabularyIdDAO.getVocabularyIdById(
-                em, vocabularyId);
-        if (vId == null) {
-            throw new IllegalArgumentException("No such vocabulary Id");
+        Vocabulary vocabulary = VocabularyDAO.
+                getCurrentVocabularyByVocabularyId(em, vocabularyId);
+        if (vocabulary == null) {
+            throw new IllegalArgumentException(
+                    "No current vocabulary instance with that vocabulary Id");
         }
 
         Integer subscriberId = SubscriberEmailAddressUtils.

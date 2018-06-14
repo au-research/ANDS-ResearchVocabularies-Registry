@@ -367,6 +367,11 @@
                     <xs:documentation>If the element-type has specific instances (i.e., for element-type owner and vocabulary), this is a human-readable description of the element that has been subscribed to. For a vocabulary, that will be the vocabulary title; for an owner, that will be the owner's full name.</xs:documentation>
                 </xs:annotation>
             </xs:attribute>
+            <xs:attribute name="deleted" type="xs:boolean">
+                <xs:annotation>
+                    <xs:documentation>This attribute is present and true if the subscription is not valid because the element has been deleted.</xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
         </xs:complexType>
     </xs:element>
     <xs:element name="subscription-list">

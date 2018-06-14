@@ -8,6 +8,7 @@ import javax.persistence.EntityManager;
 
 import org.mapstruct.Context;
 
+import au.org.ands.vocabs.registry.db.context.TemporalUtils;
 import au.org.ands.vocabs.registry.db.dao.OwnerDAO;
 import au.org.ands.vocabs.registry.db.dao.VocabularyDAO;
 import au.org.ands.vocabs.registry.db.entity.Vocabulary;
@@ -56,12 +57,18 @@ public abstract class SubscriptionDbSchemaMapperDecorator
             if (vocabulary == null) {
                 // Could have existed only as a draft so far.
                 // We don't (yet) handle that case.
+                // Set deleted as a hint (e.g., to the portal) not to
+                // offer a link to the view page.
                 target.setTitle("Unknown vocabulary");
+                target.setDeleted(true);
             } else {
                 VocabularyJson vocabularyJson =
                         JSONSerialization.deserializeStringAsJson(
                                 vocabulary.getData(), VocabularyJson.class);
                 target.setTitle(vocabularyJson.getTitle());
+                if (!TemporalUtils.isCurrent(vocabulary)) {
+                    target.setDeleted(true);
+                }
             }
             break;
         case OWNER:

@@ -147,7 +147,12 @@ public class PutSubscriptions {
                 logger.error("Exception, either during rollback, or "
                         + "outside active transaction", t);
             }
-            // Don't throw, but fall through so that the user sees
+            // If an error occurs, but it is not transaction-related,
+            // we can provide a more helpful error message.
+            if (t instanceof IllegalArgumentException) {
+                return ErrorResultUtils.badRequest(t.getMessage());
+            }
+            // Otherwise, don't throw, but fall through so that the user sees
             // an error message.
 //            throw t;
         } finally {
@@ -258,7 +263,12 @@ public class PutSubscriptions {
                 logger.error("Exception, either during rollback, or "
                         + "outside active transaction", t);
             }
-            // Don't throw, but fall through so that the user sees
+            // If an error occurs, but it is not transaction-related,
+            // we can provide a more helpful error message.
+            if (t instanceof IllegalArgumentException) {
+                return ErrorResultUtils.badRequest(t.getMessage());
+            }
+            // Otherwise, don't throw, but fall through so that the user sees
             // an error message.
 //            throw t;
         } finally {
@@ -355,7 +365,12 @@ public class PutSubscriptions {
                 logger.error("Exception, either during rollback, or "
                         + "outside active transaction", t);
             }
-            // Don't throw, but fall through so that the user sees
+            // If an error occurs, but it is not transaction-related,
+            // we can provide a more helpful error message.
+            if (t instanceof IllegalArgumentException) {
+                return ErrorResultUtils.badRequest(t.getMessage());
+            }
+            // Otherwise, don't throw, but fall through so that the user sees
             // an error message.
 //            throw t;
         } finally {

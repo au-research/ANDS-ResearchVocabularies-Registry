@@ -30,6 +30,7 @@ public interface SubscriptionDbSchemaMapper {
     // depends on elementType.
     @Mapping(target = "elementId", ignore = true)
     @Mapping(target = "title", ignore = true)
+    @Mapping(target = "deleted", ignore = true)
     au.org.ands.vocabs.registry.schema.vocabulary201701.Subscription
     sourceToTarget(au.org.ands.vocabs.registry.db.entity.Subscription source,
               @Context EntityManager em);
