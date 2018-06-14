@@ -4,10 +4,12 @@ package au.org.ands.vocabs.registry.api.user.subscription;
 
 import java.lang.invoke.MethodHandles;
 import java.time.LocalDateTime;
+import java.util.Set;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityTransaction;
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.ConstraintViolation;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
@@ -29,6 +31,8 @@ import au.org.ands.vocabs.registry.api.context.ApiPaths;
 import au.org.ands.vocabs.registry.api.context.SwaggerInterface;
 import au.org.ands.vocabs.registry.api.user.ErrorResult;
 import au.org.ands.vocabs.registry.api.user.ErrorResultUtils;
+import au.org.ands.vocabs.registry.api.validation.FieldValidationHelper;
+import au.org.ands.vocabs.registry.api.validation.ValidationUtils;
 import au.org.ands.vocabs.registry.db.context.DBContext;
 import au.org.ands.vocabs.registry.db.context.TemporalUtils;
 import au.org.ands.vocabs.registry.log.Logging;
@@ -97,6 +101,14 @@ public class PutSubscriptions {
             final String email) {
         logger.debug("called createEmailSubscriptionVocabulary");
         logger.debug("email:  " + email);
+
+        Set<ConstraintViolation<FieldValidationHelper>> emailViolations =
+                ValidationUtils.getValidator().
+                validateValue(FieldValidationHelper.class,
+                FieldValidationHelper.EMAIL_FIELDNAME, email);
+        if (!emailViolations.isEmpty()) {
+            return ErrorResultUtils.badRequest("Invalid email address");
+        }
 
         EntityManager em = null;
         EntityTransaction txn = null;
@@ -192,6 +204,14 @@ public class PutSubscriptions {
         logger.debug("called createEmailSubscriptionOwner");
         logger.debug("email: " + email);
 
+        Set<ConstraintViolation<FieldValidationHelper>> emailViolations =
+                ValidationUtils.getValidator().
+                validateValue(FieldValidationHelper.class,
+                FieldValidationHelper.EMAIL_FIELDNAME, email);
+        if (!emailViolations.isEmpty()) {
+            return ErrorResultUtils.badRequest("Invalid email address");
+        }
+
         EntityManager em = null;
         EntityTransaction txn = null;
 
@@ -284,6 +304,14 @@ public class PutSubscriptions {
             final String email) {
         logger.debug("called createEmailSubscriptionSystem");
         logger.debug("email: " + email);
+
+        Set<ConstraintViolation<FieldValidationHelper>> emailViolations =
+                ValidationUtils.getValidator().
+                validateValue(FieldValidationHelper.class,
+                FieldValidationHelper.EMAIL_FIELDNAME, email);
+        if (!emailViolations.isEmpty()) {
+            return ErrorResultUtils.badRequest("Invalid email address");
+        }
 
         EntityManager em = null;
         EntityTransaction txn = null;
