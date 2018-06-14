@@ -22,6 +22,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -102,6 +103,9 @@ public class PutSubscriptions {
         logger.debug("called createEmailSubscriptionVocabulary");
         logger.debug("email:  " + email);
 
+        if (StringUtils.isBlank(email)) {
+            return ErrorResultUtils.badRequest("Blank email address");
+        }
         Set<ConstraintViolation<FieldValidationHelper>> emailViolations =
                 ValidationUtils.getValidator().
                 validateValue(FieldValidationHelper.class,
@@ -204,6 +208,9 @@ public class PutSubscriptions {
         logger.debug("called createEmailSubscriptionOwner");
         logger.debug("email: " + email);
 
+        if (StringUtils.isBlank(email)) {
+            return ErrorResultUtils.badRequest("Blank email address");
+        }
         Set<ConstraintViolation<FieldValidationHelper>> emailViolations =
                 ValidationUtils.getValidator().
                 validateValue(FieldValidationHelper.class,
@@ -305,6 +312,9 @@ public class PutSubscriptions {
         logger.debug("called createEmailSubscriptionSystem");
         logger.debug("email: " + email);
 
+        if (StringUtils.isBlank(email)) {
+            return ErrorResultUtils.badRequest("Blank email address");
+        }
         Set<ConstraintViolation<FieldValidationHelper>> emailViolations =
                 ValidationUtils.getValidator().
                 validateValue(FieldValidationHelper.class,
