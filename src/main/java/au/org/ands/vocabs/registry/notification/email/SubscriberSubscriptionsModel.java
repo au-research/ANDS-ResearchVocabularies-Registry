@@ -164,4 +164,13 @@ public class SubscriberSubscriptionsModel {
         properties = aProperties;
     }
 
+    /** Is there nothing to include in the notification for this
+     * subscriber?
+     * @return true, if there is nothing to include in the notification
+     *      for this subscriber.
+     */
+    public boolean isEmpty() {
+        return allOwnerIdsToReport.isEmpty()
+                && allIndividualVocabularySubscriptions.isEmpty();
+    }
 }

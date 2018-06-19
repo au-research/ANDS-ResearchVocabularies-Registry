@@ -146,11 +146,17 @@ public final class SendEmailNotifications {
                 logger.error("No current email address recorded for "
                         + "subscriber; subscriber Id: " + subscriberId);
             }
+            SubscriberSubscriptionsModel model = modelEntry.getValue();
+            if (model.isEmpty()) {
+                // Nothing to notify for this subscriber.
+                logger.info("Nothing to report for subscriber: "
+                        + subscriberId);
+                continue;
+            }
             // Send to all recorded email addresses for the subscriber.
             for (SubscriberEmailAddress sea : seaList) {
                 String emailAddress = sea.getEmailAddress();
                 logger.info("Email for address: " + emailAddress);
-                SubscriberSubscriptionsModel model = modelEntry.getValue();
                 // Set system properties, as they weren't set during
                 // model generation.
                 model.setProperties(properties);
