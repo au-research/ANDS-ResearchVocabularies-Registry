@@ -211,6 +211,21 @@
     </modifySql>
   </changeSet>
 
+  <changeSet id="0003-owners-populate"
+             author="Richard.Walker@ands.org.au">
+    <comment>Populate owners from existing vocabularies.
+    </comment>
+    <sql dbms="mysql">
+      INSERT INTO owners (owner) SELECT DISTINCT owner FROM vocabularies;
+    </sql>
+    <rollback>
+      <sql dbms="mysql">
+        DELETE FROM owners;
+      </sql>
+    </rollback>
+
+  </changeSet>
+
   <changeSet id="0003-subscriber_email_addresses_email_address_end_date-createIndex"
              author="Richard.Walker@ands.org.au">
     <comment>Create subscriber_email_addresses_email_address_end_date index on
