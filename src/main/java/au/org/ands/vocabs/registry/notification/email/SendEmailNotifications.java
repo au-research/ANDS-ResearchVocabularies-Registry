@@ -7,7 +7,9 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.lang.invoke.MethodHandles;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -149,6 +151,9 @@ public final class SendEmailNotifications {
     /** The email address to use as the reply-to address. */
     private static String replyTo;
 
+    /** The beginning of the subject line to use. */
+    private static String subject;
+
     /** Get the values of properties used for configuring email sending,
      * and store them in local fields.
      */
@@ -165,6 +170,14 @@ public final class SendEmailNotifications {
         replyTo = RegistryProperties.getProperty(
                 PropertyConstants.NOTIFICATIONS_EMAIL_REPLYTO,
                 senderEmailAddress);
+        LocalDate localDate = LocalDate.now();
+        DateTimeFormatter formatter =
+                DateTimeFormatter.ofPattern("d MMMM y");
+        String formattedDate = localDate.format(formatter);
+
+        subject = RegistryProperties.getProperty(
+                PropertyConstants.NOTIFICATIONS_EMAIL_SUBJECT, "").trim()
+                + " " + formattedDate;
     }
 
     /** Generate and send the notification emails.
@@ -235,8 +248,7 @@ public final class SendEmailNotifications {
         HtmlEmail email = new HtmlEmail();
         email.setHostName(smtpHost);
         email.setSmtpPort(smtpPort);
-        email.setSubject("Research Vocabularies Australia Weekly Digest "
-                + TemporalUtils.nowUTC());
+        email.setSubject(subject);
         try {
             email.setFrom(senderEmailAddress, senderFullName);
             email.addReplyTo(replyTo);

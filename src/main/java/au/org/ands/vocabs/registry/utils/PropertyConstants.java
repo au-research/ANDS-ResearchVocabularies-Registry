@@ -187,6 +187,10 @@ public final class PropertyConstants {
     public static final String NOTIFICATIONS_EMAIL_REPLYTO =
             "Notifications.email.replyTo";
 
+    /** What to put in the "Subject" line of generated emails. */
+    public static final String NOTIFICATIONS_EMAIL_SUBJECT =
+            "Notifications.email.subject";
+
     /** Path to file containing HTML template. */
     public static final String NOTIFICATIONS_EMAIL_TEMPLATE_HTML =
             "Notifications.email.template.HTML";
