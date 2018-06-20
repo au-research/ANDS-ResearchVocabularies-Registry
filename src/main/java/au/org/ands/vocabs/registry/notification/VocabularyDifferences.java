@@ -2,10 +2,12 @@
 
 package au.org.ands.vocabs.registry.notification;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.commons.lang3.builder.Diff;
@@ -144,6 +146,25 @@ public class VocabularyDifferences {
             versionDiffs.put(versionId, versionDiff);
         }
         versionDiff.addVersionDiff(aVersionDiff);
+    }
+
+    /** Clean up the VersionDifferences instances, by pruning any
+     * for which there are no reported differences.
+     */
+    public void cleanupVersionDiffs() {
+        List<Integer> versionDifferencesToPrune = new ArrayList<>();
+        for (Entry<Integer, VersionDifferences> versionDiffEntry
+                : versionDiffs.entrySet()) {
+            VersionDifferences verdiff = versionDiffEntry.getValue();
+            if (verdiff.getFinalResult() == RegistryEventEventType.UPDATED
+                    && verdiff.getVersionDiffs().isEmpty()
+                    && verdiff.getFieldDiffs().isEmpty()) {
+                versionDifferencesToPrune.add(versionDiffEntry.getKey());
+            }
+        }
+        for (Integer versionId : versionDifferencesToPrune) {
+            versionDiffs.remove(versionId);
+        }
     }
 
 }

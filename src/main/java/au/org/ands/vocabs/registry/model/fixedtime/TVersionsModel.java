@@ -256,6 +256,10 @@ public class TVersionsModel extends TModelBase {
         @Override
         public void visitKeepCommand(final VersionElement ve) {
             // This could contain metadata updates.
+            // ... Or, maybe not.
+            // But we create a VersionDifferences instance in any case,
+            // because we will go on to visit TAccessPointsModel.diff(),
+            // which assumes its existence.
             Integer versionId = ve.getVersionId();
 
             DiffResult diffResult = EntityDiffUtils.diffVersions(

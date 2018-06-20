@@ -250,6 +250,8 @@ public class TVocabularyModel extends TModelBase {
         }
         // In practice, we've only reached this point if this is an update.
         subModels.forEach(sm -> sm.diff(tvmToDiff, vdiff));
+        // And now do a cleanup.
+        vdiff.cleanupVersionDiffs();
     }
 
 }
