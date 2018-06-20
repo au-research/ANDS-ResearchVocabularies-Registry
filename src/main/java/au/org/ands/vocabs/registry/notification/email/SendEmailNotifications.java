@@ -22,7 +22,6 @@ import org.slf4j.LoggerFactory;
 
 import au.org.ands.vocabs.registry.db.context.TemporalUtils;
 import au.org.ands.vocabs.registry.db.dao.SubscriberEmailAddressDAO;
-import au.org.ands.vocabs.registry.db.entity.Subscriber;
 import au.org.ands.vocabs.registry.db.entity.SubscriberEmailAddress;
 import au.org.ands.vocabs.registry.notification.CollectEvents;
 import au.org.ands.vocabs.registry.utils.PropertyConstants;
@@ -110,10 +109,6 @@ public final class SendEmailNotifications {
         }
     }
 
-    /** The subscribers with current email subscriptions.
-     * Keys are subscriber Ids. */
-    private static Map<Integer, Subscriber> subscribersMap;
-
     /** Map of subscribers to the unified model of their subscriptions.
      * Keys are subscriber Ids.
      */
@@ -123,15 +118,16 @@ public final class SendEmailNotifications {
     /** Collect the data needed for all the notification emails that are
      * to be sent out.
      * @param startDate The start date to use for the notification period.
+     * @param endDate The end date to use for the notification period.
      */
-    private static void collectNotificationData(final LocalDateTime startDate) {
-        CollectEvents collectedEvents = new CollectEvents(startDate);
+    private static void collectNotificationData(final LocalDateTime startDate,
+            final LocalDateTime endDate) {
+        CollectEvents collectedEvents = new CollectEvents(startDate, endDate);
         logger.info("Number of VocabularyDifferences computed: "
                 + collectedEvents.getVocabularyIdMap().size());
         CollectSubscriptions collectSubscriptions = new CollectSubscriptions();
         collectSubscriptions.computeVocabularySubscriptionsForSubscribers(
                 collectedEvents);
-        subscribersMap = collectSubscriptions.getSubscribersMap();
         subscriberSubscriptionsModels =
                 collectSubscriptions.getSubscriberSubscriptionsModels();
     }
@@ -263,15 +259,39 @@ public final class SendEmailNotifications {
     }
 
     /** Main method.
-     * @param args Command-line arguments.
+     * @param args Command-line arguments. If no arguments are specified,
+     *      the start date is taken as one week ago, and the end date
+     *      is taken as now. If one argument is specified,
+     *      it is taken as the start date, and the end date is taken as now.
+     *      If two arguments are specified, they are used as the start and
+     *      end date, respectively.
      */
     public static void main(final String[] args) {
         configureSystemProperties();
         configureFreeMarker();
         configureEmailProperties();
-        LocalDateTime startDate = TemporalUtils.nowUTC().minusWeeks(1);
+        LocalDateTime startDate;
+        LocalDateTime endDate;
+        switch (args.length) {
+        case 0:
+            endDate = TemporalUtils.nowUTC();
+            startDate = endDate.minusWeeks(1);
+            break;
+        case 1:
+            startDate = LocalDateTime.parse(args[0]);
+            endDate = TemporalUtils.nowUTC();
+            break;
+        case 2:
+            startDate = LocalDateTime.parse(args[0]);
+            endDate = LocalDateTime.parse(args[1]);
+            break;
+        default:
+            logger.error("Invalid number of arguments: " + args.length);
+            return;
+        }
         logger.info("Notification start date: " + startDate);
-        collectNotificationData(startDate);
+        logger.info("Notification end date: " + endDate);
+        collectNotificationData(startDate, endDate);
         logger.info("Number of subscriber/subscription models: "
                 + subscriberSubscriptionsModels.size());
         sendEmails();

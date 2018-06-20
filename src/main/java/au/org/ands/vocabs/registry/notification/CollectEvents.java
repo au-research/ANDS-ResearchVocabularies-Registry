@@ -60,18 +60,12 @@ public class CollectEvents {
 
     /** Extract the Registry events for a specified time period.
      * The period is specified as a start date; all events from that
-     * date onward are extracted.
+     * date up to the present moment are extracted.
      * @param aFromDate The start date of Registry events to get from
      *      the database.
      */
     public CollectEvents(final LocalDateTime aFromDate) {
-        fromDate = aFromDate;
-        toDate = TemporalUtils.nowUTC();
-        EntityManager em = DBContext.getEntityManager();
-        List<RegistryEvent> reList = RegistryEventDAO.
-                getRegistryEventsFromToDate(em, fromDate, toDate);
-        collectEvents(em, reList);
-        em.close();
+        this(aFromDate, TemporalUtils.nowUTC());
     }
 
     /** Set of vocabulary Ids that we have seen while working through
