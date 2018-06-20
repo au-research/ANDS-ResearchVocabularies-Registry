@@ -333,16 +333,19 @@ public class TVersionsModel extends TModelBase {
         @Override
         public void visitInsertCommand(final VersionElement ve) {
             Integer versionId = ve.getVersionId();
-
+            Version version = ve.getDbVersion();
             vdiff.requireVersionDiffsForVersion(versionId);
             VersionDifferences verdiffs =
                     vdiff.getVersionDiffsForVersion(versionId);
             VersionJson versionJson =
                     JSONSerialization.deserializeStringAsJson(
-                            ve.getDbVersion().getData(), VersionJson.class);
+                            version.getData(), VersionJson.class);
             verdiffs.setFinalResult(RegistryEventEventType.CREATED);
             verdiffs.setTitle(versionJson.getTitle());
             verdiffs.addVersionDiff("Added");
+            verdiffs.addVersionDiff("Status set to "
+                    + WordUtils.capitalizeFully(
+                            version.getStatus().toString()));
         }
     }
 

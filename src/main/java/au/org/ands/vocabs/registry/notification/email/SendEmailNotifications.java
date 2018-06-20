@@ -4,7 +4,7 @@ package au.org.ands.vocabs.registry.notification.email;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
+import java.io.StringWriter;
 import java.io.Writer;
 import java.lang.invoke.MethodHandles;
 import java.time.LocalDateTime;
@@ -13,6 +13,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.apache.commons.mail.EmailException;
+import org.apache.commons.mail.HtmlEmail;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -132,6 +134,39 @@ public final class SendEmailNotifications {
                 collectSubscriptions.getSubscriberSubscriptionsModels();
     }
 
+    /** The hostname of the SMTP server to use. */
+    private static String smtpHost;
+
+    /** The port number of the SMTP server to use. */
+    private static int smtpPort;
+
+    /** The email address to use as the sender. */
+    private static String senderEmailAddress;
+
+    /** The full name to use for the sender .*/
+    private static String senderFullName;
+
+    /** The email address to use as the reply-to address. */
+    private static String replyTo;
+
+    /** Get the values of properties used for configuring email sending,
+     * and store them in local fields.
+     */
+    private static void configureEmailProperties() {
+        smtpHost = RegistryProperties.getProperty(
+                PropertyConstants.NOTIFICATIONS_EMAIL_SMTPHOST, "localhost");
+        smtpPort = Integer.parseInt(RegistryProperties.getProperty(
+                PropertyConstants.NOTIFICATIONS_EMAIL_SMTPPORT, "25"));
+        senderEmailAddress = RegistryProperties.getProperty(
+                PropertyConstants.NOTIFICATIONS_EMAIL_SENDER_EMAILADDRESS,
+                "sender");
+        senderFullName = RegistryProperties.getProperty(
+                PropertyConstants.NOTIFICATIONS_EMAIL_SENDER_FULLNAME);
+        replyTo = RegistryProperties.getProperty(
+                PropertyConstants.NOTIFICATIONS_EMAIL_REPLYTO,
+                senderEmailAddress);
+    }
+
     /** Generate and send the notification emails.
      */
     private static void sendEmails() {
@@ -156,22 +191,28 @@ public final class SendEmailNotifications {
             // Send to all recorded email addresses for the subscriber.
             for (SubscriberEmailAddress sea : seaList) {
                 String emailAddress = sea.getEmailAddress();
-                logger.info("Email for address: " + emailAddress);
+//                logger.info("Email for address: " + emailAddress);
                 // Set system properties, as they weren't set during
                 // model generation.
                 model.setProperties(properties);
-                Map<Integer, String> ownerFullNames =
-                        model.getOwnerFullNames();
-                for (Entry<Integer, String> ofnEntry
-                        : ownerFullNames.entrySet()) {
-                    logger.info("ofn: id: " + ofnEntry.getKey()
-                        + "; name: " + ofnEntry.getValue());
-                }
-                Writer out = new OutputStreamWriter(System.out);
-                Writer out2 = new OutputStreamWriter(System.out);
+//                Map<Integer, String> ownerFullNames =
+//                        model.getOwnerFullNames();
+//                for (Entry<Integer, String> ofnEntry
+//                        : ownerFullNames.entrySet()) {
+//                    logger.info("ofn: id: " + ofnEntry.getKey()
+//                        + "; name: " + ofnEntry.getValue());
+//                }
+                Writer htmlWriter = new StringWriter();
+                Writer plaintextWriter = new StringWriter();
                 try {
-                    templateHTML.process(modelEntry.getValue(), out);
-                    templatePlaintext.process(modelEntry.getValue(), out2);
+                    templateHTML.process(modelEntry.getValue(), htmlWriter);
+                    templatePlaintext.process(modelEntry.getValue(),
+                            plaintextWriter);
+                    String html = htmlWriter.toString();
+//                    logger.info("HTML: " + html);
+                    String plaintext = plaintextWriter.toString();
+//                    logger.info("plaintext: " + plaintext);
+                    sendOneEmail(emailAddress, html, plaintext);
                 } catch (TemplateException e) {
                     logger.error("Exception processing template", e);
                     continue;
@@ -184,12 +225,38 @@ public final class SendEmailNotifications {
         }
     }
 
+    /** Send one notification email.
+     * @param recipient The email address of the intended recipient.
+     * @param html The HTML content to include in the email.
+     * @param plaintext The plain text content to include in the email.
+     */
+    private static void sendOneEmail(final String recipient,
+            final String html, final String plaintext) {
+        HtmlEmail email = new HtmlEmail();
+        email.setHostName(smtpHost);
+        email.setSmtpPort(smtpPort);
+        email.setSubject("Research Vocabularies Australia Weekly Digest "
+                + TemporalUtils.nowUTC());
+        try {
+            email.setFrom(senderEmailAddress, senderFullName);
+            email.addReplyTo(replyTo);
+            email.addTo(recipient);
+            email.setHtmlMsg(html);
+            email.setTextMsg(plaintext);
+            logger.info("Sending an email to: " + recipient);
+            email.send();
+        } catch (EmailException e) {
+            logger.error("Error configuring or sending email", e);
+        }
+    }
+
     /** Main method.
      * @param args Command-line arguments.
      */
     public static void main(final String[] args) {
         configureSystemProperties();
         configureFreeMarker();
+        configureEmailProperties();
         LocalDateTime startDate = TemporalUtils.nowUTC().minusWeeks(1);
         logger.info("Notification start date: " + startDate);
         collectNotificationData(startDate);

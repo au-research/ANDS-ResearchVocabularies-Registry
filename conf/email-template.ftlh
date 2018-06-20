@@ -1,14 +1,14 @@
 <#-- Generate report for one vocabulary. -->
 <#macro reportVocabulary vocabId>
     <#assign vdiff = vocabularyIdMap?api.get(vocabId)>
-    <h2><#if vdiff.finalResult != "DELETED">
+    <h3><#if vdiff.finalResult != "DELETED">
         <a href="${properties["Notifications.portalPrefix"]}viewById/${vocabId}"
            target="_blank">${vdiff.title}</a>
     <#else>${vdiff.title}</#if>
         <#if vdiff.finalResult == "CREATED">
             <b>* New *</b>
         </#if>
-    </h2>
+    </h3>
 
     <#list vdiff.vocabularyDiffs>
         <ul>
@@ -23,7 +23,7 @@
             <p>The following descriptive metadata elements were updated:</p>
             <ul>
                 <#items as fieldDiff>
-                    <li>${fieldDiff.fieldName}</li>
+                    <li>${fieldDiff.fieldName?capitalize}</li>
                 </#items>
             </ul>
         </#list>
@@ -39,8 +39,8 @@
                     <#if verDiff.finalResult != "UPDATED"
                     || verDiff.versionDiffs?has_content
                     || verDiff.fieldDiffs?has_content>
-                        <h4>${verDiff.title}</h4>
-                        <ul>
+                        <p style="margin-bottom: 5px">${verDiff.title}</p>
+                        <ul style="margin-top: 5px">
                             <#list verDiff.versionDiffs>
                                 <#items as versionDiff>
                                     <li>${versionDiff}</li>
@@ -75,25 +75,29 @@
 
 <#-- Reports grouped by owner -->
 <#list allOwnerIdsToReport as ownerId>
-    <h1>New/changed vocabularies from ${ownerFullNames?api.get(ownerId)}</h1>
+    <h2>New/changed vocabularies from ${ownerFullNames?api.get(ownerId)}</h2>
 
     <#list ownerVocabularies?api.get(ownerId) as vocabId>
         <@reportVocabulary vocabId />
     </#list>
 </#list>
 
-<p><a href="${properties["Notifications.portalPrefix"]}vocabs/manageSubscriptions/${token}"
-   target="_blank">Manage your subscription preferences</a></p>
+<div style="text-align: center">
+    <p>
+        <button type="button" style="background-color: LightGray">
+            <a href="${properties["Notifications.portalPrefix"]}vocabs/manageSubscriptions/${token}"
+               target="_blank"
+               style="padding-left: 50px; padding-right: 50px; font-size: 125%; color: black; text-decoration: none;">Manage your subscription preferences</a>
+        </button>
+    </p>
 
-<p>This is an automated email; please do not reply. For more information,
-    ideas for improvements, or issues using the service, email
-    <a href="mailto:services@ands.org.au">services@ands.org.au</a>.</p>
+    <p>This is an automated email; please do not reply. For more information,
+        ideas for improvements, or issues using the service, email
+        <a href="mailto:services@ands.org.au">services@ands.org.au</a>.</p>
 
-<p><a href="${properties["Notifications.portalPrefix"]}"
-      target="_blank">Research Vocabularies Australia</a>
-    is provided by the
-    <a href="http://ands.ands.org.au/"
-       target="_blank">Australian National Data Service</a>
-    in partnership with
-    <a href="https://www.ands-nectar-rds.org.au/"
-       target="_blank">Nectar and RDS</a>.</p>
+    <p><a href="${properties["Notifications.portalPrefix"]}"
+          target="_blank">Research Vocabularies Australia</a>
+        is provided by the
+        <a href="https://ands.org.au/"
+           target="_blank">Australian National Data Service</a>.</p>
+</div>

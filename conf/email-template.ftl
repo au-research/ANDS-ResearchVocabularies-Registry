@@ -1,92 +1,82 @@
 <#-- Generate report for one vocabulary. -->
 <#macro reportVocabulary vocabId>
-    <#assign vdiff = vocabularyIdMap?api.get(vocabId)>
-    <#if vdiff.finalResult != "DELETED">
-           ${vdiff.title}
-        <#if vdiff.finalResult == "CREATED">
-            * New *
-        </#if>
-        ${properties["Notifications.portalPrefix"]}viewById/${vocabId}
-    <#else>${vdiff.title}</#if>
+<#assign vdiff = vocabularyIdMap?api.get(vocabId)>
+<#if vdiff.finalResult != "DELETED">
+<#if vdiff.finalResult == "CREATED">** New </#if>** ${vdiff.title}
+   ${properties["Notifications.portalPrefix"]}viewById/${vocabId}
+<#else>
+${vdiff.title}
+</#if>
 
-    <#list vdiff.vocabularyDiffs>
-        <#items as vocabularyDiff>
-             * ${vocabularyDiff}
-        </#items>
-    </#list>
+<#list vdiff.vocabularyDiffs>
+ <#items as vocabularyDiff>
+   - ${vocabularyDiff}
+ </#items>
 
-    <#if vdiff.finalResult == "UPDATED">
-        <#list vdiff.fieldDiffs>
-            <p>The following descriptive metadata elements were updated:</p>
-            <ul>
-                <#items as fieldDiff>
-                    <li>${fieldDiff.fieldName}</li>
-                </#items>
-            </ul>
-        </#list>
+</#list>
+<#if vdiff.finalResult == "UPDATED">
+<#list vdiff.fieldDiffs>
+   The following descriptive metadata elements were updated:
+   <#items as fieldDiff>
+   - ${fieldDiff.fieldName?capitalize}
+   </#items>
 
-        <#list vdiff.versionDiffs>
-            <p>The following version changes were made:</p>
+</#list>
+<#list vdiff.versionDiffs>
+   The following version changes were made:
+<#items as versionId, verDiff>
+ <#-- Report on a version if the finalResult is
+      either CREATED or DELETED, or, if it is UPDATED,
+      there is either a versionDiff or a fieldDiff. -->
+ <#if verDiff.finalResult != "UPDATED"
+      || verDiff.versionDiffs?has_content
+      || verDiff.fieldDiffs?has_content>
 
-            <div style="padding-left: 30px">
-                <#items as versionId, verDiff>
-                    <#-- Report on a version if the finalResult is
-                      either CREATED or DELETED, or, if it is UPDATED,
-                      there is either a versionDiff or a fieldDiff. -->
-                    <#if verDiff.finalResult != "UPDATED"
-                    || verDiff.versionDiffs?has_content
-                    || verDiff.fieldDiffs?has_content>
-                        <h4>${verDiff.title}</h4>
-                        <ul>
-                            <#list verDiff.versionDiffs>
-                                <#items as versionDiff>
-                                    <li>${versionDiff}</li>
-                                </#items>
-                            </#list>
-                            <#list verDiff.fieldDiffs>
-                                <#items as fieldDiff>
-                                    <li>${fieldDiff.fieldName?capitalize}
-                                        updated</li>
-                                </#items>
-                            </#list>
-                        </ul>
-                    </#if>
-                </#items>
-            </div>
-        </#list>
+   ${verDiff.title}
+   <#list verDiff.versionDiffs as versionDiff>
+   - ${versionDiff}
+   </#list>
+   <#list verDiff.fieldDiffs as fieldDiff>
+   - ${fieldDiff.fieldName?capitalize} updated
+   </#list>
+ </#if>
+</#items>
+</#list>
 
-    </#if>
+</#if>
 </#macro>
-
-
+=============================================
 Research Vocabularies Australia Weekly Digest
+=============================================
 
 <#-- Reports for individual vocabularies -->
 <#list allIndividualVocabularySubscriptions>
 Changes to vocabularies you are subscribed to
+---------------------------------------------
 
-    <#items as vocabId>
-        <@reportVocabulary vocabId />
-    </#items>
+<#items as vocabId>
+<@reportVocabulary vocabId />
+</#items>
 </#list>
 
 <#-- Reports grouped by owner -->
 <#list allOwnerIdsToReport as ownerId>
-    New/changed vocabularies from ${ownerFullNames?api.get(ownerId)}
+New/changed vocabularies from ${ownerFullNames?api.get(ownerId)}
+------------------------------${""?left_pad(ownerFullNames?api.get(ownerId)?length, "-")}
 
-    <#list ownerVocabularies?api.get(ownerId) as vocabId>
-        <@reportVocabulary vocabId />
-    </#list>
+<#list ownerVocabularies?api.get(ownerId) as vocabId>
+<@reportVocabulary vocabId />
+</#list>
 </#list>
 
-Manage your subscription preferences
-${properties["Notifications.portalPrefix"]}vocabs/manageSubscriptions/${token}
+++ Manage your subscription preferences
+   ${properties["Notifications.portalPrefix"]}vocabs/manageSubscriptions/${token}
 
 This is an automated email; please do not reply. For more information,
 ideas for improvements, or issues using the service, email
 services@ands.org.au.
 
-Research Vocabularies Australia is provided by the Australian National
-Data Service in partnership with Nectar and RDS.
+Research Vocabularies Australia is provided by
+the Australian National Data Service.
 ${properties["Notifications.portalPrefix"]}
-http://ands.org.au/
+https://ands.org.au/

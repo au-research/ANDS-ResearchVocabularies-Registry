@@ -171,9 +171,21 @@ public final class PropertyConstants {
     public static final String NOTIFICATIONS_EMAIL_SMTPHOST =
             "Notifications.email.smtpHost";
 
+    /** Port number of SMTP server used to send generated emails. */
+    public static final String NOTIFICATIONS_EMAIL_SMTPPORT =
+            "Notifications.email.smtpPort";
+
     /** What to put in the "From" line of generated emails. */
-    public static final String NOTIFICATIONS_EMAIL_SENDER =
-            "Notifications.email.sender";
+    public static final String NOTIFICATIONS_EMAIL_SENDER_EMAILADDRESS =
+            "Notifications.email.senderEmailAddress";
+
+    /** What to put in the "From" line of generated emails. */
+    public static final String NOTIFICATIONS_EMAIL_SENDER_FULLNAME =
+            "Notifications.email.senderFullName";
+
+    /** What to put in the "Reply-To" line of generated emails. */
+    public static final String NOTIFICATIONS_EMAIL_REPLYTO =
+            "Notifications.email.replyTo";
 
     /** Path to file containing HTML template. */
     public static final String NOTIFICATIONS_EMAIL_TEMPLATE_HTML =

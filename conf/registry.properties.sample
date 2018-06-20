@@ -133,8 +133,14 @@ Notifications.portalPrefix=[portal URL, e.g., https://myhost/]
 
 # Hostname of SMTP server used to send generated emails.
 Notifications.email.smtpHost=[hostname of SMTP server]
-# What to put in the "From" line of generated emails.
-Notifications.email.sender=notifications@myhost.ands.org.au <Notifications>
+# Port number of SMTP server used to send generated emails.
+Notifications.email.smtpPort=25
+# The sender email address to put in the "From" line of generated emails.
+Notifications.email.senderEmailAddress=[e.g., notifications@hostname]
+# The full name of the sender to put in the "From" line of generated emails.
+Notifications.email.senderFullName=[e.g., Notifications Service]
+# The email address to put in the "Reply-To" line of generated emails.
+Notifications.email.replyTo=[e.g., do-not-reply@hostname]
 # Path to file containing HTML template. */
 Notifications.email.template.HTML=conf/email-template.ftlh
 # Path to file containing plain text template.
