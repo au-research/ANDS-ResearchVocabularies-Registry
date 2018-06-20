@@ -27,8 +27,10 @@ public class VersionDifferences {
     private List<String> versionDiffs = new ArrayList<>();
 
     /** Representation of the differences between the values of fields of
-     * the version. */
-    private List<Diff<?>> fieldDiffs;
+     * the version. Initialized to an empty list so that TVersionsModel
+     * doesn't have to worry about setting it for the cases of
+     * version creation and deletion. */
+    private List<Diff<?>> fieldDiffs = new ArrayList<>();
 
     /** Get the value of finalResult.
      * @return The value of finalResult.

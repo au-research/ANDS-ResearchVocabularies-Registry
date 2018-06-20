@@ -18,6 +18,7 @@ import org.apache.commons.collections4.sequence.SequencesComparator;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.builder.Diff;
 import org.apache.commons.lang3.builder.DiffResult;
+import org.apache.commons.lang3.text.WordUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -277,27 +278,28 @@ public class TVersionsModel extends TModelBase {
             for (Diff<?> diff : diffResult) {
                 switch (diff.getFieldName()) {
                 case EntityDiffUtils.STATUS:
-                    verdiffs.addVersionDiff(
-                            "Status updated to " + diff.getRight() + ".");
+                    verdiffs.addVersionDiff("Status updated to "
+                            + WordUtils.capitalizeFully(
+                                    diff.getRight().toString()));
                     break;
                 case EntityDiffUtils.IMPORT:
                     if (BooleanUtils.isTrue((Boolean) diff.getRight())) {
                         verdiffs.addVersionDiff(
-                                "Version published via a SPARQL endpoint.");
+                                "Version published via a SPARQL endpoint");
                     } else {
                         verdiffs.addVersionDiff(
                                 "Version no longer published via a "
-                                + "SPARQL endpoint.");
+                                + "SPARQL endpoint");
                     }
                     break;
                 case EntityDiffUtils.PUBLISH:
                     if (BooleanUtils.isTrue((Boolean) diff.getRight())) {
                         verdiffs.addVersionDiff(
-                                "Version published via the Linked Data API.");
+                                "Version published via the Linked Data API");
                     } else {
                         verdiffs.addVersionDiff(
                                 "Version no longer published via the "
-                                + "Linked Data API.");
+                                + "Linked Data API");
                     }
                     break;
                 default:
@@ -320,6 +322,7 @@ public class TVersionsModel extends TModelBase {
                             ve.getDbVersion().getData(), VersionJson.class);
             verdiffs.setFinalResult(RegistryEventEventType.DELETED);
             verdiffs.setTitle(versionJson.getTitle());
+            verdiffs.addVersionDiff("Deleted");
         }
 
         /** {@inheritDoc} */
@@ -335,6 +338,7 @@ public class TVersionsModel extends TModelBase {
                             ve.getDbVersion().getData(), VersionJson.class);
             verdiffs.setFinalResult(RegistryEventEventType.CREATED);
             verdiffs.setTitle(versionJson.getTitle());
+            verdiffs.addVersionDiff("Added");
         }
     }
 

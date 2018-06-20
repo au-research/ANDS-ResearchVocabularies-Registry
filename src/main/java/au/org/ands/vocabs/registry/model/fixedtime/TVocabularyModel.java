@@ -11,6 +11,7 @@ import javax.persistence.EntityManager;
 
 import org.apache.commons.lang3.builder.Diff;
 import org.apache.commons.lang3.builder.DiffResult;
+import org.apache.commons.lang3.text.WordUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -216,13 +217,13 @@ public class TVocabularyModel extends TModelBase {
                 return;
             }
             // This is a creation.
-            vdiff.addVocabularyDiff("The vocabulary was created.");
+            vdiff.addVocabularyDiff("The vocabulary was created");
             // For now, no more to this report, so don't bother to fall through
             // to sub-model processing.
             return;
         } else if (finalVocabulary == null) {
             // This is a deletion.
-            vdiff.addVocabularyDiff("The vocabulary was deleted.");
+            vdiff.addVocabularyDiff("The vocabulary was deleted");
             // For now, no more to this report, so don't bother to fall through
             // to sub-model processing.
             return;
@@ -237,8 +238,9 @@ public class TVocabularyModel extends TModelBase {
             for (Diff<?> diff : diffResult) {
                 switch (diff.getFieldName()) {
                 case EntityDiffUtils.STATUS:
-                    vdiff.addVocabularyDiff(
-                            "Status updated to " + diff.getRight() + ".");
+                    vdiff.addVocabularyDiff("Status updated to "
+                            + WordUtils.capitalizeFully(
+                                    diff.getRight().toString()));
                     break;
                 default:
                     diffList.add(diff);

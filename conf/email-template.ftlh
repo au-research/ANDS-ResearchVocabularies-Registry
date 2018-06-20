@@ -6,7 +6,7 @@
            target="_blank">${vdiff.title}</a>
     <#else>${vdiff.title}</#if>
         <#if vdiff.finalResult == "CREATED">
-            <b>New</b>
+            <b>* New *</b>
         </#if>
     </h2>
 
@@ -20,7 +20,7 @@
 
     <#if vdiff.finalResult == "UPDATED">
         <#list vdiff.fieldDiffs>
-            The following descriptive metadata elements were updated:
+            <p>The following descriptive metadata elements were updated:</p>
             <ul>
                 <#items as fieldDiff>
                     <li>${fieldDiff.fieldName}</li>
@@ -28,31 +28,35 @@
             </ul>
         </#list>
 
-        <#list vdiff.versionDiffs as versionId, verDiff>
-            hello
-            <#-- Report on a version if the finalResult is
-              either CREATED or DELETED, or, if it is UPDATED,
-              there is either a versionDiff or a fieldDiff. -->
-            <#if verDiff.finalResult != "UPDATED"
-            || verDiff.versionDiffs?has_content
-            || verDiff.fieldDiffs?has_content>
-                <h4>${verDiff.title}</h4>
-                <p>Final result: ${verDiff.finalResult}</p>
-                <#list verDiff.versionDiffs>
-                    <ul>
+        <#list vdiff.versionDiffs>
+            <p>The following version changes were made:</p>
+
+            <#items as versionId, verDiff>
+                <#-- Report on a version if the finalResult is
+                  either CREATED or DELETED, or, if it is UPDATED,
+                  there is either a versionDiff or a fieldDiff. -->
+                <#if verDiff.finalResult != "UPDATED"
+                || verDiff.versionDiffs?has_content
+                || verDiff.fieldDiffs?has_content>
+                    <h4>${verDiff.title}</h4>
+                    <#if verDiff.finalResult == "UPDATED">
+                        <ul>
+                    </#if>
+                    <#list verDiff.versionDiffs>
                         <#items as versionDiff>
                             <li>${versionDiff}</li>
                         </#items>
-                    </ul>
-                </#list>
-                <#list verDiff.fieldDiffs>
-                    <ul>
+                    </#list>
+                    <#list verDiff.fieldDiffs>
                         <#items as fieldDiff>
-                            <li>${fieldDiff.fieldName}</li>
+                            <li>${fieldDiff.fieldName?capitalize} updated</li>
                         </#items>
-                    </ul>
-                </#list>
-            </#if>
+                    </#list>
+                    <#if verDiff.finalResult == "UPDATED">
+                        </ul>
+                    </#if>
+                </#if>
+            </#items>
         </#list>
 
     </#if>

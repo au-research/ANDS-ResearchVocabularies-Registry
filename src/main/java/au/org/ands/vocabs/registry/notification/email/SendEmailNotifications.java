@@ -168,8 +168,10 @@ public final class SendEmailNotifications {
                         + "; name: " + ofnEntry.getValue());
                 }
                 Writer out = new OutputStreamWriter(System.out);
+                Writer out2 = new OutputStreamWriter(System.out);
                 try {
                     templateHTML.process(modelEntry.getValue(), out);
+                    templatePlaintext.process(modelEntry.getValue(), out2);
                 } catch (TemplateException e) {
                     logger.error("Exception processing template", e);
                     continue;
