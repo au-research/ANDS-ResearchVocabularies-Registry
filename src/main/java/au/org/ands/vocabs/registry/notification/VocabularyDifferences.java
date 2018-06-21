@@ -167,4 +167,17 @@ public class VocabularyDifferences {
         }
     }
 
+    /** Is there nothing to include in the notification for this
+     * vocabulary? This method only returns an accurate result
+     * <i>after</i> running {@link #cleanupVersionDiffs()}.
+     * @return true, if there is nothing to include in the notification
+     *      for this vocabulary.
+     */
+    public boolean isEmpty() {
+        return finalResult == RegistryEventEventType.UPDATED
+                && vocabularyDiffs.isEmpty()
+                && fieldDiffs.isEmpty()
+                && versionDiffs.isEmpty();
+    }
+
 }

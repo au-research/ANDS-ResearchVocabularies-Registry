@@ -206,12 +206,20 @@ public class CollectEvents {
                 TModelMethods.diff(vstart, vend, vdiff);
                 return;
             }
-            // The vocabulary was updated.
+            // The vocabulary was updated ... maybe.
+            // We compare, but we only keep the result if it is non-empty.
             vdiff.setTitle(vstart.getVocabularyTitle());
             vdiff.setFinalResult(RegistryEventEventType.UPDATED);
-            recordVocabularyForOwner(vstart.getVocabularyOwner(),
-                    vocabularyId);
             TModelMethods.diff(vstart, vend, vdiff);
+            if (vdiff.isEmpty()) {
+                // Prune this vocabulary, because we found no differences.
+                // This will be the case if the owner edited and
+                // republished without changing anything.
+                vocabularyIdMap.remove(vocabularyId);
+            } else {
+                recordVocabularyForOwner(vstart.getVocabularyOwner(),
+                        vocabularyId);
+            }
         }
     }
 
