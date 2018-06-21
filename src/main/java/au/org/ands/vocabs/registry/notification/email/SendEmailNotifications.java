@@ -26,6 +26,10 @@ import au.org.ands.vocabs.registry.db.entity.SubscriberEmailAddress;
 import au.org.ands.vocabs.registry.notification.CollectEvents;
 import au.org.ands.vocabs.registry.utils.PropertyConstants;
 import au.org.ands.vocabs.registry.utils.RegistryProperties;
+import freemarker.cache.ClassTemplateLoader;
+import freemarker.cache.FileTemplateLoader;
+import freemarker.cache.MultiTemplateLoader;
+import freemarker.cache.TemplateLoader;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
@@ -39,26 +43,22 @@ public final class SendEmailNotifications {
     private static Logger logger = LoggerFactory.getLogger(
             MethodHandles.lookup().lookupClass());
 
-    /** Private constructor for a utility class. */
-    private SendEmailNotifications() {
-    }
-
     /** FreeMarker configuration. Created and initialized by
      * {@link #configureFreeMarker()}.
      */
-    private static Configuration freeMarkerCfg;
+    private Configuration freeMarkerCfg;
 
     /** The plain text version of the email template. */
-    private static Template templatePlaintext;
+    private Template templatePlaintext;
 
     /** The HTML version of the email template. */
-    private static Template templateHTML;
+    private Template templateHTML;
 
     /** Map of system properties needed. */
-    private static Map<String, String> properties = new HashMap<>();
+    private Map<String, String> properties = new HashMap<>();
 
     /** Configure the map of system properties needed by the templates. */
-    private static void configureSystemProperties() {
+    private void configureSystemProperties() {
         String[] propertyNames = {
                 PropertyConstants.NOTIFICATIONS_PORTAL_PREFIX,
         };
@@ -68,10 +68,36 @@ public final class SendEmailNotifications {
         }
     }
 
-    /** Create and configure the FreeMarker configuration. */
-    private static void configureFreeMarker() {
+    /** Create and configure the FreeMarker configuration.
+     * @throws IOException If there is an error initializing the templates.
+     */
+    private void configureFreeMarker() throws IOException {
         Version freeMarkerVersion = Configuration.VERSION_2_3_28;
+
+        // We support loading the templates from:
+        // * the current directory
+        // * the conf directory, if it exists
+        // * the directory in the classpath that contains the root package.
+        // We do this in order to support invoking this method both
+        // from a standalone class and when running within the Registry webapp.
+        MultiTemplateLoader mtl;
+        if (new File("conf").isDirectory()) {
+            FileTemplateLoader ftl1 = new FileTemplateLoader(new File("."));
+            FileTemplateLoader ftl2 = new FileTemplateLoader(new File("conf"));
+            ClassTemplateLoader ctl = new ClassTemplateLoader(getClass(), "/");
+            mtl = new MultiTemplateLoader(
+                    new TemplateLoader[] {ftl1, ftl2, ctl});
+        } else {
+            // We are running within the webapp, and there's no conf
+            // directory. Allow loading from the current directory anyway.
+            FileTemplateLoader ftl1 = new FileTemplateLoader(new File("."));
+            ClassTemplateLoader ctl = new ClassTemplateLoader(getClass(), "/");
+            mtl = new MultiTemplateLoader(
+                    new TemplateLoader[] {ftl1, ctl});
+        }
+
         freeMarkerCfg = new Configuration(freeMarkerVersion);
+        freeMarkerCfg.setTemplateLoader(mtl);
         // Configure "iterable support", in particular, to support
         // using DiffResult as an Iterable. Not needed for now.
 //        DefaultObjectWrapperBuilder owb = new DefaultObjectWrapperBuilder(
@@ -79,14 +105,12 @@ public final class SendEmailNotifications {
 //        owb.setIterableSupport(true);
 //        freeMarkerCfg.setObjectWrapper(owb.build());
 
-        try {
+//        try {
 //            freeMarkerCfg.setDirectoryForTemplateLoading(
-//                    new File("/where/you/store/templates"));
-            freeMarkerCfg.setDirectoryForTemplateLoading(
-                    new File("."));
-        } catch (IOException e) {
-            logger.error("Unable to set directory for template loading", e);
-        }
+//                    new File("."));
+//        } catch (IOException e) {
+//            logger.error("Unable to set directory for template loading", e);
+//        }
         freeMarkerCfg.setDefaultEncoding("UTF-8");
         freeMarkerCfg.setTemplateExceptionHandler(
                 TemplateExceptionHandler.RETHROW_HANDLER);
@@ -104,15 +128,15 @@ public final class SendEmailNotifications {
                             PropertyConstants.
                             NOTIFICATIONS_EMAIL_TEMPLATE_HTML));
         } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            logger.error("Exception while initializing templates", e);
+            throw e;
         }
     }
 
     /** Map of subscribers to the unified model of their subscriptions.
      * Keys are subscriber Ids.
      */
-    private static Map<Integer, SubscriberSubscriptionsModel>
+    private Map<Integer, SubscriberSubscriptionsModel>
         subscriberSubscriptionsModels;
 
     /** Collect the data needed for all the notification emails that are
@@ -120,7 +144,7 @@ public final class SendEmailNotifications {
      * @param startDate The start date to use for the notification period.
      * @param endDate The end date to use for the notification period.
      */
-    private static void collectNotificationData(final LocalDateTime startDate,
+    private void collectNotificationData(final LocalDateTime startDate,
             final LocalDateTime endDate) {
         CollectEvents collectedEvents = new CollectEvents(startDate, endDate);
         logger.info("Number of VocabularyDifferences computed: "
@@ -133,27 +157,27 @@ public final class SendEmailNotifications {
     }
 
     /** The hostname of the SMTP server to use. */
-    private static String smtpHost;
+    private String smtpHost;
 
     /** The port number of the SMTP server to use. */
-    private static int smtpPort;
+    private int smtpPort;
 
     /** The email address to use as the sender. */
-    private static String senderEmailAddress;
+    private String senderEmailAddress;
 
     /** The full name to use for the sender .*/
-    private static String senderFullName;
+    private String senderFullName;
 
     /** The email address to use as the reply-to address. */
-    private static String replyTo;
+    private String replyTo;
 
     /** The beginning of the subject line to use. */
-    private static String subject;
+    private String subject;
 
     /** Get the values of properties used for configuring email sending,
      * and store them in local fields.
      */
-    private static void configureEmailProperties() {
+    private void configureEmailProperties() {
         smtpHost = RegistryProperties.getProperty(
                 PropertyConstants.NOTIFICATIONS_EMAIL_SMTPHOST, "localhost");
         smtpPort = Integer.parseInt(RegistryProperties.getProperty(
@@ -178,7 +202,7 @@ public final class SendEmailNotifications {
 
     /** Generate and send the notification emails.
      */
-    private static void sendEmails() {
+    private void sendEmails() {
         for (Entry<Integer, SubscriberSubscriptionsModel> modelEntry
                 : subscriberSubscriptionsModels.entrySet()) {
             Integer subscriberId = modelEntry.getKey();
@@ -239,7 +263,7 @@ public final class SendEmailNotifications {
      * @param html The HTML content to include in the email.
      * @param plaintext The plain text content to include in the email.
      */
-    private static void sendOneEmail(final String recipient,
+    private void sendOneEmail(final String recipient,
             final String html, final String plaintext) {
         HtmlEmail email = new HtmlEmail();
         email.setHostName(smtpHost);
@@ -259,17 +283,33 @@ public final class SendEmailNotifications {
     }
 
     /** Main method.
+     * @param startDate The start date/time of registry events to consider.
+     * @param endDate The end date/time of registry events to consider.
+     * @throws IOException If there is an error initializing the templates.
+     */
+    public void main(final LocalDateTime startDate,
+            final LocalDateTime endDate) throws IOException {
+        configureSystemProperties();
+        configureFreeMarker();
+        configureEmailProperties();
+        logger.info("Notification start date: " + startDate);
+        logger.info("Notification end date: " + endDate);
+        collectNotificationData(startDate, endDate);
+        logger.info("Number of subscriber/subscription models: "
+                + subscriberSubscriptionsModels.size());
+        sendEmails();
+    }
+
+    /** Main method.
      * @param args Command-line arguments. If no arguments are specified,
      *      the start date is taken as one week ago, and the end date
      *      is taken as now. If one argument is specified,
      *      it is taken as the start date, and the end date is taken as now.
      *      If two arguments are specified, they are used as the start and
      *      end date, respectively.
+     * @throws IOException If there is an error initializing the templates.
      */
-    public static void main(final String[] args) {
-        configureSystemProperties();
-        configureFreeMarker();
-        configureEmailProperties();
+    public static void main(final String[] args) throws IOException {
         LocalDateTime startDate;
         LocalDateTime endDate;
         switch (args.length) {
@@ -289,12 +329,7 @@ public final class SendEmailNotifications {
             logger.error("Invalid number of arguments: " + args.length);
             return;
         }
-        logger.info("Notification start date: " + startDate);
-        logger.info("Notification end date: " + endDate);
-        collectNotificationData(startDate, endDate);
-        logger.info("Number of subscriber/subscription models: "
-                + subscriberSubscriptionsModels.size());
-        sendEmails();
+        new SendEmailNotifications().main(startDate, endDate);
     }
 
 }
