@@ -132,15 +132,12 @@ public class CollectSubscriptions {
                 Integer ownerId = subscription.getNotificationElementId();
                 if (ownerId.equals(Owners.ALL_OWNERS_OWNER_ID)) {
                     // Add vocabularies from all owners.
-                    for (Entry<Integer, Set<Integer>> ownerIdMapEntry
+                    for (Entry<Integer, Set<Integer>> ownerVocabulariesMapEntry
                             : ownerVocabularies.entrySet()) {
-                        Set<Integer> vocabulariesForOwner =
-                                ownerVocabularies.get(ownerId);
-                        if (vocabulariesForOwner != null) {
-                            allOwnerIdsToReport.add(ownerIdMapEntry.getKey());
-                            allVocabulariesFromOwners.addAll(
-                                    ownerIdMapEntry.getValue());
-                        }
+                        allOwnerIdsToReport.add(
+                                ownerVocabulariesMapEntry.getKey());
+                        allVocabulariesFromOwners.addAll(
+                                ownerVocabulariesMapEntry.getValue());
                     }
                     // And we might as well stop now, because nothing we
                     // would find subsequently would add a vocabulary
