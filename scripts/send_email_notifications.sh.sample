@@ -1,0 +1,38 @@
+#!/bin/bash
+
+# Send email notifications.
+# The script is intended to be run from cron, say, during early morning.
+# The end date for events is taken as midnight local time of the current day;
+# the start date is taken as a week prior to that.
+# For example, if running at 2 a.m., the end date will be taken
+# as two hours earlier.
+
+# GNU date is required for date calculations. If your regular
+# date command is not GNU date, set the GDATE environment variable
+# to point to a GNU date executable.
+
+: ${GDATE:=date}
+
+# The registry should be installed in a Tomcat container.
+# Either edit this script to set the directory below,
+# or set the environment variable REGISTRY_ROOT to point to it.
+
+: ${REGISTRY_ROOT:=~tomcat/webapps-ands/vocabs-registry}
+
+# NB, note use of custom logback configuration.
+
+SCRIPTPATH=$( cd $(dirname $0) ; pwd -P )
+
+# We get midnight of the current time zone, but then convert that
+# to UTC, as required by the Registry.
+
+# And we specify the desired format as
+# +%FT%T rather than just using --iso-8601, because we provide
+# values to the Registry that _don't_ specify a timezone.
+TODAY_MIDNIGHT=$(TZ=UTC $GDATE -d $($GDATE -d "00:00 today" --iso-8601=seconds) +%FT%T)
+A_WEEK_EARLIER=$(TZ=UTC $GDATE -d "$TODAY_MIDNIGHT+00:00 - 7 days" +%FT%T)
+
+java -Dlogback.configurationFile=$SCRIPTPATH/logback-email_notifications.xml \
+     -cp $REGISTRY_ROOT/WEB-INF/lib/*:$REGISTRY_ROOT/WEB-INF/classes \
+     au.org.ands.vocabs.registry.notification.email.SendEmailNotifications \
+     $A_WEEK_EARLIER $TODAY_MIDNIGHT
