@@ -180,7 +180,8 @@ public class CollectEvents {
                     // Vocabulary didn't exist either at fromDate or endDate,
                     // so we don't report anything for this vocabulary.
                     // NB: we _don't_ call recordVocabularyForOwner()
-                    // in this case.
+                    // in this case, and we prune vdiff from vocabularyIdMap.
+                    vocabularyIdMap.remove(vocabularyId);
                     return;
                 }
                 // The vocabulary was deleted.
