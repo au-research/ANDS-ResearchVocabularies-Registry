@@ -15,11 +15,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import javax.persistence.EntityManager;
+import javax.persistence.EntityTransaction;
+
 import org.apache.commons.mail.EmailException;
 import org.apache.commons.mail.HtmlEmail;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import au.org.ands.vocabs.registry.db.context.DBContext;
 import au.org.ands.vocabs.registry.db.context.TemporalUtils;
 import au.org.ands.vocabs.registry.db.dao.SubscriberEmailAddressDAO;
 import au.org.ands.vocabs.registry.db.entity.SubscriberEmailAddress;
@@ -133,6 +137,15 @@ public final class SendEmailNotifications {
         }
     }
 
+    /** The EntityManager used to fetch and update subscriptions. */
+    private EntityManager em;
+
+    /** The transaction in which updates to subscriptions are made. */
+    private EntityTransaction txn;
+
+    /** The model of the subscriptions that are being processed.  */
+    private CollectSubscriptions collectSubscriptions;
+
     /** Map of subscribers to the unified model of their subscriptions.
      * Keys are subscriber Ids.
      */
@@ -149,7 +162,7 @@ public final class SendEmailNotifications {
         CollectEvents collectedEvents = new CollectEvents(startDate, endDate);
         logger.info("Number of VocabularyDifferences computed: "
                 + collectedEvents.getVocabularyIdMap().size());
-        CollectSubscriptions collectSubscriptions = new CollectSubscriptions();
+        collectSubscriptions = new CollectSubscriptions(em);
         collectSubscriptions.computeVocabularySubscriptionsForSubscribers(
                 collectedEvents);
         subscriberSubscriptionsModels =
@@ -228,13 +241,6 @@ public final class SendEmailNotifications {
                 // Set system properties, as they weren't set during
                 // model generation.
                 model.setProperties(properties);
-//                Map<Integer, String> ownerFullNames =
-//                        model.getOwnerFullNames();
-//                for (Entry<Integer, String> ofnEntry
-//                        : ownerFullNames.entrySet()) {
-//                    logger.info("ofn: id: " + ofnEntry.getKey()
-//                        + "; name: " + ofnEntry.getValue());
-//                }
                 Writer htmlWriter = new StringWriter();
                 Writer plaintextWriter = new StringWriter();
                 try {
@@ -253,8 +259,9 @@ public final class SendEmailNotifications {
                     logger.error("Exception writing output", e);
                     continue;
                 }
-
             }
+            collectSubscriptions.updateLastNotificationForSubscriber(
+                    subscriberId, TemporalUtils.nowUTC());
         }
     }
 
@@ -294,10 +301,33 @@ public final class SendEmailNotifications {
         configureEmailProperties();
         logger.info("Notification start date: " + startDate);
         logger.info("Notification end date: " + endDate);
-        collectNotificationData(startDate, endDate);
-        logger.info("Number of subscriber/subscription models: "
-                + subscriberSubscriptionsModels.size());
-        sendEmails();
+        try {
+            em = DBContext.getEntityManager();
+            collectNotificationData(startDate, endDate);
+            logger.info("Number of subscriber/subscription models: "
+                    + subscriberSubscriptionsModels.size());
+
+            txn = em.getTransaction();
+            txn.begin();
+            sendEmails();
+            txn.commit();
+        } catch (Throwable t) {
+            if (txn != null && txn.isActive()) {
+                try {
+                    logger.error("Exception during transaction; rolling back",
+                            t);
+                    txn.rollback();
+                } catch (Exception e) {
+                    logger.error("Rollback failure!", e);
+                }
+            } else {
+                logger.error("Exception other than during transaction: ", t);
+            }
+        } finally {
+            if (em != null) {
+                em.close();
+            }
+        }
     }
 
     /** Main method.

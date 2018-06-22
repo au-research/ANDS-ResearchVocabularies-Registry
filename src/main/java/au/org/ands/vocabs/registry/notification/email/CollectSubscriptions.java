@@ -2,12 +2,15 @@
 
 package au.org.ands.vocabs.registry.notification.email;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+
+import javax.persistence.EntityManager;
 
 import au.org.ands.vocabs.registry.db.dao.SubscriberDAO;
 import au.org.ands.vocabs.registry.db.dao.SubscriptionDAO;
@@ -20,12 +23,18 @@ import au.org.ands.vocabs.registry.subscription.Owners;
 
 /** Collect the current subscriptions for which email notifications
  * are to be sent. To use this class, invoke the constructor
- * {@link #CollectSubscriptions()}, then {@link
+ * {@link #CollectSubscriptions(EntityManager)}, then {@link
  * #computeVocabularySubscriptionsForSubscribers(CollectEvents)},
  * then use {@link #getSubscriberSubscriptionsModels()} to get
  * the models to feed into email content generation.
+ * Then, start a database transaction, and invoke
+ * {@link #updateLastNotificationForSubscriber(Integer, LocalDateTime)}
+ * after each notification email has been successfully sent.
  */
 public class CollectSubscriptions {
+
+    /** The EntityManager to use to fetch and update subscriptions. */
+    private EntityManager em;
 
     /** The subscribers with current email subscriptions.
      * Keys are subscriber Ids. */
@@ -45,11 +54,14 @@ public class CollectSubscriptions {
         subscriberSubscriptionsModels = new HashMap<>();
 
     /** Constructor.
-     * Collect all current subscriptions for email notifications. */
-    public CollectSubscriptions() {
+     * Collect all current subscriptions for email notifications.
+     * @param anEm The EntityManager to use to fetch and update subscriptions.
+     */
+    public CollectSubscriptions(final EntityManager anEm) {
+        em = anEm;
         List<Subscription> subscriptionList =
                 SubscriptionDAO.getCurrentSubscriptionsForNotificationMode(
-                        NotificationMode.EMAIL);
+                        NotificationMode.EMAIL, em);
         for (Subscription subscription : subscriptionList) {
             Integer subscriberId = subscription.getSubscriberId();
             Set<Subscription> subscriptionsForSubscriber =
@@ -61,7 +73,7 @@ public class CollectSubscriptions {
                 // And now also get the Subscriber. Used later to
                 // put their token into their SubscriberSubscriptionsModel.
                 Subscriber subscriber = SubscriberDAO.
-                        getCurrentSubscriberBySubscriberId(subscriberId);
+                        getCurrentSubscriberBySubscriberId(em, subscriberId);
                 subscribersMap.put(subscriberId, subscriber);
             }
             subscriptionsForSubscriber.add(subscription);
@@ -206,4 +218,24 @@ public class CollectSubscriptions {
         return subscriberSubscriptionsModels;
     }
 
+    /** Update the last notification date/time for the subscriptions
+     * of one subscriber. There must be a transaction currently
+     * open on the EntityManager.
+     * @param subscriberId The subscriber Id whose subscriptions are
+     *      to have their last notification date/time updated.
+     * @param aLastNotification The value to set as the last
+     *      notification date/time.
+     */
+    public void updateLastNotificationForSubscriber(
+            final Integer subscriberId,
+            final LocalDateTime aLastNotification) {
+        Set<Subscription> subscriptions =
+                subscriberSubscriptions.get(subscriberId);
+        if (subscriptions != null) {
+            for (Subscription subscription : subscriptions) {
+                subscription.setLastNotification(aLastNotification);
+                SubscriptionDAO.updateSubscription(em, subscription);
+            }
+        }
+    }
 }
