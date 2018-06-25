@@ -18,6 +18,7 @@ import java.util.Map.Entry;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityTransaction;
 
+import org.apache.commons.mail.EmailConstants;
 import org.apache.commons.mail.EmailException;
 import org.apache.commons.mail.HtmlEmail;
 import org.slf4j.Logger;
@@ -273,6 +274,7 @@ public final class SendEmailNotifications {
     private void sendOneEmail(final String recipient,
             final String html, final String plaintext) {
         HtmlEmail email = new HtmlEmail();
+        email.setCharset(EmailConstants.UTF_8);
         email.setHostName(smtpHost);
         email.setSmtpPort(smtpPort);
         email.setSubject(subject);
