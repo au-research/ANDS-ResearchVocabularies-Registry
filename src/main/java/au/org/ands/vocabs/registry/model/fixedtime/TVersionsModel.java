@@ -286,6 +286,12 @@ public class TVersionsModel extends TModelBase {
                             + WordUtils.capitalizeFully(
                                     diff.getRight().toString()));
                     break;
+                case EntityDiffUtils.POOLPARTY_HARVEST:
+                    // Decision made 2016-06-25 _not_ to report changes.
+                    // If the user changes this flag, they will have to
+                    // change something _else_ as well, so they will
+                    // get the report for _that_.
+                    break;
                 case EntityDiffUtils.IMPORT:
                     if (BooleanUtils.isTrue((Boolean) diff.getRight())) {
                         verdiffs.addVersionDiff(
@@ -305,6 +311,9 @@ public class TVersionsModel extends TModelBase {
                                 "Version no longer published via the "
                                 + "Linked Data API");
                     }
+                    break;
+                case EntityDiffUtils.SLUG:
+                    // Decision made 2016-06-25 _not_ to report slug changes.
                     break;
                 default:
                     diffList.add(diff);
