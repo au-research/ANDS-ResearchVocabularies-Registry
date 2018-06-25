@@ -3,7 +3,9 @@
 package au.org.ands.vocabs.registry.notification;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.lang3.builder.Diff;
 
@@ -23,8 +25,9 @@ public class VersionDifferences {
     private String title;
 
     /** Representation of the differences recorded for the top level
-     * of the version. */
-    private List<String> versionDiffs = new ArrayList<>();
+     * of the version. The value is a {@link LinkedHashSet}, which is a set
+     * whose iteration order corresponds to the order of insertion. */
+    private Set<String> versionDiffs = new LinkedHashSet<>();
 
     /** Representation of the differences between the values of fields of
      * the version. Initialized to an empty list so that TVersionsModel
@@ -62,11 +65,11 @@ public class VersionDifferences {
         title = aTitle;
     }
 
-    /** Get the list of differences recorded for the top level of the
+    /** Get the set of differences recorded for the top level of the
      * version.
-     * @return The list of top-level differences recorded for the version.
+     * @return The set of top-level differences recorded for the version.
      */
-    public List<String> getVersionDiffs() {
+    public Set<String> getVersionDiffs() {
         return versionDiffs;
     }
 
