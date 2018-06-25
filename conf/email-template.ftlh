@@ -23,7 +23,7 @@
             <p>The following descriptive metadata elements were updated:</p>
             <ul>
                 <#items as fieldDiff>
-                    <li>${fieldDiff.fieldName?capitalize}</li>
+                    <li>${fieldDiff.fieldName?cap_first}</li>
                 </#items>
             </ul>
         </#list>
@@ -48,7 +48,7 @@
                             </#list>
                             <#list verDiff.fieldDiffs>
                                 <#items as fieldDiff>
-                                    <li>${fieldDiff.fieldName?capitalize}
+                                    <li>${fieldDiff.fieldName?cap_first}
                                         updated</li>
                                 </#items>
                             </#list>

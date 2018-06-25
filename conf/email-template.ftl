@@ -18,7 +18,7 @@ ${vdiff.title}
 <#list vdiff.fieldDiffs>
    The following descriptive metadata elements were updated:
    <#items as fieldDiff>
-   - ${fieldDiff.fieldName?capitalize}
+   - ${fieldDiff.fieldName?cap_first}
    </#items>
 
 </#list>
@@ -37,7 +37,7 @@ ${vdiff.title}
    - ${versionDiff}
    </#list>
    <#list verDiff.fieldDiffs as fieldDiff>
-   - ${fieldDiff.fieldName?capitalize} updated
+   - ${fieldDiff.fieldName?cap_first} updated
    </#list>
  </#if>
 </#items>
