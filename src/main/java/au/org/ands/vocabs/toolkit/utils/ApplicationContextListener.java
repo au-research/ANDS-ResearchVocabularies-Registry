@@ -181,7 +181,7 @@ public class ApplicationContextListener implements ServletContextListener {
                     "findLoadedClass", new Class[] {String.class});
             fLC.setAccessible(true);
             ClassLoader classLoader = getClass().getClassLoader();
-            // Now see if the Toolkit DBContext class has been loaded
+            // Now see if the Toolkit DBContext class has been loaded.
             Object dbContextClass =
                     fLC.invoke(classLoader,
                             "au.org.ands.vocabs.toolkit.db.DBContext");
@@ -194,7 +194,7 @@ public class ApplicationContextListener implements ServletContextListener {
                         + "no shutdown required");
             }
 
-            // Now see if the Registry DBContext class has been loaded
+            // Now see if the Registry DBContext class has been loaded.
             dbContextClass =
                     fLC.invoke(classLoader,
                             "au.org.ands.vocabs.registry.db.context.DBContext");
@@ -207,7 +207,7 @@ public class ApplicationContextListener implements ServletContextListener {
                         + "no shutdown required");
             }
 
-            // Now see if the Roles DBContext class has been loaded
+            // Now see if the Roles DBContext class has been loaded.
             dbContextClass =
                     fLC.invoke(classLoader,
                             "au.org.ands.vocabs.roles.db.context.DBContext");
@@ -260,7 +260,7 @@ public class ApplicationContextListener implements ServletContextListener {
             // identified in the method comment.
             // ClassLoader classLoader =
             //        Thread.currentThread().getContextClassLoader();
-            // Now see if the LogManager class has been loaded
+            // Now see if the LogManager class has been loaded.
             Object log4jContextClass =
                     fLC.invoke(classLoader,
                             "org.apache.log4j.LogManager");
@@ -311,7 +311,7 @@ public class ApplicationContextListener implements ServletContextListener {
             // identified in the method comment.
             // ClassLoader classLoader =
             //        Thread.currentThread().getContextClassLoader();
-            // Now see if the LogManager class has been loaded
+            // Now see if the SolrUtils class has been loaded.
             Object log4jContextClass =
                     fLC.invoke(classLoader,
                             "au.org.ands.vocabs.registry.solr.SolrUtils");
