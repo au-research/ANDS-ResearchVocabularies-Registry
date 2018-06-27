@@ -89,14 +89,18 @@ public class AdminRestMethods {
             @ApiParam(hidden = true) @Pac4JProfile
             final CommonProfile profile,
             @ApiParam(value = "Start date/time of registry events to consider. "
-                    + "Values are specified in UTC. "
+                    + "Values are specified in UTC: "
+                    + "required format YYYY-MM-DDTHH:MM:SS, e.g., "
+                    + "2017-10-26T13:00:00. "
                     + "If not specified, defaults to a week before the "
                     + "current date/time, and endDate is taken as the "
                     + "current date/time (irrespective of any value "
-                    + "given for endDate)")
+                    + "given for endDate).")
             @QueryParam("startDate") final String startDate,
             @ApiParam(value = "End date/time of registry events to consider. "
-                    + "Values are specified in UTC. "
+                    + "Values are specified in UTC: "
+                    + "required format YYYY-MM-DDTHH:MM:SS, e.g., "
+                    + "2017-11-26T00:00:00. "
                     + "If not specified, defaults to the current date/time.")
             @QueryParam("endDate") final String endDate) {
         logger.info("Called generateNotificationEmails");
