@@ -231,7 +231,7 @@
     <comment>Create subscriber_email_addresses_email_address_end_date index on
     subscriber_email_addresses(email_address, end_date)
     </comment>
-    <createIndex indexName="subscriber_email_addresses_email_address_end_date"
+    <createIndex indexName="ix_subscriber_email_addresses_email_address_end_date"
                  tableName="subscriber_email_addresses">
       <column name="email_address"/>
       <column name="end_date"/>
@@ -259,7 +259,20 @@
     </modifySql>
   </changeSet>
 
-
+  <changeSet id="0003-subscription_notification_mode_end_date-createIndex"
+             author="Richard.Walker@ands.org.au">
+    <comment>Create ix_subscriptions_notification_mode_end_date index on
+    subscriptions(notification_mode, end_date).
+    </comment>
+    <!-- Supports query getCurrSubListForNotifMode, used when
+         generating notifications.
+    -->
+    <createIndex indexName="ix_subscriptions_notification_mode_end_date"
+                 tableName="subscriptions">
+      <column name="notification_mode"/>
+      <column name="end_date"/>
+    </createIndex>
+  </changeSet>
 
   <!-- And now tag the result. -->
 
