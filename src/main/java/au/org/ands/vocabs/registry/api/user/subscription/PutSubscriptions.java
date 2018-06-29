@@ -75,9 +75,10 @@ public class PutSubscriptions {
     @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     @Pac4JSecurity
     @POST
-    @ApiOperation(value = "Create an email subscription for a vocabulary.",
-        code = HttpStatus.SC_CREATED)
+    @ApiOperation(value = "Create an email subscription for a vocabulary.")
     @ApiResponses(value = {
+            @ApiResponse(code = HttpStatus.SC_NO_CONTENT,
+                    message = "Subscription successful"),
             @ApiResponse(code = HttpStatus.SC_UNAUTHORIZED,
                     message = "Not authenticated",
                     response = ErrorResult.class,
@@ -185,9 +186,10 @@ public class PutSubscriptions {
     @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     @Pac4JSecurity
     @POST
-    @ApiOperation(value = "Create an email subscription for an owner.",
-        code = HttpStatus.SC_CREATED)
+    @ApiOperation(value = "Create an email subscription for an owner.")
     @ApiResponses(value = {
+            @ApiResponse(code = HttpStatus.SC_NO_CONTENT,
+                    message = "Subscription successful"),
             @ApiResponse(code = HttpStatus.SC_UNAUTHORIZED,
                     message = "Not authenticated",
                     response = ErrorResult.class,
@@ -300,9 +302,10 @@ public class PutSubscriptions {
     @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     @Pac4JSecurity
     @POST
-    @ApiOperation(value = "Create an email subscription for the system.",
-        code = HttpStatus.SC_CREATED)
+    @ApiOperation(value = "Create an email subscription for the system.")
     @ApiResponses(value = {
+            @ApiResponse(code = HttpStatus.SC_NO_CONTENT,
+                    message = "Subscription successful"),
             @ApiResponse(code = HttpStatus.SC_UNAUTHORIZED,
                     message = "Not authenticated",
                     response = ErrorResult.class,
