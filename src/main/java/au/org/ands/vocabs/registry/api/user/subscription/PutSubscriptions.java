@@ -137,7 +137,7 @@ public class PutSubscriptions {
             SubscriptionUtils.createEmailSubscriptionVocabulary(
                     email, vocabularyId, em, now, profile.getUsername());
             txn.commit();
-            Logging.logRequest(true, request, uriInfo, null,
+            Logging.logRequest(true, request, uriInfo, profile,
                     "Create email subscription for a vocabulary");
             // Successful deletion, and no response body. noContent() creates
             // status code 204.
@@ -255,7 +255,7 @@ public class PutSubscriptions {
             SubscriptionUtils.createEmailSubscriptionOwner(
                     email, owner, em, now, profile.getUsername());
             txn.commit();
-            Logging.logRequest(true, request, uriInfo, null,
+            Logging.logRequest(true, request, uriInfo, profile,
                     "Create email subscription for an owner");
             // Successful deletion, and no response body. noContent() creates
             // status code 204.
@@ -360,7 +360,7 @@ public class PutSubscriptions {
             SubscriptionUtils.createEmailSubscriptionSystem(email, em, now,
                     profile.getUsername());
             txn.commit();
-            Logging.logRequest(true, request, uriInfo, null,
+            Logging.logRequest(true, request, uriInfo, profile,
                     "Create email subscription for the system");
             // Successful deletion, and no response body. noContent() creates
             // status code 204.
