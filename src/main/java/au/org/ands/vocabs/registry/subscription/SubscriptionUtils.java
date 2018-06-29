@@ -3,12 +3,15 @@
 package au.org.ands.vocabs.registry.subscription;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.persistence.EntityManager;
 
 import au.org.ands.vocabs.registry.db.context.TemporalConstants;
 import au.org.ands.vocabs.registry.db.context.TemporalUtils;
+import au.org.ands.vocabs.registry.db.converter.JSONSerialization;
 import au.org.ands.vocabs.registry.db.dao.SubscriptionDAO;
 import au.org.ands.vocabs.registry.db.dao.VocabularyDAO;
 import au.org.ands.vocabs.registry.db.entity.Subscription;
@@ -22,6 +25,9 @@ public final class SubscriptionUtils {
     /** Private constructor for a utility class. */
     private SubscriptionUtils() {
     }
+
+    /** Key used in the data values for the creator of the subscription. */
+    public static final String CREATOR = "creator";
 
     /** Create an email subscription for a subscriber email, for a vocabulary.
      * There must be a current instance of the vocabulary with the specified
@@ -66,8 +72,11 @@ public final class SubscriptionUtils {
                     NotificationElementType.VOCABULARY);
             subscription.setNotificationElementId(vocabularyId);
             subscription.setLastNotification(TemporalConstants.NEVER_NOTIFIED);
-            // For now, data is an empty array.
-            subscription.setData("{}");
+            // For now, data contains just creator data.
+            Map<String, String> data = new HashMap<>();
+            data.put(CREATOR, modifiedBy);
+            subscription.setData(
+                    JSONSerialization.serializeObjectAsJsonString(data));
             SubscriptionDAO.saveSubscriptionWithId(em, subscription);
         }
     }
@@ -111,8 +120,11 @@ public final class SubscriptionUtils {
                     NotificationElementType.OWNER);
             subscription.setNotificationElementId(ownerId);
             subscription.setLastNotification(TemporalConstants.NEVER_NOTIFIED);
-            // For now, data is an empty array.
-            subscription.setData("{}");
+            // For now, data contains just creator data.
+            Map<String, String> data = new HashMap<>();
+            data.put(CREATOR, modifiedBy);
+            subscription.setData(
+                    JSONSerialization.serializeObjectAsJsonString(data));
             SubscriptionDAO.saveSubscriptionWithId(em, subscription);
         }
     }
@@ -150,8 +162,11 @@ public final class SubscriptionUtils {
                     NotificationElementType.SYSTEM);
             subscription.setNotificationElementId(0);
             subscription.setLastNotification(TemporalConstants.NEVER_NOTIFIED);
-            // For now, data is an empty array.
-            subscription.setData("{}");
+            // For now, data contains just creator data.
+            Map<String, String> data = new HashMap<>();
+            data.put(CREATOR, modifiedBy);
+            subscription.setData(
+                    JSONSerialization.serializeObjectAsJsonString(data));
             SubscriptionDAO.saveSubscriptionWithId(em, subscription);
         }
     }

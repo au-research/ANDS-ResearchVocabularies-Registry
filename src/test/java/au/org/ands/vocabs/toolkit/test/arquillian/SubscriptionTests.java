@@ -19,7 +19,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
 
-import au.org.ands.vocabs.registry.api.auth.AuthConstants;
 import au.org.ands.vocabs.registry.db.context.DBContext;
 import au.org.ands.vocabs.registry.subscription.Owners;
 import au.org.ands.vocabs.registry.subscription.SubscriptionUtils;
@@ -43,6 +42,9 @@ public class SubscriptionTests extends ArquillianBaseTest {
     @SuppressWarnings("checkstyle:MagicNumber")
     private static LocalDateTime nowTime2 =
             LocalDateTime.of(2017, 10, 1, 10, 20);
+
+    /** User to use for modifiedBy values.*/
+    private static final String TEST_USER = "TEST";
 
     // Initialization for tests in this class.
 
@@ -188,9 +190,9 @@ public class SubscriptionTests extends ArquillianBaseTest {
         scriptRunner2("testSubscribeVocabulary1",
                 em -> SubscriptionUtils.createEmailSubscriptionVocabulary(
                         "dummy@abc.com", 1, em, nowTime1,
-                        AuthConstants.SYSTEM_USER),
+                        TEST_USER),
                 em -> SubscriptionUtils.deleteEmailSubscriptionVocabulary(
-                        1, 1, em, nowTime2, AuthConstants.SYSTEM_USER));
+                        1, 1, em, nowTime2, TEST_USER));
     }
 
     /** Test of {@link SubscriptionUtils#createEmailSubscriptionOwner(
@@ -211,10 +213,10 @@ public class SubscriptionTests extends ArquillianBaseTest {
         scriptRunner2("testSubscribeOwner1",
                 em -> SubscriptionUtils.createEmailSubscriptionOwner(
                         "dummy@abc.com", "ANDS-Curated", em, nowTime1,
-                        AuthConstants.SYSTEM_USER),
+                        TEST_USER),
                 em -> SubscriptionUtils.deleteEmailSubscriptionOwner(
                         1, "ANDS-Curated", em, nowTime2,
-                        AuthConstants.SYSTEM_USER));
+                        TEST_USER));
     }
 
     /** Test of {@link SubscriptionUtils#createEmailSubscriptionOwner(
@@ -235,10 +237,10 @@ public class SubscriptionTests extends ArquillianBaseTest {
         scriptRunner2("testSubscribeOwner2",
                 em -> SubscriptionUtils.createEmailSubscriptionOwner(
                         "dummy@abc.com", Owners.ALL_OWNERS, em, nowTime1,
-                        AuthConstants.SYSTEM_USER),
+                        TEST_USER),
                 em -> SubscriptionUtils.deleteEmailSubscriptionOwner(
                         1, Owners.ALL_OWNERS, em, nowTime2,
-                        AuthConstants.SYSTEM_USER));
+                        TEST_USER));
     }
 
     /** Test of {@link SubscriptionUtils#createEmailSubscriptionSystem(
@@ -258,9 +260,9 @@ public class SubscriptionTests extends ArquillianBaseTest {
         scriptRunner2("testSubscribeSystem1",
                 em -> SubscriptionUtils.createEmailSubscriptionSystem(
                         "dummy@abc.com", em, nowTime1,
-                        AuthConstants.SYSTEM_USER),
+                        TEST_USER),
                 em -> SubscriptionUtils.deleteEmailSubscriptionSystem(
-                        1, em, nowTime2, AuthConstants.SYSTEM_USER));
+                        1, em, nowTime2, TEST_USER));
     }
 
     /** Test of {@link SubscriptionUtils#deleteEmailSubscriptionAll(Integer,
@@ -277,7 +279,7 @@ public class SubscriptionTests extends ArquillianBaseTest {
             throws DatabaseUnitException, SQLException, IOException {
         scriptRunner1("testDeleteAllSusbscriptions1",
                 em -> SubscriptionUtils.deleteEmailSubscriptionAll(
-                        1, em, nowTime1, AuthConstants.SYSTEM_USER));
+                        1, em, nowTime1, TEST_USER));
     }
 
 }
