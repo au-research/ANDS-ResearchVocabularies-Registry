@@ -24,6 +24,9 @@ import javax.ws.rs.core.UriInfo;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
+import org.pac4j.core.profile.CommonProfile;
+import org.pac4j.jax.rs.annotations.Pac4JProfile;
+import org.pac4j.jax.rs.annotations.Pac4JSecurity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,11 +47,14 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import io.swagger.annotations.Authorization;
 import io.swagger.annotations.ResponseHeader;
 
 /** REST web services for adding and updating subscriptions. */
 @Path(ApiPaths.API_SERVICES + "/" + ApiPaths.SUBSCRIPTIONS)
-@Api(value = SwaggerInterface.TAG_SERVICES)
+@Api(value = SwaggerInterface.TAG_SERVICES,
+        authorizations = {@Authorization(value = SwaggerInterface.BASIC_AUTH),
+        @Authorization(value = SwaggerInterface.API_KEY_AUTH)})
 public class PutSubscriptions {
 
     /** Logger for this class. */
@@ -58,6 +64,7 @@ public class PutSubscriptions {
     /** Create an instance of an email subscription for a vocabulary.
      * @param request The HTTP request.
      * @param uriInfo The UriInfo of the request.
+     * @param profile The caller's security profile.
      * @param email The subscriber's email address.
      * @param vocabularyId The VocabularyId of the vocabulary to be
      *      subscribed to.
@@ -66,8 +73,7 @@ public class PutSubscriptions {
             + ApiPaths.VOCABULARIES + "/" + ApiPaths.VOCABULARY_ID)
     @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-    // NB: we _don't_ require authentication for this method!
-//    @Pac4JSecurity(clients = AuthConstants.SUBSCRIBER_PARAMETER_CLIENT)
+    @Pac4JSecurity
     @POST
     @ApiOperation(value = "Create an email subscription for a vocabulary.",
         code = HttpStatus.SC_CREATED)
@@ -92,6 +98,7 @@ public class PutSubscriptions {
     public final Response createEmailSubscriptionVocabulary(
             @Context final HttpServletRequest request,
             @Context final UriInfo uriInfo,
+            @ApiParam(hidden = true) @Pac4JProfile final CommonProfile profile,
             @ApiParam(value = "The ID of the vocabulary to be "
                     + "subscribed to.")
             @PathParam("vocabularyId") final Integer vocabularyId,
@@ -127,7 +134,7 @@ public class PutSubscriptions {
             LocalDateTime now = TemporalUtils.nowUTC();
 
             SubscriptionUtils.createEmailSubscriptionVocabulary(
-                    email, vocabularyId, em, now);
+                    email, vocabularyId, em, now, profile.getUsername());
             txn.commit();
             Logging.logRequest(true, request, uriInfo, null,
                     "Create email subscription for a vocabulary");
@@ -168,6 +175,7 @@ public class PutSubscriptions {
     /** Create an instance of an email subscription for an owner.
      * @param request The HTTP request.
      * @param uriInfo The UriInfo of the request.
+     * @param profile The caller's security profile.
      * @param email The subscriber's email address.
      * @param owner The owner to subscribe to.
      * @return An empty response for success, or an error response. */
@@ -175,8 +183,7 @@ public class PutSubscriptions {
             + ApiPaths.OWNER + "/" + ApiPaths.OWNER_NAME)
     @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-    // NB: we _don't_ require authentication for this method!
-//    @Pac4JSecurity(clients = AuthConstants.SUBSCRIBER_PARAMETER_CLIENT)
+    @Pac4JSecurity
     @POST
     @ApiOperation(value = "Create an email subscription for an owner.",
         code = HttpStatus.SC_CREATED)
@@ -201,6 +208,7 @@ public class PutSubscriptions {
     public final Response createEmailSubscriptionOwner(
             @Context final HttpServletRequest request,
             @Context final UriInfo uriInfo,
+            @ApiParam(hidden = true) @Pac4JProfile final CommonProfile profile,
             @ApiParam(value = "Owner to subscribe to. Specify "
                     + Owners.ALL_OWNERS
                     + " to subscribe to notifications for all owners.")
@@ -243,7 +251,7 @@ public class PutSubscriptions {
             LocalDateTime now = TemporalUtils.nowUTC();
 
             SubscriptionUtils.createEmailSubscriptionOwner(
-                    email, owner, em, now);
+                    email, owner, em, now, profile.getUsername());
             txn.commit();
             Logging.logRequest(true, request, uriInfo, null,
                     "Create email subscription for an owner");
@@ -284,13 +292,13 @@ public class PutSubscriptions {
     /** Create an instance of an email subscription for the system.
      * @param request The HTTP request.
      * @param uriInfo The UriInfo of the request.
+     * @param profile The caller's security profile.
      * @param email The subscriber's email address.
      * @return An empty response for success, or an error response. */
     @Path(ApiPaths.EMAIL + "/" + ApiPaths.SYSTEM)
     @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-    // NB: we _don't_ require authentication for this method!
-//    @Pac4JSecurity(clients = AuthConstants.SUBSCRIBER_PARAMETER_CLIENT)
+    @Pac4JSecurity
     @POST
     @ApiOperation(value = "Create an email subscription for the system.",
         code = HttpStatus.SC_CREATED)
@@ -315,6 +323,7 @@ public class PutSubscriptions {
     public final Response createEmailSubscriptionSystem(
             @Context final HttpServletRequest request,
             @Context final UriInfo uriInfo,
+            @ApiParam(hidden = true) @Pac4JProfile final CommonProfile profile,
             @NotNull(message =
                     "The subscriber email address must be specified.")
             @QueryParam(SubscriberAuthenticator.SUBSCRIBER_EMAIL_ADDRESS)
@@ -345,7 +354,8 @@ public class PutSubscriptions {
             // to this event.
             LocalDateTime now = TemporalUtils.nowUTC();
 
-            SubscriptionUtils.createEmailSubscriptionSystem(email, em, now);
+            SubscriptionUtils.createEmailSubscriptionSystem(email, em, now,
+                    profile.getUsername());
             txn.commit();
             Logging.logRequest(true, request, uriInfo, null,
                     "Create email subscription for the system");

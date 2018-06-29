@@ -120,7 +120,8 @@ public class DeleteSubscriptions {
             LocalDateTime now = TemporalUtils.nowUTC();
 
             SubscriptionUtils.deleteEmailSubscriptionVocabulary(
-                    subscriberId, vocabularyId, em, now);
+                    subscriberId, vocabularyId, em, now,
+                    AuthConstants.SYSTEM_USER);
             txn.commit();
             Logging.logRequest(true, request, uriInfo, profile,
                     "Delete email subscription for a vocabulary");
@@ -228,7 +229,7 @@ public class DeleteSubscriptions {
             LocalDateTime now = TemporalUtils.nowUTC();
 
             SubscriptionUtils.deleteEmailSubscriptionOwner(
-                    subscriberId, owner, em, now);
+                    subscriberId, owner, em, now, AuthConstants.SYSTEM_USER);
             txn.commit();
             Logging.logRequest(true, request, uriInfo, profile,
                     "Delete email subscription for an owner");
@@ -321,7 +322,7 @@ public class DeleteSubscriptions {
             LocalDateTime now = TemporalUtils.nowUTC();
 
             SubscriptionUtils.deleteEmailSubscriptionSystem(
-                    subscriberId, em, now);
+                    subscriberId, em, now, AuthConstants.SYSTEM_USER);
             txn.commit();
             Logging.logRequest(true, request, uriInfo, profile,
                     "Delete email subscription for the system");
@@ -413,7 +414,8 @@ public class DeleteSubscriptions {
             // to this event.
             LocalDateTime now = TemporalUtils.nowUTC();
 
-            SubscriptionUtils.deleteEmailSubscriptionAll(subscriberId, em, now);
+            SubscriptionUtils.deleteEmailSubscriptionAll(subscriberId, em, now,
+                    AuthConstants.SYSTEM_USER);
             txn.commit();
             Logging.logRequest(true, request, uriInfo, profile,
                     "Delete all email subscriptions for a subscriber");

@@ -19,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
 
+import au.org.ands.vocabs.registry.api.auth.AuthConstants;
 import au.org.ands.vocabs.registry.db.context.DBContext;
 import au.org.ands.vocabs.registry.subscription.Owners;
 import au.org.ands.vocabs.registry.subscription.SubscriptionUtils;
@@ -171,9 +172,9 @@ public class SubscriptionTests extends ArquillianBaseTest {
     }
 
     /** Test of {@link SubscriptionUtils#createEmailSubscriptionVocabulary(
-     * String, Integer, EntityManager, LocalDateTime)} and {@link
+     * String, Integer, EntityManager, LocalDateTime, String)} and {@link
      * SubscriptionUtils#deleteEmailSubscriptionVocabulary(Integer,
-     * Integer, EntityManager, LocalDateTime)}.
+     * Integer, EntityManager, LocalDateTime, String)}.
      * @throws DatabaseUnitException If a problem with DbUnit.
      * @throws HibernateException If a problem getting the underlying
      *          JDBC connection.
@@ -186,15 +187,16 @@ public class SubscriptionTests extends ArquillianBaseTest {
             throws DatabaseUnitException, SQLException, IOException {
         scriptRunner2("testSubscribeVocabulary1",
                 em -> SubscriptionUtils.createEmailSubscriptionVocabulary(
-                        "dummy@abc.com", 1, em, nowTime1),
+                        "dummy@abc.com", 1, em, nowTime1,
+                        AuthConstants.SYSTEM_USER),
                 em -> SubscriptionUtils.deleteEmailSubscriptionVocabulary(
-                        1, 1, em, nowTime2));
+                        1, 1, em, nowTime2, AuthConstants.SYSTEM_USER));
     }
 
     /** Test of {@link SubscriptionUtils#createEmailSubscriptionOwner(
-     * String, String, EntityManager, LocalDateTime)} and {@link
+     * String, String, EntityManager, LocalDateTime, String)} and {@link
      * SubscriptionUtils#deleteEmailSubscriptionOwner(Integer, String,
-     * EntityManager, LocalDateTime)}, where the owner name is
+     * EntityManager, LocalDateTime, String)}, where the owner name is
      * a "real" owner.
      * @throws DatabaseUnitException If a problem with DbUnit.
      * @throws HibernateException If a problem getting the underlying
@@ -208,15 +210,17 @@ public class SubscriptionTests extends ArquillianBaseTest {
             throws DatabaseUnitException, SQLException, IOException {
         scriptRunner2("testSubscribeOwner1",
                 em -> SubscriptionUtils.createEmailSubscriptionOwner(
-                        "dummy@abc.com", "ANDS-Curated", em, nowTime1),
+                        "dummy@abc.com", "ANDS-Curated", em, nowTime1,
+                        AuthConstants.SYSTEM_USER),
                 em -> SubscriptionUtils.deleteEmailSubscriptionOwner(
-                        1, "ANDS-Curated", em, nowTime2));
+                        1, "ANDS-Curated", em, nowTime2,
+                        AuthConstants.SYSTEM_USER));
     }
 
     /** Test of {@link SubscriptionUtils#createEmailSubscriptionOwner(
-     * String, String, EntityManager, LocalDateTime)} and {@link
+     * String, String, EntityManager, LocalDateTime, String)} and {@link
      * SubscriptionUtils#deleteEmailSubscriptionOwner(Integer, String,
-     * EntityManager, LocalDateTime)}, where the owner name is the
+     * EntityManager, LocalDateTime, String)}, where the owner name is the
      * special value {@link Owners#ALL_OWNERS}.
      * @throws DatabaseUnitException If a problem with DbUnit.
      * @throws HibernateException If a problem getting the underlying
@@ -230,15 +234,17 @@ public class SubscriptionTests extends ArquillianBaseTest {
             throws DatabaseUnitException, SQLException, IOException {
         scriptRunner2("testSubscribeOwner2",
                 em -> SubscriptionUtils.createEmailSubscriptionOwner(
-                        "dummy@abc.com", Owners.ALL_OWNERS, em, nowTime1),
+                        "dummy@abc.com", Owners.ALL_OWNERS, em, nowTime1,
+                        AuthConstants.SYSTEM_USER),
                 em -> SubscriptionUtils.deleteEmailSubscriptionOwner(
-                        1, Owners.ALL_OWNERS, em, nowTime2));
+                        1, Owners.ALL_OWNERS, em, nowTime2,
+                        AuthConstants.SYSTEM_USER));
     }
 
     /** Test of {@link SubscriptionUtils#createEmailSubscriptionSystem(
-     * String, EntityManager, LocalDateTime)} and {@link
+     * String, EntityManager, LocalDateTime, String)} and {@link
      * SubscriptionUtils#deleteEmailSubscriptionSystem(Integer,
-     * EntityManager, LocalDateTime)}.
+     * EntityManager, LocalDateTime, String)}.
      * @throws DatabaseUnitException If a problem with DbUnit.
      * @throws HibernateException If a problem getting the underlying
      *          JDBC connection.
@@ -251,13 +257,14 @@ public class SubscriptionTests extends ArquillianBaseTest {
             throws DatabaseUnitException, SQLException, IOException {
         scriptRunner2("testSubscribeSystem1",
                 em -> SubscriptionUtils.createEmailSubscriptionSystem(
-                        "dummy@abc.com", em, nowTime1),
+                        "dummy@abc.com", em, nowTime1,
+                        AuthConstants.SYSTEM_USER),
                 em -> SubscriptionUtils.deleteEmailSubscriptionSystem(
-                        1, em, nowTime2));
+                        1, em, nowTime2, AuthConstants.SYSTEM_USER));
     }
 
     /** Test of {@link SubscriptionUtils#deleteEmailSubscriptionAll(Integer,
-     * EntityManager, LocalDateTime)}.
+     * EntityManager, LocalDateTime, String)}.
      * @throws DatabaseUnitException If a problem with DbUnit.
      * @throws HibernateException If a problem getting the underlying
      *          JDBC connection.
@@ -270,7 +277,7 @@ public class SubscriptionTests extends ArquillianBaseTest {
             throws DatabaseUnitException, SQLException, IOException {
         scriptRunner1("testDeleteAllSusbscriptions1",
                 em -> SubscriptionUtils.deleteEmailSubscriptionAll(
-                        1, em, nowTime1));
+                        1, em, nowTime1, AuthConstants.SYSTEM_USER));
     }
 
 }
