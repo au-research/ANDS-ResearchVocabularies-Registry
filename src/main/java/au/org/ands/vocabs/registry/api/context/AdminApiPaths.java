@@ -18,8 +18,14 @@ public final class AdminApiPaths {
     /** Subpath for database methods. */
     public static final String DATABASE = "database";
 
+    /** Subpath for email notification methods. */
+    public static final String EMAIL = "email";
+
     /** Subpath for model methods. */
     public static final String MODEL = "model";
+
+    /** Subpath for notification methods. */
+    public static final String NOTIFICATION = "notification";
 
     /** Subpath for resource methods. */
     public static final String RESOURCE = "resource";

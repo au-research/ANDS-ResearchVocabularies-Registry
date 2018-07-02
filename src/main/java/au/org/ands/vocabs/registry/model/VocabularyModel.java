@@ -19,8 +19,12 @@ import au.org.ands.vocabs.registry.db.dao.VocabularyDAO;
 import au.org.ands.vocabs.registry.db.dao.VocabularyIdDAO;
 import au.org.ands.vocabs.registry.db.entity.Vocabulary;
 import au.org.ands.vocabs.registry.db.entity.clone.VocabularyClone;
+import au.org.ands.vocabs.registry.enums.RegistryEventElementType;
+import au.org.ands.vocabs.registry.enums.RegistryEventEventType;
 import au.org.ands.vocabs.registry.enums.VocabularyStatus;
+import au.org.ands.vocabs.registry.log.RegistryEventUtils;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.WorkflowOutcome;
+import au.org.ands.vocabs.registry.subscription.Owners;
 import au.org.ands.vocabs.registry.utils.SlugGenerator;
 
 /** Vocabulary domain model.
@@ -304,6 +308,14 @@ public class VocabularyModel extends ModelBase {
         TemporalUtils.makeHistorical(currentVocabulary, nowTime());
         currentVocabulary.setModifiedBy(modifiedBy());
         VocabularyDAO.updateVocabulary(em(), currentVocabulary);
+
+        // Add a registry event.
+        RegistryEventUtils.createRegistryEvent(
+                em(), RegistryEventElementType.VOCABULARIES,
+                vocabularyId(), nowTime(),
+                RegistryEventEventType.DELETED, modifiedBy(),
+                currentVocabulary, null);
+
         currentVocabulary = null;
     }
 
@@ -325,12 +337,28 @@ public class VocabularyModel extends ModelBase {
         TemporalUtils.makeHistorical(currentVocabulary, nowTime());
         currentVocabulary.setModifiedBy(modifiedBy());
         VocabularyDAO.updateVocabulary(em(), currentVocabulary);
+        // Add a registry event for deletion of the current row.
+        RegistryEventUtils.createRegistryEvent(
+                em(), RegistryEventElementType.VOCABULARIES,
+                vocabularyId(), nowTime(),
+                RegistryEventEventType.DELETED, modifiedBy(),
+                currentVocabulary, null);
         // Now make a new draft record.
         draftVocabulary = VocabularyClone.INSTANCE.
                 clone(currentVocabulary);
+        // For Vocabulary instances, we represent draft status not only
+        // in the start_date/end_date columns, but also in the
+        // status field.
+        draftVocabulary.setStatus(VocabularyStatus.DRAFT);
         draftVocabulary.setModifiedBy(modifiedBy());
         TemporalUtils.makeDraft(draftVocabulary);
         VocabularyDAO.saveVocabulary(em(), draftVocabulary);
+        // Add a registry event for creation of the draft row.
+        RegistryEventUtils.createRegistryEvent(
+                em(), RegistryEventElementType.VOCABULARIES,
+                vocabularyId(), nowTime(),
+                RegistryEventEventType.CREATED, modifiedBy(),
+                null, draftVocabulary);
         currentVocabulary = null;
     }
 
@@ -351,6 +379,12 @@ public class VocabularyModel extends ModelBase {
     protected void deleteDraftDatabaseRows() {
         if (draftVocabulary != null) {
             VocabularyDAO.deleteVocabulary(em(), draftVocabulary);
+            // Add a registry event.
+            RegistryEventUtils.createRegistryEvent(
+                    em(), RegistryEventElementType.VOCABULARIES,
+                    vocabularyId(), nowTime(),
+                    RegistryEventEventType.DELETED, modifiedBy(),
+                    draftVocabulary, null);
             draftVocabulary = null;
         }
     }
@@ -373,6 +407,12 @@ public class VocabularyModel extends ModelBase {
         // in case they need it to make a TaskInfo object.
         subModels.forEach(sm ->
             sm.applyChanges(updatedVocabulary));
+
+        // And now do any updating of any other subsystems that need
+        // to "know" about new/updated vocabulary metadata.
+
+        // Subscription/notification subsystem.
+        Owners.requireOwner(updatedVocabulary.getOwner());
     }
 
     /** Incoming vocabulary metadata in registry schema may be incomplete.
@@ -415,6 +455,12 @@ public class VocabularyModel extends ModelBase {
                     updatedVocabulary, draftVocabulary, nowTime());
             draftVocabulary.setModifiedBy(modifiedBy());
             VocabularyDAO.updateVocabulary(em(), draftVocabulary);
+            // Add a registry event.
+            RegistryEventUtils.createRegistryEvent(
+                    em(), RegistryEventElementType.VOCABULARIES,
+                    vocabularyId(), nowTime(),
+                    RegistryEventEventType.UPDATED, modifiedBy(),
+                    draftVocabulary, draftVocabulary);
         } else {
             // Add a new draft record.
             draftVocabulary = mapper.sourceToTarget(updatedVocabulary,
@@ -424,6 +470,12 @@ public class VocabularyModel extends ModelBase {
             TemporalUtils.makeDraft(draftVocabulary);
             draftVocabulary.setModifiedBy(modifiedBy());
             VocabularyDAO.saveVocabulary(em(), draftVocabulary);
+            // Add a registry event.
+            RegistryEventUtils.createRegistryEvent(
+                    em(), RegistryEventElementType.VOCABULARIES,
+                    vocabularyId(), nowTime(),
+                    RegistryEventEventType.CREATED, modifiedBy(),
+                    null, draftVocabulary);
         }
     }
 
@@ -434,17 +486,45 @@ public class VocabularyModel extends ModelBase {
     private void applyChangesCurrent(
             final au.org.ands.vocabs.registry.schema.vocabulary201701.
             Vocabulary updatedVocabulary) {
-        if (currentVocabulary != null) {
+        // Registry event type, used to distinguish creation and update;
+        // used as the type of registry event to generate for the new/updated
+        // current instance.
+        // I changed my mind about the expression used to determine
+        // whether or not it is CREATED. I started with:
+//            (currentVocabulary == null) && (draftVocabulary == null);
+        // but now it is the following. With the previous expression,
+        // if you started with a draft before publishing it, you wouldn't
+        // see a creation event.
+        RegistryEventEventType reeType;
+        if (currentVocabulary == null) {
+            reeType = RegistryEventEventType.CREATED;
+        } else {
+            reeType = RegistryEventEventType.UPDATED;
             TemporalUtils.makeHistorical(currentVocabulary, nowTime());
             currentVocabulary.setModifiedBy(modifiedBy());
             VocabularyDAO.updateVocabulary(em(), currentVocabulary);
         }
+        // We now say goodbye to the old value of currentVocabulary.
+        // If draftVocabulary is non-null, it will then be re-purposed as
+        // the row for the new/updated current instance.
+        // Hmm, because of the introduction of createRegistryEvent(),
+        // we do now need to keep the old value of currentVocabulary
+        // around, so that it can be used, if needed, to provide
+        // the (surrogate key) id of the old Vocabulary row.
+        Vocabulary oldCurrentVocabulary = currentVocabulary;
         currentVocabulary = draftVocabulary;
         draftVocabulary = null;
         VocabularyRegistrySchemaMapper mapper =
                 VocabularyRegistrySchemaMapper.INSTANCE;
         if (currentVocabulary != null) {
-            // There was already a draft. Reuse it as the new current instance.
+            // There was already a draft row.
+            // Reuse it as the new current instance.
+            // Add a registry event for deletion of the draft.
+            RegistryEventUtils.createRegistryEvent(
+                    em(), RegistryEventElementType.VOCABULARIES,
+                    vocabularyId(), nowTime(),
+                    RegistryEventEventType.DELETED, modifiedBy(),
+                    currentVocabulary, null);
             mapper.updateTargetFromSource(
                     updatedVocabulary, currentVocabulary);
             currentVocabulary.setStartDate(nowTime());
@@ -452,7 +532,8 @@ public class VocabularyModel extends ModelBase {
             currentVocabulary.setModifiedBy(modifiedBy());
             VocabularyDAO.updateVocabulary(em(), currentVocabulary);
         } else {
-            // No existing current vocabulary. Make one.
+            // No existing row to use for new/updated current instance.
+            // Make one.
             currentVocabulary = mapper.sourceToTarget(updatedVocabulary);
             // updatedVocabulary doesn't have the vocabulary Id.
             currentVocabulary.setVocabularyId(vocabularyId());
@@ -461,6 +542,16 @@ public class VocabularyModel extends ModelBase {
             currentVocabulary.setModifiedBy(modifiedBy());
             VocabularyDAO.saveVocabulary(em(), currentVocabulary);
         }
+
+        // Join paths, for the registry event.
+        // Add a registry event for creation/upate of the current instance.
+        // Either reeType == UPDATED, and oldCurrentVocabulary != null,
+        // or     reeType == CREATED, and oldCurrentVocabulary == null.
+        RegistryEventUtils.createRegistryEvent(
+                em(), RegistryEventElementType.VOCABULARIES,
+                vocabularyId(), nowTime(),
+                reeType, modifiedBy(),
+                oldCurrentVocabulary, currentVocabulary);
     }
 
 }

@@ -258,11 +258,53 @@
         TypedQuery&lt;Vocabulary&gt; q = em.createNamedQuery(
                 Vocabulary.
                     GET_CURRENT_VOCABULARY_BY_SLUG,
-                Vocabulary.class)
-                .setParameter("slug", slug);
+                Vocabulary.class).
+                setParameter(Vocabulary.GET_CURRENT_VOCABULARY_BY_SLUG_SLUG,
+                    slug);
         q = TemporalUtils.setDatetimeConstantParameters(q);
         List&lt;Vocabulary&gt; entityList = q.getResultList();
         em.close();
+        if (entityList.isEmpty()) {
+            return null;
+        }
+        return entityList.get(0);
+    }
+
+</method>
+      </extraQuery>
+      <extraQuery name="GET_LAST_NOT_DRAFT_VOCABULARY_BY_VID">
+        <extraQueryParameter name="vocabularyId" />
+        <queryText temporal="true">
+          SELECT entity FROM Vocabulary entity WHERE
+          vocabularyId = :vocabularyId
+          #AND_TEMPORAL_QUERY_ALL_NON_DRAFT_SUFFIX
+          ORDER BY startDate DESC
+        </queryText>
+        <method>    /** Get the last non-draft instance of a Vocabulary,
+     * by vocabulary Id.
+     * If there is no such instance, returns null.
+     * This version of the method uses an existing EntityManager
+     * provided as a parameter; transaction begin/end must be
+     * managed by the caller.
+     * @param vocabularyId The vocabulary id for which instances
+     *     are to be looked up.
+     * @param em The EntityManager to be used.
+     * @return The last non-draft instance of the Vocabulary with that
+     *     vocabulary Id, or null, if there is no such instance.
+     */
+    public static Vocabulary getLastNotDraftVocabularyByVocabularyId(
+            final Integer vocabularyId,
+            final EntityManager em) {
+        TypedQuery&lt;Vocabulary&gt; q = em.createNamedQuery(
+                Vocabulary.
+                    GET_LAST_NOT_DRAFT_VOCABULARY_BY_VID,
+                Vocabulary.class).
+                setParameter(Vocabulary.
+                        GET_LAST_NOT_DRAFT_VOCABULARY_BY_VID_VOCABULARYID,
+                    vocabularyId);
+        q = TemporalUtils.setDatetimeConstantParameters(q);
+        q.setMaxResults(1);
+        List&lt;Vocabulary&gt; entityList = q.getResultList();
         if (entityList.isEmpty()) {
             return null;
         }
@@ -494,8 +536,8 @@
         TypedQuery&lt;RelatedEntity&gt; q = em.createNamedQuery(
                 RelatedEntity.
                     GET_RELATED_ENTITY_LIST_FOR_VOCABULARY,
-                RelatedEntity.class)
-                .setParameter(RelatedEntity.
+                RelatedEntity.class).
+                setParameter(RelatedEntity.
                     GET_RELATED_ENTITY_LIST_FOR_VOCABULARY_VOCABULARYID,
                     vocabularyId);
         q = TemporalUtils.setDatetimeConstantParameters(q);
@@ -528,14 +570,14 @@
         TypedQuery&lt;RelatedEntity&gt; q = em.createNamedQuery(
                 RelatedEntity.
                     GET_MATCHING_RELATED_ENTITIES,
-                RelatedEntity.class)
-                .setParameter(RelatedEntity.
+                RelatedEntity.class).
+                setParameter(RelatedEntity.
                     GET_MATCHING_RELATED_ENTITIES_OWNER,
-                    relatedEntityToMatch.getOwner())
-                .setParameter(RelatedEntity.
+                    relatedEntityToMatch.getOwner()).
+                setParameter(RelatedEntity.
                     GET_MATCHING_RELATED_ENTITIES_TYPE,
-                    relatedEntityToMatch.getType())
-                .setParameter(RelatedEntity.
+                    relatedEntityToMatch.getType()).
+                setParameter(RelatedEntity.
                     GET_MATCHING_RELATED_ENTITIES_TITLE,
                     relatedEntityToMatch.getTitle());
         q = TemporalUtils.setDatetimeConstantParameters(q);
@@ -560,14 +602,14 @@
         TypedQuery&lt;RelatedEntity&gt; q = em.createNamedQuery(
                 RelatedEntity.
                     GET_MATCHING_RELATED_ENTITIES,
-                RelatedEntity.class)
-                .setParameter(RelatedEntity.
+                RelatedEntity.class).
+                setParameter(RelatedEntity.
                     GET_MATCHING_RELATED_ENTITIES_OWNER,
-                    relatedEntityToMatch.getOwner())
-                .setParameter(RelatedEntity.
+                    relatedEntityToMatch.getOwner()).
+                setParameter(RelatedEntity.
                     GET_MATCHING_RELATED_ENTITIES_TYPE,
-                    relatedEntityToMatch.getType())
-                .setParameter(RelatedEntity.
+                    relatedEntityToMatch.getType()).
+                setParameter(RelatedEntity.
                     GET_MATCHING_RELATED_ENTITIES_TITLE,
                     relatedEntityToMatch.getTitle());
         q = TemporalUtils.setDatetimeConstantParameters(q);
@@ -611,13 +653,13 @@
         TypedQuery&lt;RelatedEntity&gt; q = em.createNamedQuery(
                 RelatedEntity.
                     GET_RELATED_ENTITIES_MATCHING_IDENT,
-                RelatedEntity.class)
-                .setParameter(RelatedEntity.
-                    GET_RELATED_ENTITIES_MATCHING_IDENT_OWNER, owner)
-                .setParameter(RelatedEntity.
+                RelatedEntity.class).
+                setParameter(RelatedEntity.
+                    GET_RELATED_ENTITIES_MATCHING_IDENT_OWNER, owner).
+                setParameter(RelatedEntity.
                     GET_RELATED_ENTITIES_MATCHING_IDENT_IDENTIFIERTYPE,
-                    identifierType)
-                .setParameter(RelatedEntity.
+                    identifierType).
+                setParameter(RelatedEntity.
                     GET_RELATED_ENTITIES_MATCHING_IDENT_IDENTIFIERVALUE,
                     identifierValue);
         q = TemporalUtils.setDatetimeConstantParameters(q);
@@ -650,13 +692,13 @@
         TypedQuery&lt;RelatedEntity&gt; q = em.createNamedQuery(
                 RelatedEntity.
                     GET_RELATED_ENTITIES_MATCHING_IDENT,
-                RelatedEntity.class)
-                .setParameter(RelatedEntity.
-                    GET_RELATED_ENTITIES_MATCHING_IDENT_OWNER, owner)
-                .setParameter(RelatedEntity.
+                RelatedEntity.class).
+                setParameter(RelatedEntity.
+                    GET_RELATED_ENTITIES_MATCHING_IDENT_OWNER, owner).
+                setParameter(RelatedEntity.
                     GET_RELATED_ENTITIES_MATCHING_IDENT_IDENTIFIERTYPE,
-                    identifierType)
-                .setParameter(RelatedEntity.
+                    identifierType).
+                setParameter(RelatedEntity.
                     GET_RELATED_ENTITIES_MATCHING_IDENT_IDENTIFIERVALUE,
                     identifierValue);
         q = TemporalUtils.setDatetimeConstantParameters(q);
@@ -687,8 +729,8 @@
         TypedQuery&lt;RelatedEntity&gt; q = em.createNamedQuery(
                 RelatedEntity.
                     GET_CURRENT_RELATED_ENTITY_BY_TYPE,
-                RelatedEntity.class)
-                .setParameter(RelatedEntity.
+                RelatedEntity.class).
+                setParameter(RelatedEntity.
                     GET_CURRENT_RELATED_ENTITY_BY_TYPE_TYPE,
                     relatedEntityType);
         q = TemporalUtils.setDatetimeConstantParameters(q);
@@ -740,8 +782,8 @@
         TypedQuery&lt;VocabularyRelatedEntity&gt; q = em.createNamedQuery(
                 VocabularyRelatedEntity.
                     GET_VOC_RELATED_ENTITY_LIST_FOR_VOC,
-                VocabularyRelatedEntity.class)
-                .setParameter(VocabularyRelatedEntity.
+                VocabularyRelatedEntity.class).
+                setParameter(VocabularyRelatedEntity.
                     GET_VOC_RELATED_ENTITY_LIST_FOR_VOC_VOCABULARYID,
                     vocabularyId);
         q = TemporalUtils.setDatetimeConstantParameters(q);
@@ -774,8 +816,8 @@
         TypedQuery&lt;VocabularyRelatedEntity&gt; q = em.createNamedQuery(
                 VocabularyRelatedEntity.
                     GET_VOC_RELATED_ENTITY_LIST_FOR_VOC,
-                VocabularyRelatedEntity.class)
-                .setParameter(VocabularyRelatedEntity.
+                VocabularyRelatedEntity.class).
+                setParameter(VocabularyRelatedEntity.
                     GET_VOC_RELATED_ENTITY_LIST_FOR_VOC_VOCABULARYID,
                     vocabularyId);
         q = TemporalUtils.setDatetimeConstantParameters(q);
@@ -816,8 +858,8 @@
         TypedQuery&lt;VocabularyRelatedEntity&gt; q = em.createNamedQuery(
                 VocabularyRelatedEntity.
                     GET_DRAFT_VOC_RE_LIST_FOR_VOC,
-                VocabularyRelatedEntity.class)
-                .setParameter(VocabularyRelatedEntity.
+                VocabularyRelatedEntity.class).
+                setParameter(VocabularyRelatedEntity.
                     GET_DRAFT_VOC_RE_LIST_FOR_VOC_VOCABULARYID,
                     vocabularyId);
         q = TemporalUtils.setDatetimeConstantParameters(q);
@@ -857,8 +899,8 @@
         EntityManager em = DBContext.getEntityManager();
         TypedQuery&lt;Integer&gt; q = em.createNamedQuery(
                 VocabularyRelatedEntity.GET_VOCABULARY_IDS_WITH_RELATED_ENTITY,
-                Integer.class)
-                .setParameter(VocabularyRelatedEntity.
+                Integer.class).
+                setParameter(VocabularyRelatedEntity.
                 GET_VOCABULARY_IDS_WITH_RELATED_ENTITY_RELATEDENTITYID,
                 relatedEntityId);
         q = TemporalUtils.setDatetimeConstantParameters(q);
@@ -900,8 +942,8 @@
         TypedQuery&lt;VocabularyRelatedVocabulary&gt; q = em.createNamedQuery(
                 VocabularyRelatedVocabulary.
                     GET_VOC_RELATED_VOC_LIST_FOR_VOC,
-                VocabularyRelatedVocabulary.class)
-                .setParameter(VocabularyRelatedVocabulary.
+                VocabularyRelatedVocabulary.class).
+                setParameter(VocabularyRelatedVocabulary.
                     GET_VOC_RELATED_VOC_LIST_FOR_VOC_VOCABULARYID,
                     vocabularyId);
         q = TemporalUtils.setDatetimeConstantParameters(q);
@@ -936,8 +978,8 @@
         TypedQuery&lt;VocabularyRelatedVocabulary&gt; q = em.createNamedQuery(
                 VocabularyRelatedVocabulary.
                     GET_VOC_RELATED_VOC_LIST_FOR_VOC,
-                VocabularyRelatedVocabulary.class)
-                .setParameter(VocabularyRelatedVocabulary.
+                VocabularyRelatedVocabulary.class).
+                setParameter(VocabularyRelatedVocabulary.
                     GET_VOC_RELATED_VOC_LIST_FOR_VOC_VOCABULARYID,
                     vocabularyId);
         q = TemporalUtils.setDatetimeConstantParameters(q);
@@ -980,8 +1022,8 @@
         TypedQuery&lt;VocabularyRelatedVocabulary&gt; q = em.createNamedQuery(
                 VocabularyRelatedVocabulary.
                     GET_DRAFT_VOC_RV_LIST_FOR_VOC,
-                VocabularyRelatedVocabulary.class)
-                .setParameter(VocabularyRelatedVocabulary.
+                VocabularyRelatedVocabulary.class).
+                setParameter(VocabularyRelatedVocabulary.
                     GET_DRAFT_VOC_RV_LIST_FOR_VOC_VOCABULARYID,
                     vocabularyId);
         q = TemporalUtils.setDatetimeConstantParameters(q);
@@ -1023,6 +1065,71 @@
        >
     <column db="element_type" enum="RegistryEventElementType" />
     <column db="event_type" enum="RegistryEventEventType" />
+    <extraQueries>
+      <extraQuery name="GET_REGISTRY_EVENTS_FROM_DATE">
+        <extraQueryParameter name="fromDate" />
+        <queryText>
+          SELECT event FROM RegistryEvent event
+          WHERE event.eventDate &gt;= :fromDate
+          ORDER BY event.eventDate
+        </queryText>
+        <method>    /** Get all Registry Event instances
+     * from a given start date onwards.
+     * @param em The EntityManager to be used.
+     * @param fromDate The start date of Registry Event instances to get.
+     * @return A list of all Registry Event instances from the given
+     *     start date onwards. They are ordered by their eventDate values.
+     */
+    public static List&lt;RegistryEvent&gt;
+        getRegistryEventsFromDate(final EntityManager em,
+                final java.time.LocalDateTime fromDate) {
+        TypedQuery&lt;RegistryEvent&gt; q = em.createNamedQuery(
+                RegistryEvent.GET_REGISTRY_EVENTS_FROM_DATE,
+                        RegistryEvent.class).
+                setParameter(RegistryEvent.
+                        GET_REGISTRY_EVENTS_FROM_DATE_FROMDATE, fromDate);
+        List&lt;RegistryEvent&gt; entityList = q.getResultList();
+        return entityList;
+    }
+
+</method>
+      </extraQuery>
+      <extraQuery name="GET_REGISTRY_EVENTS_FROM_TO_DATE">
+        <extraQueryParameter name="fromDate" />
+        <extraQueryParameter name="toDate" />
+        <queryText>
+          SELECT event FROM RegistryEvent event
+          WHERE event.eventDate &gt;= :fromDate
+          AND event.eventDate &lt; :toDate
+          ORDER BY event.eventDate
+        </queryText>
+        <method>    /** Get all Registry Event instances
+     * between a given start date and end date. The time interval
+     * is closed-open.
+     * @param em The EntityManager to be used.
+     * @param fromDate The start date of Registry Event instances to get.
+     * @param toDate The end date of Registry Event instances to get.
+     * @return A list of all Registry Event instances between the given
+     *     start date and end date. They are ordered by their eventDate values.
+     */
+    public static List&lt;RegistryEvent&gt;
+        getRegistryEventsFromToDate(final EntityManager em,
+                final java.time.LocalDateTime fromDate,
+                final java.time.LocalDateTime toDate) {
+        TypedQuery&lt;RegistryEvent&gt; q = em.createNamedQuery(
+                RegistryEvent.GET_REGISTRY_EVENTS_FROM_TO_DATE,
+                        RegistryEvent.class).
+                setParameter(RegistryEvent.
+                        GET_REGISTRY_EVENTS_FROM_TO_DATE_FROMDATE, fromDate).
+                setParameter(RegistryEvent.
+                        GET_REGISTRY_EVENTS_FROM_TO_DATE_TODATE, toDate);
+        List&lt;RegistryEvent&gt; entityList = q.getResultList();
+        return entityList;
+    }
+
+</method>
+      </extraQuery>
+    </extraQueries>
   </map>
   <map tableName="resource_owner_hosts"
        entityName="ResourceOwnerHost"
@@ -1178,10 +1285,10 @@
         EntityManager em = DBContext.getEntityManager();
         TypedQuery&lt;Boolean&gt; q = em.createNamedQuery(
                 SubjectResolverEntry.DOES_SUBJECT_RESOLVE,
-                Boolean.class)
-                .setParameter(SubjectResolverEntry.
-                    DOES_SUBJECT_RESOLVE_SOURCE, source)
-                    .setParameter(SubjectResolverEntry.
+                Boolean.class).
+                setParameter(SubjectResolverEntry.
+                    DOES_SUBJECT_RESOLVE_SOURCE, source).
+                setParameter(SubjectResolverEntry.
                     DOES_SUBJECT_RESOLVE_IRI, iri);
         Boolean subjectValid = q.getSingleResult();
         em.close();
@@ -1208,11 +1315,11 @@
         TypedQuery&lt;SubjectResolverEntry&gt; q = em.createNamedQuery(
                 SubjectResolverEntry.
                     GET_SUBJECT_RESOLVED,
-                SubjectResolverEntry.class)
-                .setParameter(SubjectResolverEntry.
+                SubjectResolverEntry.class).
+                setParameter(SubjectResolverEntry.
                     GET_SUBJECT_RESOLVED_SOURCE,
-                    source)
-                .setParameter(SubjectResolverEntry.
+                    source).
+                setParameter(SubjectResolverEntry.
                     GET_SUBJECT_RESOLVED_IRI,
                     iri);
         List&lt;SubjectResolverEntry&gt; entityList = q.getResultList();
@@ -1248,5 +1355,363 @@
        >
   </map>
 
+  <!-- Notification service -->
+
+  <map tableName="owners"
+       entityName="Owner"
+       serialVersionUID="8400634893908604367L"
+       >
+    <extraQueries>
+      <extraQuery name="GET_OWNER_BY_OWNER">
+        <extraQueryParameter name="ownerName" />
+        <queryText>
+          SELECT entity FROM Owner entity WHERE
+          entity.owner = :ownerName
+        </queryText>
+        <method>    /** Get an Owner instance by the owner name.
+     * If there is no such instance, returns null.
+     * This version of the method creates and uses its own EntityManager.
+     * @param ownerName The owner name of the instance to be fetched.
+     * @return The Owner instance with that owner name,
+     *     or null, if there is no such instance.
+     */
+    public static Owner getOwnerByOwner(final String ownerName) {
+        EntityManager em = DBContext.getEntityManager();
+        TypedQuery&lt;Owner&gt; q = em.createNamedQuery(
+                Owner.GET_OWNER_BY_OWNER, Owner.class).
+                setParameter(Owner.GET_OWNER_BY_OWNER_OWNERNAME, ownerName);
+        List&lt;Owner&gt; entityList = q.getResultList();
+        em.close();
+        if (entityList.isEmpty()) {
+            return null;
+        }
+        return entityList.get(0);
+    }
+
+</method>
+      </extraQuery>
+    </extraQueries>
+  </map>
+
+  <map tableName="subscriber_ids"
+       entityName="SubscriberId"
+       serialVersionUID="-7868517961305444371L"
+       >
+  </map>
+
+  <map tableName="subscriber_email_address_ids"
+       entityName="SubscriberEmailAddressId"
+       serialVersionUID="6816107973297320040L"
+       >
+  </map>
+
+  <map tableName="subscription_ids"
+       entityName="SubscriptionId"
+       serialVersionUID="5557190532019502787L"
+       >
+  </map>
+
+  <map tableName="subscribers"
+       entityName="Subscriber"
+       serialVersionUID="-3174014539150755160L"
+       >
+    <idKey keyColumn="subscriber_id" entityName="SubscriberId" />
+  </map>
+
+  <map tableName="subscriber_email_addresses"
+       entityName="SubscriberEmailAddress"
+       serialVersionUID="2126761184406673862L"
+       >
+    <idKey keyColumn="subscriber_email_address_id"
+           entityName="SubscriberEmailAddressId" />
+    <foreignKeyQueries>
+      <foreignKeyQuery keyColumn="subscriberId" entityName="Subscriber" />
+    </foreignKeyQueries>
+    <extraQueries>
+      <extraQuery name="GET_CURRENT_EMAIL_BY_EMAIL">
+        <extraQueryParameter name="emailAddress" />
+        <queryText temporal="true">
+          SELECT entity FROM SubscriberEmailAddress entity WHERE
+          entity.emailAddress = :emailAddress
+          #AND_TEMPORAL_QUERY_VALID_SUFFIX
+        </queryText>
+        <method>    /** Get current SubscriberEmailAddress instance by email address.
+     * If there is no such instance, returns null.
+     * This version of the method creates and uses its own EntityManager.
+     * @param emailAddress The email address of the instance to be fetched.
+     * @return The current SubscriberEmailAddress instance with that
+     *     email address, or null, if there is no such instance.
+     */
+    public static SubscriberEmailAddress
+        getCurrentSubscriberEmailAddressByEmailAddress(
+                final String emailAddress) {
+        EntityManager em = DBContext.getEntityManager();
+        TypedQuery&lt;SubscriberEmailAddress&gt; q = em.createNamedQuery(
+                SubscriberEmailAddress.
+                    GET_CURRENT_EMAIL_BY_EMAIL,
+                SubscriberEmailAddress.class).
+                setParameter("emailAddress", emailAddress);
+        q = TemporalUtils.setDatetimeConstantParameters(q);
+        List&lt;SubscriberEmailAddress&gt; entityList = q.getResultList();
+        em.close();
+        if (entityList.isEmpty()) {
+            return null;
+        }
+        return entityList.get(0);
+    }
+
+</method>
+      </extraQuery>
+    </extraQueries>
+  </map>
+
+  <map tableName="subscriptions"
+       entityName="Subscription"
+       serialVersionUID="4293930415776107616L"
+       >
+    <idKey keyColumn="subscription_id" entityName="SubscriptionId" />
+    <column db="notification_mode" enum="NotificationMode" />
+    <column db="notification_element_type" enum="NotificationElementType" />
+    <foreignKeyQueries>
+      <foreignKeyQuery keyColumn="subscriberId" entityName="Subscriber" />
+    </foreignKeyQueries>
+    <extraQueries>
+
+      <extraQuery name="GET_CURR_SUB_LIST_FOR_NOTIF_MODE">
+        <extraQueryParameter name="notificationMode" />
+        <queryText temporal="true">
+          SELECT entity FROM Subscription entity
+          WHERE entity.notificationMode = :notificationMode
+          #AND_TEMPORAL_QUERY_VALID_SUFFIX
+        </queryText>
+        <method>    /** Get all current Subscription instances for a
+     * specified notification mode.
+     * This version of the method creates and uses its own EntityManager.
+     * @param notificationMode The notification mode.
+     * @return The list of current Subscription
+     *     instances for this notification mode.
+     */
+    public static List&lt;Subscription&gt;
+    getCurrentSubscriptionsForNotificationMode(
+            final au.org.ands.vocabs.registry.enums.NotificationMode
+                notificationMode) {
+        EntityManager em = DBContext.getEntityManager();
+        TypedQuery&lt;Subscription&gt; q = em.createNamedQuery(
+                Subscription.
+                    GET_CURR_SUB_LIST_FOR_NOTIF_MODE,
+                Subscription.class).
+                setParameter(
+                        Subscription.
+                            GET_CURR_SUB_LIST_FOR_NOTIF_MODE_NOTIFICATIONMODE,
+                        notificationMode);
+        q = TemporalUtils.setDatetimeConstantParameters(q);
+        List&lt;Subscription&gt; entityList = q.getResultList();
+        em.close();
+        return entityList;
+    }
+
+    /** Get all current Subscription instances for a
+     * specified notification mode.
+     * This version of the method uses an existing EntityManager
+     * provided as a parameter; transaction begin/end must be
+     * managed by the caller.
+     * @param notificationMode The notification mode.
+     * @param em The EntityManager to be used.
+     * @return The list of current Subscription
+     *     instances for this notification mode.
+     */
+    public static List&lt;Subscription&gt;
+    getCurrentSubscriptionsForNotificationMode(
+            final au.org.ands.vocabs.registry.enums.NotificationMode
+                notificationMode,
+            final EntityManager em) {
+        TypedQuery&lt;Subscription&gt; q = em.createNamedQuery(
+                Subscription.
+                    GET_CURR_SUB_LIST_FOR_NOTIF_MODE,
+                Subscription.class).
+                setParameter(
+                        Subscription.
+                            GET_CURR_SUB_LIST_FOR_SUB_NOTIF_NOTIFICATIONMODE,
+                        notificationMode);
+        q = TemporalUtils.setDatetimeConstantParameters(q);
+        List&lt;Subscription&gt; entityList = q.getResultList();
+        return entityList;
+    }
+
+</method>
+      </extraQuery>
+      <extraQuery name="GET_CURR_SUB_LIST_FOR_SUB">
+        <extraQueryParameter name="subscriberId" />
+        <queryText temporal="true">
+          SELECT entity FROM Subscription entity
+          WHERE entity.subscriberId = :subscriberId
+          #AND_TEMPORAL_QUERY_VALID_SUFFIX
+        </queryText>
+        <method>    /** Get all current Subscription instances for a Subscriber.
+     * This version of the method creates and uses its own EntityManager.
+     * @param subscriberId The subscriber Id.
+     * @return The list of current Subscription
+     *     instances for this Subscriber.
+     */
+    public static List&lt;Subscription&gt;
+    getCurrentSubscriptionsForSubscriber(final Integer subscriberId) {
+        EntityManager em = DBContext.getEntityManager();
+        TypedQuery&lt;Subscription&gt; q = em.createNamedQuery(
+                Subscription.
+                    GET_CURR_SUB_LIST_FOR_SUB,
+                Subscription.class).
+                setParameter(
+                        Subscription.
+                            GET_CURR_SUB_LIST_FOR_SUB_SUBSCRIBERID,
+                        subscriberId);
+        q = TemporalUtils.setDatetimeConstantParameters(q);
+        List&lt;Subscription&gt; entityList = q.getResultList();
+        em.close();
+        return entityList;
+    }
+
+    /** Get all current Subscription instances for a Subscriber.
+     * This version of the method uses an existing EntityManager
+     * provided as a parameter; transaction begin/end must be
+     * managed by the caller.
+     * @param subscriberId The subscriber Id.
+     * @param em The EntityManager to be used.
+     * @return The list of current Subscription
+     *     instances for this Subscriber.
+     */
+    public static List&lt;Subscription&gt;
+    getCurrentSubscriptionsForSubscriber(
+            final Integer subscriberId,
+            final EntityManager em) {
+        TypedQuery&lt;Subscription&gt; q = em.createNamedQuery(
+                Subscription.
+                    GET_CURR_SUB_LIST_FOR_SUB,
+                Subscription.class).
+                setParameter(
+                        Subscription.
+                            GET_CURR_SUB_LIST_FOR_SUB_SUBSCRIBERID,
+                        subscriberId);
+        q = TemporalUtils.setDatetimeConstantParameters(q);
+        List&lt;Subscription&gt; entityList = q.getResultList();
+        return entityList;
+    }
+
+</method>
+      </extraQuery>
+      <extraQuery name="GET_CURR_SUB_LIST_FOR_SUB_NOTIF">
+        <extraQueryParameter name="subscriberId" />
+        <extraQueryParameter name="notificationMode" />
+        <extraQueryParameter name="notificationElementType" />
+        <extraQueryParameter name="notificationElementId" />
+        <queryText temporal="true">
+          SELECT entity FROM Subscription entity
+          WHERE entity.subscriberId = :subscriberId
+          AND entity.notificationMode = :notificationMode
+          AND entity.notificationElementType = :notificationElementType
+          AND entity.notificationElementId = :notificationElementId
+          #AND_TEMPORAL_QUERY_VALID_SUFFIX
+        </queryText>
+        <method>    /** Get all current Subscription instances for a Subscriber,
+     * that have a specified notification mode, notification element type,
+     * and notification element Id.
+     * This version of the method creates and uses its own EntityManager.
+     * @param subscriberId The subscriber Id.
+     * @param notificationMode The notification mode.
+     * @param notificationElementType The notification element type.
+     * @param notificationElementId The notification element Id.
+     * @return The list of current Subscription
+     *     instances for this Subscriber, that have the specified
+     *     notification mode, notification element type, and
+     *     notification element Id.
+     */
+    public static List&lt;Subscription&gt;
+    getCurrentSubscriptionsForSubscriberAndNotification(
+            final Integer subscriberId,
+            final au.org.ands.vocabs.registry.enums.NotificationMode
+                notificationMode,
+            final au.org.ands.vocabs.registry.enums.NotificationElementType
+                notificationElementType,
+            final Integer notificationElementId) {
+        EntityManager em = DBContext.getEntityManager();
+        TypedQuery&lt;Subscription&gt; q = em.createNamedQuery(
+                Subscription.
+                    GET_CURR_SUB_LIST_FOR_SUB_NOTIF,
+                Subscription.class).
+                setParameter(
+                        Subscription.
+                            GET_CURR_SUB_LIST_FOR_SUB_NOTIF_SUBSCRIBERID,
+                        subscriberId).
+                setParameter(
+                        Subscription.
+                            GET_CURR_SUB_LIST_FOR_SUB_NOTIF_NOTIFICATIONMODE,
+                        notificationMode).
+                setParameter(
+                        Subscription.
+                    GET_CURR_SUB_LIST_FOR_SUB_NOTIF_NOTIFICATIONELEMENTTYPE,
+                        notificationElementType).
+                setParameter(
+                        Subscription.
+                    GET_CURR_SUB_LIST_FOR_SUB_NOTIF_NOTIFICATIONELEMENTID,
+                        notificationElementId);
+        q = TemporalUtils.setDatetimeConstantParameters(q);
+        List&lt;Subscription&gt; entityList = q.getResultList();
+        em.close();
+        return entityList;
+    }
+
+    /** Get all current Subscription instances for a Subscriber,
+     * that have a specified notification mode, notification element type,
+     * and notification element Id.
+     * This version of the method uses an existing EntityManager
+     * provided as a parameter; transaction begin/end must be
+     * managed by the caller.
+     * @param subscriberId The subscriber Id.
+     * @param notificationMode The notification mode.
+     * @param notificationElementType The notification element type.
+     * @param notificationElementId The notification element Id.
+     * @param em The EntityManager to be used.
+     * @return The list of current Subscription
+     *     instances for this Subscriber, that have the specified
+     *     notification mode, notification element type, and
+     *     notification element Id.
+     */
+    public static List&lt;Subscription&gt;
+    getCurrentSubscriptionsForSubscriberAndNotification(
+            final Integer subscriberId,
+            final au.org.ands.vocabs.registry.enums.NotificationMode
+                notificationMode,
+            final au.org.ands.vocabs.registry.enums.NotificationElementType
+                notificationElementType,
+            final Integer notificationElementId,
+            final EntityManager em) {
+        TypedQuery&lt;Subscription&gt; q = em.createNamedQuery(
+                Subscription.
+                    GET_CURR_SUB_LIST_FOR_SUB_NOTIF,
+                Subscription.class).
+                setParameter(
+                        Subscription.
+                            GET_CURR_SUB_LIST_FOR_SUB_NOTIF_SUBSCRIBERID,
+                        subscriberId).
+                setParameter(
+                        Subscription.
+                            GET_CURR_SUB_LIST_FOR_SUB_NOTIF_NOTIFICATIONMODE,
+                        notificationMode).
+                setParameter(
+                        Subscription.
+                    GET_CURR_SUB_LIST_FOR_SUB_NOTIF_NOTIFICATIONELEMENTTYPE,
+                        notificationElementType).
+                setParameter(
+                        Subscription.
+                    GET_CURR_SUB_LIST_FOR_SUB_NOTIF_NOTIFICATIONELEMENTID,
+                        notificationElementId);
+        q = TemporalUtils.setDatetimeConstantParameters(q);
+        List&lt;Subscription&gt; entityList = q.getResultList();
+        return entityList;
+    }
+
+</method>
+      </extraQuery>
+    </extraQueries>
+  </map>
 
 </db-entity-map>

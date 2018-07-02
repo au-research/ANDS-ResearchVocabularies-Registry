@@ -121,3 +121,34 @@ SISSVoc.variable.SPARQL_ENDPOINT_PREFIX = [URL]
 # Path to the XSL stylesheet that generates the HTML pages.
 # Path is relative to the SISSVoc webapp.
 SISSVoc.variable.HTML_STYLESHEET = [path.xsl]
+
+## Notifications
+
+# Prefix to use for URLs of portal pages referred to in notifications.
+# E.g., a view page is ${Notifications.portalPrefix}viewById/123.
+# Should end with a slash.
+Notifications.portalPrefix=[portal URL, e.g., https://myhost/]
+
+### Email
+
+# Hostname of SMTP server used to send generated emails.
+Notifications.email.smtpHost=[hostname of SMTP server]
+# Port number of SMTP server used to send generated emails.
+Notifications.email.smtpPort=25
+# The sender email address to put in the "From" line of generated emails.
+Notifications.email.senderEmailAddress=[e.g., notifications@hostname]
+# The full name of the sender to put in the "From" line of generated emails.
+Notifications.email.senderFullName=[e.g., Notifications Service]
+# The email address to put in the "Reply-To" line of generated emails.
+Notifications.email.replyTo=[e.g., do-not-reply@hostname]
+# The subject line to use for generated emails.
+# The date of generation of the email is appended.
+Notifications.email.subject=[Weekly notifications]
+# Filename of file containing HTML template. The file should be put in
+# the conf directory of the Registry source. It can then be read
+# either from a standalone class or when accessed from the webapp.
+Notifications.email.template.HTML=email-template.ftlh
+# Filename of file containing plain text template. The file should be put in
+# the conf directory of the Registry source. It can then be read
+# either from a standalone class or when accessed from the webapp.
+Notifications.email.template.plaintext=email-template.ftl

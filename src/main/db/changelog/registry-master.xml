@@ -20,5 +20,6 @@
   <!-- Now list all the changelogs below. -->
   <include file="src/main/db/changelog/registry-0001.xml" />
   <include file="src/main/db/changelog/registry-0002.xml" />
+  <include file="src/main/db/changelog/registry-0003.xml" />
 
 </databaseChangeLog>

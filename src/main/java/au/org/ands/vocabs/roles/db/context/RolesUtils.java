@@ -54,6 +54,27 @@ public final class RolesUtils {
         return roles;
     }
 
+    /** Get organisational roles by role id. This is like
+     * {@link #getRolesByRoleId(String)}, but filters on
+     * organisational roles.
+     * @param roleId The organisational role id.
+     * @return The roles. Because organisational roles don't have
+     *      AuthenticationServiceId values, we can't fetch whole rows
+     *      from the database. So the return type is a list of cut-down
+     *      role descriptions.
+     */
+    public static List<au.org.ands.vocabs.roles.Role> getOrgRolesByRoleId(
+            final String roleId) {
+        EntityManager em = DBContext.getEntityManager();
+        TypedQuery<au.org.ands.vocabs.roles.Role> query =
+                em.createNamedQuery(Role.GET_ORG_ROLES_FOR_ROLEID,
+                        au.org.ands.vocabs.roles.Role.class).
+                setParameter(Role.GET_ORG_ROLES_FOR_ROLEID_ROLEID, roleId);
+        List<au.org.ands.vocabs.roles.Role> roles = query.getResultList();
+        em.close();
+        return roles;
+    }
+
     /** Compute the transitive closure of the parent property.
      * @param roleId The roleId to be looked up.
      * @param userInfo The UserInfo data to be looked up. The

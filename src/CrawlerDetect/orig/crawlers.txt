@@ -3206,3 +3206,45 @@ Email%20Extractor%20Lite/26 CFNetwork/720.3.13 Darwin/14.3.0 (x86_64)
 HubSpot Page Screenshot Service
 NewRelicPinger/1.0 (543245)
 APIs-Google (+https://developers.google.com/webmasters/APIs-Google.html)
+updown.io daemon 2.2
+updown.io daemon 2.3
+updown.io daemon 2.2
+updown.io daemon 2.3
+Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.81 Safari/537.36 PrintFriendly.com
+Unshorten.It!/1.0 (https://unshorten.it/)
+github-camo (65c9ebe0)
+github-camo (abb93c82)
+github-camo (bacd3d5b)
+github-camo (df02412a)
+Jobsearch1.5
+HubSpot Content Strategy link check
+Twisted PageGetter
+node-urllib/2.25.3 Node.js/6.12.2 (Linux 4.4; x64)
+sentry/8.18.0 (https://sentry.io)
+Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36 (compatible; Sitebulb/1.1; +https://sitebulb.com)
+Thinklab (thinklab.com)
+HubSpot inbound link reporting check
+SetCronJob/1.0 (+http://www.setcronjob.com/)
+Burf Search Engine
+Apache Droid
+Mozilla/5.0 (compatible; adscanner/)
+hackney/1.11.0
+Mozilla/5.0 (compatible; MuckRack/1.0; +http://muckrack.com)
+Mozilla/5.0 (compatible; dotMailer content retrieval service)
+Nexgate Ruby Client
+Miniature.io/2.0 (Linux; en-us)
+help@dataminr.com
+Mozilla/5.0 (compatible; Your-Website-Sucks/2.0; +http://www.Your-Website-Sucks.net/WWW.SOMEWEBSITE.COM)
+axios/0.17.1
+Wtrace
+PostmanRuntime/7.1.1
+hackney/1.11.0
+Lavf/57.25.100
+makecontact/1.0 (+https://makecontact.io)
+QrafterPro/4600 CFNetwork/889.9 Darwin/17.2.0
+Buck/2.2; (+https://app.hypefactors.com/media-monitoring/about.html)
+Go http package
+HonesoSearchEngine/1.0
+orion-semantics.com 0.1
+ExperianCrawlUK (andrew dot swanton at phgroup dot com)
+Trendsmap Resolver/0.0.1

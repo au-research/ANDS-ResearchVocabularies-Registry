@@ -1,0 +1,284 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation=
+    "http://www.liquibase.org/xml/ns/dbchangelog-ext
+     dbchangelog-ext.xsd
+     http://www.liquibase.org/xml/ns/dbchangelog
+     dbchangelog-3.5.xsd"
+    >
+<!--
+    objectQuotingStrategy="QUOTE_ALL_OBJECTS"
+-->
+
+  <!-- Create tables for subscription/notification service. -->
+
+  <changeSet id="0003-owners-createTable"
+             author="Richard.Walker@ands.org.au">
+    <comment>Create owners_ids table</comment>
+    <createTable tableName="owners"
+                 remarks="Owners of registry entities.">
+      <column autoIncrement="true" name="owner_id" type="INTEGER">
+        <constraints primaryKey="true"/>
+      </column>
+      <column name="owner" type="VARCHAR(255)"
+              remarks="Role ID.">
+        <constraints nullable="false"/>
+      </column>
+    </createTable>
+  </changeSet>
+
+  <changeSet id="0003-subscriber_ids-createTable"
+             author="Richard.Walker@ands.org.au">
+    <comment>Create subscriber_ids table</comment>
+    <createTable tableName="subscriber_ids"
+                 remarks="IDs to use in the subscribers table.">
+      <column autoIncrement="true" name="id" type="INTEGER">
+        <constraints primaryKey="true"/>
+      </column>
+    </createTable>
+  </changeSet>
+
+  <changeSet id="0003-subscriber_email_address_ids-createTable"
+             author="Richard.Walker@ands.org.au">
+    <comment>Create subscriber_email_address_ids table</comment>
+    <createTable tableName="subscriber_email_address_ids"
+                 remarks="IDs to use in the subscriber email addresses table.">
+      <column autoIncrement="true" name="id" type="INTEGER">
+        <constraints primaryKey="true"/>
+      </column>
+    </createTable>
+  </changeSet>
+
+  <changeSet id="0003-subscription_ids-createTable"
+             author="Richard.Walker@ands.org.au">
+    <comment>Create subscription_ids table</comment>
+    <createTable tableName="subscription_ids"
+                 remarks="IDs to use in the subscriptions table.">
+      <column autoIncrement="true" name="id" type="INTEGER">
+        <constraints primaryKey="true"/>
+      </column>
+    </createTable>
+  </changeSet>
+
+  <changeSet id="0003-subscribers-createTable"
+             author="Richard.Walker@ands.org.au">
+    <comment>Create subscribers table</comment>
+    <createTable tableName="subscribers">
+      <column name="id" type="INTEGER"
+              autoIncrement="true">
+        <constraints primaryKey="true"/>
+      </column>
+      <column name="start_date" type="DATETIME"
+              remarks="Values in UTC.">
+        <constraints nullable="false"/>
+      </column>
+      <column name="end_date" type="DATETIME"
+              remarks="Values in UTC.">
+        <constraints nullable="false"/>
+      </column>
+      <column name="subscriber_id" type="INTEGER">
+        <constraints nullable="false"
+                     references="subscriber_ids(id)"
+                     foreignKeyName="fk_subscribers_subscriber_id"/>
+      </column>
+      <column name="modified_by" type="VARCHAR(255)"
+              remarks="Role ID responsible for this row.">
+        <constraints nullable="false"/>
+      </column>
+      <column name="token" type="VARCHAR(255)">
+        <constraints nullable="false"/>
+      </column>
+    </createTable>
+  </changeSet>
+
+  <changeSet id="0003-subscriber_email_addresses-createTable"
+             author="Richard.Walker@ands.org.au">
+    <comment>Create subscriber_email_addressess table</comment>
+    <createTable tableName="subscriber_email_addresses">
+      <column name="id" type="INTEGER"
+              autoIncrement="true">
+        <constraints primaryKey="true"/>
+      </column>
+      <column name="start_date" type="DATETIME"
+              remarks="Values in UTC.">
+        <constraints nullable="false"/>
+      </column>
+      <column name="end_date" type="DATETIME"
+              remarks="Values in UTC.">
+        <constraints nullable="false"/>
+      </column>
+      <column name="subscriber_email_address_id" type="INTEGER">
+        <constraints nullable="false"
+                     references="subscriber_email_address_ids(id)"
+                     foreignKeyName="fk_subscriber_email_addresses_subscriber_email_address_id"/>
+      </column>
+      <column name="subscriber_id" type="INTEGER">
+        <constraints nullable="false"
+                     references="subscriber_ids(id)"
+                     foreignKeyName="fk_subscriber_email_addresses_subscriber_id"/>
+      </column>
+      <column name="email_address" type="VARCHAR(255)"
+              remarks="Email address of the subscriber.">
+        <constraints nullable="false"/>
+      </column>
+    </createTable>
+  </changeSet>
+
+  <changeSet id="0003-subscriptions-createTable"
+             author="Richard.Walker@ands.org.au">
+    <comment>Create subscriptions table</comment>
+    <createTable tableName="subscriptions">
+      <column name="id" type="INTEGER"
+              autoIncrement="true">
+        <constraints primaryKey="true"/>
+      </column>
+      <column name="start_date" type="DATETIME"
+              remarks="Values in UTC.">
+        <constraints nullable="false"/>
+      </column>
+      <column name="end_date" type="DATETIME"
+              remarks="Values in UTC.">
+        <constraints nullable="false"/>
+      </column>
+      <column name="subscription_id" type="INTEGER">
+        <constraints nullable="false"
+                     references="subscription_ids(id)"
+                     foreignKeyName="fk_subscriptions_subscription_id"/>
+      </column>
+      <column name="subscriber_id" type="INTEGER">
+        <constraints nullable="false"
+                     references="subscriber_ids(id)"
+                     foreignKeyName="fk_subscriptions_subscriber_id"/>
+      </column>
+      <column name="modified_by" type="VARCHAR(255)"
+              remarks="Role ID responsible for this row.">
+        <constraints nullable="false"/>
+      </column>
+      <column name="notification_mode" type="VARCHAR(45)"
+              remarks="Enumerated type.">
+        <constraints nullable="false"/>
+      </column>
+      <column name="notification_element_type" type="VARCHAR(45)"
+              remarks="Enumerated type.">
+        <constraints nullable="false"/>
+      </column>
+      <column name="notification_element_id" type="INTEGER">
+        <constraints nullable="false"/>
+      </column>
+      <column name="last_notification" type="DATETIME"
+              remarks="Values in UTC.">
+        <constraints nullable="false"/>
+      </column>
+      <column name="data" type="TEXT"
+              remarks="JSON object.">
+        <constraints nullable="false"/>
+      </column>
+    </createTable>
+  </changeSet>
+
+  <!-- Indexes -->
+
+  <changeSet id="0003-owners_owner-createIndex"
+             author="Richard.Walker@ands.org.au">
+    <comment>Create ix_owners_slug index on owners(slug).
+    </comment>
+    <createIndex indexName="ix_owners_owner"
+                 tableName="owners">
+      <column name="owner"/>
+    </createIndex>
+    <!-- The following "modifySql" element is needed for MySQL version
+         5.6 with default settings, or if the "TEXT" type is used for
+         the "owner" column.
+
+         In the former case, index fields are limited to 767 bytes. In
+         utf8mb4 encoding, that means 191 characters. See:
+         https://dev.mysql.com/doc/refman/5.7/en/innodb-parameters.html
+
+         In the latter case, MySQL requires a field length, because
+         then the iri column is of a "blob" type.  See:
+         https://liquibase.jira.com/browse/CORE-1180
+         https://liquibase.jira.com/browse/CORE-1649
+
+         This is _not_ needed in MySQL 5.7 with default settings (or
+         in 5.6 with modified settings for innodb-file-format and
+         innodb_large_prefix) and the varchar type for the owner column.
+    -->
+    <modifySql dbms="mysql">
+      <replace replace="(owner" with="(owner(191)"/>
+    </modifySql>
+  </changeSet>
+
+  <changeSet id="0003-owners-populate"
+             author="Richard.Walker@ands.org.au">
+    <comment>Populate owners from existing vocabularies.
+    </comment>
+    <sql dbms="mysql">
+      INSERT INTO owners (owner) SELECT DISTINCT owner FROM vocabularies;
+    </sql>
+    <rollback>
+      <sql dbms="mysql">
+        DELETE FROM owners;
+      </sql>
+    </rollback>
+
+  </changeSet>
+
+  <changeSet id="0003-subscriber_email_addresses_email_address_end_date-createIndex"
+             author="Richard.Walker@ands.org.au">
+    <comment>Create subscriber_email_addresses_email_address_end_date index on
+    subscriber_email_addresses(email_address, end_date)
+    </comment>
+    <createIndex indexName="ix_subscriber_email_addresses_email_address_end_date"
+                 tableName="subscriber_email_addresses">
+      <column name="email_address"/>
+      <column name="end_date"/>
+    </createIndex>
+    <!-- The following "modifySql" element is needed for MySQL version
+         5.6 with default settings, or if the "TEXT" type is used for
+         the "email_address" column.
+
+         In the former case, index fields are limited to 767 bytes. In
+         utf8mb4 encoding, that means 191 characters. See:
+         https://dev.mysql.com/doc/refman/5.7/en/innodb-parameters.html
+
+         In the latter case, MySQL requires a field length, because
+         then the iri column is of a "blob" type.  See:
+         https://liquibase.jira.com/browse/CORE-1180
+         https://liquibase.jira.com/browse/CORE-1649
+
+         This is _not_ needed in MySQL 5.7 with default settings (or
+         in 5.6 with modified settings for innodb-file-format and
+         innodb_large_prefix) and the varchar type for the email_address
+         column.
+    -->
+    <modifySql dbms="mysql">
+      <replace replace="(email_address," with="(email_address(191),"/>
+    </modifySql>
+  </changeSet>
+
+  <changeSet id="0003-subscription_notification_mode_end_date-createIndex"
+             author="Richard.Walker@ands.org.au">
+    <comment>Create ix_subscriptions_notification_mode_end_date index on
+    subscriptions(notification_mode, end_date).
+    </comment>
+    <!-- Supports query getCurrSubListForNotifMode, used when
+         generating notifications.
+    -->
+    <createIndex indexName="ix_subscriptions_notification_mode_end_date"
+                 tableName="subscriptions">
+      <column name="notification_mode"/>
+      <column name="end_date"/>
+    </createIndex>
+  </changeSet>
+
+  <!-- And now tag the result. -->
+
+  <changeSet id="0003-tag"
+             author="Richard.Walker@ands.org.au">
+    <tagDatabase tag="version_0003"/>
+  </changeSet>
+
+</databaseChangeLog>

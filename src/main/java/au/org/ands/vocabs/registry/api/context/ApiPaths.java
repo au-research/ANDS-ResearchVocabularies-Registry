@@ -24,6 +24,8 @@ public final class ApiPaths {
     /** Utility methods of the API. */
     public static final String API_UTILITIES = "/api/utilities";
 
+    /* Resource API methods. */
+
     /* Model elements. */
 
     /** Subpath for vocabulary resources. */
@@ -80,6 +82,35 @@ public final class ApiPaths {
 //    /** Path parameter name for a  resource. */
 //    public static final String _ID = "{Id}";
 
+    /* Service API methods. */
 
+    /** Subpath for PoolParty services. */
+    public static final String POOLPARTY = "PoolParty";
+
+    /** Subpath for resolution services. */
+    public static final String RESOLVE = "resolve";
+
+    /** Subpath for search services. */
+    public static final String SEARCH = "search";
+
+    /** Subpath for subscription services. */
+    public static final String SUBSCRIPTIONS = "subscriptions";
+
+    /* Subpaths for subscription services. */
+
+    /** Subpath for email subscription services. */
+    public static final String EMAIL = "email";
+
+    /** Subpath for email subscription services for OWNER. */
+    public static final String OWNER = "owner";
+
+    /** Path parameter name for an owner name. */
+    public static final String OWNER_NAME = "{owner}";
+
+    /** Subpath for email subscription services for SYSTEM. */
+    public static final String SYSTEM = "system";
+
+    /** Subpath for email subscription services, for all subscription types. */
+    public static final String ALL = "all";
 
 }

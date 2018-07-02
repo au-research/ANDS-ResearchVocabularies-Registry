@@ -51,7 +51,7 @@
   <filter-mapping>
     <filter-name>ApiOriginFilter</filter-name>
     <url-pattern>/swagger.json</url-pattern>
-    <url-pattern>/registry/admin/*</url-pattern>
+    <url-pattern>/adminApi/*</url-pattern>
     <url-pattern>/api/resource/*</url-pattern>
     <url-pattern>/api/services/*</url-pattern>
     <url-pattern>/api/user/*</url-pattern>

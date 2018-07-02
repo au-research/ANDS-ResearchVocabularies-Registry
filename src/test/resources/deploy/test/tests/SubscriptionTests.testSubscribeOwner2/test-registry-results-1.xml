@@ -1,0 +1,44 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE dataset SYSTEM "../../dbunit-registry-export-choice.dtd" >
+<dataset>
+
+  <RELATED_ENTITY_IDS ID="1"/>
+
+  <RELATED_ENTITIES ID="1" START_DATE="2015-11-26 10:04:05.0" END_DATE="9999-12-01 00:00:00" RELATED_ENTITY_ID="1" MODIFIED_BY="SYSTEM" OWNER="ANDS-Curated" TYPE="PARTY" TITLE="Australian National Data Service" DATA="{&quot;email&quot;:&quot;services@ands.org.au&quot;,&quot;url&quot;:[&quot;http://ands.org.au/&quot;]}"/>
+
+  <VOCABULARY_IDS ID="1"/>
+
+  <VOCABULARIES ID="1" START_DATE="2015-06-24 10:56:30.0" END_DATE="9999-12-01 00:00:00" VOCABULARY_ID="1" MODIFIED_BY="SYSTEM" STATUS="PUBLISHED" SLUG="rifcs" OWNER="ANDS-Curated" DATA="{&quot;subjects&quot;:[{&quot;label&quot;:&quot;INFORMATION AND COMPUTING SCIENCES&quot;,&quot;source&quot;:&quot;anzsrc-for&quot;,&quot;iri&quot;:&quot;http://purl.org/au-research/vocabulary/anzsrc-for/2008/08&quot;}],&quot;other-languages&quot;:[],&quot;acronym&quot;:&quot;RIF-CS&quot;,&quot;creation-date&quot;:&quot;2008-12-31&quot;,&quot;description&quot;:&quot;The RIF-CS schema is a data interchange format that supports the electronic exchange of collection and service descriptions. It organises information about collections and services into a format used by the Australian National Data Service (ANDS) Collections Registry. \n\nMore information on the RIF-CS Schema can be found at http://ands.org.au/guides/cpguide/cpgrifcs.html. \n\nWith assistance from the RIF-CS Advisory Board and user community, ANDS has developed a suggested vocabulary for use with the RIF-CS Schema. The vocabulary is comprised of suggested terms for specific elements of the schema. Use of the ANDS vocabulary with the RIF-CS Schema is not mandatory but is however recommended. Use of consistent terminology improves data discoverability and the precision of search operations. \n\nThe ANDS vocabularies are expected to be informed and developed further by the RIF-CS user community. Please contact services@ands.org.au if you have candidate vocabulary terms to be evaluated for possible inclusion in the ANDS vocabularies.&quot;,&quot;licence&quot;:&quot;CC-BY&quot;,&quot;primary-language&quot;:&quot;en&quot;,&quot;revision-cycle&quot;:&quot;Updated as required&quot;,&quot;title&quot;:&quot;Registry Interchange Format - Collections and Services (Vocabularies)&quot;}"/>
+
+  <VOCABULARY_RELATED_ENTITIES ID="1" START_DATE="2015-11-26 10:04:05.0" END_DATE="9999-12-01 00:00:00" VOCABULARY_ID="1" RELATED_ENTITY_ID="1" MODIFIED_BY="SYSTEM" RELATION="PUBLISHED_BY"/>
+
+  <OWNERS OWNER_ID="3" OWNER="ANDS-Curated" />
+
+  <SUBSCRIBER_IDS ID="1" />
+  <SUBSCRIBERS
+      ID="1" SUBSCRIBER_ID="1"
+      START_DATE="2017-10-01 10:10:00" END_DATE="9999-12-01 00:00:00"
+      MODIFIED_BY="SYSTEM" TOKEN="1_1" />
+
+  <SUBSCRIBER_EMAIL_ADDRESS_IDS ID="1" />
+  <SUBSCRIBER_EMAIL_ADDRESSES
+      ID="1" SUBSCRIBER_EMAIL_ADDRESS_ID="1"
+      SUBSCRIBER_ID="1"
+      START_DATE="2017-10-01 10:10:00" END_DATE="9999-12-01 00:00:00"
+      EMAIL_ADDRESS="dummy@abc.com" />
+
+ <SUBSCRIPTION_IDS ID="1" />
+ <SUBSCRIPTIONS
+     ID="1" SUBSCRIPTION_ID="1"
+     SUBSCRIBER_ID="1"
+     START_DATE="2017-10-01 10:10:00" END_DATE="9999-12-01 00:00:00"
+     MODIFIED_BY="TEST"
+     NOTIFICATION_MODE="EMAIL"
+     NOTIFICATION_ELEMENT_TYPE="OWNER"
+     NOTIFICATION_ELEMENT_ID="0"
+     LAST_NOTIFICATION="2000-01-01 00:00:00"
+     DATA="{''creator'':''TEST''}"
+    />
+
+
+</dataset>

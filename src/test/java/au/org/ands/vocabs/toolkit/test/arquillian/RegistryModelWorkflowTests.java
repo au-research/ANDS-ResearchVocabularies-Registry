@@ -126,6 +126,8 @@ public class RegistryModelWorkflowTests extends ArquillianBaseTest {
             }
         }
 
+//        ArquillianTestUtils.exportFullDbUnitData(REGISTRY,
+//                testName + "-out.xml");
         ArquillianTestUtils.
         compareDatabaseCurrentAndExpectedContentsIgnoreTaskTimestamps(
                 REGISTRY,
@@ -150,9 +152,10 @@ public class RegistryModelWorkflowTests extends ArquillianBaseTest {
     @Test
     public final void testDeleteOnlyDraftVoVREVeAPVAW1() throws
     DatabaseUnitException, IOException, SQLException {
+        String testName = CLASS_NAME_PREFIX
+                + "testDeleteOnlyDraftVoVREVeAPVAW1";
         ArquillianTestUtils.clearDatabase(REGISTRY);
-        ArquillianTestUtils.loadDbUnitTestFile(REGISTRY, CLASS_NAME_PREFIX
-                + "testDeleteOnlyDraftVoVREVeAPVAW1");
+        ArquillianTestUtils.loadDbUnitTestFile(REGISTRY, testName);
         EntityManager em = null;
         try {
             em = DBContext.getEntityManager();
@@ -168,12 +171,11 @@ public class RegistryModelWorkflowTests extends ArquillianBaseTest {
             }
         }
 
+//        ArquillianTestUtils.exportFullDbUnitData(REGISTRY,
+//                testName + "-out.xml");
         ArquillianTestUtils.compareDatabaseCurrentAndExpectedContents(
                 REGISTRY,
-                "test/tests/"
-                + CLASS_NAME_PREFIX
-                + "testDeleteOnlyDraftVoVREVeAPVAW1/"
-                + "test-registry-results.xml");
+                "test/tests/" + testName + "/test-registry-results.xml");
     }
 
     /** Test of starting with a vocabulary that has only
@@ -215,6 +217,8 @@ public class RegistryModelWorkflowTests extends ArquillianBaseTest {
             }
         }
 
+//        ArquillianTestUtils.exportFullDbUnitData(REGISTRY,
+//                testName + "-out.xml");
         ArquillianTestUtils.
         compareDatabaseCurrentAndExpectedContentsIgnoreTaskTimestamps(
                 REGISTRY,
@@ -264,6 +268,8 @@ public class RegistryModelWorkflowTests extends ArquillianBaseTest {
             }
         }
 
+//        ArquillianTestUtils.exportFullDbUnitData(REGISTRY,
+//                testName + "-out.xml");
         ArquillianTestUtils.compareDatabaseCurrentAndExpectedContents(
                 REGISTRY,
                 "test/tests/" + testName + "/test-registry-results.xml");
@@ -309,6 +315,8 @@ public class RegistryModelWorkflowTests extends ArquillianBaseTest {
             }
         }
 
+//        ArquillianTestUtils.exportFullDbUnitData(REGISTRY,
+//                testName + "-out.xml");
         ArquillianTestUtils.
         compareDatabaseCurrentAndExpectedContentsIgnoreTaskTimestamps(
                 REGISTRY,
@@ -363,6 +371,8 @@ public class RegistryModelWorkflowTests extends ArquillianBaseTest {
             }
         }
 
+//        ArquillianTestUtils.exportFullDbUnitData(REGISTRY,
+//                testName + "-out.xml");
         ArquillianTestUtils.
         compareDatabaseCurrentAndExpectedContentsIgnoreTaskTimestamps(
                 REGISTRY,
@@ -418,6 +428,8 @@ public class RegistryModelWorkflowTests extends ArquillianBaseTest {
             }
         }
 
+//        ArquillianTestUtils.exportFullDbUnitData(REGISTRY,
+//                testName + "-out.xml");
         ArquillianTestUtils.
         compareDatabaseCurrentAndExpectedContentsIgnoreTaskTimestamps(
                 REGISTRY,
@@ -474,6 +486,8 @@ public class RegistryModelWorkflowTests extends ArquillianBaseTest {
             }
         }
 
+//        ArquillianTestUtils.exportFullDbUnitData(REGISTRY,
+//                testName + "-out.xml");
         ArquillianTestUtils.
         compareDatabaseCurrentAndExpectedContentsIgnoreTaskTimestamps(
                 REGISTRY,
@@ -529,6 +543,8 @@ public class RegistryModelWorkflowTests extends ArquillianBaseTest {
             }
         }
 
+//        ArquillianTestUtils.exportFullDbUnitData(REGISTRY,
+//                testName + "-1-out.xml");
         ArquillianTestUtils.compareDatabaseCurrentAndExpectedContents(
                 REGISTRY,
                 "test/tests/" + testName + "/test-registry-results-1.xml");
@@ -555,6 +571,8 @@ public class RegistryModelWorkflowTests extends ArquillianBaseTest {
             }
         }
 
+//        ArquillianTestUtils.exportFullDbUnitData(REGISTRY,
+//                testName + "-2-out.xml");
         ArquillianTestUtils.
         compareDatabaseCurrentAndExpectedContentsIgnoreTaskTimestamps(
                 REGISTRY,
@@ -610,6 +628,8 @@ public class RegistryModelWorkflowTests extends ArquillianBaseTest {
             }
         }
 
+//        ArquillianTestUtils.exportFullDbUnitData(REGISTRY,
+//                testName + "-out.xml");
         ArquillianTestUtils.compareDatabaseCurrentAndExpectedContents(
                 REGISTRY,
                 "test/tests/" + testName + "/test-registry-results.xml");

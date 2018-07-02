@@ -15,7 +15,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.container.ContainerResponseFilter;
 
 import au.org.ands.vocabs.registry.api.auth.AuthConfig;
-import au.org.ands.vocabs.registry.utils.Analytics;
+import au.org.ands.vocabs.registry.log.Analytics;
 
 /** Servlet filter for the registry API that addresses CORS issues.
  * We could have done this as a {@link ContainerResponseFilter},

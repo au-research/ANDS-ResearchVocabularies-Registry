@@ -284,8 +284,8 @@
     </xs:element>
     <xs:element name="reverse-related-vocabulary-list">
         <xs:complexType>
-            <xs:sequence maxOccurs="unbounded" minOccurs="0">
-                <xs:element ref="reverse-related-vocabulary"/>
+            <xs:sequence>
+                <xs:element ref="reverse-related-vocabulary" maxOccurs="unbounded" minOccurs="0"/>
             </xs:sequence>
         </xs:complexType>
     </xs:element>
@@ -313,17 +313,17 @@
     </xs:element>
     <xs:element name="owned-vocabulary-list">
         <xs:complexType>
-            <xs:sequence maxOccurs="unbounded" minOccurs="0">
-                <xs:element ref="owned-vocabulary"/>
+            <xs:sequence>
+                <xs:element ref="owned-vocabulary" maxOccurs="unbounded" minOccurs="0"/>
             </xs:sequence>
         </xs:complexType>
     </xs:element>
     <xs:element name="workflow-outcome">
         <xs:complexType>
-            <xs:sequence maxOccurs="unbounded" minOccurs="0">
-                <xs:element name="task-outcome">
+            <xs:sequence>
+                <xs:element name="task-outcome" maxOccurs="unbounded" minOccurs="0">
                     <xs:complexType>
-                        <xs:sequence maxOccurs="1" minOccurs="1">
+                        <xs:sequence>
                             <xs:element maxOccurs="unbounded" minOccurs="0" name="subtask-outcome">
                                 <xs:complexType>
                                     <xs:sequence>
@@ -353,4 +353,32 @@
         <xs:attribute name="result-key" type="xs:token"/>
         <xs:attribute name="result-value" type="xs:token"/>
     </xs:complexType>
+    <xs:element name="subscription">
+        <xs:complexType>
+            <xs:attribute name="notification-mode" type="common:notification-mode" use="required"/>
+            <xs:attribute name="element-type" type="common:notification-element-type" use="required"/>
+            <xs:attribute name="element-id" type="xs:string">
+                <xs:annotation>
+                    <xs:documentation>This attribute is the value that should be used as a path parameter of any subsequent method to delete the subscription. For example, if element-type is vocabulary, this will be an integer value; if element-type is owner, this will be the short name of the owner.</xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="title">
+                <xs:annotation>
+                    <xs:documentation>If the element-type has specific instances (i.e., for element-type owner and vocabulary), this is a human-readable description of the element that has been subscribed to. For a vocabulary, that will be the vocabulary title; for an owner, that will be the owner's full name.</xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="deleted" type="xs:boolean">
+                <xs:annotation>
+                    <xs:documentation>This attribute is present and true if the subscription is not valid because the element has been deleted.</xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="subscription-list">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element maxOccurs="unbounded" minOccurs="0" ref="subscription"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
 </xs:schema>

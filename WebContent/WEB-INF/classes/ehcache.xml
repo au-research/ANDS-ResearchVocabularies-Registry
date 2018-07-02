@@ -1,0 +1,29 @@
+<!DOCTYPE config>
+<config
+    xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+    xmlns='http://www.ehcache.org/v3'
+    xmlns:jsr107='http://www.ehcache.org/v3/jsr107'
+>
+
+  <!--
+
+Add the the following as an attribute of the config element, to
+get schema validation. (Of course, you then have to adjust the paths
+to the .xsd files ....)
+
+    xsi:schemaLocation="http://www.ehcache.org/v3
+                        ../../../../xml/src/main/resources/ehcache-core.xsd
+                        http://www.ehcache.org/v3/jsr107
+                        ../../main/resources/ehcache-107ext.xsd"
+  -->
+
+  <service>
+    <jsr107:defaults default-template="smallCache">
+    </jsr107:defaults>
+  </service>
+
+  <cache-template name="smallCache">
+    <heap unit="entries">500</heap>
+  </cache-template>
+
+</config>

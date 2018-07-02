@@ -48,7 +48,7 @@ public class GetPoolPartyMetadata {
      * @param pPServerId PoolParty server id.
      * @return The list of PoolParty projects, in JSON format,
      * as returned by PoolParty. */
-    @Path("PoolParty/{serverId}")
+    @Path(ApiPaths.POOLPARTY + "/{serverId}")
     @Produces(MediaType.APPLICATION_JSON)
     @Pac4JSecurity
     @GET
@@ -90,7 +90,7 @@ public class GetPoolPartyMetadata {
      * @param pPProjectId PoolParty project id.
      * @return The metadata for this PoolParty project, in JSON format,
      * as returned by PoolParty. */
-    @Path("PoolParty/{serverId}/{projectId}/metadata")
+    @Path(ApiPaths.POOLPARTY + "/{serverId}/{projectId}/metadata")
     @Produces(MediaType.APPLICATION_JSON)
     @Pac4JSecurity
     @GET

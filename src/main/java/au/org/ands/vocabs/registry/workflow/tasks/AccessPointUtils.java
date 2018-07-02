@@ -44,6 +44,8 @@ public final class AccessPointUtils {
                     PropertyConstants.REGISTRY_DOWNLOADPREFIX);
 
     /** Compute the URL that gives access to a file access point.
+     * (Despite the name of the method, this method is also used by
+     * {@link #createSesameDownloadAccessPoint(TaskInfo, String, String)}.)
      * @param id The access point Id of the access point.
      * @param baseFilename The base filename of the file.
      * @return The URL of the file access point.

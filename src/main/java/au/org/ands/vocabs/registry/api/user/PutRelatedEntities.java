@@ -60,11 +60,11 @@ import au.org.ands.vocabs.registry.db.entity.Vocabulary;
 import au.org.ands.vocabs.registry.enums.RegistryEventElementType;
 import au.org.ands.vocabs.registry.enums.RegistryEventEventType;
 import au.org.ands.vocabs.registry.enums.RelatedEntityRelation;
+import au.org.ands.vocabs.registry.log.Analytics;
+import au.org.ands.vocabs.registry.log.Logging;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.RelatedEntity;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.RelatedEntityIdentifier;
 import au.org.ands.vocabs.registry.solr.EntityIndexer;
-import au.org.ands.vocabs.registry.utils.Analytics;
-import au.org.ands.vocabs.registry.utils.Logging;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -313,6 +313,10 @@ public class PutRelatedEntities {
             @CheckRelatedEntity(mode = ValidationMode.UPDATE)
             final RelatedEntity updatedRelatedEntity) {
         logger.debug("called updateRelatedEntity");
+
+        // Keep track of whether we actually do any database changes.
+        // We only add a registry event if we changed something.
+        boolean reWasUpdated = false;
 
         // We manage our own transaction. Because we do merges, it is
         // at least polite to include the initial queries within the same
@@ -569,6 +573,7 @@ public class PutRelatedEntities {
                 updatedDbRelatedEntity.setModifiedBy(username);
                 // Persist the related entity.
                 RelatedEntityDAO.saveRelatedEntity(em, updatedDbRelatedEntity);
+                reWasUpdated = true;
             }
             reReturned = reFromDbMapper.sourceToTarget(
                     updatedDbRelatedEntity);
@@ -591,6 +596,7 @@ public class PutRelatedEntities {
                 // Persist the deleted identifier.
                 RelatedEntityIdentifierDAO.updateRelatedEntityIdentifier(em,
                         dbREI);
+                reWasUpdated = true;
             }
 
             // Second, modified identifiers.
@@ -614,6 +620,7 @@ public class PutRelatedEntities {
                 // Persist the identifier.
                 RelatedEntityIdentifierDAO.saveRelatedEntityIdentifier(em,
                         newDbREI);
+                reWasUpdated = true;
                 reiReturned.add(reiFromDbMapper.sourceToTarget(newDbREI));
             }
 
@@ -630,6 +637,7 @@ public class PutRelatedEntities {
                 // Persist the identifier.
                 RelatedEntityIdentifierDAO.saveRelatedEntityIdentifierWithId(
                         em, newDbREI);
+                reWasUpdated = true;
                 reiReturned.add(reiFromDbMapper.sourceToTarget(newDbREI));
             }
 
@@ -639,27 +647,36 @@ public class PutRelatedEntities {
                 reiReturned.add(rei);
             }
 
-            // This is a registry event; log it.
-            RegistryEvent re = new RegistryEvent();
-            re.setElementType(RegistryEventElementType.RELATED_ENTITIES);
-            re.setElementId(updatedDbRelatedEntity.getRelatedEntityId());
-            // NB: newDbVocab.getStartDate() would not be correct for a draft!
-            re.setEventDate(now);
-            re.setEventType(RegistryEventEventType.UPDATED);
-            re.setEventUser(profile.getUsername());
-            // To be done: put something sensible in the details.
-            re.setEventDetails("");
-            RegistryEventDAO.saveRegistryEvent(em, re);
+            // Only commit, with the addition of a registry event,
+            // if we actually changed the database.
+            if (reWasUpdated) {
+                // This is a registry event; log it.
+                RegistryEvent re = new RegistryEvent();
+                re.setElementType(RegistryEventElementType.RELATED_ENTITIES);
+                re.setElementId(updatedDbRelatedEntity.getRelatedEntityId());
+                // NB: newDbVocab.getStartDate() would not be correct
+                // for a draft!
+                re.setEventDate(now);
+                re.setEventType(RegistryEventEventType.UPDATED);
+                re.setEventUser(profile.getUsername());
+                // To be done: put something sensible in the details.
+                re.setEventDetails("");
+                RegistryEventDAO.saveRegistryEvent(em, re);
 
-            // And now, commit all of the above changes.
-            txn.commit();
+                // And now, commit all of the above changes.
+                txn.commit();
+            } else {
+                // No database changes were made, so roll back.
+                txn.rollback();
+            }
             // If we have reached this point, we have success.
             // Analytics logging.
             Logging.logRequest(true, request, uriInfo, profile,
                     Analytics.EVENT_UPDATE_RELATED_ENTITY,
                     Analytics.RELATED_ENTITY_ID_FIELD, relatedEntityId,
                     Analytics.TITLE_FIELD, updatedDbRelatedEntity.getTitle(),
-                    Analytics.OWNER_FIELD, updatedDbRelatedEntity.getOwner());
+                    Analytics.OWNER_FIELD, updatedDbRelatedEntity.getOwner(),
+                    Analytics.WAS_MODIFIED_FIELD, reWasUpdated);
 
             // Check https://intranet.ands.org.au/display/PROJ/
             //   Vocabulary+Solr+documents+and+queries
@@ -700,6 +717,9 @@ public class PutRelatedEntities {
                 } catch (Exception e) {
                     logger.error("Rollback failure!", e);
                 }
+            } else {
+                logger.error("Exception, either during rollback, or "
+                        + "outside active transaction", t);
             }
             // Don't throw, but fall through so that the user sees
             // an error message.

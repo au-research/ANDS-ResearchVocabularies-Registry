@@ -15,6 +15,7 @@ import au.org.ands.vocabs.registry.db.internal.ApSesameDownload;
 import au.org.ands.vocabs.registry.db.internal.ApSissvoc;
 import au.org.ands.vocabs.registry.db.internal.ApWebPage;
 import au.org.ands.vocabs.registry.db.internal.VersionJson;
+import au.org.ands.vocabs.registry.log.utils.EntityDiffUtils;
 
 /** Utility methods for comparing two registry database entities
  * of the same type, and for comparing a registry database entity
@@ -27,6 +28,8 @@ import au.org.ands.vocabs.registry.db.internal.VersionJson;
  * <ul><li>Whenever changes are made to the registry database structure, the
  * methods of this class should be reviewed to see if they also need to
  * be updated.</li>
+   <li>Compare these methods with the corresponding methods in
+   {@link EntityDiffUtils}.</li>
  * <li>In general, these methods do not involve entity identifier fields in
  * comparisons. It is the responsibility of the caller to do any such
  * comparisons that are required.</li>

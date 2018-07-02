@@ -44,8 +44,11 @@ import io.swagger.annotations.Tag;
         ),
         consumes = { "application/xml", "application/json" },
         produces = { "application/xml", "application/json" },
-        schemes = {SwaggerDefinition.Scheme.HTTP,
-                SwaggerDefinition.Scheme.HTTPS},
+        schemes = {SwaggerDefinition.Scheme.HTTPS},
+        // For convenience of testing using a "bare" Tomcat,
+        // comment out the previous line, and uncomment the following two:
+//        schemes = {SwaggerDefinition.Scheme.HTTP,
+//                SwaggerDefinition.Scheme.HTTPS},
         tags = {
                 @Tag(name = SwaggerInterface.TAG_ADMIN,
                         description = "System administration operations"),

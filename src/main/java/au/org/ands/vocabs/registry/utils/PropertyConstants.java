@@ -159,4 +159,44 @@ public final class PropertyConstants {
     public static final String SISSVOC_VARIABLE_HTML_STYLESHEET =
             "SISSVoc.variable.HTML_STYLESHEET";
 
+    /* Notifications */
+
+    /** Prefix to use for URLs of portal pages referred to in notifications. */
+    public static final String NOTIFICATIONS_PORTAL_PREFIX =
+            "Notifications.portalPrefix";
+
+    /* Notifications: email */
+
+    /** Hostname of SMTP server used to send generated emails. */
+    public static final String NOTIFICATIONS_EMAIL_SMTPHOST =
+            "Notifications.email.smtpHost";
+
+    /** Port number of SMTP server used to send generated emails. */
+    public static final String NOTIFICATIONS_EMAIL_SMTPPORT =
+            "Notifications.email.smtpPort";
+
+    /** What to put in the "From" line of generated emails. */
+    public static final String NOTIFICATIONS_EMAIL_SENDER_EMAILADDRESS =
+            "Notifications.email.senderEmailAddress";
+
+    /** What to put in the "From" line of generated emails. */
+    public static final String NOTIFICATIONS_EMAIL_SENDER_FULLNAME =
+            "Notifications.email.senderFullName";
+
+    /** What to put in the "Reply-To" line of generated emails. */
+    public static final String NOTIFICATIONS_EMAIL_REPLYTO =
+            "Notifications.email.replyTo";
+
+    /** What to put in the "Subject" line of generated emails. */
+    public static final String NOTIFICATIONS_EMAIL_SUBJECT =
+            "Notifications.email.subject";
+
+    /** Path to file containing HTML template. */
+    public static final String NOTIFICATIONS_EMAIL_TEMPLATE_HTML =
+            "Notifications.email.template.HTML";
+
+    /** Path to file containing plain text template. */
+    public static final String NOTIFICATIONS_EMAIL_TEMPLATE_PLAINTEXT =
+            "Notifications.email.template.plaintext";
+
 }

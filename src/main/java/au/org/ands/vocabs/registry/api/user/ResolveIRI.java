@@ -42,7 +42,7 @@ import io.swagger.annotations.ResponseHeader;
 public class ResolveIRI {
 
     /** Error message to return, if no IRI is specified as a query
-    * parameter in the request URL. */
+     * parameter in the request URL. */
     public static final String NO_IRI_SPECIFIED =
             "No IRI specified as query parameter.";
 
@@ -91,7 +91,7 @@ public class ResolveIRI {
      * @param suffix An optional suffix to be appended to the redirected URL.
      *      Specified as a query parameter.
      */
-    @Path("resolve/lookupIRI")
+    @Path(ApiPaths.RESOLVE + "/lookupIRI")
     @Produces(MediaType.TEXT_PLAIN)
     @GET
     @ApiOperation(value = "Perform a redirect.",

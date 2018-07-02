@@ -24,8 +24,8 @@ import org.slf4j.LoggerFactory;
 import au.org.ands.vocabs.registry.api.context.ApiPaths;
 import au.org.ands.vocabs.registry.api.context.ResponseUtils;
 import au.org.ands.vocabs.registry.api.context.SwaggerInterface;
+import au.org.ands.vocabs.registry.log.Logging;
 import au.org.ands.vocabs.registry.solr.SearchIndex;
-import au.org.ands.vocabs.registry.utils.Logging;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -48,7 +48,7 @@ public class Search {
      *      in JSON format.
      * @return The search results, as a JSON object.
      */
-    @Path("search")
+    @Path(ApiPaths.SEARCH)
     @Consumes({MediaType.APPLICATION_FORM_URLENCODED})
     @Produces({MediaType.APPLICATION_JSON})
     @POST

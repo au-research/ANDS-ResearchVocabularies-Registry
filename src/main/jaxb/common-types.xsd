@@ -198,6 +198,7 @@ http://viaf.org/</xs:documentation>
         <xs:restriction base="xs:token">
             <xs:enumeration value="vocabularies"/>
             <xs:enumeration value="versions"/>
+            <xs:enumeration value="accessPoints"/>
             <xs:enumeration value="relatedEntities"/>
         </xs:restriction>
     </xs:simpleType>
@@ -206,6 +207,18 @@ http://viaf.org/</xs:documentation>
             <xs:enumeration value="created"/>
             <xs:enumeration value="updated"/>
             <xs:enumeration value="deleted"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="notification-mode">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="email"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="notification-element-type">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="system"/>
+            <xs:enumeration value="owner"/>
+            <xs:enumeration value="vocabulary"/>
         </xs:restriction>
     </xs:simpleType>
 </xs:schema>

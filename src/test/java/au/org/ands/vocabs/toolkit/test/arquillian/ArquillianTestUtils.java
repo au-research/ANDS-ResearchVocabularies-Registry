@@ -38,6 +38,9 @@ import org.dbunit.assertion.comparer.value.ValueComparer;
 import org.dbunit.assertion.comparer.value.ValueComparers;
 import org.dbunit.database.DatabaseConfig;
 import org.dbunit.database.IDatabaseConnection;
+import org.dbunit.dataset.CompositeDataSet;
+import org.dbunit.dataset.DefaultDataSet;
+import org.dbunit.dataset.DefaultTable;
 import org.dbunit.dataset.IDataSet;
 import org.dbunit.dataset.ITable;
 import org.dbunit.dataset.ReplacementDataSet;
@@ -56,6 +59,7 @@ import org.testng.FileAssert;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import au.org.ands.vocabs.registry.subscription.Owners;
 import au.org.ands.vocabs.registry.utils.PropertyConstants;
 import au.org.ands.vocabs.registry.utils.RegistryProperties;
 import au.org.ands.vocabs.toolkit.test.utils.DatabaseSelector;
@@ -376,6 +380,54 @@ public final class ArquillianTestUtils {
         return idc;
     }
 
+    /** The blank datasets used across DbUnit methods.
+     * They have all the expected tables defined, but no rows.
+     * Lazily initialized. */
+    private static Map<DatabaseSelector, IDataSet>
+        blankIDataSetsForDbUnit = new HashMap<>();
+
+    /** Get the shared DbUnit empty IDataSet for DbUnit methods
+     * for the selected database.
+     * @param dbs The database for which the Connection is to be fetched.
+     * @return The Connection to use for DbUnit methods.
+     * @throws DatabaseUnitException If a problem with DbUnit.
+     * @throws IOException If reading the DTD fails.
+     */
+    private static synchronized IDataSet
+    getBlankIDataSetForDbUnit(final DatabaseSelector dbs)
+            throws DatabaseUnitException, IOException {
+        if (dbs == null) {
+            // Booboo in the test method!
+            return null;
+        }
+        IDataSet ids = blankIDataSetsForDbUnit.get(dbs);
+        if (ids != null) {
+            return ids;
+        }
+
+        // Initialize a blank DataSet with all the tables defined.
+        FlatXmlDataSet blankXmlDataSet = new FlatXmlDataSetBuilder()
+                .setMetaDataSetFromDtd(getResourceAsInputStream(
+                        dbs.getDTDFilename()))
+                .build(getResourceAsInputStream(
+                        dbs.getBlankDataFilename()));
+        // But in fact, blankXmlDataSet now contains one row for
+        // each table, with null in each column.
+        // We want to get rid of those dummy rows.
+        // The way to do it seems to be to create a fresh DataSet,
+        // initialized with fresh ITables, where we use only the
+        // table metadata from blankXmlDataSet.
+        ITable[] itables = blankXmlDataSet.getTables();
+        DefaultDataSet defaultDataSet = new DefaultDataSet();
+        for (ITable itable : itables) {
+            defaultDataSet.addTable(new DefaultTable(
+                    itable.getTableMetaData()));
+        }
+        ids = defaultDataSet;
+        blankIDataSetsForDbUnit.put(dbs, ids);
+        return ids;
+    }
+
     /** Close all shared Connections for DbUnit methods. */
     public static void closeConnectionsForDbUnit() {
         logger.info("In closeConnectionsForDbUnit");
@@ -459,6 +511,12 @@ public final class ArquillianTestUtils {
         // Force commit at the JDBC level, as closing the EntityManager
         // does a rollback!
         conn.commit();
+
+        // And now flush any of our own caches. For now, that means the Owner
+        // cache on top of the Registry database.
+        if (dbs == DatabaseSelector.REGISTRY) {
+            Owners.clear();
+        }
     }
 
     /** Load a DbUnit test file into a database.
@@ -736,7 +794,14 @@ public final class ArquillianTestUtils {
         ReplacementDataSet expectedDataset =
                 new ReplacementDataSet(xmlDataset);
         addReplacementSubstringsToDataset(expectedDataset);
-        Assertion.assertEquals(expectedDataset, databaseDataSet);
+
+        // Make a combined dataset that ensures that we have all of
+        // the tables defined. This means that the file doesn't have
+        // to mention tables that aren't used in the test.
+        IDataSet combinedDataSet = new CompositeDataSet(
+                getBlankIDataSetForDbUnit(dbs), expectedDataset);
+
+        Assertion.assertEquals(combinedDataSet, databaseDataSet);
     }
 
     /** Map of ValueComparers to use when comparing tasks. */
@@ -781,9 +846,69 @@ public final class ArquillianTestUtils {
         ReplacementDataSet expectedDataset =
                 new ReplacementDataSet(xmlDataset);
         addReplacementSubstringsToDataset(expectedDataset);
-        Assertion.assertWithValueComparer(expectedDataset, databaseDataSet,
+
+        // Make a combined dataset that ensures that we have all of
+        // the tables defined. This means that the file doesn't have
+        // to mention tables that aren't used in the test.
+        IDataSet combinedDataSet = new CompositeDataSet(
+                getBlankIDataSetForDbUnit(dbs), expectedDataset);
+
+        Assertion.assertWithValueComparer(combinedDataSet, databaseDataSet,
                 ValueComparers.isActualEqualToExpected,
                 valueComparersForTasks);
+    }
+
+    /** Map of ValueComparers to use when comparing subscribers. */
+    private static Map<String, Map<String, ValueComparer>>
+        valueComparersForSubscribers;
+
+    static {
+        valueComparersForSubscribers = new HashMap<>();
+        Map<String, ValueComparer> innerMap = new HashMap<>();
+        SubscriberComparer subscriberComparer = new SubscriberComparer();
+        innerMap.put("TOKEN", subscriberComparer);
+        valueComparersForSubscribers.put("SUBSCRIBERS", innerMap);
+    }
+
+    /** Get the current contents of a database and the expected
+     * contents, and assert their equality, apart from tokens
+     * in the subscribers table.
+     * @param dbs The database from which the data is to be fetched.
+     * @param filename The filename of the file containing the expected
+     *      database contents.
+     * @throws DatabaseUnitException If a problem with DbUnit.
+     * @throws HibernateException If a problem getting the underlying
+     *          JDBC connection.
+     * @throws SQLException If DbUnit has a problem performing
+     *           performing JDBC operations.
+     * @throws IOException If reading the DTD fails.
+     */
+    public static void
+    compareDatabaseCurrentAndExpectedContentsIgnoreSubscriberTokens(
+            final DatabaseSelector dbs,
+            final String filename) throws
+            DatabaseUnitException, HibernateException, SQLException,
+            IOException {
+        IDatabaseConnection connection = getIDatabaseConnectionForDbUnit(dbs);
+        IDataSet databaseDataSet = connection.createDataSet();
+        FlatXmlDataSet xmlDataset = new FlatXmlDataSetBuilder()
+                .setMetaDataSetFromDtd(getResourceAsInputStream(
+                        dbs.getDTDFilename()))
+                .build(getResourceAsInputStream(
+                        filename));
+        ReplacementDataSet expectedDataset =
+                new ReplacementDataSet(xmlDataset);
+        addReplacementSubstringsToDataset(expectedDataset);
+
+        // Make a combined dataset that ensures that we have all of
+        // the tables defined. This means that the file doesn't have
+        // to mention tables that aren't used in the test.
+        IDataSet combinedDataSet = new CompositeDataSet(
+                getBlankIDataSetForDbUnit(dbs), expectedDataset);
+
+        Assertion.assertWithValueComparer(combinedDataSet, databaseDataSet,
+                ValueComparers.isActualEqualToExpected,
+                valueComparersForSubscribers);
     }
 
     /** Compare two files containing JSON, asserting that they contain
