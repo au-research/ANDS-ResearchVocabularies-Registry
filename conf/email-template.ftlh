@@ -84,11 +84,14 @@
 
 <div style="text-align: center">
     <p>
-        <button type="button" style="background-color: LightGray">
-            <a href="${properties["Notifications.portalPrefix"]}vocabs/manageSubscriptions/${token}"
-               target="_blank"
-               style="padding-left: 50px; padding-right: 50px; font-size: 125%; color: black; text-decoration: none;">Manage your subscription preferences</a>
-        </button>
+        <a href="${properties["Notifications.portalPrefix"]}vocabs/manageSubscriptions/${token}"
+           target="_blank"
+           style="text-decoration: none;">
+            <button type="button"
+                    style="cursor: pointer; padding-left: 50px; padding-right: 50px; font-size: 125%; color: black; background-color: LightGray">
+                Manage your subscription preferences
+            </button>
+        </a>
     </p>
 
     <p>This is an automated email; please do not reply. For more information,
