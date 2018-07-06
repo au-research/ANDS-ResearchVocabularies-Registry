@@ -1070,15 +1070,15 @@
         <extraQueryParameter name="fromDate" />
         <queryText>
           SELECT event FROM RegistryEvent event
-          WHERE event.eventDate &gt;= :fromDate
+          WHERE event.eventDate &gt; :fromDate
           ORDER BY event.eventDate
         </queryText>
         <method>    /** Get all Registry Event instances
-     * from a given start date onwards.
+     * from after a given start date.
      * @param em The EntityManager to be used.
      * @param fromDate The start date of Registry Event instances to get.
-     * @return A list of all Registry Event instances from the given
-     *     start date onwards. They are ordered by their eventDate values.
+     * @return A list of all Registry Event instances from after the given
+     *     start date. They are ordered by their eventDate values.
      */
     public static List&lt;RegistryEvent&gt;
         getRegistryEventsFromDate(final EntityManager em,
@@ -1099,18 +1099,19 @@
         <extraQueryParameter name="toDate" />
         <queryText>
           SELECT event FROM RegistryEvent event
-          WHERE event.eventDate &gt;= :fromDate
-          AND event.eventDate &lt; :toDate
+          WHERE event.eventDate &gt; :fromDate
+          AND event.eventDate &lt;= :toDate
           ORDER BY event.eventDate
         </queryText>
         <method>    /** Get all Registry Event instances
      * between a given start date and end date. The time interval
-     * is closed-open.
+     * is open-closed.
      * @param em The EntityManager to be used.
      * @param fromDate The start date of Registry Event instances to get.
      * @param toDate The end date of Registry Event instances to get.
      * @return A list of all Registry Event instances between the given
-     *     start date and end date. They are ordered by their eventDate values.
+     *     start date (exclusive) and end date (inclusive).
+     * They are ordered by their eventDate values.
      */
     public static List&lt;RegistryEvent&gt;
         getRegistryEventsFromToDate(final EntityManager em,
