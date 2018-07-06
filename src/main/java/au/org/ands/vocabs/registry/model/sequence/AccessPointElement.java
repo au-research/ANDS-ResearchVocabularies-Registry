@@ -87,7 +87,7 @@ public class AccessPointElement
 
     /** {@inheritDoc}
      * Equality test based on AccessPoint Id; the values
-     * of dbVersion and schemaVersion is not used.
+     * of dbVersion and schemaVersion are not used.
      * The fact that apId may be null is taken into account.
      * If apId is null, equality holds iff {@code other == this}.
      */
