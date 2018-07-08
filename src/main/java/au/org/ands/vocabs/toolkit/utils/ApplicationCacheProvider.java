@@ -59,10 +59,10 @@ public final class ApplicationCacheProvider {
                 logger.error("Unable to load ehcache.xml (" + e + ")");
             }
             if (ehcacheXmlURL == null) {
-                logger.info("Getting CacheManager without ebcache.xml.");
+                logger.info("Getting CacheManager without ehcache.xml.");
                 cacheManager = getCachingProvider().getCacheManager();
             } else {
-                logger.info("Getting CacheManager with ebcache.xml.");
+                logger.info("Getting CacheManager with ehcache.xml.");
                 cacheManager = getCachingProvider().getCacheManager(
                         ehcacheXmlURL,
                         ApplicationCacheProvider.class.getClassLoader());
