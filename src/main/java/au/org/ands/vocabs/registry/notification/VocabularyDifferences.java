@@ -14,14 +14,18 @@ import org.apache.commons.lang3.builder.Diff;
 
 import au.org.ands.vocabs.registry.enums.RegistryEventEventType;
 
-/** Representation of the Registry events recorded for a vocabulary. */
+/** Representation of the differences recorded for a vocabulary
+ * between the start and end of a reporting period. */
 public class VocabularyDifferences {
 
-    /** The last-recorded event type for the vocabulary. This is used
-     * to indicate and determine the high-level nature of what is to be
-     * captured and reported for the vocabulary. E.g., if the value is {@link
-     * RegistryEventEventType#DELETED}, there may not be any other details.
-     *  */
+    /** What is considered to be the state of the vocabulary at the
+     * end of the reporting period, in comparison with the state of
+     * the vocabulary as it was at the start of the reporting period.
+     * This is used to indicate and determine the high-level nature of
+     * what is to be captured and reported for the vocabulary.
+     * E.g., if the value is {@link RegistryEventEventType#DELETED},
+     * there may not be any other details.
+     */
     private RegistryEventEventType finalResult;
 
     /** The title to be used in reporting for the vocabulary. */
