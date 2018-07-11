@@ -15,7 +15,7 @@ import org.pac4j.core.util.CommonHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import au.org.ands.vocabs.roles.db.context.RolesUtils;
+import au.org.ands.vocabs.roles.db.utils.RolesUtils;
 
 /** Authenticator that accepts a username/password contained in
  * HTTP basic authentication, and checks them against the roles

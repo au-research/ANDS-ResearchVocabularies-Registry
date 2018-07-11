@@ -1,3 +1,4 @@
 /** See the file "LICENSE" for the full license governing this code. */
-/** Classes that implement mappers for the publication workflow. */
+/** MapStruct mappers that convert instances of workflow classes into
+ * registry schema format. */
 package au.org.ands.vocabs.registry.workflow.converter;

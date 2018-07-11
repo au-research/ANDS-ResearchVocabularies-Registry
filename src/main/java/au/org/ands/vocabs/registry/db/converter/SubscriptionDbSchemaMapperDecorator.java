@@ -15,7 +15,7 @@ import au.org.ands.vocabs.registry.db.entity.Vocabulary;
 import au.org.ands.vocabs.registry.db.internal.VocabularyJson;
 import au.org.ands.vocabs.registry.subscription.Owners;
 import au.org.ands.vocabs.roles.Role;
-import au.org.ands.vocabs.roles.db.context.RolesUtils;
+import au.org.ands.vocabs.roles.db.utils.RolesUtils;
 
 /** MapStruct mapper from Subscription database to schema. */
 public abstract class SubscriptionDbSchemaMapperDecorator

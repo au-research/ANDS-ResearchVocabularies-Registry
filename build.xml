@@ -618,7 +618,26 @@
              includenosourcepackages="true"
              private="true"
              failonerror="true"
+             Overview="src/main/java/overview.html"
              >
+      <group title="Registry database"
+             packages="au.org.ands.vocabs.registry.db*" />
+      <group title="Registry API"
+             packages="au.org.ands.vocabs.registry.api*" />
+      <group title="Registry schema"
+             packages="au.org.ands.vocabs.registry.enums:au.org.ands.vocabs.registry.schema*" />
+      <group title="Vocabulary model subsystems"
+             packages="au.org.ands.vocabs.registry.model*" />
+      <group title="Publication workflow subsystem"
+             packages="au.org.ands.vocabs.registry.workflow*" />
+      <group title="Subscription and notification subsystem"
+             packages="au.org.ands.vocabs.registry.notification*:au.org.ands.vocabs.registry.subscription*" />
+      <group title="Test packages"
+             packages="au.org.ands.vocabs.registry.test*:au.org.ands.vocabs.toolkit.test*" />
+      <group title="Roles database"
+             packages="au.org.ands.vocabs.roles.db*" />
+      <group title="Legacy Toolkit database"
+             packages="au.org.ands.vocabs.toolkit.db*" />
     </javadoc>
   </target>
 

@@ -27,8 +27,8 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
-import au.org.ands.vocabs.roles.db.context.RolesUtils;
 import au.org.ands.vocabs.roles.db.entity.AuthenticationServiceId;
+import au.org.ands.vocabs.roles.db.utils.RolesUtils;
 import au.org.ands.vocabs.roles.utils.PropertyConstants;
 import au.org.ands.vocabs.roles.utils.RolesProperties;
 

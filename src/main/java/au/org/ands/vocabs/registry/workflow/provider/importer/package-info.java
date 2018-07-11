@@ -1,3 +1,3 @@
 /** See the file "LICENSE" for the full license governing this code. */
-/** Classes that implement importer providers. */
+/** Workflow importer providers. */
 package au.org.ands.vocabs.registry.workflow.provider.importer;

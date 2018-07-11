@@ -1,8 +1,13 @@
 /** See the file "LICENSE" for the full license governing this code. */
-/** <p>Registry database model classes.</p>
+/** <p>Registry database model/entity classes;
+ * these classes are generated from the database definition.</p>
  * <p>The source code of this package
  * is generated from the specification of the database tables for
  * Liquibase.</p>
+ *
+ * <p>See the directory {@code src/main/db} for the definition of the
+ * database tables, and the code that generates the source code for
+ * these classes.</p>
  *
  * <p>Each entity class defines at least one named query to fetch
  * instances of the entity. For an entity class {@code Xyz}, that

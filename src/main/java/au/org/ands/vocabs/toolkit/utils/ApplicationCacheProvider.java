@@ -14,7 +14,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /** Context class that provides access to the system-wide JCache
- * Caching Provider and Cache Manager.
+ * Caching Provider and Cache Manager. This class should be moved
+ * into a registry package.
  */
 public final class ApplicationCacheProvider {
 
