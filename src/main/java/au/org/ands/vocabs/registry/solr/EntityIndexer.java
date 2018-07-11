@@ -283,7 +283,6 @@ public final class EntityIndexer {
                             currentVersionId,
                             VersionArtefactType.CONCEPT_LIST);
             if (conceptLists != null && conceptLists.size() == 1) {
-                // TODO Get the concepts from the file.
                 String artefactData = conceptLists.get(0).getData();
                 VaConceptList vaConceptList =
                         JSONSerialization.deserializeStringAsJson(
