@@ -610,6 +610,19 @@
 
   <!-- Documentation generation -->
 
+  <property name="jdk.javadoc"
+            value="https://docs.oracle.com/javase/8/docs/api/" />
+  <property name="jee.javadoc"
+            value="https://docs.oracle.com/javaee/7/api/" />
+  <property name="slf4j.javadoc"
+            value="https://www.slf4j.org/api/" />
+  <property name="pac4j.javadoc"
+            value="http://www.pac4j.org/apidocs/pac4j/2.0.0/" />
+  <property name="openrdf.javadoc"
+            value="https://archive.rdf4j.org/javadoc/sesame-2.8.3/" />
+  <property name="commons-collections.javadoc"
+            value="https://commons.apache.org/proper/commons-collections/javadocs/api-release/" />
+
   <target name="javadoc">
     <javadoc sourcepath="src/main/java;src/db-gen/java;src/jaxb-gen/java;src/test/java"
              destdir="${javadoc-output}"
@@ -638,6 +651,12 @@
              packages="au.org.ands.vocabs.roles.db*" />
       <group title="Legacy Toolkit database"
              packages="au.org.ands.vocabs.toolkit.db*" />
+      <link href="${jdk.javadoc}" />
+      <link href="${jee.javadoc}" />
+      <link href="${slf4j.javadoc}" />
+      <link href="${pac4j.javadoc}" />
+      <link href="${openrdf.javadoc}" />
+      <link href="${commons-collections.javadoc}" />
     </javadoc>
   </target>
 
