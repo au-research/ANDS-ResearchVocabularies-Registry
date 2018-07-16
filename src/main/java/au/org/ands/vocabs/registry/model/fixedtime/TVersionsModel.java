@@ -18,7 +18,7 @@ import org.apache.commons.collections4.sequence.SequencesComparator;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.builder.Diff;
 import org.apache.commons.lang3.builder.DiffResult;
-import org.apache.commons.lang3.text.WordUtils;
+import org.apache.commons.text.WordUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -15,9 +15,9 @@ import javax.ws.rs.client.Client;
 import javax.ws.rs.client.WebTarget;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.text.StrSubstitutor;
+import org.apache.commons.text.StringEscapeUtils;
+import org.apache.commons.text.StringSubstitutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -267,7 +267,7 @@ public class SISSVocPublishProvider implements WorkflowProvider {
                     e);
             return false;
         }
-        StrSubstitutor sub = new StrSubstitutor(specProperties);
+        StringSubstitutor sub = new StringSubstitutor(specProperties);
         String customSpec = sub.replace(specTemplate);
         RegistryFileUtils.requireDirectory(sissvocSpecOutputPath);
         path = Paths.get(sissvocSpecOutputPath).
