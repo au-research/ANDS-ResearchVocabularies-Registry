@@ -175,15 +175,16 @@ public class ArquillianBaseTest extends Arquillian {
                                 RESOURCES_DEPLOY_PATH.length())));
 
             // Add certain JAR files from the libdev directory.
-            // For now, that means Mean Bean and DbUnit.
+            // For now, that means Mean Bean, DbUnit, XStream, and XMLUnit.
             Files.walk(Paths.get("libdev"))
                 .filter(Files::isRegularFile)
                 .filter(p -> p.getFileName().toString().endsWith(".jar"))
                 .filter(p -> {
-                    String fileName = p.getParent().getFileName().
-                            toString();
+                    String fileName = p.getParent().getFileName().toString();
                     return (fileName.startsWith("meanbean")
-                            || fileName.startsWith("dbunit"));
+                            || fileName.startsWith("dbunit")
+                            || fileName.startsWith("xstream")
+                            || fileName.startsWith("xmlunit"));
                 })
                 .forEach(p -> war.addAsLibrary(p.toFile()));
 
