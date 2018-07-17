@@ -96,6 +96,8 @@ public final class VersionArtefactUtils {
         T vaT;
         try {
             vaT = vaClass.newInstance();
+            // errorprone says this would be better:
+//            vaT = vaClass.getConstructor().newInstance();
         } catch (InstantiationException | IllegalAccessException e) {
             logger.error("Error creating instance of class: " + vaClass, e);
             return;
