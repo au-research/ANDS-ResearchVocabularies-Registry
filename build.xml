@@ -621,7 +621,7 @@
   <property name="openrdf.javadoc"
             value="https://archive.rdf4j.org/javadoc/sesame-2.8.3/" />
   <property name="commons-collections.javadoc"
-            value="https://commons.apache.org/proper/commons-collections/javadocs/api-release/" />
+            value="https://commons.apache.org/proper/commons-collections/javadocs/api-4.1/" />
 
   <target name="javadoc">
     <javadoc sourcepath="src/main/java;src/db-gen/java;src/jaxb-gen/java;src/test/java"
