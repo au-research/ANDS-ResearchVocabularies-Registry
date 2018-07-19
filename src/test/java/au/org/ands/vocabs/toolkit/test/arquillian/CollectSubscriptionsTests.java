@@ -215,7 +215,7 @@ public class CollectSubscriptionsTests extends ArquillianBaseTest {
     }
 
     /** A test of the {@link CollectSubscriptions} class that
-     * observes changes to the a version and the addition of a version.
+     * observes changes to a version and the addition of a version.
      * @throws DatabaseUnitException If a problem with DbUnit.
      * @throws IOException If a problem getting test data for DbUnit,
      *          or reading JSON from the correct and test output files.
@@ -229,5 +229,19 @@ public class CollectSubscriptionsTests extends ArquillianBaseTest {
                 NOW_TIME_1, NOW_TIME_3);
     }
 
+    /** A test of the {@link CollectSubscriptions} class that
+     * observes addition and deletion of access points of a version.
+     * @throws DatabaseUnitException If a problem with DbUnit.
+     * @throws IOException If a problem getting test data for DbUnit,
+     *          or reading JSON from the correct and test output files.
+     * @throws SQLException If DbUnit has a problem performing
+     *           performing JDBC operations.
+     */
+    @Test
+    public void testCollectSubscriptions5() throws
+    DatabaseUnitException, IOException, SQLException {
+        scriptCollectSubscriptions1("testCollectSubscriptions5",
+                NOW_TIME_1, NOW_TIME_3);
+    }
 
 }
