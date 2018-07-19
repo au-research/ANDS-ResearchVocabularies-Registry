@@ -1,0 +1,138 @@
+<?xml version="1.0" ?>
+<!DOCTYPE map>
+<map>
+  <entry>
+    <int>1</int>
+    <SubscriberSubscriptionsModel>
+      <token>1_1</token>
+      <ownerFullNames>
+        <entry>
+          <int>1</int>
+          <string>Australian National Data Service Curated</string>
+        </entry>
+      </ownerFullNames>
+      <ownerVocabularies>
+        <entry>
+          <int>1</int>
+          <set>
+            <int>1</int>
+          </set>
+        </entry>
+      </ownerVocabularies>
+      <vocabularyIdMap>
+        <entry>
+          <int>1</int>
+          <VocabularyDifferences>
+            <finalResult>UPDATED</finalResult>
+            <title>Registry Interchange Format - Collections and Services (Vocabularies)</title>
+            <vocabularyDiffs>
+            </vocabularyDiffs>
+            <fieldDiffs>
+              <org.apache.commons.lang3.builder.DiffBuilder_-17>
+                <type class="java-class">java.lang.Object</type>
+                <fieldName>description</fieldName>
+                <val_-lhs class="string">The RIF-CS schema ...</val_-lhs>
+                <val_-rhs class="string">The RIF-CS schema ... Updated.</val_-rhs>
+                <outer-class>
+                  <diffs>
+                    <org.apache.commons.lang3.builder.DiffBuilder_-17 reference="../../..">
+                    </org.apache.commons.lang3.builder.DiffBuilder_-17>
+                    <org.apache.commons.lang3.builder.DiffBuilder_-18>
+                      <type class="java-class">[Ljava.lang.Object;</type>
+                      <fieldName>subjects</fieldName>
+                      <val_-lhs>
+                        <SubjectsWithEquals>
+                          <subjects>
+                            <source>anzsrc-for</source>
+                            <label>INFORMATION AND COMPUTING SCIENCES</label>
+                            <iri>http://purl.org/au-research/vocabulary/anzsrc-for/2008/08</iri>
+                          </subjects>
+                        </SubjectsWithEquals>
+                      </val_-lhs>
+                      <val_-rhs>
+                        <SubjectsWithEquals>
+                          <subjects>
+                            <source>anzsrc-for</source>
+                            <label>INFORMATION AND COMPUTING SCIENCES</label>
+                            <iri>http://purl.org/au-research/vocabulary/anzsrc-for/2008/08</iri>
+                          </subjects>
+                        </SubjectsWithEquals>
+                        <SubjectsWithEquals>
+                          <subjects>
+                            <source>anzsrc-for</source>
+                            <label>MATHEMATICAL SCIENCES</label>
+                            <iri>http://purl.org/au-research/vocabulary/anzsrc-for/2008/01</iri>
+                          </subjects>
+                        </SubjectsWithEquals>
+                      </val_-rhs>
+                      <outer-class reference="../../..">
+                      </outer-class>
+                    </org.apache.commons.lang3.builder.DiffBuilder_-18>
+                  </diffs>
+                  <objectsTriviallyEqual>false</objectsTriviallyEqual>
+                  <left class="au.org.ands.vocabs.registry.db.entity.Vocabulary">
+                    <id>1</id>
+                    <startDate>2015-06-24T10:56:30</startDate>
+                    <endDate>2017-10-01T10:10:00</endDate>
+                    <vocabularyId>1</vocabularyId>
+                    <modifiedBy>TEST</modifiedBy>
+                    <status>PUBLISHED</status>
+                    <slug>rifcs</slug>
+                    <owner>ANDS-Curated</owner>
+                    <data>{"subjects":[{"label":"INFORMATION AND COMPUTING SCIENCES","source":"anzsrc-for","iri":"http://purl.org/au-research/vocabulary/anzsrc-for/2008/08"}],"other-languages":[],"acronym":"RIF-CS","creation-date":"2008-12-31","description":"The RIF-CS schema ...","licence":"CC-BY","primary-language":"en","revision-cycle":"Updated as required","title":"Registry Interchange Format - Collections and Services (Vocabularies)"}</data>
+                  </left>
+                  <right class="au.org.ands.vocabs.registry.db.entity.Vocabulary">
+                    <id>2</id>
+                    <startDate>2017-10-01T10:10:00</startDate>
+                    <endDate>9999-12-01T00:00:00</endDate>
+                    <vocabularyId>1</vocabularyId>
+                    <modifiedBy>TEST</modifiedBy>
+                    <status>PUBLISHED</status>
+                    <slug>rifcs</slug>
+                    <owner>ANDS-Curated</owner>
+                    <data>{"subjects":[{"iri":"http://purl.org/au-research/vocabulary/anzsrc-for/2008/08","label":"INFORMATION AND COMPUTING SCIENCES","source":"anzsrc-for"},{"iri":"http://purl.org/au-research/vocabulary/anzsrc-for/2008/01","label":"MATHEMATICAL SCIENCES","source":"anzsrc-for"}],"other-languages":[],"top-concepts":[],"acronym":"RIF-CS","creation-date":"2008-12-31","description":"The RIF-CS schema ... Updated.","licence":"CC-BY","primary-language":"en","revision-cycle":"Updated as required","title":"Registry Interchange Format - Collections and Services (Vocabularies)"}</data>
+                  </right>
+                </outer-class>
+              </org.apache.commons.lang3.builder.DiffBuilder_-17>
+              <org.apache.commons.lang3.builder.DiffBuilder_-18 reference="../org.apache.commons.lang3.builder.DiffBuilder_-17/outer-class/diffs/org.apache.commons.lang3.builder.DiffBuilder_-18">
+              </org.apache.commons.lang3.builder.DiffBuilder_-18>
+            </fieldDiffs>
+            <versionDiffs>
+              <entry>
+                <int>1</int>
+                <VersionDifferences>
+                  <finalResult>CREATED</finalResult>
+                  <title>Version 1</title>
+                  <versionDiffs class="linked-hash-set">
+                    <string>Added</string>
+                    <string>Status set to Superseded</string>
+                  </versionDiffs>
+                  <fieldDiffs>
+                  </fieldDiffs>
+                </VersionDifferences>
+              </entry>
+              <entry>
+                <int>2</int>
+                <VersionDifferences>
+                  <finalResult>CREATED</finalResult>
+                  <title>Version 2</title>
+                  <versionDiffs class="linked-hash-set">
+                    <string>Added</string>
+                    <string>Status set to Current</string>
+                  </versionDiffs>
+                  <fieldDiffs>
+                  </fieldDiffs>
+                </VersionDifferences>
+              </entry>
+            </versionDiffs>
+          </VocabularyDifferences>
+        </entry>
+      </vocabularyIdMap>
+      <allOwnerIdsToReport>
+        <int>1</int>
+      </allOwnerIdsToReport>
+      <allIndividualVocabularySubscriptions>
+      </allIndividualVocabularySubscriptions>
+    </SubscriberSubscriptionsModel>
+  </entry>
+</map>

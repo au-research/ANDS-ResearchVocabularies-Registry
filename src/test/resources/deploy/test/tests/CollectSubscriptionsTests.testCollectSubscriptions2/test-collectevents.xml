@@ -1,0 +1,43 @@
+<?xml version="1.0" ?>
+<!DOCTYPE CollectEvents>
+<CollectEvents>
+  <fromDate>2017-10-01T10:00:00</fromDate>
+  <toDate>2017-10-01T10:20:00</toDate>
+  <vocabularyIdsSeen>
+    <int>1</int>
+  </vocabularyIdsSeen>
+  <ownerVocabularies>
+    <entry>
+      <int>1</int>
+      <set>
+        <int>1</int>
+      </set>
+    </entry>
+  </ownerVocabularies>
+  <ownerNames>
+    <entry>
+      <int>1</int>
+      <string>ANDS-Curated</string>
+    </entry>
+  </ownerNames>
+  <ownerFullNames>
+    <entry>
+      <int>1</int>
+      <string>Australian National Data Service Curated</string>
+    </entry>
+  </ownerFullNames>
+  <vocabularyIdMap>
+    <entry>
+      <int>1</int>
+      <VocabularyDifferences>
+        <finalResult>CREATED</finalResult>
+        <title>Registry Interchange Format - Collections and Services (Vocabularies)</title>
+        <vocabularyDiffs>
+          <string>The vocabulary was created</string>
+        </vocabularyDiffs>
+        <versionDiffs>
+        </versionDiffs>
+      </VocabularyDifferences>
+    </entry>
+  </vocabularyIdMap>
+</CollectEvents>

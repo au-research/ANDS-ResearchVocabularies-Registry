@@ -6,6 +6,7 @@ import static au.org.ands.vocabs.toolkit.test.utils.DatabaseSelector.REGISTRY;
 import static au.org.ands.vocabs.toolkit.test.utils.DatabaseSelector.ROLES;
 
 import java.io.IOException;
+import java.lang.invoke.MethodHandles;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.Map;
@@ -14,6 +15,8 @@ import javax.persistence.EntityManager;
 
 import org.dbunit.DatabaseUnitException;
 import org.hamcrest.MatcherAssert;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import org.xmlunit.matchers.CompareMatcher;
@@ -30,9 +33,10 @@ import au.org.ands.vocabs.registry.notification.email.SubscriberSubscriptionsMod
 @Test
 public class CollectSubscriptionsTests extends ArquillianBaseTest {
 
-//    /** Logger for this class. */
-//    private Logger logger = LoggerFactory.getLogger(
-//            MethodHandles.lookup().lookupClass());
+    /** Logger for this class. */
+    @SuppressWarnings("unused")
+    private Logger logger = LoggerFactory.getLogger(
+            MethodHandles.lookup().lookupClass());
 
     /** Name of this class, used in paths to test data files. */
     private static final String CLASS_NAME_PREFIX =
@@ -70,6 +74,9 @@ public class CollectSubscriptionsTests extends ArquillianBaseTest {
         xstream.alias("VocabularyDifferences",
                 au.org.ands.vocabs.registry.notification.
                     VocabularyDifferences.class);
+        xstream.alias("VersionDifferences",
+                au.org.ands.vocabs.registry.notification.
+                    VersionDifferences.class);
         xstream.alias("SubjectsWithEquals",
                 au.org.ands.vocabs.registry.log.utils.SubjectsWithEquals.class);
         xstream.alias("SubscriberSubscriptionsModel",
@@ -161,7 +168,8 @@ public class CollectSubscriptionsTests extends ArquillianBaseTest {
                         ignoreWhitespace());
     }
 
-    /** First test of the {@link CollectSubscriptions} class.
+    /** A test of the {@link CollectSubscriptions} class that
+     * observes changes to the top-level metadata of a vocabulary.
      * @throws DatabaseUnitException If a problem with DbUnit.
      * @throws IOException If a problem getting test data for DbUnit,
      *          or reading JSON from the correct and test output files.
@@ -174,5 +182,52 @@ public class CollectSubscriptionsTests extends ArquillianBaseTest {
         scriptCollectSubscriptions1("testCollectSubscriptions1",
                 NOW_TIME_1, NOW_TIME_3);
     }
+
+    /** A test of the {@link CollectSubscriptions} class that
+     * observes the creation of a vocabulary.
+     * @throws DatabaseUnitException If a problem with DbUnit.
+     * @throws IOException If a problem getting test data for DbUnit,
+     *          or reading JSON from the correct and test output files.
+     * @throws SQLException If DbUnit has a problem performing
+     *           performing JDBC operations.
+     */
+    @Test
+    public void testCollectSubscriptions2() throws
+    DatabaseUnitException, IOException, SQLException {
+        scriptCollectSubscriptions1("testCollectSubscriptions2",
+                NOW_TIME_1, NOW_TIME_3);
+    }
+
+    /** A test of the {@link CollectSubscriptions} class that
+     * observes changes to the top-level metadata of a vocabulary
+     * and the addition of versions.
+     * @throws DatabaseUnitException If a problem with DbUnit.
+     * @throws IOException If a problem getting test data for DbUnit,
+     *          or reading JSON from the correct and test output files.
+     * @throws SQLException If DbUnit has a problem performing
+     *           performing JDBC operations.
+     */
+    @Test
+    public void testCollectSubscriptions3() throws
+    DatabaseUnitException, IOException, SQLException {
+        scriptCollectSubscriptions1("testCollectSubscriptions3",
+                NOW_TIME_1, NOW_TIME_3);
+    }
+
+    /** A test of the {@link CollectSubscriptions} class that
+     * observes changes to the a version and the addition of a version.
+     * @throws DatabaseUnitException If a problem with DbUnit.
+     * @throws IOException If a problem getting test data for DbUnit,
+     *          or reading JSON from the correct and test output files.
+     * @throws SQLException If DbUnit has a problem performing
+     *           performing JDBC operations.
+     */
+    @Test
+    public void testCollectSubscriptions4() throws
+    DatabaseUnitException, IOException, SQLException {
+        scriptCollectSubscriptions1("testCollectSubscriptions4",
+                NOW_TIME_1, NOW_TIME_3);
+    }
+
 
 }
