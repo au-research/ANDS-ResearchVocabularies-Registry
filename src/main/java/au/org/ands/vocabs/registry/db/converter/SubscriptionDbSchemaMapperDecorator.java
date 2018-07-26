@@ -85,7 +85,7 @@ public abstract class SubscriptionDbSchemaMapperDecorator
                 List<Role> ownerRoleList =
                         RolesUtils.getOrgRolesByRoleId(ownerName);
                 if (ownerRoleList.size() == 0) {
-                    target.setTitle("Unkknown owner name");
+                    target.setTitle(ownerName + " (Full name not known)");
                 } else {
                     target.setTitle(ownerRoleList.get(0).getFullName());
                 }
