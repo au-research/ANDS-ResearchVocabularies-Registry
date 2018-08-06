@@ -1,0 +1,68 @@
+<?xml version="1.0" ?>
+<!DOCTYPE map>
+<map>
+  <entry>
+    <int>1</int>
+    <SubscriberSubscriptionsModel>
+      <token>1_1</token>
+      <ownerFullNames>
+        <entry>
+          <int>1</int>
+          <string>Australian National Data Service Curated</string>
+        </entry>
+      </ownerFullNames>
+      <ownerVocabularies>
+        <entry>
+          <int>1</int>
+          <set>
+            <int>1</int>
+          </set>
+        </entry>
+      </ownerVocabularies>
+      <vocabularyIdMap>
+        <entry>
+          <int>1</int>
+          <VocabularyDifferences>
+            <finalResult>UPDATED</finalResult>
+            <title>Registry Interchange Format - Collections and Services (Vocabularies)</title>
+            <vocabularyDiffs>
+            </vocabularyDiffs>
+            <fieldDiffs>
+            </fieldDiffs>
+            <versionDiffs>
+              <entry>
+                <int>1</int>
+                <VersionDifferences>
+                  <finalResult>UPDATED</finalResult>
+                  <title>Version 1</title>
+                  <versionDiffs class="linked-hash-set">
+                    <string>A user-specified access point was deleted</string>
+                  </versionDiffs>
+                  <fieldDiffs>
+                  </fieldDiffs>
+                </VersionDifferences>
+              </entry>
+              <entry>
+                <int>2</int>
+                <VersionDifferences>
+                  <finalResult>UPDATED</finalResult>
+                  <title>Version 2</title>
+                  <versionDiffs class="linked-hash-set">
+                    <string>A user-specified access point was added</string>
+                  </versionDiffs>
+                  <fieldDiffs>
+                  </fieldDiffs>
+                </VersionDifferences>
+              </entry>
+            </versionDiffs>
+          </VocabularyDifferences>
+        </entry>
+      </vocabularyIdMap>
+      <allOwnerIdsToReport>
+        <int>1</int>
+      </allOwnerIdsToReport>
+      <allIndividualVocabularySubscriptions>
+      </allIndividualVocabularySubscriptions>
+    </SubscriberSubscriptionsModel>
+  </entry>
+</map>

@@ -17,7 +17,7 @@
 # Either edit this script to set the directory below,
 # or set the environment variable REGISTRY_ROOT to point to it.
 
-: ${REGISTRY_ROOT:=~tomcat/webapps-ands/vocabs-registry}
+: ${REGISTRY_ROOT:=~tomcat/webapps/vocabs-registry}
 
 # NB, note use of custom logback configuration.
 

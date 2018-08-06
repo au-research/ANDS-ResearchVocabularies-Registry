@@ -1,0 +1,68 @@
+<?xml version="1.0" ?>
+<!DOCTYPE CollectEvents>
+<CollectEvents>
+  <fromDate>2017-10-01T10:00:00</fromDate>
+  <toDate>2017-10-01T10:20:00</toDate>
+  <vocabularyIdsSeen>
+    <int>1</int>
+  </vocabularyIdsSeen>
+  <ownerVocabularies>
+    <entry>
+      <int>1</int>
+      <set>
+        <int>1</int>
+      </set>
+    </entry>
+  </ownerVocabularies>
+  <ownerNames>
+    <entry>
+      <int>1</int>
+      <string>ANDS-Curated</string>
+    </entry>
+  </ownerNames>
+  <ownerFullNames>
+    <entry>
+      <int>1</int>
+      <string>Australian National Data Service Curated</string>
+    </entry>
+  </ownerFullNames>
+  <vocabularyIdMap>
+    <entry>
+      <int>1</int>
+      <VocabularyDifferences>
+        <finalResult>UPDATED</finalResult>
+        <title>Registry Interchange Format - Collections and Services (Vocabularies)</title>
+        <vocabularyDiffs>
+        </vocabularyDiffs>
+        <fieldDiffs>
+        </fieldDiffs>
+        <versionDiffs>
+          <entry>
+            <int>1</int>
+            <VersionDifferences>
+              <finalResult>UPDATED</finalResult>
+              <title>Version 1</title>
+              <versionDiffs class="linked-hash-set">
+                <string>Version no longer published via the Linked Data API</string>
+              </versionDiffs>
+              <fieldDiffs>
+              </fieldDiffs>
+            </VersionDifferences>
+          </entry>
+          <entry>
+            <int>2</int>
+            <VersionDifferences>
+              <finalResult>UPDATED</finalResult>
+              <title>Version 2</title>
+              <versionDiffs class="linked-hash-set">
+                <string>Version published via the Linked Data API</string>
+              </versionDiffs>
+              <fieldDiffs>
+              </fieldDiffs>
+            </VersionDifferences>
+          </entry>
+        </versionDiffs>
+      </VocabularyDifferences>
+    </entry>
+  </vocabularyIdMap>
+</CollectEvents>

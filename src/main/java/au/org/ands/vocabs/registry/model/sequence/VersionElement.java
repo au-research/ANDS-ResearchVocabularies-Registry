@@ -68,7 +68,7 @@ public class VersionElement
 
     /** {@inheritDoc}
      * Equality test based on Version Id; the values
-     * of dbVersion and schemaVersion is not used.
+     * of dbVersion and schemaVersion are not used.
      * The fact that versionId may be null is taken into account.
      * If versionId is null, equality holds iff {@code other == this}.
      */

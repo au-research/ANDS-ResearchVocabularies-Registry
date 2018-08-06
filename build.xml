@@ -610,6 +610,19 @@
 
   <!-- Documentation generation -->
 
+  <property name="jdk.javadoc"
+            value="https://docs.oracle.com/javase/8/docs/api/" />
+  <property name="jee.javadoc"
+            value="https://docs.oracle.com/javaee/7/api/" />
+  <property name="slf4j.javadoc"
+            value="https://www.slf4j.org/api/" />
+  <property name="pac4j.javadoc"
+            value="http://www.pac4j.org/apidocs/pac4j/2.0.0/" />
+  <property name="openrdf.javadoc"
+            value="https://archive.rdf4j.org/javadoc/sesame-2.8.3/" />
+  <property name="commons-collections.javadoc"
+            value="https://commons.apache.org/proper/commons-collections/javadocs/api-4.1/" />
+
   <target name="javadoc">
     <javadoc sourcepath="src/main/java;src/db-gen/java;src/jaxb-gen/java;src/test/java"
              destdir="${javadoc-output}"
@@ -618,7 +631,32 @@
              includenosourcepackages="true"
              private="true"
              failonerror="true"
+             Overview="src/main/java/overview.html"
              >
+      <group title="Registry database"
+             packages="au.org.ands.vocabs.registry.db*" />
+      <group title="Registry API"
+             packages="au.org.ands.vocabs.registry.api*" />
+      <group title="Registry schema"
+             packages="au.org.ands.vocabs.registry.enums:au.org.ands.vocabs.registry.schema*" />
+      <group title="Vocabulary model subsystems"
+             packages="au.org.ands.vocabs.registry.model*" />
+      <group title="Publication workflow subsystem"
+             packages="au.org.ands.vocabs.registry.workflow*" />
+      <group title="Subscription and notification subsystem"
+             packages="au.org.ands.vocabs.registry.notification*:au.org.ands.vocabs.registry.subscription*" />
+      <group title="Test packages"
+             packages="au.org.ands.vocabs.registry.test*:au.org.ands.vocabs.toolkit.test*" />
+      <group title="Roles database"
+             packages="au.org.ands.vocabs.roles.db*" />
+      <group title="Legacy Toolkit database"
+             packages="au.org.ands.vocabs.toolkit.db*" />
+      <link href="${jdk.javadoc}" />
+      <link href="${jee.javadoc}" />
+      <link href="${slf4j.javadoc}" />
+      <link href="${pac4j.javadoc}" />
+      <link href="${openrdf.javadoc}" />
+      <link href="${commons-collections.javadoc}" />
     </javadoc>
   </target>
 

@@ -1,0 +1,114 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE dataset>
+<dataset>
+
+  <RELATED_ENTITY_IDS ID="1"/>
+  <RELATED_ENTITY_IDS ID="2"/>
+  <RELATED_ENTITY_IDS ID="3"/>
+  <RELATED_ENTITY_IDS ID="4"/>
+  <RELATED_ENTITY_IDS ID="5"/>
+
+  <RELATED_ENTITIES ID="1" DATA="{&quot;email&quot;:&quot;services@ands.org.au&quot;,&quot;url&quot;:[&quot;http://ands.org.au/&quot;]}" END_DATE="9999-12-01 00:00:00.0" MODIFIED_BY="SYSTEM" OWNER="ANDS-Curated" RELATED_ENTITY_ID="1" START_DATE="2015-11-26 10:04:05.0" TITLE="Australian National Data Service" TYPE="PARTY"/>
+  <RELATED_ENTITIES ID="2" DATA="{&quot;email&quot;:&quot;agrovoc@fao.org&quot;,&quot;url&quot;:[&quot;http://www.fao.org/home/&quot;]}" END_DATE="9999-12-01 00:00:00.0" MODIFIED_BY="SYSTEM" OWNER="ANDS" RELATED_ENTITY_ID="2" START_DATE="2016-09-23 09:52:50.0" TITLE="Food and Agriculture Organization (FAO)" TYPE="PARTY"/>
+  <RELATED_ENTITIES ID="3" DATA="{&quot;email&quot;:&quot;agrovoc@fao.org&quot;,&quot;url&quot;:[&quot;http://www.fao.org/home/&quot;]}" END_DATE="9999-12-01 00:00:00.0" MODIFIED_BY="SYSTEM" OWNER="ANDS-NC" RELATED_ENTITY_ID="3" START_DATE="2016-09-27 13:24:05.0" TITLE="Food and Agriculture Organization (FAO)" TYPE="PARTY"/>
+  <RELATED_ENTITIES ID="4" DATA="{&quot;url&quot;:[&quot;http://www.usgs.gov&quot;]}" END_DATE="9999-12-01 00:00:00.0" MODIFIED_BY="SYSTEM" OWNER="ANDS" RELATED_ENTITY_ID="4" START_DATE="2015-09-23 11:46:42.0" TITLE="United States Geological Survey" TYPE="PARTY"/>
+  <RELATED_ENTITIES ID="5" DATA="{}" END_DATE="9999-12-01 00:00:00.0" MODIFIED_BY="SYSTEM" OWNER="ANDS" RELATED_ENTITY_ID="5" START_DATE="2015-09-23 11:46:42.0" TITLE="Department of the Interior Office of Water Research and Technology" TYPE="PARTY"/>
+
+  <VOCABULARY_IDS ID="1"/>
+
+  <VOCABULARIES ID="1" START_DATE="2017-10-01 10:00:00.0" END_DATE="9999-12-01 00:00:00" VOCABULARY_ID="1" MODIFIED_BY="TEST" STATUS="PUBLISHED" SLUG="rifcs" OWNER="ANDS-Curated" DATA="{&quot;subjects&quot;:[{&quot;iri&quot;:&quot;http://purl.org/au-research/vocabulary/anzsrc-for/2008/08&quot;,&quot;label&quot;:&quot;INFORMATION AND COMPUTING SCIENCES&quot;,&quot;source&quot;:&quot;anzsrc-for&quot;},{&quot;iri&quot;:&quot;http://purl.org/au-research/vocabulary/anzsrc-for/2008/01&quot;,&quot;label&quot;:&quot;MATHEMATICAL SCIENCES&quot;,&quot;source&quot;:&quot;anzsrc-for&quot;}],&quot;other-languages&quot;:[],&quot;top-concepts&quot;:[],&quot;acronym&quot;:&quot;RIF-CS&quot;,&quot;creation-date&quot;:&quot;2008-12-31&quot;,&quot;description&quot;:&quot;The RIF-CS schema is a data interchange format that supports the electronic exchange of collection and service descriptions. It organises information about collections and services into a format used by the Australian National Data Service (ANDS) Collections Registry. More information on the RIF-CS Schema can be found at http://ands.org.au/guides/cpguide/cpgrifcs.html. With assistance from the RIF-CS Advisory Board and user community, ANDS has developed a suggested vocabulary for use with the RIF-CS Schema. The vocabulary is comprised of suggested terms for specific elements of the schema. Use of the ANDS vocabulary with the RIF-CS Schema is not mandatory but is however recommended. Use of consistent terminology improves data discoverability and the precision of search operations. The ANDS vocabularies are expected to be informed and developed further by the RIF-CS user community. Please contact services@ands.org.au if you have candidate vocabulary terms to be evaluated for possible inclusion in the ANDS vocabularies. Published.&quot;,&quot;licence&quot;:&quot;CC-BY&quot;,&quot;primary-language&quot;:&quot;en&quot;,&quot;revision-cycle&quot;:&quot;Updated as required&quot;,&quot;title&quot;:&quot;Registry Interchange Format - Collections and Services (Vocabularies)&quot;}"/>
+
+  <VOCABULARY_RELATED_ENTITIES ID="2" START_DATE="2017-10-01 10:00:00.0" END_DATE="9999-12-01 00:00:00" VOCABULARY_ID="1" RELATED_ENTITY_ID="1" MODIFIED_BY="TEST" RELATION="PUBLISHED_BY"/>
+  <VOCABULARY_RELATED_ENTITIES ID="3" START_DATE="2017-10-01 10:00:00.0" END_DATE="9999-12-01 00:00:00" VOCABULARY_ID="1" RELATED_ENTITY_ID="1" MODIFIED_BY="TEST" RELATION="HAS_AUTHOR"/>
+  <VOCABULARY_RELATED_ENTITIES ID="4" START_DATE="2017-10-01 10:00:00.0" END_DATE="9999-12-01 00:00:00" VOCABULARY_ID="1" RELATED_ENTITY_ID="1" MODIFIED_BY="TEST" RELATION="POINT_OF_CONTACT"/>
+  <VOCABULARY_RELATED_ENTITIES ID="6" START_DATE="2017-10-01 10:00:00.0" END_DATE="9999-12-01 00:00:00" VOCABULARY_ID="1" RELATED_ENTITY_ID="3" MODIFIED_BY="TEST" RELATION="PUBLISHED_BY"/>
+  <VOCABULARY_RELATED_ENTITIES ID="7" START_DATE="2017-10-01 10:00:00.0" END_DATE="9999-12-01 00:00:00" VOCABULARY_ID="1" RELATED_ENTITY_ID="4" MODIFIED_BY="TEST" RELATION="PUBLISHED_BY"/>
+
+  <VERSION_IDS ID="1"/>
+  <VERSION_IDS ID="2"/>
+
+  <VERSIONS ID="1" VERSION_ID="1" VOCABULARY_ID="1"
+            START_DATE="2017-10-01 10:00:00.0" END_DATE="2017-10-01 10:10:00.0"
+            MODIFIED_BY="TEST" STATUS="SUPERSEDED" SLUG="version-1" RELEASE_DATE="2014-01"
+            DATA="{''note'':''Note for v1'',''title'':''Version 1'',''do-publish'':true}"
+            />
+  <VERSIONS ID="2" VERSION_ID="2" VOCABULARY_ID="1"
+            START_DATE="2017-10-01 10:00:00.0" END_DATE="2017-10-01 10:10:00.0"
+            MODIFIED_BY="TEST" STATUS="CURRENT" SLUG="version-2" RELEASE_DATE="2015-01"
+            DATA="{''note'':''Note for v2'',''title'':''Version 2''}"
+            />
+  <VERSIONS ID="3" VERSION_ID="1" VOCABULARY_ID="1"
+            START_DATE="2017-10-01 10:10:00.0" END_DATE="9999-12-01 00:00:00.0"
+            MODIFIED_BY="TEST" STATUS="SUPERSEDED" SLUG="version-1" RELEASE_DATE="2014-01"
+            DATA="{''note'':''Note for v1'',''title'':''Version 1'',''do-publish'':false}"
+            />
+  <VERSIONS ID="4" VERSION_ID="2" VOCABULARY_ID="1"
+            START_DATE="2017-10-01 10:10:00.0" END_DATE="9999-12-01 00:00:00.0"
+            MODIFIED_BY="TEST" STATUS="CURRENT" SLUG="version-2" RELEASE_DATE="2015-01"
+            DATA="{''note'':''Note for v2'',''title'':''Version 2'',''do-publish'':true}"
+            />
+
+
+  <ACCESS_POINT_IDS ID="1"/>
+  <ACCESS_POINT_IDS ID="2"/>
+
+  <ACCESS_POINTS ID="1" ACCESS_POINT_ID="1"
+                 DATA="{''path'':''irrelevant'',''url-prefix'':''http://irrelevant''}"
+                 END_DATE="2017-10-01 10:10:00.0" MODIFIED_BY="TEST" SOURCE="SYSTEM" START_DATE="2017-10-01 10:00:00.0"
+                 TYPE="SISSVOC" VERSION_ID="1"/>
+
+  <ACCESS_POINTS ID="2" ACCESS_POINT_ID="2"
+                 DATA="{''path'':''irrelevant'',''url-prefix'':''http://irrelevant''}"
+                 END_DATE="9999-12-01 00:00:00.0" MODIFIED_BY="TEST" SOURCE="SYSTEM" START_DATE="2017-10-01 10:10:00.0"
+                 TYPE="SISSVOC" VERSION_ID="2"/>
+
+  <REGISTRY_EVENTS ID="1" ELEMENT_TYPE="VOCABULARIES" ELEMENT_ID="1" EVENT_DATE="2017-10-01 10:00:00.0" EVENT_TYPE="CREATED" EVENT_USER="TEST" EVENT_DETAILS="{''id'':1,''status'':''published''}" />
+  <REGISTRY_EVENTS ID="2" ELEMENT_TYPE="VERSIONS" ELEMENT_ID="1" EVENT_DATE="2017-10-01 10:00:00.0" EVENT_TYPE="CREATED" EVENT_USER="TEST" EVENT_DETAILS="{''draft'':false,''id'':1,''status'':''superseded''}" />
+  <REGISTRY_EVENTS ID="3" ELEMENT_TYPE="VERSIONS" ELEMENT_ID="2" EVENT_DATE="2017-10-01 10:00:00.0" EVENT_TYPE="CREATED" EVENT_USER="TEST" EVENT_DETAILS="{''draft'':false,''id'':2,''status'':''current''}" />
+  <REGISTRY_EVENTS ID="4" ELEMENT_TYPE="VOCABULARIES" ELEMENT_ID="1" EVENT_DATE="2017-10-01 10:10:00.0" EVENT_TYPE="UPDATED" EVENT_USER="TEST" EVENT_DETAILS="{''id'':1,''status'':''published''}" />
+  <REGISTRY_EVENTS ID="5" ELEMENT_TYPE="ACCESS_POINTS" ELEMENT_ID="1" EVENT_DATE="2017-10-01 10:00:00.0" EVENT_TYPE="CREATED" EVENT_USER="TEST" EVENT_DETAILS="{''draft'':false,''id'':1}" />
+  <REGISTRY_EVENTS ID="6" ELEMENT_TYPE="ACCESS_POINTS" ELEMENT_ID="1" EVENT_DATE="2017-10-01 10:10:00.0" EVENT_TYPE="DELETED" EVENT_USER="TEST" EVENT_DETAILS="{''draft'':false,''id'':1}" />
+  <REGISTRY_EVENTS ID="7" ELEMENT_TYPE="ACCESS_POINTS" ELEMENT_ID="2" EVENT_DATE="2017-10-01 10:10:00.0" EVENT_TYPE="CREATED" EVENT_USER="TEST" EVENT_DETAILS="{''draft'':false,''id'':2}" />
+
+  <OWNERS OWNER_ID="1" OWNER="ANDS-Curated" />
+
+  <SUBSCRIBER_IDS ID="1" />
+  <SUBSCRIBERS
+      ID="1" SUBSCRIBER_ID="1"
+      START_DATE="2017-10-01 10:10:00" END_DATE="9999-12-01 00:00:00"
+      MODIFIED_BY="SYSTEM" TOKEN="1_1" />
+
+  <SUBSCRIBER_EMAIL_ADDRESS_IDS ID="1" />
+  <SUBSCRIBER_EMAIL_ADDRESSES
+      ID="1" SUBSCRIBER_EMAIL_ADDRESS_ID="1"
+      SUBSCRIBER_ID="1"
+      START_DATE="2017-10-01 10:10:00" END_DATE="9999-12-01 00:00:00"
+      EMAIL_ADDRESS="dummy@abc.com" />
+
+ <SUBSCRIPTION_IDS ID="1" />
+ <SUBSCRIPTIONS
+     ID="1" SUBSCRIPTION_ID="1"
+     SUBSCRIBER_ID="1"
+     START_DATE="2017-10-01 10:10:00" END_DATE="9999-12-01 00:00:00"
+     MODIFIED_BY="TEST"
+     NOTIFICATION_MODE="EMAIL"
+     NOTIFICATION_ELEMENT_TYPE="OWNER"
+     NOTIFICATION_ELEMENT_ID="1"
+     LAST_NOTIFICATION="2000-01-01 00:00:00"
+     DATA="{''creator'':''TEST''}"
+    />
+
+  <POOLPARTY_SERVERS/>
+  <RELATED_ENTITY_IDENTIFIERS/>
+  <RELATED_ENTITY_IDENTIFIER_IDS/>
+  <RESOURCE_MAP/>
+  <RESOURCE_OWNER_HOSTS/>
+  <SUBJECT_RESOLVER/>
+  <SUBJECT_RESOLVER_SOURCES/>
+  <TASKS/>
+  <UPLOADS/>
+  <VERSION_ARTEFACTS/>
+  <VERSION_ARTEFACT_IDS/>
+  <VOCABULARY_RELATED_VOCABULARIES/>
+
+</dataset>

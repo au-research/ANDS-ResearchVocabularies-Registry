@@ -1,3 +1,3 @@
 /** See the file "LICENSE" for the full license governing this code. */
-/** Top level of packages representing roles data. */
+/** Model classes representing role data as returned from API methods. */
 package au.org.ands.vocabs.roles;

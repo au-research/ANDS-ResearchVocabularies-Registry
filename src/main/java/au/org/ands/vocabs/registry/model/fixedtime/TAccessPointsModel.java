@@ -272,7 +272,7 @@ public class TAccessPointsModel extends TModelBase {
             VersionDifferences verdiffs =
                     vdiff.getVersionDiffsForVersion(versionId);
             verdiffs.addVersionDiff(
-                    "A user-specified access point was deleted.");
+                    "A user-specified access point was deleted");
         }
 
         /** {@inheritDoc} */
@@ -282,7 +282,7 @@ public class TAccessPointsModel extends TModelBase {
             VersionDifferences verdiffs =
                     vdiff.getVersionDiffsForVersion(versionId);
             verdiffs.addVersionDiff(
-                    "A user-specified access point was added.");
+                    "A user-specified access point was added");
         }
     }
 

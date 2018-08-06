@@ -1,5 +1,5 @@
 /** See the file "LICENSE" for the full license governing this code. */
-package au.org.ands.vocabs.roles.db.context;
+package au.org.ands.vocabs.roles.db.utils;
 
 import java.util.HashSet;
 import java.util.List;
@@ -11,6 +11,7 @@ import javax.persistence.TypedQuery;
 import org.apache.commons.codec.digest.DigestUtils;
 
 import au.org.ands.vocabs.roles.UserInfo;
+import au.org.ands.vocabs.roles.db.context.DBContext;
 import au.org.ands.vocabs.roles.db.entity.AuthenticationBuiltIn;
 import au.org.ands.vocabs.roles.db.entity.AuthenticationServiceId;
 import au.org.ands.vocabs.roles.db.entity.Role;

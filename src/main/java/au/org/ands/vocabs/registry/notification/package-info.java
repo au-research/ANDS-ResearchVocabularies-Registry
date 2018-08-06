@@ -1,4 +1,5 @@
 /** See the file "LICENSE" for the full license governing this code. */
 
-/** Classes for notifications. */
+/** Notification subsystem, and model classes to represent content
+ * that could be included in notifications. */
 package au.org.ands.vocabs.registry.notification;

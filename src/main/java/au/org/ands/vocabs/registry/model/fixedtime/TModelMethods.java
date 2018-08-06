@@ -9,7 +9,7 @@ import javax.persistence.EntityManager;
 import au.org.ands.vocabs.registry.notification.VocabularyDifferences;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.Vocabulary;
 
-/** The interface provided by the temporal model package. API and methods
+/** The interface provided by the fixed-time model package. API and methods
  * in other parts of the registry should invoke the methods of this class,
  * rather than directly invoking the methods of the model classes
  * in this package.

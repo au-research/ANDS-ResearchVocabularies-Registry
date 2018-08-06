@@ -1,3 +1,3 @@
 /** See the file "LICENSE" for the full license governing this code. */
-/** Support for Solr indexing and querying. */
+/** Solr indexing and querying; encapsulates a private SolrClient. */
 package au.org.ands.vocabs.registry.solr;

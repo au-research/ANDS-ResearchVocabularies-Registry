@@ -115,6 +115,8 @@ public final class AccessPointUtils {
         T apT;
         try {
             apT = apClass.newInstance();
+            // errorprone says this would be better:
+//            apT = apClass.getConstructor().newInstance();
         } catch (InstantiationException | IllegalAccessException e) {
             logger.error("Error creating instance of class: " + apClass, e);
             return;

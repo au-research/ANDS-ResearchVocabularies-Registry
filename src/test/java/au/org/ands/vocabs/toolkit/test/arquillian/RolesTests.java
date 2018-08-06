@@ -29,8 +29,8 @@ import au.org.ands.vocabs.registry.api.auth.AuthConstants;
 import au.org.ands.vocabs.registry.api.auth.AuthUtils;
 import au.org.ands.vocabs.registry.api.auth.AuthorizationFetcher;
 import au.org.ands.vocabs.roles.UserInfo;
-import au.org.ands.vocabs.roles.db.context.RolesUtils;
 import au.org.ands.vocabs.roles.db.entity.AuthenticationServiceId;
+import au.org.ands.vocabs.roles.db.utils.RolesUtils;
 import au.org.ands.vocabs.toolkit.test.utils.NetClientUtils;
 
 /** Tests of the Roles database.

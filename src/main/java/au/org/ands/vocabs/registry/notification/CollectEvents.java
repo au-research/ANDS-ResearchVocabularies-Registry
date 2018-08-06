@@ -25,7 +25,7 @@ import au.org.ands.vocabs.registry.model.fixedtime.TModelMethods;
 import au.org.ands.vocabs.registry.model.fixedtime.TVocabularyModel;
 import au.org.ands.vocabs.registry.subscription.Owners;
 import au.org.ands.vocabs.roles.Role;
-import au.org.ands.vocabs.roles.db.context.RolesUtils;
+import au.org.ands.vocabs.roles.db.utils.RolesUtils;
 
 /** Collect the Registry events to be put into notifications. */
 public class CollectEvents {

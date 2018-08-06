@@ -1,0 +1,114 @@
+<?xml version="1.0" ?>
+<!DOCTYPE map>
+<map>
+  <entry>
+    <int>1</int>
+    <SubscriberSubscriptionsModel>
+      <token>1_1</token>
+      <ownerFullNames>
+        <entry>
+          <int>1</int>
+          <string>Australian National Data Service Curated</string>
+        </entry>
+      </ownerFullNames>
+      <ownerVocabularies>
+        <entry>
+          <int>1</int>
+          <set>
+            <int>1</int>
+          </set>
+        </entry>
+      </ownerVocabularies>
+      <vocabularyIdMap>
+        <entry>
+          <int>1</int>
+          <VocabularyDifferences>
+            <finalResult>UPDATED</finalResult>
+            <title>Registry Interchange Format - Collections and Services (Vocabularies)</title>
+            <vocabularyDiffs>
+            </vocabularyDiffs>
+            <fieldDiffs>
+            </fieldDiffs>
+            <versionDiffs>
+              <entry>
+                <int>1</int>
+                <VersionDifferences>
+                  <finalResult>UPDATED</finalResult>
+                  <title>Version 1</title>
+                  <versionDiffs class="linked-hash-set">
+                    <string>Status updated to Superseded</string>
+                  </versionDiffs>
+                  <fieldDiffs>
+                    <org.apache.commons.lang3.builder.DiffBuilder_-17>
+                      <type class="java-class">java.lang.Object</type>
+                      <fieldName>note</fieldName>
+                      <val_-lhs class="string">Note for v1</val_-lhs>
+                      <val_-rhs class="string">Note for v1, now superseded</val_-rhs>
+                      <outer-class>
+                        <diffs>
+                          <org.apache.commons.lang3.builder.DiffBuilder_-17>
+                            <type class="java-class">java.lang.Object</type>
+                            <fieldName>status</fieldName>
+                            <val_-lhs class="au.org.ands.vocabs.registry.enums.VersionStatus">CURRENT</val_-lhs>
+                            <val_-rhs class="au.org.ands.vocabs.registry.enums.VersionStatus">SUPERSEDED</val_-rhs>
+                            <outer-class reference="../../..">
+                            </outer-class>
+                          </org.apache.commons.lang3.builder.DiffBuilder_-17>
+                          <org.apache.commons.lang3.builder.DiffBuilder_-17 reference="../../..">
+                          </org.apache.commons.lang3.builder.DiffBuilder_-17>
+                        </diffs>
+                        <objectsTriviallyEqual>false</objectsTriviallyEqual>
+                        <left class="au.org.ands.vocabs.registry.db.entity.Version">
+                          <id>1</id>
+                          <startDate>2017-10-01T10:00:00</startDate>
+                          <endDate>9999-12-01T00:00:00</endDate>
+                          <versionId>1</versionId>
+                          <vocabularyId>1</vocabularyId>
+                          <modifiedBy>TEST</modifiedBy>
+                          <status>CURRENT</status>
+                          <slug>version-1</slug>
+                          <releaseDate>2014-01</releaseDate>
+                          <data>{"note":"Note for v1","title":"Version 1"}</data>
+                        </left>
+                        <right class="au.org.ands.vocabs.registry.db.entity.Version">
+                          <id>2</id>
+                          <startDate>2017-10-01T10:10:00</startDate>
+                          <endDate>9999-12-01T00:00:00</endDate>
+                          <versionId>1</versionId>
+                          <vocabularyId>1</vocabularyId>
+                          <modifiedBy>TEST</modifiedBy>
+                          <status>SUPERSEDED</status>
+                          <slug>version-1</slug>
+                          <releaseDate>2014-01</releaseDate>
+                          <data>{"note":"Note for v1, now superseded","title":"Version 1"}</data>
+                        </right>
+                      </outer-class>
+                    </org.apache.commons.lang3.builder.DiffBuilder_-17>
+                  </fieldDiffs>
+                </VersionDifferences>
+              </entry>
+              <entry>
+                <int>2</int>
+                <VersionDifferences>
+                  <finalResult>CREATED</finalResult>
+                  <title>Version 2</title>
+                  <versionDiffs class="linked-hash-set">
+                    <string>Added</string>
+                    <string>Status set to Current</string>
+                  </versionDiffs>
+                  <fieldDiffs>
+                  </fieldDiffs>
+                </VersionDifferences>
+              </entry>
+            </versionDiffs>
+          </VocabularyDifferences>
+        </entry>
+      </vocabularyIdMap>
+      <allOwnerIdsToReport>
+        <int>1</int>
+      </allOwnerIdsToReport>
+      <allIndividualVocabularySubscriptions>
+      </allIndividualVocabularySubscriptions>
+    </SubscriberSubscriptionsModel>
+  </entry>
+</map>

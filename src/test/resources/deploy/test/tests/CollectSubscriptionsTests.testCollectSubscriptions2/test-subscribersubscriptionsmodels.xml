@@ -1,0 +1,43 @@
+<?xml version="1.0" ?>
+<!DOCTYPE map>
+<map>
+  <entry>
+    <int>1</int>
+    <SubscriberSubscriptionsModel>
+      <token>1_1</token>
+      <ownerFullNames>
+        <entry>
+          <int>1</int>
+          <string>Australian National Data Service Curated</string>
+        </entry>
+      </ownerFullNames>
+      <ownerVocabularies>
+        <entry>
+          <int>1</int>
+          <set>
+            <int>1</int>
+          </set>
+        </entry>
+      </ownerVocabularies>
+      <vocabularyIdMap>
+        <entry>
+          <int>1</int>
+          <VocabularyDifferences>
+            <finalResult>CREATED</finalResult>
+            <title>Registry Interchange Format - Collections and Services (Vocabularies)</title>
+            <vocabularyDiffs>
+              <string>The vocabulary was created</string>
+            </vocabularyDiffs>
+            <versionDiffs>
+            </versionDiffs>
+          </VocabularyDifferences>
+        </entry>
+      </vocabularyIdMap>
+      <allOwnerIdsToReport>
+        <int>1</int>
+      </allOwnerIdsToReport>
+      <allIndividualVocabularySubscriptions>
+      </allIndividualVocabularySubscriptions>
+    </SubscriberSubscriptionsModel>
+  </entry>
+</map>

@@ -23,7 +23,8 @@ import au.org.ands.vocabs.registry.utils.RegistryNetUtils;
 import au.org.ands.vocabs.registry.utils.SlugGenerator;
 import au.org.ands.vocabs.toolkit.db.DBContext;
 
-/** Context listener for the Toolkit web application.
+/** Context listener for the Registry web application.
+ * This class should be moved into a registry package.
  */
 public class ApplicationContextListener implements ServletContextListener {
 

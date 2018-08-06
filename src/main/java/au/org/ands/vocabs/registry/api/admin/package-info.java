@@ -1,3 +1,4 @@
 /** See the file "LICENSE" for the full license governing this code. */
-/** Admin-level API methods for accessing resources. */
+/** Definition and implementation of admin-level API methods for
+ * accessing Registry resources. */
 package au.org.ands.vocabs.registry.api.admin;

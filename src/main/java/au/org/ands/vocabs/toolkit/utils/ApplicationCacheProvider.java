@@ -14,7 +14,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /** Context class that provides access to the system-wide JCache
- * Caching Provider and Cache Manager.
+ * Caching Provider and Cache Manager. This class should be moved
+ * into a registry package.
  */
 public final class ApplicationCacheProvider {
 
@@ -59,10 +60,10 @@ public final class ApplicationCacheProvider {
                 logger.error("Unable to load ehcache.xml (" + e + ")");
             }
             if (ehcacheXmlURL == null) {
-                logger.info("Getting CacheManager without ebcache.xml.");
+                logger.info("Getting CacheManager without ehcache.xml.");
                 cacheManager = getCachingProvider().getCacheManager();
             } else {
-                logger.info("Getting CacheManager with ebcache.xml.");
+                logger.info("Getting CacheManager with ehcache.xml.");
                 cacheManager = getCachingProvider().getCacheManager(
                         ehcacheXmlURL,
                         ApplicationCacheProvider.class.getClassLoader());

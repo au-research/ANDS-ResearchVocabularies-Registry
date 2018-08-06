@@ -2473,6 +2473,8 @@ public final class MigrateToolkitToRegistry {
             registryRoh.setOwner(roh.getOwner());
             registryRoh.setHost(roh.getHost());
             ResourceOwnerHostDAO.saveResourceOwnerHost(registryRoh);
+            logger.error("Migrated a ResourceOwnerHost: you may need to "
+                    + "adjust start_date and end_date values for UTC");
         }
     }
 

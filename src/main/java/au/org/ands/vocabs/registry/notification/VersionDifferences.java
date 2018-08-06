@@ -14,11 +14,14 @@ import au.org.ands.vocabs.registry.enums.RegistryEventEventType;
 /** Representation of the differences recorded for a version. */
 public class VersionDifferences {
 
-    /** The last-recorded event type for the version. This is used
-     * to indicate and determine the high-level nature of what is to be
-     * captured and reported for the vocabulary. E.g., if the value is {@link
-     * RegistryEventEventType#DELETED}, there may not be any other details.
-     *  */
+    /** What is considered to be the state of the version at the
+     * end of the reporting period, in comparison with the state of
+     * the version as it was at the start of the reporting period.
+     * This is used to indicate and determine the high-level nature of
+     * what is to be captured and reported for the version.
+     * E.g., if the value is {@link RegistryEventEventType#DELETED},
+     * there may not be any other details.
+     */
     private RegistryEventEventType finalResult;
 
     /** The title to be used in reporting for the version. */

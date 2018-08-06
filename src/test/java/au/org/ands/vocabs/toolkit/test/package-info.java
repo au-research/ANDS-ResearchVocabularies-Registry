@@ -1,3 +1,3 @@
 /** See the file "LICENSE" for the full license governing this code. */
-/** Classes that test talking to Sesame. */
+/** Tests of the Sesame API. */
 package au.org.ands.vocabs.toolkit.test;

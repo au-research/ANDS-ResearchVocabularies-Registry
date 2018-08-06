@@ -334,6 +334,7 @@ public class GetMetadataTransformProvider {
     }
 
     /** RDF Handler to extract data extracted from users named graph. */
+    // errorprone suggests making this inner class static.
     class UsersConceptHandler extends RDFHandlerBase {
 
         /** Map for users data. Maps from a URL (as a String) to

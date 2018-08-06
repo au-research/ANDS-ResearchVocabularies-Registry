@@ -109,15 +109,16 @@ public class PutSubscriptions {
             @QueryParam(SubscriberAuthenticator.SUBSCRIBER_EMAIL_ADDRESS)
             final String email) {
         logger.debug("called createEmailSubscriptionVocabulary");
-        logger.debug("email:  " + email);
+        String normalizedEmail = StringUtils.strip(email);
+        logger.debug("email: " + normalizedEmail);
 
-        if (StringUtils.isBlank(email)) {
+        if (StringUtils.isBlank(normalizedEmail)) {
             return ErrorResultUtils.badRequest("Blank email address");
         }
         Set<ConstraintViolation<FieldValidationHelper>> emailViolations =
                 ValidationUtils.getValidator().
                 validateValue(FieldValidationHelper.class,
-                FieldValidationHelper.EMAIL_FIELDNAME, email);
+                FieldValidationHelper.EMAIL_FIELDNAME, normalizedEmail);
         if (!emailViolations.isEmpty()) {
             return ErrorResultUtils.badRequest("Invalid email address");
         }
@@ -135,7 +136,8 @@ public class PutSubscriptions {
             LocalDateTime now = TemporalUtils.nowUTC();
 
             SubscriptionUtils.createEmailSubscriptionVocabulary(
-                    email, vocabularyId, em, now, profile.getUsername());
+                    normalizedEmail, vocabularyId, em, now,
+                    profile.getUsername());
             txn.commit();
             Logging.logRequest(true, request, uriInfo, profile,
                     "Create email subscription for a vocabulary");
@@ -221,15 +223,16 @@ public class PutSubscriptions {
             @QueryParam(SubscriberAuthenticator.SUBSCRIBER_EMAIL_ADDRESS)
             final String email) {
         logger.debug("called createEmailSubscriptionOwner");
-        logger.debug("email: " + email);
+        String normalizedEmail = StringUtils.strip(email);
+        logger.debug("email: " + normalizedEmail);
 
-        if (StringUtils.isBlank(email)) {
+        if (StringUtils.isBlank(normalizedEmail)) {
             return ErrorResultUtils.badRequest("Blank email address");
         }
         Set<ConstraintViolation<FieldValidationHelper>> emailViolations =
                 ValidationUtils.getValidator().
                 validateValue(FieldValidationHelper.class,
-                FieldValidationHelper.EMAIL_FIELDNAME, email);
+                FieldValidationHelper.EMAIL_FIELDNAME, normalizedEmail);
         if (!emailViolations.isEmpty()) {
             return ErrorResultUtils.badRequest("Invalid email address");
         }
@@ -253,7 +256,7 @@ public class PutSubscriptions {
             LocalDateTime now = TemporalUtils.nowUTC();
 
             SubscriptionUtils.createEmailSubscriptionOwner(
-                    email, owner, em, now, profile.getUsername());
+                    normalizedEmail, owner, em, now, profile.getUsername());
             txn.commit();
             Logging.logRequest(true, request, uriInfo, profile,
                     "Create email subscription for an owner");
@@ -332,15 +335,16 @@ public class PutSubscriptions {
             @QueryParam(SubscriberAuthenticator.SUBSCRIBER_EMAIL_ADDRESS)
             final String email) {
         logger.debug("called createEmailSubscriptionSystem");
-        logger.debug("email: " + email);
+        String normalizedEmail = StringUtils.strip(email);
+        logger.debug("email: " + normalizedEmail);
 
-        if (StringUtils.isBlank(email)) {
+        if (StringUtils.isBlank(normalizedEmail)) {
             return ErrorResultUtils.badRequest("Blank email address");
         }
         Set<ConstraintViolation<FieldValidationHelper>> emailViolations =
                 ValidationUtils.getValidator().
                 validateValue(FieldValidationHelper.class,
-                FieldValidationHelper.EMAIL_FIELDNAME, email);
+                FieldValidationHelper.EMAIL_FIELDNAME, normalizedEmail);
         if (!emailViolations.isEmpty()) {
             return ErrorResultUtils.badRequest("Invalid email address");
         }
@@ -357,8 +361,8 @@ public class PutSubscriptions {
             // to this event.
             LocalDateTime now = TemporalUtils.nowUTC();
 
-            SubscriptionUtils.createEmailSubscriptionSystem(email, em, now,
-                    profile.getUsername());
+            SubscriptionUtils.createEmailSubscriptionSystem(normalizedEmail,
+                    em, now, profile.getUsername());
             txn.commit();
             Logging.logRequest(true, request, uriInfo, profile,
                     "Create email subscription for the system");

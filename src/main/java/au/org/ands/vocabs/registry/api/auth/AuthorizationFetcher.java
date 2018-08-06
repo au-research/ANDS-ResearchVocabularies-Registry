@@ -13,8 +13,8 @@ import org.slf4j.LoggerFactory;
 
 import au.org.ands.vocabs.roles.Role;
 import au.org.ands.vocabs.roles.UserInfo;
-import au.org.ands.vocabs.roles.db.context.RolesUtils;
 import au.org.ands.vocabs.roles.db.entity.RoleTypeId;
+import au.org.ands.vocabs.roles.db.utils.RolesUtils;
 
 /** Fetch authorization details for the profile of an authenticated user. */
 public class AuthorizationFetcher

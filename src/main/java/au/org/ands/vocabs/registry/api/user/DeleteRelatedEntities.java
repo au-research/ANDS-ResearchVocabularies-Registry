@@ -123,6 +123,12 @@ public class DeleteRelatedEntities {
 
         if (!AuthUtils.ownerIsAuthorizedByOrganisationOrUsername(profile,
                 relatedEntity.getOwner())) {
+            Logging.logRequest(false, request, uriInfo, profile,
+                    Analytics.EVENT_DELETE_RELATED_ENTITY,
+                    Analytics.FAILURE_REASON, "authorization",
+                    Analytics.RELATED_ENTITY_ID_FIELD, relatedEntityId,
+                    Analytics.TITLE_FIELD, relatedEntity.getTitle(),
+                    Analytics.OWNER_FIELD, relatedEntity.getOwner());
             return ResponseUtils.generateForbiddenResponseForOwner();
         }
 
@@ -143,7 +149,12 @@ public class DeleteRelatedEntities {
         if (!validationErrors.isEmpty()) {
             logger.info("Attempt to delete a related entity that is "
                     + "still in use");
-            // TODO analytics logging
+            Logging.logRequest(false, request, uriInfo, profile,
+                    Analytics.EVENT_DELETE_RELATED_ENTITY,
+                    Analytics.FAILURE_REASON, "Still in use",
+                    Analytics.RELATED_ENTITY_ID_FIELD, relatedEntityId,
+                    Analytics.TITLE_FIELD, relatedEntity.getTitle(),
+                    Analytics.OWNER_FIELD, relatedEntity.getOwner());
             ErrorResult errorResult =
                     new ErrorResult("Won't delete related entity");
             errorResult.setConstraintViolation(validationErrors);
