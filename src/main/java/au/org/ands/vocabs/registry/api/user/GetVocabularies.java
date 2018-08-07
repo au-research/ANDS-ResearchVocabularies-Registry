@@ -390,12 +390,22 @@ public class GetVocabularies {
             @ApiParam(value = "The ID of the vocabulary to check ownership.")
             @PathParam("vocabularyId") final Integer vocabularyId) {
         logger.debug("called ownsVocabularyById: " + vocabularyId);
+        // Try for a current instance; if none found, fall back to draft.
         au.org.ands.vocabs.registry.db.entity.Vocabulary
             dbVocabulary = VocabularyDAO.getCurrentVocabularyByVocabularyId(
                     vocabularyId);
         if (dbVocabulary == null) {
-            return Response.status(Status.BAD_REQUEST).entity(
-                    new ErrorResult("No vocabulary with that id")).build();
+            // Maybe there's a draft.
+            List<au.org.ands.vocabs.registry.db.entity.Vocabulary>
+            draftVocabularies =
+                VocabularyDAO.getDraftVocabularyByVocabularyId(vocabularyId);
+            if (draftVocabularies.size() == 0) {
+                return Response.status(Status.BAD_REQUEST).entity(
+                        new ErrorResult("No vocabulary with that id")).build();
+            }
+            // For now, just get the first one.
+            // (For now, there could only be one.)
+            dbVocabulary = draftVocabularies.get(0);
         }
 
         return Response.ok().entity(new SimpleResult(
@@ -404,23 +414,42 @@ public class GetVocabularies {
     }
 
     /** Determine if a vocabulary has a draft instance.
+     * @param profile The caller's security profile.
      * @param vocabularyId The VocabularyId of the vocabulary to be checked.
      * @return True, if the vocabulary has a draft instance. False,
      *      if there is no draft instance with that vocabulary id.*/
     @Path(ApiPaths.VOCABULARY_ID + "/hasDraft")
     @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+    @Pac4JSecurity
     @GET
     @ApiOperation(value = "Determine if a vocabulary has a draft instance.",
-            notes = "Returns true, if the vocabulary has a draft instance. "
-            + "Returns false, if there is no draft instance with that "
-            + "vocabulary id. The result is returned in the booleanValue "
+            notes = "Returns true, if the vocabulary has a draft instance, "
+            + "and the user is authorized to access it. "
+            + "Returns false in every other case, i.e., if there is no draft "
+            + "instance with that vocabulary id, or even if there is "
+            + "such a draft instance, but the user is not authorized "
+            + "to access it. The result is returned in the booleanValue "
             + "property.",
+            authorizations = {
+                    @Authorization(value = SwaggerInterface.BASIC_AUTH),
+                    @Authorization(value = SwaggerInterface.API_KEY_AUTH)},
             response = SimpleResult.class)
     public final Response hasDraftVocabularyById(
+            @ApiParam(hidden = true) @Pac4JProfile final CommonProfile profile,
             @ApiParam(value = "The ID of the vocabulary to check.")
             @PathParam("vocabularyId") final Integer vocabularyId) {
         logger.debug("called hasDraftVocabularyById: " + vocabularyId);
-        boolean hasDraft = VocabularyDAO.hasDraftVocabulary(vocabularyId);
+        List<au.org.ands.vocabs.registry.db.entity.Vocabulary>
+        draftVocabularies =
+                VocabularyDAO.getDraftVocabularyByVocabularyId(vocabularyId);
+        // Default to returning false.
+        boolean hasDraft = false;
+        if (draftVocabularies.size() > 0) {
+            // There is a draft, return true only if the caller is
+            // authorized.
+            hasDraft = AuthUtils.ownerIsAuthorizedByOrganisationOrUsername(
+                    profile, draftVocabularies.get(0).getOwner());
+        }
         return Response.ok().entity(new SimpleResult(hasDraft)).build();
     }
 
