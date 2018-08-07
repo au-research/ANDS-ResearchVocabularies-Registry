@@ -74,6 +74,15 @@ public class TaskInfo {
         task.setVersionId(dbTask.getVersionId());
         task.setSubtasks(JSONSerialization.deserializeStringAsJson(
                 dbTask.getParams(), new TypeReference<List<Subtask>>() { }));
+        // But now reset each subtask's status and discard any results
+        // from a previous run.
+        List<Subtask> subtasks = task.getSubtasks();
+        if (subtasks != null) {
+            for (Subtask subtask : subtasks) {
+                subtask.setStatus(TaskStatus.NEW);
+                subtask.setResults(null);
+            }
+        }
     }
 
     /** Constructor.
