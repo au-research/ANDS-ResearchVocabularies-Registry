@@ -3,9 +3,15 @@
     targetNamespace="http://vocabs.ands.org.au/registry/schema/2017/01/db-json"
     xmlns="http://vocabs.ands.org.au/registry/schema/2017/01/db-json"
     xmlns:common="http://vocabs.ands.org.au/registry/schema/2017/01/common">
+    <xs:annotation>
+        <xs:documentation>Structured data types used within the Registry database.</xs:documentation>
+    </xs:annotation>
     <xs:import namespace="http://vocabs.ands.org.au/registry/schema/2017/01/common"
         schemaLocation="common-types.xsd"/>
     <xs:element name="vocabulary-json">
+        <xs:annotation>
+            <xs:documentation>The contents of the data column of the vocabularies table.</xs:documentation>
+        </xs:annotation>
         <xs:complexType>
             <xs:sequence>
                 <xs:element minOccurs="0" name="poolparty-project">
@@ -39,6 +45,9 @@
         </xs:complexType>
     </xs:element>
     <xs:element name="version-json">
+        <xs:annotation>
+            <xs:documentation>The contents of the data column of the versions table.</xs:documentation>
+        </xs:annotation>
         <xs:complexType>
             <xs:attribute name="title" type="xs:string"/>
             <xs:attribute name="note" type="xs:string"/>
@@ -50,6 +59,9 @@
         </xs:complexType>
     </xs:element>
     <xs:element name="access-point-json">
+        <xs:annotation>
+            <xs:documentation>The contents of the data column of the access_points table.</xs:documentation>
+        </xs:annotation>
         <xs:complexType>
             <xs:choice>
                 <xs:element name="ap-api-sparql" type="ap-api-sparql"/>
@@ -129,6 +141,9 @@
         </xs:complexContent>
     </xs:complexType>
     <xs:element name="version-artefact-json">
+        <xs:annotation>
+            <xs:documentation>The contents of the data column of the version_artefacts table.</xs:documentation>
+        </xs:annotation>
         <xs:complexType>
             <xs:choice>
                 <xs:element name="va-concept-list" type="va-concept-list"/>

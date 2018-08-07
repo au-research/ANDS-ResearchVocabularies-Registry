@@ -3,14 +3,31 @@
     targetNamespace="http://vocabs.ands.org.au/registry/schema/2017/01/vocabulary"
     xmlns="http://vocabs.ands.org.au/registry/schema/2017/01/vocabulary"
     xmlns:common="http://vocabs.ands.org.au/registry/schema/2017/01/common">
+    <xs:annotation>
+        <xs:documentation>The ANDS Vocabulary Registry Schema.
+
+This schema defines the structured data types used by the Registry API.
+
+See https://documentation.ands.org.au/display/DOC/Research+Vocabularies
+
+Change history
+2018-08-06
+  * Added documentation throughout the schema.</xs:documentation>
+    </xs:annotation>
     <xs:import id="common" namespace="http://vocabs.ands.org.au/registry/schema/2017/01/common"
         schemaLocation="common-types.xsd"/>
     <xs:simpleType name="id-type">
+        <xs:annotation>
+            <xs:documentation>The type used for resource IDs.</xs:documentation>
+        </xs:annotation>
         <xs:restriction base="xs:int">
             <xs:minInclusive value="1"/>
         </xs:restriction>
     </xs:simpleType>
     <xs:element name="vocabulary">
+        <xs:annotation>
+            <xs:documentation>This element represents the metadata for one vocabulary.</xs:documentation>
+        </xs:annotation>
         <xs:complexType>
             <xs:sequence>
                 <xs:element minOccurs="0" name="poolparty-project">
@@ -20,68 +37,140 @@
                                 <xs:documentation>For the ANDS PoolParty server, set this to 1.</xs:documentation>
                             </xs:annotation>
                         </xs:attribute>
-                        <xs:attribute name="project-id" type="xs:token"/>
+                        <xs:attribute name="project-id" type="xs:token">
+                            <xs:annotation>
+                                <xs:documentation>The project ID within the PoolParty server. For example, 1DCE1800-9000-0001-AB5D-1D2354B018F2.</xs:documentation>
+                            </xs:annotation>
+                        </xs:attribute>
                     </xs:complexType>
                 </xs:element>
                 <xs:element maxOccurs="unbounded" minOccurs="0" name="subject">
+                    <xs:annotation>
+                        <xs:documentation>When creating/updating a vocabulary, at least one subject must be provided, for which source="anzsrc-for".
+No subject may be the duplicate of another.</xs:documentation>
+                    </xs:annotation>
                     <xs:complexType>
-                        <xs:attribute name="source" use="required" type="xs:token"/>
-                        <xs:attribute name="label" use="required" type="xs:token"/>
-                        <xs:attribute name="notation" type="xs:token"/>
-                        <xs:attribute name="iri" type="xs:anyURI"/>
+                        <xs:attribute name="source" use="required" type="xs:token">
+                            <xs:annotation>
+                                <xs:documentation>Permitted values: anzsrc-for, anzsrc-seo, gcmd, local.
+For anzsrc-for, anzsrc-seo, and gcmd, the label, notation, and iri values must be provided, and must be consistent.</xs:documentation>
+                            </xs:annotation>
+                        </xs:attribute>
+                        <xs:attribute name="label" use="required" type="xs:token">
+                            <xs:annotation>
+                                <xs:documentation>Must be non-empty. If the source attribute is one of the values anzsrc-for, anzsrc-seo, or gcmd, the value of this attribute should be the same as the prefLabel of the concept.</xs:documentation>
+                            </xs:annotation>
+                        </xs:attribute>
+                        <xs:attribute name="notation" type="xs:token">
+                            <xs:annotation>
+                                <xs:documentation>If the source attribute is one of the values anzsrc-for or anzsrc-seo, provide the notation for the concept.</xs:documentation>
+                            </xs:annotation>
+                        </xs:attribute>
+                        <xs:attribute name="iri" type="xs:anyURI">
+                            <xs:annotation>
+                                <xs:documentation>If the source attribute is one of the values anzsrc-for, anzsrc-seo, or gcmd, this attribute is required, and its value must be one of the concept IRIs of the corresponding vocabulary.</xs:documentation>
+                            </xs:annotation>
+                        </xs:attribute>
                     </xs:complexType>
                 </xs:element>
                 <xs:element maxOccurs="unbounded" minOccurs="0" ref="version"/>
                 <xs:element maxOccurs="unbounded" name="other-language" minOccurs="0"
                     type="xs:token">
                     <xs:annotation>
-                        <xs:documentation>The two-letter code for the language, drawn from ISO 639-1.</xs:documentation>
+                        <xs:documentation>The two-letter code for a language other than the primary language, drawn from ISO 639-1. No value of an other-language element may be a duplicate of any other, or of the value of primary-language.</xs:documentation>
                     </xs:annotation>
                 </xs:element>
-                <xs:element maxOccurs="unbounded" minOccurs="0" name="top-concept" type="xs:token"/>
+                <xs:element maxOccurs="unbounded" minOccurs="0" name="top-concept" type="xs:token">
+                    <xs:annotation>
+                        <xs:documentation>No value of a top-concept element may be a duplicate of any other.</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
                 <xs:element maxOccurs="unbounded" name="related-entity-ref">
+                    <xs:annotation>
+                        <xs:documentation>When creating/updating a vocabulary, at least one related-entity-ref must be provided that has relation="publishedBy".</xs:documentation>
+                    </xs:annotation>
                     <xs:complexType>
                         <xs:sequence>
                             <xs:element maxOccurs="unbounded" name="relation"
-                                type="common:related-entity-relation"/>
+                                type="common:related-entity-relation">
+                                <xs:annotation>
+                                    <xs:documentation>The relation which the vocabulary has with the related entity.</xs:documentation>
+                                </xs:annotation>
+                            </xs:element>
                             <xs:element ref="related-entity" minOccurs="0"/>
                         </xs:sequence>
-                        <xs:attribute name="id" type="id-type" use="required"/>
+                        <xs:attribute name="id" type="id-type" use="required">
+                            <xs:annotation>
+                                <xs:documentation>The resource ID of the related entity.</xs:documentation>
+                            </xs:annotation>
+                        </xs:attribute>
                     </xs:complexType>
                 </xs:element>
                 <xs:element maxOccurs="unbounded" minOccurs="0" name="related-vocabulary-ref">
                     <xs:complexType>
                         <xs:sequence>
                             <xs:element maxOccurs="unbounded" name="relation"
-                                type="common:related-vocabulary-relation"/>
+                                type="common:related-vocabulary-relation">
+                                <xs:annotation>
+                                    <xs:documentation>The relation which the vocabulary has with the related vocabulary.</xs:documentation>
+                                </xs:annotation>
+                            </xs:element>
                             <xs:element ref="related-vocabulary"/>
                         </xs:sequence>
-                        <xs:attribute name="id" type="id-type" use="required"/>
+                        <xs:attribute name="id" type="id-type" use="required">
+                            <xs:annotation>
+                                <xs:documentation>The resource ID of the related vocabulary.</xs:documentation>
+                            </xs:annotation>
+                        </xs:attribute>
                     </xs:complexType>
                 </xs:element>
-                <xs:element minOccurs="0" ref="workflow-outcome"/>
+                <xs:element minOccurs="0" ref="workflow-outcome"> </xs:element>
             </xs:sequence>
-            <xs:attribute name="id" type="id-type"> </xs:attribute>
-            <xs:attribute name="status" use="required" type="common:vocabulary-status"> </xs:attribute>
-            <xs:attribute name="owner" use="required" type="xs:token"/>
-            <xs:attribute name="slug" type="xs:token">
+            <xs:attribute name="id" type="id-type">
                 <xs:annotation>
-                    <xs:documentation>When creating a vocabulary, this may be omitted; a slug will be automatically generated based on the title.</xs:documentation>
+                    <xs:documentation>The vocabulary's resource ID. See the API documentation for details about when this attribute must and must not be given.</xs:documentation>
                 </xs:annotation>
             </xs:attribute>
-            <xs:attribute name="title" use="required" type="xs:token"/>
-            <xs:attribute name="acronym" type="xs:token"/>
+            <xs:attribute name="status" use="required" type="common:vocabulary-status">
+                <xs:annotation>
+                    <xs:documentation>When creating/updating a vocabulary, if the value of this attribute is specified as "draft", any existing instance with status="published" or "deprecated" will be preserved.</xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="owner" use="required" type="xs:token">
+                <xs:annotation>
+                    <xs:documentation>When creating/updating a vocabulary, this must be the short name of one of the user's organisational roles.</xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="slug" type="xs:token">
+                <xs:annotation>
+                    <xs:documentation>When creating a vocabulary, this may be omitted; a slug will be automatically generated based on the title. See the API documentation for details of the format of permitted values.</xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="title" use="required" type="xs:token">
+                <xs:annotation>
+                    <xs:documentation>Free text, in plain text format. If the slug attribute is not specified, a slug will be generated based on the value of this attribute.</xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="acronym" type="xs:token">
+                <xs:annotation>
+                    <xs:documentation>An abbreviation for the vocabulary title, usually formed from initial letters of some of the words in the title. Plain text.</xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
             <xs:attribute name="description" type="xs:token">
                 <xs:annotation>
-                    <xs:documentation>The content must be a well-formed HTML fragment.</xs:documentation>
+                    <xs:documentation>The content must be a well-formed HTML fragment. Refer to the API documentation for the restrictions on elements and attributes.</xs:documentation>
                 </xs:annotation>
             </xs:attribute>
             <xs:attribute name="note" type="xs:token">
                 <xs:annotation>
-                    <xs:documentation>The content must be a well-formed HTML fragment.</xs:documentation>
+                    <xs:documentation>The content must be a well-formed HTML fragment. Refer to the API documentation for the restrictions on elements and attributes.</xs:documentation>
                 </xs:annotation>
             </xs:attribute>
-            <xs:attribute name="revision-cycle" type="xs:token"/>
+            <xs:attribute name="revision-cycle" type="xs:token">
+                <xs:annotation>
+                    <xs:documentation>Free text, in plain text format.</xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
             <xs:attribute name="creation-date" type="xs:token">
                 <xs:annotation>
                     <xs:documentation>A value in one of three possible formats: YYYY, YYYY-MM, or YYYY-MM-DD.</xs:documentation>
@@ -92,10 +181,29 @@
                     <xs:documentation>The two-letter code for the language, drawn from ISO 639-1.</xs:documentation>
                 </xs:annotation>
             </xs:attribute>
-            <xs:attribute name="licence" type="xs:token"/>
+            <xs:attribute name="licence" type="xs:token">
+                <xs:annotation>
+                    <xs:documentation>A tag that describes the licence conditions, if known.
+These values are recommended for use:
+
+CC-BY
+CC-BY-SA
+CC-BY-ND
+CC-BY-NC
+CC-BY-NC-SA
+CC-BY-NC-ND
+ODC-By
+GPL
+AusGoalRestrictive
+NoLicence</xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
         </xs:complexType>
     </xs:element>
     <xs:element name="vocabulary-list">
+        <xs:annotation>
+            <xs:documentation>A container for vocabulary elements.</xs:documentation>
+        </xs:annotation>
         <xs:complexType>
             <xs:sequence>
                 <xs:element maxOccurs="unbounded" minOccurs="0" ref="vocabulary"/>
@@ -103,21 +211,36 @@
         </xs:complexType>
     </xs:element>
     <xs:element name="version">
+        <xs:annotation>
+            <xs:documentation>This element represents the metadata for one version.</xs:documentation>
+        </xs:annotation>
         <xs:complexType>
             <xs:sequence>
                 <xs:element maxOccurs="unbounded" minOccurs="0" ref="access-point"/>
             </xs:sequence>
-            <xs:attribute name="id" type="id-type" use="optional"> </xs:attribute>
-            <xs:attribute name="status" use="required" type="common:version-status"> </xs:attribute>
-            <xs:attribute name="title" use="required" type="xs:token"/>
+            <xs:attribute name="id" type="id-type" use="optional">
+                <xs:annotation>
+                    <xs:documentation>The version's resource ID. See the API documentation for details about when this attribute must and must not be given.</xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="status" use="required" type="common:version-status">
+                <xs:annotation>
+                    <xs:documentation>Within a vocabulary, at most one version may have status="current".</xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="title" use="required" type="xs:token">
+                <xs:annotation>
+                    <xs:documentation>Free text, in plain text format. If the slug attribute is not specified, a slug will be generated based on the value of this attribute.</xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
             <xs:attribute name="slug" type="xs:token">
                 <xs:annotation>
-                    <xs:documentation>When creating a version, this may be omitted; a slug will be generated automatically based on the title.</xs:documentation>
+                    <xs:documentation>When creating a version, this may be omitted; a slug will be generated automatically based on the title. See the API documentation for details of the format of permitted values.</xs:documentation>
                 </xs:annotation>
             </xs:attribute>
             <xs:attribute name="note" type="xs:token">
                 <xs:annotation>
-                    <xs:documentation>The content must be a well-formed HTML fragment.</xs:documentation>
+                    <xs:documentation>The content must be a well-formed HTML fragment. Refer to the API documentation for the restrictions on elements and attributes.</xs:documentation>
                 </xs:annotation>
             </xs:attribute>
             <xs:attribute name="release-date" type="xs:token">
@@ -130,16 +253,27 @@
                     <xs:documentation>May only be specified to be true if the vocabulary element has a valid poolparty-project sub-element.</xs:documentation>
                 </xs:annotation>
             </xs:attribute>
-            <xs:attribute name="do-import" type="xs:boolean"/>
-            <xs:attribute name="do-publish" type="xs:boolean"/>
+            <xs:attribute name="do-import" type="xs:boolean">
+                <xs:annotation>
+                    <xs:documentation>May only be specified to be true if the do-poolparty-harvest attribute is true, or there is at least one access point sub-element whose discriminator attribute has the value "file".</xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="do-publish" type="xs:boolean">
+                <xs:annotation>
+                    <xs:documentation>May only be specified to be true if the do-import attribute is true.</xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
             <xs:attribute name="force-workflow" type="xs:boolean">
                 <xs:annotation>
-                    <xs:documentation>For an existing version that is being updated, force one-time workflow processing of this version. This attribute is not persisted.</xs:documentation>
+                    <xs:documentation>For an existing version that is being updated, force one-time workflow processing of this version. Any value provided for this attribute is not persisted.</xs:documentation>
                 </xs:annotation>
             </xs:attribute>
         </xs:complexType>
     </xs:element>
     <xs:element name="version-list">
+        <xs:annotation>
+            <xs:documentation>A container for version elements.</xs:documentation>
+        </xs:annotation>
         <xs:complexType>
             <xs:sequence>
                 <xs:element maxOccurs="unbounded" minOccurs="0" ref="version"/>
@@ -147,81 +281,137 @@
         </xs:complexType>
     </xs:element>
     <xs:element name="access-point">
+        <xs:annotation>
+            <xs:documentation>This element represents the metadata for one access point.</xs:documentation>
+        </xs:annotation>
         <xs:complexType>
             <xs:choice>
                 <xs:element name="ap-api-sparql" type="ap-api-sparql"/>
                 <xs:element name="ap-file" type="ap-file">
                     <xs:annotation>
-                        <xs:documentation>When creating, specify only upload-id. The format and url attributes will be generated during processing.</xs:documentation>
+                        <xs:documentation>When creating, specify a value only for the upload-id attribute. The format and url attributes will be generated during processing.</xs:documentation>
                     </xs:annotation>
                 </xs:element>
                 <xs:element name="ap-sesame-download" type="ap-sesame-download"/>
                 <xs:element name="ap-sissvoc" type="ap-sissvoc"/>
                 <xs:element name="ap-web-page" type="ap-web-page"/>
             </xs:choice>
-            <xs:attribute name="id" type="id-type" use="optional"/>
+            <xs:attribute name="id" type="id-type" use="optional">
+                <xs:annotation>
+                    <xs:documentation>The access point's resource ID. See the API documentation for details about when this attribute must and must not be given.</xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
             <xs:attribute name="source" type="common:ap-source" use="required">
                 <xs:annotation>
-                    <xs:documentation>For an access point of type file, specify user.</xs:documentation>
+                    <xs:documentation>For an access point of type "file" or "webPage", specify the value "user".</xs:documentation>
                 </xs:annotation>
             </xs:attribute>
             <xs:attribute name="discriminator" type="common:access-point-type" use="required">
                 <xs:annotation>
-                    <xs:documentation>There must be a sub-element of the type corresponding to the value of this attribute. For example, if the value is file, there must be an ap-file sub-element.</xs:documentation>
+                    <xs:documentation>There must be a sub-element of the type corresponding to the value of this attribute. For example, if the value is "file", there must be an ap-file sub-element.</xs:documentation>
                 </xs:annotation>
             </xs:attribute>
         </xs:complexType>
     </xs:element>
     <xs:element name="access-point-list">
+        <xs:annotation>
+            <xs:documentation>A container for access-point elements.</xs:documentation>
+        </xs:annotation>
         <xs:complexType>
             <xs:sequence>
                 <xs:element maxOccurs="unbounded" minOccurs="0" ref="access-point"/>
             </xs:sequence>
         </xs:complexType>
     </xs:element>
-    <xs:complexType name="ap-common"/>
+    <xs:complexType name="ap-common">
+        <xs:annotation>
+            <xs:documentation>The base type of the various specific access point types: ap-api-sparql, ap-file, etc.</xs:documentation>
+        </xs:annotation>
+    </xs:complexType>
     <xs:complexType name="ap-api-sparql">
+        <xs:annotation>
+            <xs:documentation>An access point that is a SPARQL endpoint.</xs:documentation>
+        </xs:annotation>
         <xs:complexContent>
             <xs:extension base="ap-common">
-                <xs:attribute name="url" type="xs:anyURI" use="required"/>
+                <xs:attribute name="url" type="xs:anyURI" use="required">
+                    <xs:annotation>
+                        <xs:documentation>The URL of the SPARQL endpoint.</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>
     <xs:complexType name="ap-file">
+        <xs:annotation>
+            <xs:documentation>An access point that is a file download.</xs:documentation>
+        </xs:annotation>
         <xs:complexContent>
             <xs:extension base="ap-common">
-                <xs:attribute name="format" type="xs:token"/>
-                <xs:attribute name="upload-id" type="xs:int" use="required">
+                <xs:attribute name="format" type="xs:token">
                     <xs:annotation>
-                        <xs:documentation>The upload-id of a upload made previously by the user.</xs:documentation>
+                        <xs:documentation>The specific format of the file download. This value is generated during vocabulary creation/update. When creating this access point, do not specify a value for this attribute.</xs:documentation>
                     </xs:annotation>
                 </xs:attribute>
-                <xs:attribute name="url" type="xs:anyURI"/>
+                <xs:attribute name="upload-id" type="xs:int" use="required">
+                    <xs:annotation>
+                        <xs:documentation>The upload-id of an upload made previously by the vocabulary owner.</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="url" type="xs:anyURI">
+                    <xs:annotation>
+                        <xs:documentation>This value is generated during vocabulary creation/update. When creating this access point, do not specify a value for this attribute.</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>
     <xs:complexType name="ap-sesame-download">
+        <xs:annotation>
+            <xs:documentation>An access point that is a set of downloads of vocabulary data in the variety of formats provided by Sesame server.</xs:documentation>
+        </xs:annotation>
         <xs:complexContent>
             <xs:extension base="ap-common">
-                <xs:attribute name="urlPrefix" type="xs:anyURI"/>
+                <xs:attribute name="urlPrefix" type="xs:anyURI">
+                    <xs:annotation>
+                        <xs:documentation>The URL prefix of the download endpoints, to which a format is attached. The value should begin "http" and end with a period; a format value such as "ttl" can then be appended to give the download endpoint for that format.</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>
     <xs:complexType name="ap-sissvoc">
+        <xs:annotation>
+            <xs:documentation>An access point that is a set of Linked Data API (SISSVoc) endpoints.</xs:documentation>
+        </xs:annotation>
         <xs:complexContent>
             <xs:extension base="ap-common">
-                <xs:attribute name="urlPrefix" type="xs:anyURI"/>
+                <xs:attribute name="urlPrefix" type="xs:anyURI">
+                    <xs:annotation>
+                        <xs:documentation>The URL prefix common to all of the SISSVoc endpoints, to which an endpoint selector and other parameters are attached. The value should begin "http" and not end with a slash.</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>
     <xs:complexType name="ap-web-page">
+        <xs:annotation>
+            <xs:documentation>An access point that is a website.</xs:documentation>
+        </xs:annotation>
         <xs:complexContent>
             <xs:extension base="ap-common">
-                <xs:attribute name="url" type="xs:anyURI" use="required"/>
+                <xs:attribute name="url" type="xs:anyURI" use="required">
+                    <xs:annotation>
+                        <xs:documentation>The URL of the website.</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>
     <xs:element name="related-entity-list">
+        <xs:annotation>
+            <xs:documentation>A container for related-entity elements.</xs:documentation>
+        </xs:annotation>
         <xs:complexType>
             <xs:sequence>
                 <xs:element maxOccurs="unbounded" minOccurs="0" ref="related-entity"/>
@@ -229,24 +419,62 @@
         </xs:complexType>
     </xs:element>
     <xs:element name="related-entity">
+        <xs:annotation>
+            <xs:documentation>This element represents the metadata for one related entity.</xs:documentation>
+        </xs:annotation>
         <xs:complexType>
             <xs:sequence>
                 <xs:element ref="related-entity-identifier" maxOccurs="unbounded" minOccurs="0"/>
                 <xs:element maxOccurs="unbounded" minOccurs="0" name="url" type="xs:anyURI"/>
             </xs:sequence>
-            <xs:attribute name="id" type="id-type"/>
-            <xs:attribute name="type" use="required" type="common:related-entity-type"/>
-            <xs:attribute name="owner" type="xs:token" use="required"/>
-            <xs:attribute name="title" type="xs:token" use="required"/>
-            <xs:attribute name="email" type="xs:token"/>
-            <xs:attribute name="phone" type="xs:token"/>
+            <xs:attribute name="id" type="id-type">
+                <xs:annotation>
+                    <xs:documentation>See the API documentation for details about when this attribute must and must not be given.</xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="type" use="required" type="common:related-entity-type">
+                <xs:annotation>
+                    <xs:documentation>See the definition of related-entity-type for the meaning of its allowed values.</xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="owner" type="xs:token" use="required">
+                <xs:annotation>
+                    <xs:documentation>When creating/updating a related entity, this must be the short name of one of the user's organisational roles.</xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="title" type="xs:token" use="required">
+                <xs:annotation>
+                    <xs:documentation>Plain text.</xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="email" type="xs:token">
+                <xs:annotation>
+                    <xs:documentation>If a value is provided for this attribute, it must have the format of an email address.</xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="phone" type="xs:token">
+                <xs:annotation>
+                    <xs:documentation>If a value is provided for this attribute, it must be non-empty.</xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
         </xs:complexType>
     </xs:element>
     <xs:element name="related-entity-identifier">
+        <xs:annotation>
+            <xs:documentation>This element represents the metadata for one identifier that uniquely identifies a related entity.</xs:documentation>
+        </xs:annotation>
         <xs:complexType>
-            <xs:attribute name="id" type="id-type"/>
+            <xs:attribute name="id" type="id-type">
+                <xs:annotation>
+                    <xs:documentation>See the API documentation for details about when this attribute must and must not be given.</xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
             <xs:attribute name="identifier-type" type="common:related-entity-identifier-type"
-                use="required"/>
+                use="required">
+                <xs:annotation>
+                    <xs:documentation>See the definition of related-entity-identifier-type for the meaning of its allowed values.</xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
             <xs:attribute name="identifier-value" type="xs:token" use="required">
                 <xs:annotation>
                     <xs:documentation>The value must conform to a type-specific pattern.</xs:documentation>
@@ -255,13 +483,31 @@
         </xs:complexType>
     </xs:element>
     <xs:element name="version-artefact">
+        <xs:annotation>
+            <xs:documentation>This element represents the metadata for one version artefact.</xs:documentation>
+        </xs:annotation>
         <xs:complexType>
-            <xs:attribute name="id" type="id-type"/>
-            <xs:attribute name="status" type="common:version-artefact-status" use="required"/>
-            <xs:attribute name="type" type="common:version-artefact-type" use="required"/>
+            <xs:attribute name="id" type="id-type">
+                <xs:annotation>
+                    <xs:documentation>The version artefact's resource ID.</xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="status" type="common:version-artefact-status" use="required">
+                <xs:annotation>
+                    <xs:documentation>The status of the version artefact.</xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="type" type="common:version-artefact-type" use="required">
+                <xs:annotation>
+                    <xs:documentation>The type of the version artefact.</xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
         </xs:complexType>
     </xs:element>
     <xs:element name="version-artefact-list">
+        <xs:annotation>
+            <xs:documentation>A container for version-artefact elements.</xs:documentation>
+        </xs:annotation>
         <xs:complexType>
             <xs:sequence>
                 <xs:element maxOccurs="unbounded" minOccurs="0" ref="version-artefact"/>
@@ -273,16 +519,47 @@
             <xs:documentation>This element represents the top-level metadata of a related vocabulary. It appears only as a sub-element of the vocabulary element.</xs:documentation>
         </xs:annotation>
         <xs:complexType>
-            <xs:attribute name="id" type="id-type"> </xs:attribute>
-            <xs:attribute name="status" use="required" type="common:vocabulary-status"> </xs:attribute>
-            <xs:attribute name="owner" use="required" type="xs:token"/>
-            <xs:attribute name="slug" type="xs:token"/>
-            <xs:attribute name="title" use="required" type="xs:token"/>
-            <xs:attribute name="acronym" type="xs:token"/>
-            <xs:attribute name="description" type="xs:token"/>
+            <xs:attribute name="id" type="id-type">
+                <xs:annotation>
+                    <xs:documentation>The related vocabulary's resource ID.</xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="status" use="required" type="common:vocabulary-status">
+                <xs:annotation>
+                    <xs:documentation>The status of the publicly-visible instance of the related vocabulary.</xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="owner" use="required" type="xs:token">
+                <xs:annotation>
+                    <xs:documentation>The owner of the related vocabulary.</xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="slug" type="xs:token">
+                <xs:annotation>
+                    <xs:documentation>The slug of the related vocabulary.</xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="title" use="required" type="xs:token">
+                <xs:annotation>
+                    <xs:documentation>The title of the related vocabulary.</xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="acronym" type="xs:token">
+                <xs:annotation>
+                    <xs:documentation>The acronym of the related vocabulary.</xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="description" type="xs:token">
+                <xs:annotation>
+                    <xs:documentation>The description of the related vocabulary. The content is a well-formed HTML fragment.</xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
         </xs:complexType>
     </xs:element>
     <xs:element name="reverse-related-vocabulary-list">
+        <xs:annotation>
+            <xs:documentation>A container for reverse-related-vocabulary elements.</xs:documentation>
+        </xs:annotation>
         <xs:complexType>
             <xs:sequence>
                 <xs:element ref="reverse-related-vocabulary" maxOccurs="unbounded" minOccurs="0"/>
@@ -290,28 +567,58 @@
         </xs:complexType>
     </xs:element>
     <xs:element name="reverse-related-vocabulary">
+        <xs:annotation>
+            <xs:documentation>This element represents a vocabulary that is related to a given vocabulary or related entity, with the set of such relations.</xs:documentation>
+        </xs:annotation>
         <xs:complexType>
             <xs:sequence>
                 <xs:element maxOccurs="unbounded" minOccurs="0" name="related-entity-relation"
-                    type="common:related-entity-relation"/>
+                    type="common:related-entity-relation">
+                    <xs:annotation>
+                        <xs:documentation>One relation by which the related vocabulary is related to the related entity.</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
                 <xs:element maxOccurs="unbounded" minOccurs="0" name="related-vocabulary-relation"
-                    type="common:related-vocabulary-relation"/>
+                    type="common:related-vocabulary-relation">
+                    <xs:annotation>
+                        <xs:documentation>One relation by which the related vocabulary is related to the vocabulary.</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
                 <xs:element ref="related-vocabulary"/>
             </xs:sequence>
         </xs:complexType>
     </xs:element>
     <xs:element name="owned-vocabulary">
         <xs:annotation>
-            <xs:documentation>This element represents the top-level metadata of one of the user's vocabularies. It is used to generate content on the My Vocabs page.</xs:documentation>
+            <xs:documentation>This element represents a selection of the top-level metadata of one of the user's vocabularies. It is used to generate content on the My Vocabs page.</xs:documentation>
         </xs:annotation>
         <xs:complexType>
-            <xs:attribute name="id" type="id-type"> </xs:attribute>
-            <xs:attribute name="status" use="required" type="common:vocabulary-status"> </xs:attribute>
-            <xs:attribute name="hasDraft" type="xs:boolean"/>
-            <xs:attribute name="title" use="required" type="xs:token"/>
+            <xs:attribute name="id" type="id-type">
+                <xs:annotation>
+                    <xs:documentation>The vocabulary's resource ID.</xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="status" use="required" type="common:vocabulary-status">
+                <xs:annotation>
+                    <xs:documentation>If there is an instance of the vocabulary with status="published" or status="draft", then the value of this attribute is the same as that status value. In that case, see the value of the hasDraft attribute to see if there is also a draft instance. If the vocabulary only has a draft instance, then the value of this attribute is also "draft", and hasDraft="true".</xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="hasDraft" type="xs:boolean">
+                <xs:annotation>
+                    <xs:documentation>If status="draft", the value of this attribute is true. Otherwise, the value of this attribute is true if there is also a draft instance.</xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="title" use="required" type="xs:token">
+                <xs:annotation>
+                    <xs:documentation>The vocabulary's title.</xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
         </xs:complexType>
     </xs:element>
     <xs:element name="owned-vocabulary-list">
+        <xs:annotation>
+            <xs:documentation>A container for owned-vocabulary elements.</xs:documentation>
+        </xs:annotation>
         <xs:complexType>
             <xs:sequence>
                 <xs:element ref="owned-vocabulary" maxOccurs="unbounded" minOccurs="0"/>
@@ -319,47 +626,108 @@
         </xs:complexType>
     </xs:element>
     <xs:element name="workflow-outcome">
+        <xs:annotation>
+            <xs:documentation>The result of workflow processing of the versions of the vocabulary, where such processing completed with a warning or error. This element appears in responses only. It should not be included in request data.</xs:documentation>
+        </xs:annotation>
         <xs:complexType>
             <xs:sequence>
                 <xs:element name="task-outcome" maxOccurs="unbounded" minOccurs="0">
                     <xs:complexType>
                         <xs:sequence>
                             <xs:element maxOccurs="unbounded" minOccurs="0" name="subtask-outcome">
+                                <xs:annotation>
+                                    <xs:documentation>The description of the outcome of one subtask.</xs:documentation>
+                                </xs:annotation>
                                 <xs:complexType>
                                     <xs:sequence>
                                         <xs:element maxOccurs="unbounded" minOccurs="0"
-                                            name="subtask-result" type="result-pair"/>
+                                            name="subtask-result" type="result-pair">
+                                            <xs:annotation>
+                                                <xs:documentation>A key/value pair that describes one aspect of the outcome of the subtask.</xs:documentation>
+                                            </xs:annotation>
+                                        </xs:element>
                                     </xs:sequence>
-                                    <xs:attribute name="status" type="common:task-status"/>
+                                    <xs:attribute name="status" type="common:task-status">
+                                        <xs:annotation>
+                                            <xs:documentation>The status of this subtask.</xs:documentation>
+                                        </xs:annotation>
+                                    </xs:attribute>
                                     <xs:attribute name="subtask-provider-type"
-                                        type="common:subtask-provider-type"/>
-                                    <xs:attribute name="provider" type="xs:token"/>
+                                        type="common:subtask-provider-type">
+                                        <xs:annotation>
+                                            <xs:documentation>The type of the provider for this subtask.</xs:documentation>
+                                        </xs:annotation>
+                                    </xs:attribute>
+                                    <xs:attribute name="provider" type="xs:token">
+                                        <xs:annotation>
+                                            <xs:documentation>The name of the specific provider of this subtask.</xs:documentation>
+                                        </xs:annotation>
+                                    </xs:attribute>
                                     <xs:attribute name="operation"
-                                        type="common:subtask-operation-type"/>
+                                        type="common:subtask-operation-type">
+                                        <xs:annotation>
+                                            <xs:documentation>The type of operation to be performed in this subtask.</xs:documentation>
+                                        </xs:annotation>
+                                    </xs:attribute>
                                 </xs:complexType>
                             </xs:element>
                             <xs:element maxOccurs="unbounded" minOccurs="0" name="task-result"
-                                type="result-pair"/>
+                                type="result-pair">
+                                <xs:annotation>
+                                    <xs:documentation>A key/value pair that describes one aspect of the outcome of the task.</xs:documentation>
+                                </xs:annotation>
+                            </xs:element>
                         </xs:sequence>
-                        <xs:attribute name="version-id" type="id-type"/>
-                        <xs:attribute name="status" type="common:task-status"/>
+                        <xs:attribute name="version-id" type="id-type">
+                            <xs:annotation>
+                                <xs:documentation>The version's resource ID.</xs:documentation>
+                            </xs:annotation>
+                        </xs:attribute>
+                        <xs:attribute name="status" type="common:task-status">
+                            <xs:annotation>
+                                <xs:documentation>The status of the task that was run for this version.</xs:documentation>
+                            </xs:annotation>
+                        </xs:attribute>
                     </xs:complexType>
                 </xs:element>
             </xs:sequence>
-            <xs:attribute name="vocabulary-id" type="id-type"/>
+            <xs:attribute name="vocabulary-id" type="id-type">
+                <xs:annotation>
+                    <xs:documentation>The vocabulary's resource ID.</xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
         </xs:complexType>
     </xs:element>
     <xs:complexType name="result-pair">
-        <xs:attribute name="result-key" type="xs:token"/>
-        <xs:attribute name="result-value" type="xs:token"/>
+        <xs:annotation>
+            <xs:documentation>A key/value pair that describes one aspect of the outcome of a workflow task or subtask.</xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="result-key" type="xs:token">
+            <xs:annotation>
+                <xs:documentation>The key.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="result-value" type="xs:token">
+            <xs:annotation>
+                <xs:documentation>The value.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
     </xs:complexType>
     <xs:element name="subscription">
         <xs:complexType>
-            <xs:attribute name="notification-mode" type="common:notification-mode" use="required"/>
-            <xs:attribute name="element-type" type="common:notification-element-type" use="required"/>
+            <xs:attribute name="notification-mode" type="common:notification-mode" use="required">
+                <xs:annotation>
+                    <xs:documentation>The mode by which notifications are to be delivered.</xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="element-type" type="common:notification-element-type" use="required">
+                <xs:annotation>
+                    <xs:documentation>The type of subscription: either a resource type, group type, or a value representing the system.</xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
             <xs:attribute name="element-id" type="xs:string">
                 <xs:annotation>
-                    <xs:documentation>This attribute is the value that should be used as a path parameter of any subsequent method to delete the subscription. For example, if element-type is vocabulary, this will be an integer value; if element-type is owner, this will be the short name of the owner.</xs:documentation>
+                    <xs:documentation>The index of the subscribed element within its type; 0, if there are not separate elements. This value should be used as a path parameter of any subsequent method to delete the subscription (in cases where such a value is expected). For example, if element-type is vocabulary, this will be an integer value; if element-type is owner, this will be the short name of the owner.</xs:documentation>
                 </xs:annotation>
             </xs:attribute>
             <xs:attribute name="title">
@@ -369,12 +737,15 @@
             </xs:attribute>
             <xs:attribute name="deleted" type="xs:boolean">
                 <xs:annotation>
-                    <xs:documentation>This attribute is present and true if the subscription is not valid because the element has been deleted.</xs:documentation>
+                    <xs:documentation>This attribute is present and true if the subscription is not (currently) active, i.e., for which there will be no notifications delivered, because the element has been deleted.</xs:documentation>
                 </xs:annotation>
             </xs:attribute>
         </xs:complexType>
     </xs:element>
     <xs:element name="subscription-list">
+        <xs:annotation>
+            <xs:documentation>A container for subscription elements.</xs:documentation>
+        </xs:annotation>
         <xs:complexType>
             <xs:sequence>
                 <xs:element maxOccurs="unbounded" minOccurs="0" ref="subscription"/>

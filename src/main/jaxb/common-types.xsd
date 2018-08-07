@@ -2,23 +2,50 @@
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified"
     targetNamespace="http://vocabs.ands.org.au/registry/schema/2017/01/common"
     xmlns="http://vocabs.ands.org.au/registry/schema/2017/01/common">
+    <xs:annotation>
+        <xs:documentation>Types for the ANDS Vocabulary Registry Schema, and for use within the Registry's internals.</xs:documentation>
+    </xs:annotation>
     <xs:simpleType name="vocabulary-status">
         <xs:restriction base="xs:token">
-            <xs:enumeration value="published"/>
-            <xs:enumeration value="draft"/>
-            <xs:enumeration value="deprecated"/>
+            <xs:enumeration value="published">
+                <xs:annotation>
+                    <xs:documentation>An instance of a vocabulary entity with this status is publicly visible.</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="draft">
+                <xs:annotation>
+                    <xs:documentation>An instance of a vocabulary entity with this status is not publicly visible. NB: there also may be another instance of the same vocabulary entity with a different status, i.e., which is publicly visible.</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="deprecated">
+                <xs:annotation>
+                    <xs:documentation>An instance of a vocabulary entity with this status is publicly visible, but the vocabulary is labelled as deprecated.</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
         </xs:restriction>
     </xs:simpleType>
     <xs:simpleType name="version-status">
         <xs:restriction base="xs:token">
-            <xs:enumeration value="current"/>
+            <xs:enumeration value="current">
+                <xs:annotation>
+                    <xs:documentation>At any time, at most one version may have status="current".</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
             <xs:enumeration value="superseded"/>
         </xs:restriction>
     </xs:simpleType>
     <xs:simpleType name="ap-source">
         <xs:restriction base="xs:token">
-            <xs:enumeration value="system"/>
-            <xs:enumeration value="user"/>
+            <xs:enumeration value="system">
+                <xs:annotation>
+                    <xs:documentation>An access point provided by the Registry. API users do not directly specify creation of such access points.</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="user">
+                <xs:annotation>
+                    <xs:documentation>An access point specified by the API user.</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
         </xs:restriction>
     </xs:simpleType>
     <xs:simpleType name="access-point-type">
@@ -45,9 +72,21 @@
     </xs:simpleType>
     <xs:simpleType name="related-entity-type">
         <xs:restriction base="xs:token">
-            <xs:enumeration value="party"/>
-            <xs:enumeration value="service"/>
-            <xs:enumeration value="vocabulary"/>
+            <xs:enumeration value="party">
+                <xs:annotation>
+                    <xs:documentation>A person, group or role related to the vocabulary.</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="service">
+                <xs:annotation>
+                    <xs:documentation>ISO 2146 defines a service as 'a system (analogue or digital) that provides one or more functions of value to an end user'. Services can be web services, provided across the web and following a well-defined machine protocol; but they may also be offline services, provided via an instrument, for example.</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="vocabulary">
+                <xs:annotation>
+                    <xs:documentation>A vocabulary hosted externally, i.e., not within this Registry.</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
         </xs:restriction>
     </xs:simpleType>
     <xs:simpleType name="related-entity-identifier-type">
@@ -188,10 +227,26 @@ http://viaf.org/</xs:documentation>
     </xs:simpleType>
     <xs:simpleType name="task-status">
         <xs:restriction base="xs:token">
-            <xs:enumeration value="new"/>
-            <xs:enumeration value="partial"/>
-            <xs:enumeration value="success"/>
-            <xs:enumeration value="error"/>
+            <xs:enumeration value="new">
+                <xs:annotation>
+                    <xs:documentation>Tasks and substasks are created with this status. If a subtask has this status, then execution of the subtask has not yet begun, or, at least, it has not progressed sufficiently in order to register a change of status.</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="partial">
+                <xs:annotation>
+                    <xs:documentation>The task or subtask completed, but for some reason the result may not be as expected. This is akin to completion with a warning.</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="success">
+                <xs:annotation>
+                    <xs:documentation>The task or subtask has completed successfully, without any warning.</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="error">
+                <xs:annotation>
+                    <xs:documentation>An error occurred during processing of the task or subtask.</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
         </xs:restriction>
     </xs:simpleType>
     <xs:simpleType name="registry-event-element-type">
