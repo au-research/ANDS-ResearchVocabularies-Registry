@@ -11,9 +11,7 @@ import java.util.List;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
@@ -92,7 +90,8 @@ public class ResolveIRI {
      *      Specified as a query parameter.
      */
     @Path(ApiPaths.RESOLVE + "/lookupIRI")
-    @Produces(MediaType.TEXT_PLAIN)
+    // Don't specify any @Produces annotation here; that would unnecessarily
+    // limit access to this method.
     @GET
     @ApiOperation(value = "Perform a redirect.",
             code = HttpStatus.SC_TEMPORARY_REDIRECT,
