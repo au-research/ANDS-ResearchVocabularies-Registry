@@ -10,7 +10,10 @@ This schema defines the structured data types used by the Registry API.
 
 See https://documentation.ands.org.au/display/DOC/Research+Vocabularies
 
-Change history
+Change history (most recent changes first)
+
+2018-08-27
+  * Corrected the remaining instances of camel-cased attribute names (urlPrefix and hasDraft); they now use hyphens (url-prefix and has-draft).
 2018-08-06
   * Added documentation throughout the schema.</xs:documentation>
     </xs:annotation>
@@ -372,7 +375,7 @@ NoLicence</xs:documentation>
         </xs:annotation>
         <xs:complexContent>
             <xs:extension base="ap-common">
-                <xs:attribute name="urlPrefix" type="xs:anyURI">
+                <xs:attribute name="url-prefix" type="xs:anyURI">
                     <xs:annotation>
                         <xs:documentation>The URL prefix of the download endpoints, to which a format is attached. The value should begin "http" and end with a period; a format value such as "ttl" can then be appended to give the download endpoint for that format.</xs:documentation>
                     </xs:annotation>
@@ -386,7 +389,7 @@ NoLicence</xs:documentation>
         </xs:annotation>
         <xs:complexContent>
             <xs:extension base="ap-common">
-                <xs:attribute name="urlPrefix" type="xs:anyURI">
+                <xs:attribute name="url-prefix" type="xs:anyURI">
                     <xs:annotation>
                         <xs:documentation>The URL prefix common to all of the SISSVoc endpoints, to which an endpoint selector and other parameters are attached. The value should begin "http" and not end with a slash.</xs:documentation>
                     </xs:annotation>
@@ -600,10 +603,10 @@ NoLicence</xs:documentation>
             </xs:attribute>
             <xs:attribute name="status" use="required" type="common:vocabulary-status">
                 <xs:annotation>
-                    <xs:documentation>If there is an instance of the vocabulary with status="published" or status="draft", then the value of this attribute is the same as that status value. In that case, see the value of the hasDraft attribute to see if there is also a draft instance. If the vocabulary only has a draft instance, then the value of this attribute is also "draft", and hasDraft="true".</xs:documentation>
+                    <xs:documentation>If there is an instance of the vocabulary with status="published" or status="draft", then the value of this attribute is the same as that status value. In that case, see the value of the has-draft attribute to see if there is also a draft instance. If the vocabulary only has a draft instance, then the value of this attribute is also "draft", and has-draft="true".</xs:documentation>
                 </xs:annotation>
             </xs:attribute>
-            <xs:attribute name="hasDraft" type="xs:boolean">
+            <xs:attribute name="has-draft" type="xs:boolean">
                 <xs:annotation>
                     <xs:documentation>If status="draft", the value of this attribute is true. Otherwise, the value of this attribute is true if there is also a draft instance.</xs:documentation>
                 </xs:annotation>
