@@ -123,6 +123,9 @@ svoc:${SVC_ID} a api:API
 		, [api:name "_resourceRoot"; api:value "{webapp}/lda-assets/"]
 		, [api:name "resourcePath"; api:value "{webapp}${SVC_PREFIX}/resource"]
 		, [api:name "resourceEndPoint"; api:value "{webapp}${SVC_PREFIX}/resource"]
+                # ANDS-specific: a list endpoint that supports filters. Used
+                # by searchURI-mode template in ands-ashtml-sissvoc.xsl.
+                , [api:name "conceptSearchEndPoint"; api:value "{webapp}${SVC_PREFIX}/concept"]
 		, [api:name "serviceTitle"; api:value "${SERVICE_TITLE}"]
 		, [api:name "serviceAuthor"; api:value "${SERVICE_AUTHOR}"]
 		, [api:name "serviceAuthorEmail"; api:value "${SERVICE_AUTHOR_EMAIL}"]
@@ -892,7 +895,7 @@ dc:title
 dcterms:created
                 api:label "dctermsCreated" ;
                 a      rdfs:Property ;
-                rdfs:range     rdfs:Literal .
+                rdfs:range     xsd:dateTime .
 
 dcterms:description
                 api:label "dctermsDescription" ;
@@ -902,7 +905,7 @@ dcterms:description
 dcterms:modified
                 api:label "dctermsModified" ;
                 a      rdfs:Property ;
-                rdfs:range     rdfs:Literal .
+                rdfs:range     xsd:dateTime .
 
 dcterms:title
                 api:label "dctermsTitle" ;
