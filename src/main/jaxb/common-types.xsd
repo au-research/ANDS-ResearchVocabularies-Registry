@@ -187,18 +187,66 @@ http://viaf.org/</xs:documentation>
     </xs:simpleType>
     <xs:simpleType name="related-entity-relation">
         <xs:restriction base="xs:token">
-            <xs:enumeration value="publishedBy"/>
-            <xs:enumeration value="hasAuthor"/>
-            <xs:enumeration value="hasContributor"/>
-            <xs:enumeration value="pointOfContact"/>
-            <xs:enumeration value="implementedBy"/>
-            <xs:enumeration value="consumerOf"/>
-            <xs:enumeration value="hasAssociationWith"/>
-            <xs:enumeration value="isPresentedBy"/>
-            <xs:enumeration value="isUsedBy"/>
-            <xs:enumeration value="isDerivedFrom"/>
-            <xs:enumeration value="enriches"/>
-            <xs:enumeration value="isPartOf"/>
+            <xs:enumeration value="publishedBy">
+                <xs:annotation>
+                    <xs:documentation>For related entities of type party.</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="hasAuthor">
+                <xs:annotation>
+                    <xs:documentation>For related entities of type party.</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="hasContributor">
+                <xs:annotation>
+                    <xs:documentation>For related entities of type party.</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="pointOfContact">
+                <xs:annotation>
+                    <xs:documentation>For related entities of type party.</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="implementedBy">
+                <xs:annotation>
+                    <xs:documentation>For related entities of type party.</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="consumerOf">
+                <xs:annotation>
+                    <xs:documentation>For related entities of type party.</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="hasAssociationWith">
+                <xs:annotation>
+                    <xs:documentation>For related entities of type service and vocabulary.</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="isPresentedBy">
+                <xs:annotation>
+                    <xs:documentation>For related entities of type service.</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="isUsedBy">
+                <xs:annotation>
+                    <xs:documentation>For related entities of type service.</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="isDerivedFrom">
+                <xs:annotation>
+                    <xs:documentation>For related entities of type vocabulary.</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="enriches">
+                <xs:annotation>
+                    <xs:documentation>For related entities of type vocabulary.</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="isPartOf">
+                <xs:annotation>
+                    <xs:documentation>For related entities of type vocabulary.</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
         </xs:restriction>
     </xs:simpleType>
     <xs:simpleType name="related-vocabulary-relation">
