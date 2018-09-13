@@ -271,10 +271,18 @@ ant create-solr-schema
 
 ## Force indexing of the vocabularies into Solr
 
+If vocabulary metadata has been migrated from a Toolkit database or
+another Registry installation, it's necessary to force indexing of the
+migrated vocabularies metadata (and concept data) within Solr.
+
+This API method is authenticated, and requires a user with the
+`VOCABS_REGISTRY_SUPERUSER` functional role. In the following, supply
+the appropriate values in place of `username` and `pass`:
+
 Run:
 
 ```
-wget -O - http://localhost:8080/registry-context/adminApi/solr/index
+wget --user=username --password=pass -O - http://localhost:8080/registry-context/adminApi/solr/index
 ```
 
 Once again, it is crucial to check the log file of the Registry to see
