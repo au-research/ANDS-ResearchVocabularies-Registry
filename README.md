@@ -18,23 +18,21 @@ containers may be possible; it has not been tested.)
 ## Registry functionality
 
 The Registry combines the functions of a metadata catalogue and a
-repository. The repository functions are known as the Vocabulary
-Toolkit.
+repository. The repository functions were previously undertaken by a
+project known as the Vocabulary Toolkit; those functions are now fully
+integrated into this Registry.
 
-## Toolkit functionality
+## Repository functionality
 
-The Toolkit part of the Registry provides the following functions:
+This is an overview of the repository functions:
 
-* Get Toolkit information
-  * System "health check"
-* Get metadata
+* Get project metadata from PoolParty
 * Harvest
   * PoolParty
   * Sesame
   * SPARQL endpoint
   * File
 * Transform
-  * Create a Solr document for indexing
   * Create a tree of SKOS concepts in JSON format
   * Create a list of SKOS concepts in JSON format
 * Import
