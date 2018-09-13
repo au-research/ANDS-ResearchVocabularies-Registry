@@ -81,6 +81,14 @@ svoc:${SVC_ID} a api:API
 ## end of TODO:
 ##############################################################
 
+        # ANDS override of default JSON formatter,
+        # so as to get date/time values in ISO 8601 format.
+        ; api:formatter [
+                a api:JsonFormatter
+                ; api:name "json"
+                ; api:mimeType "application/json"
+                ; elda:jsonUsesISOdate true
+        ]
 	; api:endpoint
                 # ANDS: uncomment as needed.
 		# svoc:LandingPage ,
@@ -213,7 +221,8 @@ svoc:basicConceptViewer a api:Viewer
     ; api:name "concept"
     ; api:property skos:prefLabel, skos:notation,
       ( skos:broader skos:prefLabel ), skos:definition,
-      ( skos:narrower skos:prefLabel )
+      ( skos:narrower skos:prefLabel ),
+      dcterms:created, dcterms:modified
     .
 
 # ANDS custom concept scheme viewer
