@@ -2,7 +2,11 @@
 
 Please also refer to `README.md` for information about the Registry.
 
-These instructions are a work in progress!
+The following instructions are a work in progress.
+Although correct, and mostly complete, there should be more added
+about integration with the related services.
+
+(For example, you will need to install Sesame server and SISSVoc.)
 
 (For example, TBD: add a reference to
 https://github.com/au-research/ANDS-ResearchVocabularies-LDA
