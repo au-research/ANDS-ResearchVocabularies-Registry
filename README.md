@@ -85,6 +85,12 @@ The Registry uses Apache Commons components. Currently, Configuration,
 IO, and Lang (both versions 2 and 3) are used. (Commons IO is required
 by Sesame, but it is also invoked directly from the Registry code.)
 
+### Swagger
+
+The Registry exposes its API methods through Swagger (also known as
+Open API version 2). The default web.xml exposes the Swagger
+description of the API at the URL `/swagger.json`.
+
 ## Licence
 
 The Vocabulary Registry is licensed under the Apache License,
