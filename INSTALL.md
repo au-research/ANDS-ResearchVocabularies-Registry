@@ -74,6 +74,10 @@ conf.
 
 ## Create Toolkit configuration
 
+If you will be migrating content from an existing Toolkit
+installation, you need to define at least the database properties for
+that installation.
+
 Create `conf/toolkit.properties`. You may base it on
 `conf/toolkit.properties.sample`.
 
