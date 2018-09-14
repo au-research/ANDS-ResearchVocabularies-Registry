@@ -272,8 +272,8 @@ ant create-solr-schema
 ## Force indexing of the vocabularies into Solr
 
 If vocabulary metadata has been migrated from a Toolkit database or
-another Registry installation, it's necessary to force indexing of the
-migrated vocabularies metadata (and concept data) within Solr.
+from another Registry installation, it's necessary to force indexing
+of the migrated vocabularies' metadata (and concept data) within Solr.
 
 This API method is authenticated, and requires a user with the
 `VOCABS_REGISTRY_SUPERUSER` functional role. In the following, supply
@@ -354,8 +354,8 @@ If necessary, it is possible to roll back the database schema to an
 earlier form. There are tags defined at the end of each stage of the
 schema definition; see the files in `src/main/db/changelog`.
 
-For example, to roll back to the tag `version_0001`, run:
+For example, to roll back to the tag `version_0003`, run:
 
 ```
-tools/dist/liquibase-3.5.3/liquibase --defaultsFile=registry-liquibase-superuser.properties --changeLogFile=src/main/db/changelog/registry-master.xml rollback version_0001
+tools/dist/liquibase-3.5.3/liquibase --defaultsFile=registry-liquibase-superuser.properties --changeLogFile=src/main/db/changelog/registry-master.xml rollback version_0003
 ```
