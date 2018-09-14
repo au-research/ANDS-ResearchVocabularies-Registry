@@ -17,9 +17,9 @@ for LDA custom configuration.)
 * JDK for Java 8
 * Ant
 * gawk version 4
-* MySQL
-* Solr
-* Tomcat
+* MySQL (at least version 5.6)
+* Solr (at least version 6.6.5 or 7.4.0 is recommended)
+* Tomcat (at least version 7)
 
 # Locale setting for JDK
 
