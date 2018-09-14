@@ -1,11 +1,10 @@
 # Vocabs Registry installation
 
+Please also refer to `README.md` for information about the Registry.
+
 These instructions are a work in progress!
 
-Please also refer to `README.md` for the time being, for some of the
-missing bits.
-
-(e.g., TBD: reference to
+(For example, TBD: add a reference to
 https://github.com/au-research/ANDS-ResearchVocabularies-LDA
 for LDA custom configuration.)
 
