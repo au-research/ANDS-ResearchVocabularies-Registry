@@ -208,12 +208,13 @@ public class RolesTests extends ArquillianBaseTest {
         "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
         + "<owned-vocabulary-list xmlns=\"http://vocabs.ands.org.au/registry/"
             + "schema/2017/01/vocabulary\">"
-        + "<owned-vocabulary id=\"1\" status=\"published\" hasDraft=\"true\" "
+        + "<owned-vocabulary id=\"1\" status=\"published\" has-draft=\"true\" "
             + "title=\"Registry Interchange Format - Collections and Services "
             + "(Vocabularies)\"/>"
-        + "<owned-vocabulary id=\"2\" status=\"deprecated\" hasDraft=\"false\" "
+        + "<owned-vocabulary id=\"2\" status=\"deprecated\" "
+            + "has-draft=\"false\" "
             + "title=\"AGROVOC Multilingual Agricultural Thesaurus\"/>"
-        + "<owned-vocabulary id=\"4\" status=\"draft\" hasDraft=\"true\" "
+        + "<owned-vocabulary id=\"4\" status=\"draft\" has-draft=\"true\" "
             + "title=\"Water Resources Thesaurus\"/>"
         + "</owned-vocabulary-list>",
                 "Owned vocabulary list");

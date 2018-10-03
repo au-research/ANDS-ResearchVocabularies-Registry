@@ -1,11 +1,14 @@
 # Vocabs Registry installation
 
-These instructions are a work in progress!
+Please also refer to `README.md` for information about the Registry.
 
-Please also refer to `README.md` for the time being, for some of the
-missing bits.
+The following instructions are a work in progress.
+Although correct, and mostly complete, there should be more added
+about integration with the related services.
 
-(e.g., TBD: reference to
+(For example, you will need to install Sesame server and SISSVoc.)
+
+(For example, TBD: add a reference to
 https://github.com/au-research/ANDS-ResearchVocabularies-LDA
 for LDA custom configuration.)
 
@@ -14,9 +17,9 @@ for LDA custom configuration.)
 * JDK for Java 8
 * Ant
 * gawk version 4
-* MySQL
-* Solr
-* Tomcat
+* MySQL (at least version 5.6)
+* Solr (at least version 6.6.5 or 7.4.0 is recommended)
+* Tomcat (at least version 7)
 
 # Locale setting for JDK
 
@@ -70,6 +73,10 @@ conf.
 
 
 ## Create Toolkit configuration
+
+If you will be migrating content from an existing Toolkit
+installation, you need to define at least the database properties for
+that installation.
 
 Create `conf/toolkit.properties`. You may base it on
 `conf/toolkit.properties.sample`.
@@ -271,10 +278,18 @@ ant create-solr-schema
 
 ## Force indexing of the vocabularies into Solr
 
+If vocabulary metadata has been migrated from a Toolkit database or
+from another Registry installation, it's necessary to force indexing
+of the migrated vocabularies' metadata (and concept data) within Solr.
+
+This API method is authenticated, and requires a user with the
+`VOCABS_REGISTRY_SUPERUSER` functional role. In the following, supply
+the appropriate values in place of `username` and `pass`:
+
 Run:
 
 ```
-wget -O - http://localhost:8080/registry-context/adminApi/solr/index
+wget --user=username --password=pass -O - http://localhost:8080/registry-context/adminApi/solr/index
 ```
 
 Once again, it is crucial to check the log file of the Registry to see
@@ -346,8 +361,8 @@ If necessary, it is possible to roll back the database schema to an
 earlier form. There are tags defined at the end of each stage of the
 schema definition; see the files in `src/main/db/changelog`.
 
-For example, to roll back to the tag `version_0001`, run:
+For example, to roll back to the tag `version_0003`, run:
 
 ```
-tools/dist/liquibase-3.5.3/liquibase --defaultsFile=registry-liquibase-superuser.properties --changeLogFile=src/main/db/changelog/registry-master.xml rollback version_0001
+tools/dist/liquibase-3.5.3/liquibase --defaultsFile=registry-liquibase-superuser.properties --changeLogFile=src/main/db/changelog/registry-master.xml rollback version_0003
 ```

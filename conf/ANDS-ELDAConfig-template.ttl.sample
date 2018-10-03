@@ -81,6 +81,14 @@ svoc:${SVC_ID} a api:API
 ## end of TODO:
 ##############################################################
 
+        # ANDS override of default JSON formatter,
+        # so as to get date/time values in ISO 8601 format.
+        ; api:formatter [
+                a api:JsonFormatter
+                ; api:name "json"
+                ; api:mimeType "application/json"
+                ; elda:jsonUsesISOdate true
+        ]
 	; api:endpoint
                 # ANDS: uncomment as needed.
 		# svoc:LandingPage ,
@@ -123,6 +131,9 @@ svoc:${SVC_ID} a api:API
 		, [api:name "_resourceRoot"; api:value "{webapp}/lda-assets/"]
 		, [api:name "resourcePath"; api:value "{webapp}${SVC_PREFIX}/resource"]
 		, [api:name "resourceEndPoint"; api:value "{webapp}${SVC_PREFIX}/resource"]
+                # ANDS-specific: a list endpoint that supports filters. Used
+                # by searchURI-mode template in ands-ashtml-sissvoc.xsl.
+                , [api:name "conceptSearchEndPoint"; api:value "{webapp}${SVC_PREFIX}/concept"]
 		, [api:name "serviceTitle"; api:value "${SERVICE_TITLE}"]
 		, [api:name "serviceAuthor"; api:value "${SERVICE_AUTHOR}"]
 		, [api:name "serviceAuthorEmail"; api:value "${SERVICE_AUTHOR_EMAIL}"]
@@ -210,7 +221,8 @@ svoc:basicConceptViewer a api:Viewer
     ; api:name "concept"
     ; api:property skos:prefLabel, skos:notation,
       ( skos:broader skos:prefLabel ), skos:definition,
-      ( skos:narrower skos:prefLabel )
+      ( skos:narrower skos:prefLabel ),
+      dcterms:created, dcterms:modified
     .
 
 # ANDS custom concept scheme viewer
@@ -892,7 +904,7 @@ dc:title
 dcterms:created
                 api:label "dctermsCreated" ;
                 a      rdfs:Property ;
-                rdfs:range     rdfs:Literal .
+                rdfs:range     xsd:dateTime .
 
 dcterms:description
                 api:label "dctermsDescription" ;
@@ -902,7 +914,7 @@ dcterms:description
 dcterms:modified
                 api:label "dctermsModified" ;
                 a      rdfs:Property ;
-                rdfs:range     rdfs:Literal .
+                rdfs:range     xsd:dateTime .
 
 dcterms:title
                 api:label "dctermsTitle" ;

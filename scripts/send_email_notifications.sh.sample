@@ -30,7 +30,7 @@ SCRIPTPATH=$( cd $(dirname $0) ; pwd -P )
 # +%FT%T rather than just using --iso-8601, because we provide
 # values to the Registry that _don't_ specify a timezone.
 TODAY_MIDNIGHT=$(TZ=UTC $GDATE -d $($GDATE -d "00:00 today" --iso-8601=seconds) +%FT%T)
-A_WEEK_EARLIER=$(TZ=UTC $GDATE -d "$TODAY_MIDNIGHT+00:00 - 7 days" +%FT%T)
+A_WEEK_EARLIER=$(TZ=UTC $GDATE -d $($GDATE -d "00:00 7 days ago" --iso-8601=seconds) +%FT%T)
 
 java -Dlogback.configurationFile=$SCRIPTPATH/logback-email_notifications.xml \
      -cp $REGISTRY_ROOT/WEB-INF/lib/*:$REGISTRY_ROOT/WEB-INF/classes \
