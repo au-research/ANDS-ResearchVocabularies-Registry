@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.constraints.NotNull;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.POST;
@@ -72,6 +73,7 @@ public class Search {
                     + "e.g., '\"publisher\":\"CSIRO\"'. Supported facets: "
                     + "\"access\", \"format\", \"language\", \"licence\", "
                     + "\"publisher\", \"subject_labels\".")
+            @NotNull(message = "The filtersJson parameter must not be null")
             @FormParam("filtersJson") final String filtersJson
             ) {
         logger.debug("called search");
