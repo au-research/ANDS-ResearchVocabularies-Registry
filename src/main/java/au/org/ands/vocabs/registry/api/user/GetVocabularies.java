@@ -589,14 +589,14 @@ public class GetVocabularies {
      * @param uriInfo The UriInfo of the request.
      * @param vocabularyId The Id of the vocabulary
      *      for which the vocabularies related to it are to be fetched.
-     * @return The related entity, in either XML or JSON format,
-     *      or an error result, if there is no such related entity. */
+     * @return The list of vocabularies, in either XML or JSON format,
+     *      or an error result, if there is no such vocabulary Id. */
     @Path(ApiPaths.VOCABULARY_ID + "/"
             + ApiPaths.REVERSE_RELATED_VOCABULARIES)
     @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     @GET
     @ApiOperation(value = "Get all current vocabularies related to a "
-            + "related entity, by the related entity's id.")
+            + "vocabulary, by its vocabulary id.")
     public final ReverseRelatedVocabularyList
     getVocabulariesRelatedToVocabularyById(
             @Context final HttpServletRequest request,

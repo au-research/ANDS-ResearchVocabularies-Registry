@@ -33,6 +33,7 @@ import au.org.ands.vocabs.registry.api.context.AdminApiPaths;
 import au.org.ands.vocabs.registry.api.context.ResponseUtils;
 import au.org.ands.vocabs.registry.api.context.SwaggerInterface;
 import au.org.ands.vocabs.registry.api.user.ErrorResult;
+import au.org.ands.vocabs.registry.api.user.ErrorResultUtils;
 import au.org.ands.vocabs.registry.db.context.DBContext;
 import au.org.ands.vocabs.registry.db.context.TemporalUtils;
 import au.org.ands.vocabs.registry.db.converter.JSONSerialization;
@@ -80,6 +81,9 @@ public class AdminRestMethods {
             notes = "This method is only available to administrator users.",
             response = Task.class)
     @ApiResponses(value = {
+            @ApiResponse(code = HttpStatus.SC_BAD_REQUEST,
+                    message = "Invalid input",
+                    response = ErrorResult.class),
             @ApiResponse(code = HttpStatus.SC_UNAUTHORIZED,
                     message = "Not authenticated",
                     response = ErrorResult.class,
@@ -105,6 +109,10 @@ public class AdminRestMethods {
 
         au.org.ands.vocabs.registry.db.entity.Task dbTask =
                 TaskDAO.getTaskById(taskId);
+
+        if (dbTask == null) {
+            return ErrorResultUtils.badRequest("No task with that id");
+        }
 
         Task task = new Task();
         task.setVocabularyId(dbTask.getVocabularyId());

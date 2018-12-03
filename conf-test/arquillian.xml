@@ -9,7 +9,7 @@
     <configuration>
       <!-- Ports -->
       <property name="bindHttpPort">8123</property>
-      <property name="jmxPort">8089</property>
+      <property name="jmxPort">8124</property>
 
       <!-- The values of PROPS_FILE, ROLES_PROPS_FILE,
            and REGISTRY_PROPS_FILE must be provided as

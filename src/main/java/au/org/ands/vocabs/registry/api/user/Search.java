@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.constraints.NotNull;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.POST;
@@ -22,6 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import au.org.ands.vocabs.registry.api.context.ApiPaths;
+import au.org.ands.vocabs.registry.api.context.FormContentTypeFilter;
 import au.org.ands.vocabs.registry.api.context.ResponseUtils;
 import au.org.ands.vocabs.registry.api.context.SwaggerInterface;
 import au.org.ands.vocabs.registry.log.Logging;
@@ -49,6 +51,7 @@ public class Search {
      * @return The search results, as a JSON object.
      */
     @Path(ApiPaths.SEARCH)
+    @FormContentTypeFilter
     @Consumes({MediaType.APPLICATION_FORM_URLENCODED})
     @Produces({MediaType.APPLICATION_JSON})
     @POST
@@ -72,6 +75,7 @@ public class Search {
                     + "e.g., '\"publisher\":\"CSIRO\"'. Supported facets: "
                     + "\"access\", \"format\", \"language\", \"licence\", "
                     + "\"publisher\", \"subject_labels\".")
+            @NotNull(message = "The filtersJson parameter must not be null")
             @FormParam("filtersJson") final String filtersJson
             ) {
         logger.debug("called search");
