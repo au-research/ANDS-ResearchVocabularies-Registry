@@ -1364,7 +1364,7 @@ public class CheckVocabularyImpl
                 cvb -> cvb.addPropertyNode("version").
                 addPropertyNode("accessPoint").
                 inIterable().atIndex(versionIndex).
-                addPropertyNode("apSissvoc").
+                addPropertyNode("apSesameDownload").
                 inIterable().atIndex(accessPointIndex).
                 addPropertyNode("url").
                 addConstraintViolation(),
