@@ -141,68 +141,15 @@ public final class WorkflowMethods {
         case FILE:
             // In this case, there is something to be done apart from adding
             // to the database.
-            List<Subtask> subtaskList = null;
-            ap.setVersionId(versionId);
-            ap.setSource(ApSource.USER);
-            ApFile apFile = new ApFile();
-            Integer uploadId = schemaAP.getApFile().getUploadId();
-            Upload upload = UploadDAO.getUploadById(em, uploadId);
-            // Override whatever format was specified by the user, and
-            // use the upload format.
-            apFile.setFormat(upload.getFormat());
-            apFile.setUploadId(uploadId);
-            if (isDraft) {
-                TemporalUtils.makeDraft(ap);
-                apFile.setDraftCreatedDate(nowTime.toString());
-                apFile.setDraftModifiedDate(nowTime.toString());
-                ap.setData(JSONSerialization.serializeObjectAsJsonString(
-                        apFile));
-                ap.setModifiedBy(modifiedBy);
-                AccessPointDAO.saveAccessPointWithId(em, ap);
-            } else {
-                TemporalUtils.makeCurrentlyValid(ap, nowTime);
-                // We make the access point visible, by "harvesting"
-                // the upload.
-                // Temporarily set the data to an empty value, so that
-                // the entity can be persisted.
-                ap.setData("{}");
-                ap.setModifiedBy(modifiedBy);
-                if (existingAccessPoint == null) {
-                    AccessPointDAO.saveAccessPointWithId(em, ap);
-                } else {
-                    AccessPointDAO.updateAccessPoint(em, ap);
-                }
-                String harvestOutputPath =
-                        TaskUtils.getTaskHarvestOutputPath(taskInfo, true);
-                // We create our own filename, e.g., 17.ttl.
-                // Here, we don't trust the extension of the original filename
-                // (e.g., it could be in upper case).
-                String filename = uploadId.toString() + "."
-                        + UploadFormatUtils.getFileFormatByName(
-                                upload.getFormat()).getExtension();
-                Path destPath = Paths.get(harvestOutputPath, filename);
-                try {
-                    // We currently copy, but this could (maybe?) be
-                    // done as a symbolic link.
-                    Files.copy(RegistryFileUtils.getUploadPath(uploadId),
-                            destPath, StandardCopyOption.REPLACE_EXISTING);
-                } catch (IOException e) {
-                    logger.error("Error attempting to copy uploaded file", e);
-                }
-                apFile.setPath(destPath.toString());
-                // But we do use the original extension for the URL.
-                apFile.setUrl(AccessPointUtils.
-                        getDownloadUrlForFileAccessPoint(ap.getAccessPointId(),
-                                upload.getFilename()));
-                ap.setData(JSONSerialization.serializeObjectAsJsonString(
-                        apFile));
-                AccessPointDAO.updateAccessPoint(em, ap);
-                subtaskList = new ArrayList<>();
-                addConceptTransformSubtasks(subtaskList);
-            }
-            return Pair.of(ap, subtaskList);
+            return insertAccessPointFile(em, existingAccessPoint, taskInfo,
+                    isDraft, modifiedBy, nowTime, schemaAP, versionId, ap);
         case SESAME_DOWNLOAD:
             // Nuh, you can't do this ... yet.
+            // If this functionality is added, revisit the comment
+            // for the SESAME_DOWNLOAD case in AccessPointElement.compareTo(),
+            // and make sure there is a test case for that branch of the
+            // code, i.e., adding multiple instances to the same version
+            // at the same time.
             logger.error("Attempt to add sesameDownload with source=USER");
             return Pair.of(null, null);
         case SISSVOC:
@@ -251,6 +198,112 @@ public final class WorkflowMethods {
             break;
         }
         return null;
+    }
+
+    /** The {@link #insertAccessPoint(EntityManager, AccessPoint, TaskInfo,
+     * boolean, String, LocalDateTime,
+     * au.org.ands.vocabs.registry.schema.vocabulary201701.AccessPoint)}
+     * method defers to this method to
+     * apply workflow insertion to a file access point specified in
+     * registry schema format.
+     * If the access point requires workflow processing (which is the
+     * case if isDraft is false), the right-hand
+     * component of the returned Pair is a list of workflow subtasks
+     * that must be performed.
+     * Sorry that this method has too many parameters.
+     * @param em The EntityManager to use to persist any newly-created
+     *      AccessPoint entity.
+     * @param existingAccessPoint Optionally, an existing AccessPoint
+     *      database entity may be provided. If so, it is reused,
+     *      rather than creating a new entity.
+     * @param taskInfo A TaskInfo object that encapsulates the
+     *      vocabulary and version entities, for which the access point
+     *      is to be added.
+     * @param isDraft True, if this a request for insertion of a draft
+     *      instance.
+     * @param modifiedBy The value to use for "modifiedBy" when adding
+     *      rows of the database.
+     * @param nowTime The date/time being used for this insertion.
+     * @param schemaAP The registry schema description of the access point
+     *      to be added.
+     * @param versionId The version Id of the version.
+     * @param ap An already-created AccessPoint instance, which is to be
+     *      filled in by this method.
+     * @return A Pair of values. The left element is a non-null AccessPoint,
+     *      if this is should be persisted directly. The right element
+     *      is a non-empty list of subtasks, if workflow processing
+     *      is required.
+     */
+    @SuppressWarnings("checkstyle:ParameterNumber")
+    private static Pair<AccessPoint, List<Subtask>> insertAccessPointFile(
+            final EntityManager em, final AccessPoint existingAccessPoint,
+            final TaskInfo taskInfo, final boolean isDraft,
+            final String modifiedBy, final LocalDateTime nowTime,
+            final
+            au.org.ands.vocabs.registry.schema.vocabulary201701.AccessPoint
+            schemaAP, final Integer versionId, final AccessPoint ap) {
+        // In this case, there is something to be done apart from adding
+        // to the database.
+        List<Subtask> subtaskList = null;
+        ap.setVersionId(versionId);
+        ap.setSource(ApSource.USER);
+        ApFile apFile = new ApFile();
+        Integer uploadId = schemaAP.getApFile().getUploadId();
+        Upload upload = UploadDAO.getUploadById(em, uploadId);
+        // Override whatever format was specified by the user, and
+        // use the upload format.
+        apFile.setFormat(upload.getFormat());
+        apFile.setUploadId(uploadId);
+        if (isDraft) {
+            TemporalUtils.makeDraft(ap);
+            apFile.setDraftCreatedDate(nowTime.toString());
+            apFile.setDraftModifiedDate(nowTime.toString());
+            ap.setData(JSONSerialization.serializeObjectAsJsonString(
+                    apFile));
+            ap.setModifiedBy(modifiedBy);
+            AccessPointDAO.saveAccessPointWithId(em, ap);
+        } else {
+            TemporalUtils.makeCurrentlyValid(ap, nowTime);
+            // We make the access point visible, by "harvesting"
+            // the upload.
+            // Temporarily set the data to an empty value, so that
+            // the entity can be persisted.
+            ap.setData("{}");
+            ap.setModifiedBy(modifiedBy);
+            if (existingAccessPoint == null) {
+                AccessPointDAO.saveAccessPointWithId(em, ap);
+            } else {
+                AccessPointDAO.updateAccessPoint(em, ap);
+            }
+            String harvestOutputPath =
+                    TaskUtils.getTaskHarvestOutputPath(taskInfo, true);
+            // We create our own filename, e.g., 17.ttl.
+            // Here, we don't trust the extension of the original filename
+            // (e.g., it could be in upper case).
+            String filename = uploadId.toString() + "."
+                    + UploadFormatUtils.getFileFormatByName(
+                            upload.getFormat()).getExtension();
+            Path destPath = Paths.get(harvestOutputPath, filename);
+            try {
+                // We currently copy, but this could (maybe?) be
+                // done as a symbolic link.
+                Files.copy(RegistryFileUtils.getUploadPath(uploadId),
+                        destPath, StandardCopyOption.REPLACE_EXISTING);
+            } catch (IOException e) {
+                logger.error("Error attempting to copy uploaded file", e);
+            }
+            apFile.setPath(destPath.toString());
+            // But we do use the original extension for the URL.
+            apFile.setUrl(AccessPointUtils.
+                    getDownloadUrlForFileAccessPoint(ap.getAccessPointId(),
+                            upload.getFilename()));
+            ap.setData(JSONSerialization.serializeObjectAsJsonString(
+                    apFile));
+            AccessPointDAO.updateAccessPoint(em, ap);
+            subtaskList = new ArrayList<>();
+            addConceptTransformSubtasks(subtaskList);
+        }
+        return Pair.of(ap, subtaskList);
     }
 
     /** Apply workflow deletion to an access point.
