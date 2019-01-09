@@ -204,6 +204,26 @@ public class RegistryModelTests extends ArquillianBaseTest {
     }
 
     /** Test of deleting the current instance of a vocabulary that has only
+     * a current instance, with Vocabulary, VocabularyRelatedEntity,
+     * and VocabularyRelatedVocabulary model elements.
+     * This method also tests what happens to other vocabularies
+     * that are related to the now-deleted current instance, in particular,
+     * that those vocabularies no longer have VocabularyRelatedVocabulary
+     * instances that refer to the now-deleted vocabulary.
+     * See CC-2440.
+     * @throws DatabaseUnitException If a problem with DbUnit.
+     * @throws IOException If a problem getting test data for DbUnit,
+     *          or reading JSON from the correct and test output files.
+     * @throws SQLException If DbUnit has a problem performing
+     *           performing JDBC operations.
+     *  */
+    @Test
+    public final void testDeleteCurrentReverseVRV1() throws
+    DatabaseUnitException, IOException, SQLException {
+        scriptDeleteOnlyCurrent1("testDeleteCurrentReverseVRV1");
+    }
+
+    /** Test of deleting the current instance of a vocabulary that has only
      * a current instance, with Vocabulary, VocabularyRelatedEntity, and
      * Version model elements.
      * @throws DatabaseUnitException If a problem with DbUnit.
@@ -410,6 +430,28 @@ public class RegistryModelTests extends ArquillianBaseTest {
     DatabaseUnitException, IOException, SQLException {
         scriptMakeCurrentVocabularyDraft1(
                 "testMakeCurrentVocabularyDraftVoVREVRV1");
+    }
+
+    /** Test of starting with a vocabulary that has only
+     * a current instance, and making that current instance into
+     * a draft only. Only Vocabulary, VocabularyRelatedEntity, and
+     * VocabularyRelatedVocabulary model elements are used.
+     * This method also tests what happens to other vocabularies
+     * that are related to the now-deleted current instance, in particular,
+     * that those vocabularies no longer have VocabularyRelatedVocabulary
+     * instances that refer to the now-deleted vocabulary.
+     * See CC-2440.
+     * @throws DatabaseUnitException If a problem with DbUnit.
+     * @throws IOException If a problem getting test data for DbUnit,
+     *          or reading JSON from the correct and test output files.
+     * @throws SQLException If DbUnit has a problem performing
+     *           performing JDBC operations.
+     *  */
+    @Test
+    public final void testMakeCurrentVocabularyDraftReverseVRV1() throws
+    DatabaseUnitException, IOException, SQLException {
+        scriptMakeCurrentVocabularyDraft1(
+                "testMakeCurrentVocabularyDraftReverseVRV1");
     }
 
     /** Test of starting with a vocabulary that has only
