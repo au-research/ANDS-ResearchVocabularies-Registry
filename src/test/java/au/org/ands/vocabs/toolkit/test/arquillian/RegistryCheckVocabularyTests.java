@@ -43,6 +43,10 @@ public class RegistryCheckVocabularyTests extends ArquillianBaseTest {
             "RegistryCheckVocabularyTests.";
 
     /** Test of the CheckVocabulary validator.
+     * The test data contains multiple validation errors:
+     * there is no publisher, there is a reference to an unknown related
+     * entity, the version creation is not in the correct syntax,
+     * the PoolParty server id is wrong, etc.
      * @throws DatabaseUnitException If a problem with DbUnit.
      * @throws IOException If a problem getting test data for DbUnit,
      *          or reading JSON from the correct and test output files.
@@ -54,14 +58,15 @@ public class RegistryCheckVocabularyTests extends ArquillianBaseTest {
     @Test
     public final void testCheckVocabulary1() throws
     DatabaseUnitException, IOException, SQLException, JAXBException {
+        String testName = "testCheckVocabulary1";
         ArquillianTestUtils.clearDatabase(REGISTRY);
         Vocabulary newVocabulary;
 
         InputStream is = ArquillianTestUtils.getResourceAsInputStream(
                 "test/tests/"
                 + CLASS_NAME_PREFIX
-                + "testCheckVocabulary1/"
-                + "test-validation-1.xml");
+                + testName
+                + "/test-validation-1.xml");
         JAXBContext jaxbContext = JAXBContext.newInstance(Vocabulary.class);
         Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
         newVocabulary = (Vocabulary) jaxbUnmarshaller.unmarshal(is);
@@ -129,6 +134,69 @@ public class RegistryCheckVocabularyTests extends ArquillianBaseTest {
                 expectedErrors.toArray(),
                 "Set of validation errors does not match");
     }
+
+    /** Test of the CheckVocabulary validator.
+     * This is a test to confirm that a vocabulary being updated
+     * may not have a related vocabulary that is itself.
+     * @throws DatabaseUnitException If a problem with DbUnit.
+     * @throws IOException If a problem getting test data for DbUnit,
+     *          or reading JSON from the correct and test output files.
+     * @throws SQLException If DbUnit has a problem performing
+     *           performing JDBC operations.
+     * @throws JAXBException If there is an error configuring or
+     *      reading XML data.
+     */
+    @Test
+    public final void testCheckVocabulary2() throws
+    DatabaseUnitException, IOException, SQLException, JAXBException {
+        String testName = "testCheckVocabulary2";
+        ArquillianTestUtils.clearDatabase(REGISTRY);
+        ArquillianTestUtils.loadDbUnitTestFile(REGISTRY, CLASS_NAME_PREFIX
+                + testName);
+
+        Vocabulary updatedVocabulary;
+
+        InputStream is = ArquillianTestUtils.getResourceAsInputStream(
+                "test/tests/"
+                + CLASS_NAME_PREFIX
+                + testName
+                + "/test-validation.xml");
+        JAXBContext jaxbContext = JAXBContext.newInstance(Vocabulary.class);
+        Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
+        updatedVocabulary = (Vocabulary) jaxbUnmarshaller.unmarshal(is);
+
+        Set<ConstraintViolation<RegistrySchemaValidationHelper>>
+        errors = RegistrySchemaValidationHelper.getUpdatedVocabularyValidation(
+                updatedVocabulary);
+
+        List<ValidationSummary> actualErrors = new ArrayList<>();
+        for (ConstraintViolation<RegistrySchemaValidationHelper> oneError
+                : errors) {
+//            logger.info("One error: message template: "
+//                + oneError.getMessageTemplate()
+//                + "; propertypath: " + oneError.getPropertyPath());
+            actualErrors.add(new ValidationSummary(
+                    oneError.getMessageTemplate(),
+                    oneError.getPropertyPath().toString()));
+        }
+
+        List<ValidationSummary> expectedErrors = new ArrayList<>();
+        String pathPrefix = "testUpdatedVocabulary.arg0.";
+        expectedErrors.add(new ValidationSummary(
+                "{" + CheckVocabulary.INTERFACE_NAME
+                + ".relatedVocabularyRef.selfReference}",
+                pathPrefix + "relatedVocabularyRef[0]"));
+//        expectedErrors.add(new ValidationSummary(
+//                "{" + CheckVocabulary.INTERFACE_NAME
+//                + "}",
+//                pathPrefix + ""));
+
+        Assert.assertEqualsNoOrder(actualErrors.toArray(),
+                expectedErrors.toArray(),
+                "Set of validation errors does not match");
+    }
+
+
 
     /** Static nested class to aid comparison between actual and expected
      * sets of constraint violations. An instance of this class represents

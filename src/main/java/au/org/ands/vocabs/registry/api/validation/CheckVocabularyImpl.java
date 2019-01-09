@@ -703,6 +703,19 @@ public class CheckVocabularyImpl
                 newVocabulary.getRelatedVocabularyRef().iterator();
                 it.hasNext(); rvIndex++) {
             RelatedVocabularyRef rvRef = it.next();
+            // Disallow self-references (which can only come into play
+            // when updating).
+            if (mode == ValidationMode.UPDATE
+                    && newVocabulary.getId() != null
+                    && rvRef.getId() == newVocabulary.getId()) {
+                newValid = false;
+                constraintContext.buildConstraintViolationWithTemplate(
+                    "{" + INTERFACE_NAME
+                    + ".relatedVocabularyRef.selfReference}").
+                addPropertyNode("relatedVocabularyRef").addBeanNode().
+                inIterable().atIndex(rvIndex).
+                addConstraintViolation();
+            }
             // Check not a previously-seen ID.
             if (rvIDs.contains(rvRef.getId())) {
                 newValid = false;
