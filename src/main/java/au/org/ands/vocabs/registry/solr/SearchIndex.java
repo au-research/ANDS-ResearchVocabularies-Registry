@@ -138,7 +138,17 @@ public final class SearchIndex {
             // Check for a "pp" setting, now, as we might need it later
             // if we find a "p" filter.
             if (filters.containsKey("pp")) {
-                rows = (Integer) filters.get("pp");
+                // Support both "pp":2 and "pp":"2".
+                Object rowsValueAsObject = filters.get("pp");
+                if (rowsValueAsObject instanceof Integer) {
+                    rows = (Integer) (rowsValueAsObject);
+                } else if (rowsValueAsObject instanceof String) {
+                    rows = Integer.parseInt((String) rowsValueAsObject);
+                } else {
+                    throw new IllegalArgumentException("pp parameter must "
+                            + "be specified as either an integer or a "
+                            + "string");
+                }
                 if (rows < 0) {
                     /* If a negative value specified, the caller really
                      * wants "all" rows. Unfortunately, Solr does not
