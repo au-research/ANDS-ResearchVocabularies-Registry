@@ -87,6 +87,27 @@ public final class ArquillianTestUtils {
     private ArquillianTestUtils() {
     }
 
+    /** Get the contents of a file from the test directory as a String,
+     * given its filename.
+     * This is a method to be called client-side, from the top level
+     * of the Registry code. The path is interpreted relative to
+     * the current working directory.
+     * @param filename The filename of the resource.
+     * @return A {@link String} containing the contents the resource.
+     */
+    static String getTestFileAsString(
+            final String filename) {
+        File file = new File(
+                ArquillianBaseTest.RESOURCES_DEPLOY_PATH
+                + "/" + filename);
+        try {
+            return FileUtils.readFileToString(file, StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            throw new IllegalArgumentException("Can't load resource: "
+                    + filename);
+        }
+    }
+
     /** Get an {@link InputStream} for a file, given its filename.
      * @param filename The filename of the resource.
      * @return An {@link InputStream} for the resource.

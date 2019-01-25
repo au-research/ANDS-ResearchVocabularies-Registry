@@ -123,7 +123,7 @@ public class PutVocabularies {
 
         List<ValidationError> validationErrors =
                 AuthorizationValidationUtils.checkAuthorizationForContent(
-                        profile, newVocabulary);
+                        profile, newVocabulary, ValidationMode.CREATE);
         if (!validationErrors.isEmpty()) {
             ErrorResult errorResult =
                     new ErrorResult("Won't create vocabulary.");
@@ -301,7 +301,7 @@ public class PutVocabularies {
 
         List<ValidationError> validationErrors =
                 AuthorizationValidationUtils.checkAuthorizationForContent(
-                        profile, updatedVocabulary);
+                        profile, updatedVocabulary, ValidationMode.UPDATE);
         if (!validationErrors.isEmpty()) {
             ErrorResult errorResult =
                     new ErrorResult("Won't update vocabulary.");
