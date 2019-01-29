@@ -58,11 +58,9 @@ public class Download {
     private Logger logger = LoggerFactory.getLogger(
             MethodHandles.lookup().lookupClass());
 
-
     /** Mapping of Sesame Download formats to MIME types. */
     public static final Hashtable<String, String>
-    SESAME_FORMAT_TO_MIMETYPE_MAP =
-    new Hashtable<>();
+    SESAME_FORMAT_TO_MIMETYPE_MAP = new Hashtable<>();
 
     // List taken from:
     // http://rdf4j.org/sesame/2.8/docs/system.docbook?view#content-types
@@ -127,7 +125,10 @@ public class Download {
      * ignored, depending (for example) on the access point type.
      * Allowed values are the keys of {@link #SESAME_FORMAT_TO_MIMETYPE_MAP}.
      */
-    @Produces({MediaType.APPLICATION_OCTET_STREAM})
+    // Specify a @Produces annotation without a parameter here, which
+    // means "*/*". This overrides the default setting
+    // (in SwaggerInterface), which is XML and JSON only.
+    @Produces
     @Path("{downloadId}")
     @GET
     @ApiOperation(value = "Get a download.",
@@ -221,7 +222,10 @@ public class Download {
      * be ignored in constructing the response headers.
      * @param extension The download format. This may be
      * ignored, depending (for example) on the access point type. */
-    @Produces({MediaType.APPLICATION_OCTET_STREAM})
+    // Specify a @Produces annotation without a parameter here, which
+    // means "*/*". This overrides the default setting
+    // (in SwaggerInterface), which is XML and JSON only.
+    @Produces
     @Path("{downloadId}/{filename}.{extension}")
     @GET
     @ApiOperation(value = "Get a download.",
