@@ -895,7 +895,7 @@ public class VersionsModel extends ModelBase {
                     // the user wanted to restore, but we don't support that.)
                     throw new IllegalArgumentException(
                             "Attempt to update version that does not "
-                            + "belong to this vocabulary");
+                            + "belong to this vocabulary; Id = " + versionId);
                 }
             } else {
                 // New row required.
