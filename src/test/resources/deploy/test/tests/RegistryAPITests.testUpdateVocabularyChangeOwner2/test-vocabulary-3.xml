@@ -1,0 +1,3 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!DOCTYPE error>
+<error><constraintViolation><message>Not authorised to change the owner to this value.</message><path>owner</path></constraintViolation><message>Won't update vocabulary.</message></error>

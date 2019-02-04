@@ -1039,6 +1039,102 @@
 
 </method>
       </extraQuery>
+      <extraQuery name="MAKE_HIST_CURRENT_REV_VRV_FOR_VOC"
+                  type="update">
+        <extraQueryParameter name="vocabularyId" />
+        <extraQueryParameter name="nowTime" />
+        <extraQueryParameter name="modifiedBy" />
+        <queryText temporal="true">
+          UPDATE VocabularyRelatedVocabulary entity
+          SET endDate = :nowTime,
+          modifiedBy = :modifiedBy
+          WHERE relatedVocabularyId = :vocabularyId
+          #AND_TEMPORAL_QUERY_VALID_SUFFIX
+        </queryText>
+        <method>    /** Update all current VocabularyRelatedVocabulary
+     * instances that point back to a vocabulary, so that they are now
+     * historical.
+     * Invoke this method when the current instance of a vocabulary is
+     * deleted, so that no current vocabulary instances refer to it.
+     * See also {@link
+     * #deleteDraftReverseVocabularyRelatedVocabulariesForVocabulary(
+     *   EntityManager, int)}.
+     * This method uses an existing EntityManager
+     * provided as a parameter; transaction begin/end must be
+     * managed by the caller.
+     * @param em The EntityManager to be used.
+     * @param vocabularyId The vocabulary id for which vocabulary related
+     *     vocabularies of other vocabularies are to be updated.
+     * @param nowTime The time to use as the value of "now" when
+     *      updating rows of the database, i.e., which will be
+     *      used as the end date of rows that are being made
+     *      historical.
+     * @param modifiedBy The value to use for "modifiedBy" when
+     *      updating rows of the database.
+     */
+    public static void
+        makeHistoricalCurrentReverseVocabularyRelatedVocabulariesForVocabulary(
+                final EntityManager em,
+                final int vocabularyId,
+                final java.time.LocalDateTime nowTime,
+                final String modifiedBy) {
+        Query q = em.createNamedQuery(
+                VocabularyRelatedVocabulary.
+                    MAKE_HIST_CURRENT_REV_VRV_FOR_VOC).
+                setParameter(VocabularyRelatedVocabulary.
+                    MAKE_HIST_CURRENT_REV_VRV_FOR_VOC_VOCABULARYID,
+                    vocabularyId).
+                setParameter(VocabularyRelatedVocabulary.
+                    MAKE_HIST_CURRENT_REV_VRV_FOR_VOC_NOWTIME,
+                    nowTime).
+                setParameter(VocabularyRelatedVocabulary.
+                    MAKE_HIST_CURRENT_REV_VRV_FOR_VOC_MODIFIEDBY,
+                    modifiedBy);
+        q = TemporalUtils.setDatetimeConstantParameters(q);
+        q.executeUpdate();
+    }
+
+</method>
+      </extraQuery>
+      <extraQuery name="DELETE_DRAFT_REV_VRV_FOR_VOC"
+                  type="update">
+        <extraQueryParameter name="vocabularyId" />
+        <queryText temporal="true">
+          DELETE VocabularyRelatedVocabulary entity
+          WHERE relatedVocabularyId = :vocabularyId
+          #AND_TEMPORAL_QUERY_ALL_DRAFT_SUFFIX
+        </queryText>
+        <method>    /** Delete all draft VocabularyRelatedVocabulary
+     * instances that point back to a vocabulary.
+     * Invoke this method when the current instance of a vocabulary is
+     * deleted, so that no draft vocabulary instances refer to it.
+     * See also {@link
+     * #makeHistoricalCurrentReverseVocabularyRelatedVocabulariesForVocabulary(
+     *   EntityManager, int, java.time.LocalDateTime, String)}.
+     * This method uses an existing EntityManager
+     * provided as a parameter; transaction begin/end must be
+     * managed by the caller.
+     * @param em The EntityManager to be used.
+     * @param vocabularyId The vocabulary id for which draft
+     *     vocabulary related vocabularies of other vocabularies
+     *     are to be deleted.
+     */
+    public static void
+        deleteDraftReverseVocabularyRelatedVocabulariesForVocabulary(
+                final EntityManager em,
+                final int vocabularyId) {
+        Query q = em.createNamedQuery(
+                VocabularyRelatedVocabulary.
+                    DELETE_DRAFT_REV_VRV_FOR_VOC).
+                setParameter(VocabularyRelatedVocabulary.
+                    DELETE_DRAFT_REV_VRV_FOR_VOC_VOCABULARYID,
+                    vocabularyId);
+        q = TemporalUtils.setDatetimeConstantParameters(q);
+        q.executeUpdate();
+    }
+
+</method>
+      </extraQuery>
     </extraQueries>
   </map>
   <map tableName="tasks"

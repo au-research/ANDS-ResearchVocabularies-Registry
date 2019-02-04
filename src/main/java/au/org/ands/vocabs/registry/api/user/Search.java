@@ -43,6 +43,17 @@ public class Search {
     private Logger logger = LoggerFactory.getLogger(
             MethodHandles.lookup().lookupClass());
 
+    /* There's a "feature" here with the fact that we're using Jersey.
+     * The filterJson parameter can also be specified as a
+     * <i>query</i> parameter, and Jersey will pass it on.
+     * However, that by itself won't work: because we have
+     * the @FormContentTypeFilter annotation, you still have
+     * to set the Content-Type as "application/x-www-form-urlencoded"
+     * (but you don't have to provide a body!).
+     * To disable this feature, see the Jersey property
+     * ServletProperties.QUERY_PARAMS_AS_FORM_PARAMS_DISABLED
+     * (= "jersey.config.servlet.form.queryParams.disabled").
+     */
     /** Perform a search against the Solr index.
      * @param request The HTTP request.
      * @param uriInfo The UriInfo of the request.

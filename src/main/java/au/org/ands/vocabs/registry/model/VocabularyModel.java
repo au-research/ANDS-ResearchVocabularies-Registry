@@ -17,6 +17,7 @@ import au.org.ands.vocabs.registry.db.context.TemporalUtils;
 import au.org.ands.vocabs.registry.db.converter.VocabularyDbSchemaMapper;
 import au.org.ands.vocabs.registry.db.dao.VocabularyDAO;
 import au.org.ands.vocabs.registry.db.dao.VocabularyIdDAO;
+import au.org.ands.vocabs.registry.db.dao.VocabularyRelatedVocabularyDAO;
 import au.org.ands.vocabs.registry.db.entity.Vocabulary;
 import au.org.ands.vocabs.registry.db.entity.clone.VocabularyClone;
 import au.org.ands.vocabs.registry.enums.RegistryEventElementType;
@@ -317,6 +318,10 @@ public class VocabularyModel extends ModelBase {
                 currentVocabulary, null);
 
         currentVocabulary = null;
+
+        // Now "delete" reverse VocabularyRelatedVocabulary instances that
+        // point to this vocabulary.
+        deleteReverseVocabularyRelatedVocabularies();
     }
 
     /** {@inheritDoc} */
@@ -343,6 +348,11 @@ public class VocabularyModel extends ModelBase {
                 vocabularyId(), nowTime(),
                 RegistryEventEventType.DELETED, modifiedBy(),
                 currentVocabulary, null);
+
+        // Now "delete" reverse VocabularyRelatedVocabulary instances that
+        // point to this vocabulary.
+        deleteReverseVocabularyRelatedVocabularies();
+
         // Now make a new draft record.
         draftVocabulary = VocabularyClone.INSTANCE.
                 clone(currentVocabulary);
@@ -360,6 +370,26 @@ public class VocabularyModel extends ModelBase {
                 RegistryEventEventType.CREATED, modifiedBy(),
                 null, draftVocabulary);
         currentVocabulary = null;
+    }
+
+    /** Delete VocabularyRelatedVocabulary instances of
+     * <i>other</i> vocabularies that point back to this vocabulary.
+     * Here, "delete" means:
+     * <ul>
+     *   <li>For currently-valid instances: make them historical.</li>
+     *   <li>For draft instances: delete them.</li>
+     * </ul>
+     * Note that this does <i>not</i> create any registry events for
+     * those other vocabularies. That may be future work, especially
+     * if we include related vocabulary changes within notifications.
+     */
+    private void deleteReverseVocabularyRelatedVocabularies() {
+        VocabularyRelatedVocabularyDAO.
+        makeHistoricalCurrentReverseVocabularyRelatedVocabulariesForVocabulary(
+                em(), vocabularyId(), nowTime(), modifiedBy());
+        VocabularyRelatedVocabularyDAO.
+        deleteDraftReverseVocabularyRelatedVocabulariesForVocabulary(
+                em(), vocabularyId());
     }
 
     /** {@inheritDoc} */

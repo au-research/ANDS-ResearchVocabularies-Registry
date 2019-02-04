@@ -2,9 +2,13 @@
 
 package au.org.ands.vocabs.registry.model.sequence;
 
+import java.lang.invoke.MethodHandles;
+
 import org.apache.commons.lang3.builder.CompareToBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import au.org.ands.vocabs.registry.db.entity.AccessPoint;
 
@@ -18,6 +22,10 @@ import au.org.ands.vocabs.registry.db.entity.AccessPoint;
  */
 public class AccessPointElement
     implements Comparable<AccessPointElement> {
+
+    /** Logger for this class. */
+    private Logger logger = LoggerFactory.getLogger(
+            MethodHandles.lookup().lookupClass());
 
     /** The Version Id. */
     private Integer versionId;
@@ -134,44 +142,91 @@ public class AccessPointElement
             // This access point has no apId. It will be sorted
             // after all access points that _do_ have apIds.
             if (other.apId == null) {
+                // It is probably overkill to give this so much attention
+                // (i.e., code), but we do so "just in case" future work
+                // (somehow) makes this important.
                 // Both access points have null apIds, so
                 // sort by source and the remaining elements.
-                return new CompareToBuilder().
+                // NB: source and discriminator are validated by
+                // CheckVocabularyImpl and can be expected to be
+                // non-null.
+                CompareToBuilder compareToBuilder =
+                        new CompareToBuilder().
                         append(schemaAP.getSource(),
                                 other.getSchemaAP().getSource()).
                         append(schemaAP.getDiscriminator(),
-                                other.getSchemaAP().getDiscriminator()).
-                        append(ToStringBuilder.reflectionToString(
-                                schemaAP.getApApiSparql(),
-                                ToStringStyle.SHORT_PREFIX_STYLE),
+                                other.getSchemaAP().getDiscriminator());
+                if (schemaAP.getDiscriminator().equals(
+                        other.getSchemaAP().getDiscriminator())) {
+                    // CheckVocabularyImpl confirms that both this's and
+                    // other's type-specific subelement are non-null.
+                    switch (schemaAP.getDiscriminator()) {
+                    case API_SPARQL:
+                        compareToBuilder.append(
                                 ToStringBuilder.reflectionToString(
-                                other.getSchemaAP().getApApiSparql(),
-                                ToStringStyle.SHORT_PREFIX_STYLE)).
-                        append(ToStringBuilder.reflectionToString(
-                                schemaAP.getApFile(),
-                                ToStringStyle.SHORT_PREFIX_STYLE),
+                                        schemaAP.getApApiSparql(),
+                                        ToStringStyle.SHORT_PREFIX_STYLE),
                                 ToStringBuilder.reflectionToString(
-                                other.getSchemaAP().getApFile(),
-                                ToStringStyle.SHORT_PREFIX_STYLE)).
-                        append(ToStringBuilder.reflectionToString(
-                                schemaAP.getApSesameDownload(),
-                                ToStringStyle.SHORT_PREFIX_STYLE),
+                                        other.getSchemaAP().getApApiSparql(),
+                                        ToStringStyle.SHORT_PREFIX_STYLE));
+                        break;
+                    case FILE:
+                        compareToBuilder.append(
                                 ToStringBuilder.reflectionToString(
-                                other.getSchemaAP().getApSesameDownload(),
-                                ToStringStyle.SHORT_PREFIX_STYLE)).
-                        append(ToStringBuilder.reflectionToString(
-                                schemaAP.getApSissvoc(),
-                                ToStringStyle.SHORT_PREFIX_STYLE),
+                                        schemaAP.getApFile(),
+                                        ToStringStyle.SHORT_PREFIX_STYLE),
                                 ToStringBuilder.reflectionToString(
-                                other.getSchemaAP().getApSissvoc(),
-                                ToStringStyle.SHORT_PREFIX_STYLE)).
-                        append(ToStringBuilder.reflectionToString(
-                                schemaAP.getApWebPage(),
-                                ToStringStyle.SHORT_PREFIX_STYLE),
+                                        other.getSchemaAP().getApFile(),
+                                        ToStringStyle.SHORT_PREFIX_STYLE));
+                        break;
+                    case SESAME_DOWNLOAD:
+                        // NB: Adding user-specified access points
+                        // of type sesameDownload is not yet supported.
+                        // See the case for SESAME_DOWNLOAD in
+                        // WorkflowMethods.insertAccessPoint().
+                        // If you try, you get a NullPointerException
+                        // out of the corresponding visitInsertCommand()
+                        // method of AccessPointsModel.
+                        // If this functionality is added, revisit the comment
+                        // for the SESAME_DOWNLOAD case in
+                        // WorkflowMethods.insertAccessPoint(),
+                        // and make sure there is a test case for this branch,
+                        // i.e., adding multiple instances to the
+                        // same version at the same time.
+                        compareToBuilder.append(
                                 ToStringBuilder.reflectionToString(
-                                other.getSchemaAP().getApWebPage(),
-                                ToStringStyle.SHORT_PREFIX_STYLE)).
-                        toComparison();
+                                        schemaAP.getApSesameDownload(),
+                                        ToStringStyle.SHORT_PREFIX_STYLE),
+                                ToStringBuilder.reflectionToString(
+                                        other.getSchemaAP().
+                                        getApSesameDownload(),
+                                        ToStringStyle.SHORT_PREFIX_STYLE));
+                        break;
+                    case SISSVOC:
+                        compareToBuilder.append(
+                                ToStringBuilder.reflectionToString(
+                                        schemaAP.getApSissvoc(),
+                                        ToStringStyle.SHORT_PREFIX_STYLE),
+                                ToStringBuilder.reflectionToString(
+                                        other.getSchemaAP().getApSissvoc(),
+                                        ToStringStyle.SHORT_PREFIX_STYLE));
+                        break;
+                    case WEB_PAGE:
+                        compareToBuilder.append(
+                                ToStringBuilder.reflectionToString(
+                                        schemaAP.getApWebPage(),
+                                        ToStringStyle.SHORT_PREFIX_STYLE),
+                                ToStringBuilder.reflectionToString(
+                                        other.getSchemaAP().getApWebPage(),
+                                        ToStringStyle.SHORT_PREFIX_STYLE));
+                        break;
+                    default:
+                        logger.error("Unexpected discriminator value! FIX ME!");
+                        throw new IllegalArgumentException(
+                                "Unexpected discriminator value! FIX ME!");
+                    }
+                }
+                return compareToBuilder.toComparison();
             }
             // The other version has an apId. This access point
             // is sorted after it.

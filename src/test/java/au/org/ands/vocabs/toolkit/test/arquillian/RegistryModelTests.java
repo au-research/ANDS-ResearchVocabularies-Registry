@@ -204,6 +204,26 @@ public class RegistryModelTests extends ArquillianBaseTest {
     }
 
     /** Test of deleting the current instance of a vocabulary that has only
+     * a current instance, with Vocabulary, VocabularyRelatedEntity,
+     * and VocabularyRelatedVocabulary model elements.
+     * This method also tests what happens to other vocabularies
+     * that are related to the now-deleted current instance, in particular,
+     * that those vocabularies no longer have VocabularyRelatedVocabulary
+     * instances that refer to the now-deleted vocabulary.
+     * See CC-2440.
+     * @throws DatabaseUnitException If a problem with DbUnit.
+     * @throws IOException If a problem getting test data for DbUnit,
+     *          or reading JSON from the correct and test output files.
+     * @throws SQLException If DbUnit has a problem performing
+     *           performing JDBC operations.
+     *  */
+    @Test
+    public final void testDeleteCurrentReverseVRV1() throws
+    DatabaseUnitException, IOException, SQLException {
+        scriptDeleteOnlyCurrent1("testDeleteCurrentReverseVRV1");
+    }
+
+    /** Test of deleting the current instance of a vocabulary that has only
      * a current instance, with Vocabulary, VocabularyRelatedEntity, and
      * Version model elements.
      * @throws DatabaseUnitException If a problem with DbUnit.
@@ -410,6 +430,28 @@ public class RegistryModelTests extends ArquillianBaseTest {
     DatabaseUnitException, IOException, SQLException {
         scriptMakeCurrentVocabularyDraft1(
                 "testMakeCurrentVocabularyDraftVoVREVRV1");
+    }
+
+    /** Test of starting with a vocabulary that has only
+     * a current instance, and making that current instance into
+     * a draft only. Only Vocabulary, VocabularyRelatedEntity, and
+     * VocabularyRelatedVocabulary model elements are used.
+     * This method also tests what happens to other vocabularies
+     * that are related to the now-deleted current instance, in particular,
+     * that those vocabularies no longer have VocabularyRelatedVocabulary
+     * instances that refer to the now-deleted vocabulary.
+     * See CC-2440.
+     * @throws DatabaseUnitException If a problem with DbUnit.
+     * @throws IOException If a problem getting test data for DbUnit,
+     *          or reading JSON from the correct and test output files.
+     * @throws SQLException If DbUnit has a problem performing
+     *           performing JDBC operations.
+     *  */
+    @Test
+    public final void testMakeCurrentVocabularyDraftReverseVRV1() throws
+    DatabaseUnitException, IOException, SQLException {
+        scriptMakeCurrentVocabularyDraft1(
+                "testMakeCurrentVocabularyDraftReverseVRV1");
     }
 
     /** Test of starting with a vocabulary that has only
@@ -922,6 +964,87 @@ public class RegistryModelTests extends ArquillianBaseTest {
     public final void testApplyChangesCurrentVoVREVeAP2() throws
     DatabaseUnitException, IOException, SQLException, JAXBException {
         scriptApplyChangesCurrent2("testApplyChangesCurrentVoVREVeAP2", true);
+    }
+
+    /** Test of applying changes to the current instance of a vocabulary
+     * that does not have a draft instance.
+     * Vocabulary, VocabularyRelatedEntity, Version, and AccessPoint
+     * model elements are used.
+     * This test particularly exercises the ability to add more
+     * than one access point to the same version, at the same time.
+     * See CC-2387. This test adds two apiSparql access points.
+     * @throws DatabaseUnitException If a problem with DbUnit.
+     * @throws IOException If a problem getting test data for DbUnit,
+     *          or reading JSON from the correct and test output files.
+     * @throws SQLException If DbUnit has a problem performing
+     *           performing JDBC operations.
+     * @throws JAXBException If a problem loading vocabulary data.
+     *  */
+    @Test
+    public final void testApplyChangesCurrentVoVREVeAP3() throws
+    DatabaseUnitException, IOException, SQLException, JAXBException {
+        scriptApplyChangesCurrent1("testApplyChangesCurrentVoVREVeAP3", true);
+    }
+
+    /** Test of applying changes to the current instance of a vocabulary
+     * that does not have a draft instance.
+     * Vocabulary, VocabularyRelatedEntity, Version, and AccessPoint
+     * model elements are used.
+     * This test particularly exercises the ability to add more
+     * than one access point to the same version, at the same time.
+     * See CC-2387. This test adds two sissvoc access points.
+     * @throws DatabaseUnitException If a problem with DbUnit.
+     * @throws IOException If a problem getting test data for DbUnit,
+     *          or reading JSON from the correct and test output files.
+     * @throws SQLException If DbUnit has a problem performing
+     *           performing JDBC operations.
+     * @throws JAXBException If a problem loading vocabulary data.
+     *  */
+    @Test
+    public final void testApplyChangesCurrentVoVREVeAP4() throws
+    DatabaseUnitException, IOException, SQLException, JAXBException {
+        scriptApplyChangesCurrent1("testApplyChangesCurrentVoVREVeAP4", true);
+    }
+
+    /** Test of applying changes to the current instance of a vocabulary
+     * that does not have a draft instance.
+     * Vocabulary, VocabularyRelatedEntity, Version, and AccessPoint
+     * model elements are used.
+     * This test particularly exercises the ability to add more
+     * than one access point to the same version, at the same time.
+     * See CC-2387. This test adds two webPage access points.
+     * @throws DatabaseUnitException If a problem with DbUnit.
+     * @throws IOException If a problem getting test data for DbUnit,
+     *          or reading JSON from the correct and test output files.
+     * @throws SQLException If DbUnit has a problem performing
+     *           performing JDBC operations.
+     * @throws JAXBException If a problem loading vocabulary data.
+     *  */
+    @Test
+    public final void testApplyChangesCurrentVoVREVeAP5() throws
+    DatabaseUnitException, IOException, SQLException, JAXBException {
+        scriptApplyChangesCurrent1("testApplyChangesCurrentVoVREVeAP5", true);
+    }
+
+    /** Test of applying changes to the current instance of a vocabulary
+     * that does not have a draft instance.
+     * Vocabulary, VocabularyRelatedEntity, Version, and AccessPoint
+     * model elements are used.
+     * This test particularly exercises the ability to add more
+     * than one access point to the same version, at the same time.
+     * See CC-2387. This test adds two access points of <i>different</i>
+     * types; in this case, an apiSparql and a webPage.
+     * @throws DatabaseUnitException If a problem with DbUnit.
+     * @throws IOException If a problem getting test data for DbUnit,
+     *          or reading JSON from the correct and test output files.
+     * @throws SQLException If DbUnit has a problem performing
+     *           performing JDBC operations.
+     * @throws JAXBException If a problem loading vocabulary data.
+     *  */
+    @Test
+    public final void testApplyChangesCurrentVoVREVeAP6() throws
+    DatabaseUnitException, IOException, SQLException, JAXBException {
+        scriptApplyChangesCurrent1("testApplyChangesCurrentVoVREVeAP6", true);
     }
 
     /** Test script of adding a draft to a vocabulary

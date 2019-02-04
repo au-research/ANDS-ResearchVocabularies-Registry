@@ -495,6 +495,65 @@ public class RegistryModelWorkflowTests extends ArquillianBaseTest {
         ArquillianTestUtils.assertTempForTestHasFiles(testName, 4);
     }
 
+    /** Test of applying changes to the current instance of a vocabulary
+     * that does not have a draft instance.
+     * Vocabulary, Version, VocabularyRelatedEntity,
+     * AccessPoint, and VersionArtefact
+     * model elements are used. Workflow processing is applied.
+     * This test particularly exercises the ability to add more
+     * than one file access point to the same version, at the same time.
+     * See CC-2387.
+     * @throws DatabaseUnitException If a problem with DbUnit.
+     * @throws IOException If a problem getting test data for DbUnit,
+     *          or reading JSON from the correct and test output files.
+     * @throws SQLException If DbUnit has a problem performing
+     *           performing JDBC operations.
+     * @throws JAXBException If a problem loading vocabulary data.
+     *  */
+    @SuppressWarnings("checkstyle:MagicNumber")
+    @Test
+    public final void testApplyChangesCurrentVoVREVeAPVAW4() throws
+    DatabaseUnitException, IOException, SQLException, JAXBException {
+        String testName = CLASS_NAME_PREFIX
+                + "testApplyChangesCurrentVoVREVeAPVAW4";
+        ArquillianTestUtils.clearDatabase(ROLES);
+        ArquillianTestUtils.loadDbUnitTestFile(ROLES, testName);
+        ArquillianTestUtils.clearDatabase(REGISTRY);
+        ArquillianTestUtils.loadDbUnitTestFile(REGISTRY, testName);
+        ArquillianTestUtils.copyUploadsFilesForTest(testName);
+        ArquillianTestUtils.copyTempFilesForTest(testName);
+        ArquillianTestUtils.assertTempForTestHasFiles(testName, 3);
+        Vocabulary vocabulary = RegistryTestUtils.
+                getValidatedVocabularyFromFile(
+                "test/tests/" + testName + "/test-vocabulary.xml",
+                ValidationMode.UPDATE);
+        EntityManager em = null;
+        try {
+            em = DBContext.getEntityManager();
+            em.getTransaction().begin();
+            VocabularyModel vm = ModelMethods.createVocabularyModel(em, 1);
+            ModelMethods.applyChanges(vm, "TEST", nowTime1, vocabulary);
+            em.getTransaction().commit();
+        } catch (Exception e) {
+            if (em != null) {
+                em.getTransaction().rollback();
+                throw e;
+            }
+        } finally {
+            if (em != null) {
+                em.close();
+            }
+        }
+
+//        ArquillianTestUtils.exportFullDbUnitData(REGISTRY,
+//                testName + "-out.xml");
+        ArquillianTestUtils.
+        compareDatabaseCurrentAndExpectedContentsIgnoreTaskTimestamps(
+                REGISTRY,
+                "test/tests/" + testName + "/test-registry-results.xml");
+        ArquillianTestUtils.assertTempForTestHasFiles(testName, 3);
+    }
+
     /** Test of adding a draft to a vocabulary
      * that has an existing published instance, and then publishing
      * the same.

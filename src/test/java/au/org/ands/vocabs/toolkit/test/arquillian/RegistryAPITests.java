@@ -12,12 +12,14 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status.Family;
 
+import org.hamcrest.MatcherAssert;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.Assert;
 import org.testng.annotations.Test;
+import org.xmlunit.matchers.CompareMatcher;
 
 import au.org.ands.vocabs.registry.api.context.ApiPaths;
 import au.org.ands.vocabs.registry.enums.VocabularyStatus;
@@ -190,6 +192,166 @@ public class RegistryAPITests extends ArquillianBaseTest {
 
         Assert.assertEquals(vocabularyList.getVocabulary().size(), 0,
             "vocabularyList size");
+    }
+
+    /** Client-side test of updateVocabulary, changing the owner in
+     * a way that is permitted.
+     */
+    @Test
+    @RunAsClient
+    public final void testUpdateVocabularyChangeOwner1() {
+        String testName = "testUpdateVocabularyChangeOwner1";
+        // Update requires authorization, so load roles.
+        ArquillianTestUtils.clientClearDatabase(ROLES, baseURL);
+        ArquillianTestUtils.clientLoadDbUnitTestFile(ROLES, baseURL,
+                CLASS_NAME_PREFIX + testName);
+        ArquillianTestUtils.clientClearDatabase(REGISTRY, baseURL);
+        ArquillianTestUtils.clientLoadDbUnitTestFile(REGISTRY, baseURL,
+                CLASS_NAME_PREFIX + testName);
+
+        // First, make sure we are starting with the correct content.
+        String expectedString;
+        expectedString = ArquillianTestUtils.getTestFileAsString(
+                "test/tests/"
+                        + CLASS_NAME_PREFIX
+                        + testName
+                        + "/test-vocabulary-1.xml");
+
+        // Get the original vocabulary.
+        Response response = NetClientUtils.doGetWithAdditionalComponents(
+                baseURL,
+                ApiPaths.API_RESOURCE + "/" + ApiPaths.VOCABULARIES + "/1",
+                MediaType.APPLICATION_XML_TYPE,
+                webTarget -> webTarget.queryParam(
+                        "includeRelatedEntitiesAndVocabularies", "true"));
+
+        String actualString;
+        actualString = response.readEntity(String.class);
+        response.close();
+
+        // Use XMLUnit, as our test data has an additional DOCTYPE.
+        MatcherAssert.assertThat("Before update",
+                actualString,
+                CompareMatcher.isIdenticalTo(expectedString).
+                ignoreWhitespace());
+
+        // The content to be sent as the body of the PUT request.
+        String body = ArquillianTestUtils.getTestFileAsString(
+                "test/tests/"
+                        + CLASS_NAME_PREFIX
+                        + testName
+                        + "/test-vocabulary-2.xml");
+
+        response =
+                NetClientUtils.doPutBasicAuthWithAdditionalComponentsXml(
+                        baseURL,
+                        ApiPaths.API_RESOURCE + "/"
+                                + ApiPaths.VOCABULARIES + "/1",
+                        MediaType.APPLICATION_XML_TYPE, "test1", "test",
+                        webTarget -> webTarget,
+                        body);
+
+        expectedString = ArquillianTestUtils.getTestFileAsString(
+                "test/tests/"
+                        + CLASS_NAME_PREFIX
+                        + testName
+                        + "/test-vocabulary-3.xml");
+
+        Assert.assertEquals(response.getStatusInfo().getFamily(),
+                Family.SUCCESSFUL,
+                "updateVocabularies response status");
+
+        actualString = response.readEntity(String.class);
+        response.close();
+
+//        logger.debug("Response: " + actualString);
+
+        // Use XMLUnit, as our test data has an additional DOCTYPE.
+        MatcherAssert.assertThat("After update",
+                actualString,
+                CompareMatcher.isIdenticalTo(expectedString).
+                ignoreWhitespace());
+    }
+
+    /** Client-side test of updateVocabulary, changing the owner in
+     * a way that is not permitted.
+     */
+    @Test
+    @RunAsClient
+    public final void testUpdateVocabularyChangeOwner2() {
+        String testName = "testUpdateVocabularyChangeOwner2";
+        // Update requires authorization, so load roles.
+        ArquillianTestUtils.clientClearDatabase(ROLES, baseURL);
+        ArquillianTestUtils.clientLoadDbUnitTestFile(ROLES, baseURL,
+                CLASS_NAME_PREFIX + testName);
+        ArquillianTestUtils.clientClearDatabase(REGISTRY, baseURL);
+        ArquillianTestUtils.clientLoadDbUnitTestFile(REGISTRY, baseURL,
+                CLASS_NAME_PREFIX + testName);
+
+        // First, make sure we are starting with the correct content.
+        String expectedString;
+        expectedString = ArquillianTestUtils.getTestFileAsString(
+                "test/tests/"
+                        + CLASS_NAME_PREFIX
+                        + testName
+                        + "/test-vocabulary-1.xml").trim();
+
+        // Get the original vocabulary.
+        Response response = NetClientUtils.doGetWithAdditionalComponents(
+                baseURL,
+                ApiPaths.API_RESOURCE + "/" + ApiPaths.VOCABULARIES + "/1",
+                MediaType.APPLICATION_XML_TYPE,
+                webTarget -> webTarget.queryParam(
+                        "includeRelatedEntitiesAndVocabularies", "true"));
+
+        String actualString;
+        actualString = response.readEntity(String.class);
+        response.close();
+
+        // Use XMLUnit, as our test data has an additional DOCTYPE.
+        MatcherAssert.assertThat("Before update",
+                actualString,
+                CompareMatcher.isIdenticalTo(expectedString).
+                ignoreWhitespace());
+
+        // The content to be sent as the body of the PUT request.
+        String body = ArquillianTestUtils.getTestFileAsString(
+                "test/tests/"
+                        + CLASS_NAME_PREFIX
+                        + testName
+                        + "/test-vocabulary-2.xml");
+
+        response =
+                NetClientUtils.doPutBasicAuthWithAdditionalComponentsXml(
+                        baseURL,
+                        ApiPaths.API_RESOURCE + "/"
+                                + ApiPaths.VOCABULARIES + "/1",
+                        MediaType.APPLICATION_XML_TYPE, "test1", "test",
+                        webTarget -> webTarget,
+                        body);
+
+        // test-vocabulary-3.xml contains an error response, not
+        // an updated vocabulary.
+        expectedString = ArquillianTestUtils.getTestFileAsString(
+                "test/tests/"
+                        + CLASS_NAME_PREFIX
+                        + testName
+                        + "/test-vocabulary-3.xml").trim();
+
+        Assert.assertEquals(response.getStatusInfo().getFamily(),
+                Family.CLIENT_ERROR,
+                "updateVocabularies response status");
+
+        actualString = response.readEntity(String.class);
+        response.close();
+
+//        logger.debug("Response: " + actualString);
+
+        // Use XMLUnit, as our test data has an additional DOCTYPE.
+        MatcherAssert.assertThat("After update",
+                actualString,
+                CompareMatcher.isIdenticalTo(expectedString).
+                ignoreWhitespace());
     }
 
 }

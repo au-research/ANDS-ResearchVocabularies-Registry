@@ -38,21 +38,42 @@ public final class AuthorizationValidationUtils {
      * of a vocabulary specified in registry schema format.
      * @param profile The caller's security profile.
      * @param vocabulary The vocabulary to be checked.
+     * @param mode The validation mode.
      * @return A list of validation errors, if there are any. If there
      *      are no errors, an empty list is returned (i.e., not null).
      */
     public static List<ValidationError> checkAuthorizationForContent(
             final CommonProfile profile,
-            final Vocabulary vocabulary) {
+            final Vocabulary vocabulary,
+            final ValidationMode mode) {
         List<ValidationError> validationErrors = new ArrayList<>();
 
         // Things to be tested:
+        // * if mode == UPDATE: vocabulary owner
+        // * uploadId of file access points
+
+        // Vocabulary owner
+        // If the vocabulary is being updated, the user must also have
+        // the role specified in the owner field of the updated vocabulary.
+        // So, in practice, the value
+        // of the owner field may be changed, as long as both the
+        // original and final values are in the user's purview.
+        // Note the test "mode == ValidationMode.UPDATE": the
+        // createVocabulary() method does the same check of the owner field,
+        // but issues a different error in that case.
+        if (mode == ValidationMode.UPDATE
+                && !AuthUtils.ownerIsAuthorizedByOrganisationOrUsername(
+                        profile, vocabulary.getOwner())) {
+            ValidationError ve = new ValidationError();
+            ve.setMessage("Not authorised to change the owner to this value.");
+            ve.setPath("owner");
+            validationErrors.add(ve);
+        }
 
         // For file access points, that the uploadId corresponds
         // to an existing upload, that we own.
         // We rely on the CheckVocabulary annotation having already
         // required that the uploadId be specified.
-
         for (Version version : vocabulary.getVersion()) {
             for (AccessPoint ap : version.getAccessPoint()) {
                 if (ap.getDiscriminator() == AccessPointType.FILE) {

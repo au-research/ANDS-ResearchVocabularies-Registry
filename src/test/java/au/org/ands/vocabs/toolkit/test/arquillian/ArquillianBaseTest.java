@@ -36,8 +36,10 @@ public class ArquillianBaseTest extends Arquillian {
                 MethodHandles.lookup().lookupClass());
     }
 
-    /** Path to test resources that are to be deployed. */
-    private static final String RESOURCES_DEPLOY_PATH =
+    /** Path to test resources that are to be deployed.
+     * Visibility is package, so that it can be used in
+     * {@link ArquillianTestUtils#getTestFileAsString(String)}. */
+    static final String RESOURCES_DEPLOY_PATH =
             "src/test/resources/deploy";
 
     /* This is what is output by Tomcat on context shutdown

@@ -79,7 +79,7 @@ public final class RegistryTestUtils {
             break;
         case UPDATE:
             errors = RegistrySchemaValidationHelper.
-            getValidUpdatedVocabularyValidation(vocabulary);
+            getUpdatedVocabularyValidation(vocabulary);
             break;
         default:
             logger.error("Can't happen: unknown validation mode.");

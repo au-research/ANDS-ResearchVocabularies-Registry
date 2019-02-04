@@ -125,7 +125,7 @@ public final class RegistrySchemaValidationHelper {
      *      if this set is empty.)
      */
     public static Set<ConstraintViolation<RegistrySchemaValidationHelper>>
-    getValidUpdatedVocabularyValidation(final Vocabulary updatedVocabulary) {
+    getUpdatedVocabularyValidation(final Vocabulary updatedVocabulary) {
         return EXECUTABLE_VALIDATOR.validateParameters(
                 INSTANCE, updatedVocabularyMethod,
                 new Object[] {updatedVocabulary});
