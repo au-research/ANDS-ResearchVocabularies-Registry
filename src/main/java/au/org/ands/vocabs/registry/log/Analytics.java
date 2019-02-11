@@ -139,8 +139,10 @@ public final class Analytics {
     // VOCABULARY_LOOKUP_BY_ID and VOCABULARY_LOOKUP_BY_SLUG.
     /** The name of the entity status field inserted into log entries.
      * This is used to represent a <i>registry entity's</i> status, e.g.,
-     * that a vocabulary has "deprecated" status. */
-    public static final String ENTITY_STATUS_FIELD = "entity_status";
+     * that a vocabulary has "deprecated" status.
+     * As this log field is embedded within the {@link #VOCABULARY_MAP_FIELD}
+     * map, the use of the value "status" is unambiguous.*/
+    public static final String ENTITY_STATUS_FIELD = "status";
     /** The name of the failure reason field inserted into log entries. */
     public static final String FAILURE_REASON = "failure_reason";
     /** The name of the owner field inserted into log entries. */
