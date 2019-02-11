@@ -27,11 +27,13 @@ import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.text.StringEscapeUtils;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
@@ -50,9 +52,22 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.core.type.TypeReference;
 
 import au.org.ands.vocabs.registry.db.converter.JSONSerialization;
+import au.org.ands.vocabs.registry.log.Analytics;
 
 /** Methods for Solr searching. */
 public final class SearchIndex {
+
+    /** Map of incoming filter keys to the field names used for logging. */
+    private static Map<String, String> filterArrays = new HashMap<>();
+
+    static {
+        filterArrays.put(ACCESS, Analytics.SEARCH_ACCESS_FIELD);
+        filterArrays.put(FORMAT, Analytics.SEARCH_FORMAT_FIELD);
+        filterArrays.put(LANGUAGE, Analytics.SEARCH_LANGUAGE_FIELD);
+        filterArrays.put(LICENCE, Analytics.SEARCH_LICENCE_FIELD);
+        filterArrays.put(PUBLISHER, Analytics.SEARCH_PUBLISHER_FIELD);
+        filterArrays.put(SUBJECT_LABELS, Analytics.SEARCH_SUBJECT_LABELS_FIELD);
+    }
 
     /** Private constructor for a utility class. */
     private SearchIndex() {
@@ -79,6 +94,11 @@ public final class SearchIndex {
     /** Perform a Solr search.
      * @param filtersJson The query parameters, specified as a String
      *      in JSON format.
+     * @param filtersExtracted A list into which the extracted query
+     *      parameters are stored, for later use in analytics logging.
+     *      For each type of logging field, two elements are appended
+     *      to the list: the first is the log field name; the second
+     *      is the value of the field.
      * @return The response from Solr, in the raw JSON form that came back.
      * @throws IOException If the Solr query generated an IOException.
      * @throws SolrServerException If the Solr query generated a
@@ -89,7 +109,8 @@ public final class SearchIndex {
     // Please refactor this.
     @SuppressWarnings("checkstyle:MethodLength")
     public static String query(
-            final String filtersJson)
+            final String filtersJson,
+            final List<Object> filtersExtracted)
             throws IOException, SolrServerException {
         SolrQuery solrQuery = new SolrQuery();
         // Specify that we want the raw JSON that Solr produces.
@@ -155,6 +176,8 @@ public final class SearchIndex {
                      * directly support that. See the Solr doc. */
                     rows = RIDICULOUSLY_LARGE_VALUE;
                 }
+                filtersExtracted.add(Analytics.SEARCH_PP_FIELD);
+                filtersExtracted.add(rows);
             }
 
             solrQuery.set(DisMaxParams.ALTQ, "*:*");
@@ -181,12 +204,15 @@ public final class SearchIndex {
 
             for (Entry<String, Object> filterEntry : filters.entrySet()) {
                 Object value = filterEntry.getValue();
-                switch (filterEntry.getKey()) {
+                String filterKey = filterEntry.getKey();
+                switch (filterKey) {
                 case "q":
                     String stringValue = (String) value;
                     if (StringUtils.isNotBlank(stringValue)) {
                         solrQuery.setQuery(stringValue);
                         queryIsSet = true;
+                        filtersExtracted.add(Analytics.SEARCH_Q_FIELD);
+                        filtersExtracted.add(stringValue);
                     }
                     break;
                 case "p":
@@ -206,9 +232,26 @@ public final class SearchIndex {
                         int start = rows * (page - 1);
                         solrQuery.setStart(start);
                     }
+                    filtersExtracted.add(Analytics.SEARCH_P_FIELD);
+                    filtersExtracted.add(page);
                     break;
                 case "pp":
                     // We've already seen this, above.
+                    break;
+                case WIDGETABLE:
+                    String widgetableValue;
+                    widgetableValue = "+\""
+                            + StringEscapeUtils.escapeEcmaScript(
+                                    value.toString()) + "\"";
+                    solrQuery.addFilterQuery(WIDGETABLE
+                            + ":(" + widgetableValue + ")");
+                    filtersExtracted.add(Analytics.SEARCH_WIDGETABLE_FIELD);
+                    if (value instanceof Boolean) {
+                        filtersExtracted.add(value);
+                    } else {
+                        filtersExtracted.add(BooleanUtils.toBoolean(
+                                value.toString()));
+                    }
                     break;
                 case ACCESS:
                 case FORMAT:
@@ -216,10 +259,10 @@ public final class SearchIndex {
                 case LICENCE:
                 case PUBLISHER:
                 case SUBJECT_LABELS:
-                case WIDGETABLE:
                     // In the following, support values that are _either_
                     // just a string, or an _array_ of strings.
                     String filterStringValue;
+                    String logFieldName = filterArrays.get(filterKey);
                     if (value instanceof ArrayList) {
                         if (((ArrayList<?>) value).isEmpty()) {
                             // The portal does send empty lists. In this case,
@@ -234,10 +277,14 @@ public final class SearchIndex {
                                                 v.toString()) + "\"").
                                 collect(Collectors.joining(" "));
                         filterStringValue = filterStringValues;
+                        filtersExtracted.add(logFieldName);
+                        filtersExtracted.add(value);
                     } else {
                         filterStringValue = "+\""
                                 + StringEscapeUtils.escapeEcmaScript(
                                         value.toString()) + "\"";
+                        filtersExtracted.add(logFieldName);
+                        filtersExtracted.add(new String[] {value.toString()});
                     }
                     solrQuery.addFilterQuery(filterEntry.getKey()
                             + ":(" + filterStringValue + ")");

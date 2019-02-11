@@ -32,6 +32,7 @@ import au.org.ands.vocabs.registry.db.converter.VocabularyDbSchemaMapper;
 import au.org.ands.vocabs.registry.db.dao.AccessPointDAO;
 import au.org.ands.vocabs.registry.db.dao.VersionDAO;
 import au.org.ands.vocabs.registry.db.dao.VocabularyDAO;
+import au.org.ands.vocabs.registry.log.Analytics;
 import au.org.ands.vocabs.registry.log.Logging;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.AccessPoint;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.RelatedEntity;
@@ -184,7 +185,15 @@ public class GetVocabulariesBySlug {
             }
         }
 
-        Logging.logRequest(true, request, uriInfo, null, "Get a vocabulary");
+        Logging.logRequest(true, request, uriInfo, null,
+                Analytics.EVENT_GET_VOCABULARY,
+                Analytics.VOCABULARY_LOOKUP_FIELD,
+                    Analytics.VOCABULARY_LOOKUP_BY_SLUG,
+                Analytics.VOCABULARY_ID_FIELD, vocabularyId,
+                Analytics.TITLE_FIELD, outputVocabulary.getTitle(),
+                Analytics.ENTITY_STATUS_FIELD,
+                    outputVocabulary.getStatus(),
+                Analytics.OWNER_FIELD, outputVocabulary.getOwner());
         return Response.ok().entity(outputVocabulary).build();
     }
 
