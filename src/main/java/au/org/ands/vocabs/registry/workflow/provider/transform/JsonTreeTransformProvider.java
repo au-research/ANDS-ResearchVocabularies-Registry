@@ -96,8 +96,8 @@ import au.org.ands.vocabs.registry.workflow.tasks.VersionArtefactUtils;
  *   }
  * ]
  * </pre>
- * See ANDS-Registry-Core's
- * {@code applications/portal/vocabs/models/_vocabulary.php}, method
+ * See Vocabs-Portal's
+ * {@code applications/portal/vocabs/controllers/vocabs.php}, method
  * {@code buildTree()}, for the consumer of the generated data.
  * Changes made to the structure made here need to be reflected there.
  *
