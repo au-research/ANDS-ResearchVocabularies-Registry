@@ -91,6 +91,15 @@ public final class SearchIndex {
      */
     private static final int RIDICULOUSLY_LARGE_VALUE = 10000000;
 
+    /* Things to pay attention to, when performing maintenance on
+     * this method:
+     *
+     * + search filters that are numeric values ("p", "pp"):
+     *   cope with them being provided either as numeric values or as strings
+     * + analytics logging
+     * + test cases!
+     */
+
     /** Perform a Solr search.
      * @param filtersJson The query parameters, specified as a String
      *      in JSON format.
