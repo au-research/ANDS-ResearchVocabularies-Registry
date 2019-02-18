@@ -1,18 +1,8 @@
-/*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+/** See the file "LICENSE" for the full license governing this code. */
+
+/* The contents of this file are adapted from the file
+ * solr/solrj/src/java/org/apache/solr/common/util/SolrJSONWriter.java
+ * contained in the Apache Solr 7.7.0 source distribution.
  */
 
 package au.org.ands.vocabs.registry.solr;
@@ -22,14 +12,13 @@ import java.io.Writer;
 
 import org.apache.solr.common.util.FastWriter;
 
-// CHECKSTYLE:OFF:
 /** Customized SolrJSONWriter that produces results that closely match
- * what comes back from Solr.
+ * what comes back from Solr server.
  */
 public class ServerSolrJSONWriter implements ServerJsonTextWriter {
 
     // ARDC: this code is modified from third-party code,
-    // so we allow the visibility violations for these fields.
+    // so we allow the Checkstyle visibility violations for these fields.
 
     /** The style to use for NamedLists. */
     @SuppressWarnings("checkstyle:VisibilityModifier")
