@@ -46,6 +46,12 @@ public class Search {
     private Logger logger = LoggerFactory.getLogger(
             MethodHandles.lookup().lookupClass());
 
+    /** The value of the Portal-ID request header that indicates that
+     * the request is being issued by the Widget Explorer. We don't
+     * include search results in analytics logging in that case.
+     */
+    private static final String PORTAL_JS_WIDGET = "Portal-JS-widget";
+
     /* There's a "feature" here with the fact that we're using Jersey.
      * The filterJson parameter can also be specified as a
      * <i>query</i> parameter, and Jersey will pass it on.
@@ -93,13 +99,15 @@ public class Search {
             @FormParam("filtersJson") final String filtersJson
             ) {
         logger.debug("called search");
+        boolean logResults = !PORTAL_JS_WIDGET.equals(
+                request.getHeader(Analytics.PORTAL_ID));
         try {
-            List<Object> filtersExtracted = new ArrayList<>();
+            List<Object> filtersAndResultsExtracted = new ArrayList<>();
             String queryResponse = SearchIndex.query(filtersJson,
-                    filtersExtracted);
+                    filtersAndResultsExtracted, logResults);
             Logging.logRequest(true, request, uriInfo, null,
                     Analytics.EVENT_SEARCH,
-                    filtersExtracted.toArray());
+                    filtersAndResultsExtracted.toArray());
             return Response.ok(queryResponse).build();
         } catch (IOException | SolrServerException e) {
             Logging.logRequest(false, request, uriInfo, null,

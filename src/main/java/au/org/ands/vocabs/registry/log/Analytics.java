@@ -84,9 +84,12 @@ public final class Analytics {
     /** The name of the field that groups together portal data
      * inserted into log entries. */
     private static final String PORTAL_MAP_FIELD = "portal";
-    /** The name of the field that groups together search data
+    /** The name of the field that groups together search filters
      * inserted into log entries. */
-    private static final String SEARCH_MAP_FIELD = "filters";
+    private static final String SEARCH_FILTERS_MAP_FIELD = "filters";
+    /** The name of the field that groups together search results
+     * inserted into log entries. */
+    private static final String SEARCH_RESULTS_MAP_FIELD = "results";
     /** The name of the field that groups together user data
      * inserted into log entries. */
     private static final String USER_MAP_FIELD = "user";
@@ -165,6 +168,10 @@ public final class Analytics {
     public static final String SEARCH_PUBLISHER_FIELD = "publisher";
     /** The name of the search q field inserted into log entries. */
     public static final String SEARCH_Q_FIELD = "q";
+    /** The name of the search result Id field inserted into log entries. */
+    public static final String SEARCH_RESULT_ID_FIELD = "result_id";
+    /** The name of the search result Id field inserted into log entries. */
+    public static final String SEARCH_RESULT_OWNER_FIELD = "result_owner";
     /** The name of the search subject labels field inserted into
      * log entries. */
     public static final String SEARCH_SUBJECT_LABELS_FIELD = "subject";
@@ -509,9 +516,9 @@ public final class Analytics {
         boolean useVocabularyMap = false;
         Map<String, Object> vocabularyMap = new HashMap<>();
 
-        boolean useSearchMap = false;
-        Map<String, Object> searchMap = new HashMap<>();
-
+        boolean useSearchMaps = false;
+        Map<String, Object> searchFiltersMap = new HashMap<>();
+        Map<String, Object> searchResultsMap = new HashMap<>();
 
         switch (message) {
         case Analytics.EVENT_GET_VOCABULARY:
@@ -520,7 +527,7 @@ public final class Analytics {
             useVocabularyMap = true;
             break;
         case Analytics.EVENT_SEARCH:
-            useSearchMap = true;
+            useSearchMaps = true;
             break;
         default:
             break;
@@ -554,11 +561,18 @@ public final class Analytics {
                 case SEARCH_Q_FIELD:
                 case SEARCH_SUBJECT_LABELS_FIELD:
                 case SEARCH_WIDGETABLE_FIELD:
-                    if (useSearchMap) {
-                        searchMap.put(key, otherFields[i + 1]);
+                    if (useSearchMaps) {
+                        searchFiltersMap.put(key, otherFields[i + 1]);
                         break;
                     }
                     // if !useSearchMap, fall through to default.
+                case SEARCH_RESULT_ID_FIELD:
+                case SEARCH_RESULT_OWNER_FIELD:
+                    if (useSearchMaps) {
+                        searchResultsMap.put(key, otherFields[i + 1]);
+                        break;
+                    }
+                    // if !useSearchResultsMap, fall through to default.
                 default:
                     lm.and(append(key, otherFields[i + 1]));
                     break;
@@ -568,8 +582,13 @@ public final class Analytics {
         if (useVocabularyMap) {
             lm.and(append(VOCABULARY_MAP_FIELD, vocabularyMap));
         }
-        if (useSearchMap) {
-            lm.and(append(SEARCH_MAP_FIELD, searchMap));
+        if (useSearchMaps) {
+            lm.and(append(SEARCH_FILTERS_MAP_FIELD, searchFiltersMap));
+            // Do emptiness check, as it _will_ be empty for
+            // Widget Explorer search.
+            if (!searchResultsMap.isEmpty()) {
+                lm.and(append(SEARCH_RESULTS_MAP_FIELD, searchResultsMap));
+            }
         }
 
     }

@@ -38,8 +38,6 @@ import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,14 +50,14 @@ import org.apache.solr.client.solrj.SolrRequest;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.client.solrj.request.GenericSolrRequest;
+import org.apache.solr.client.solrj.request.RequestWriter.StringPayloadContentWriter;
 import org.apache.solr.client.solrj.request.schema.AnalyzerDefinition;
 import org.apache.solr.client.solrj.request.schema.FieldTypeDefinition;
 import org.apache.solr.client.solrj.request.schema.SchemaRequest;
 import org.apache.solr.client.solrj.response.SimpleSolrResponse;
 import org.apache.solr.client.solrj.response.SolrResponseBase;
 import org.apache.solr.client.solrj.response.schema.SchemaResponse.UpdateResponse;
-import org.apache.solr.common.util.ContentStream;
-import org.apache.solr.common.util.ContentStreamBase;
+import org.apache.solr.common.params.CommonParams;
 import org.apache.solr.common.util.NamedList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -330,14 +328,12 @@ public final class CreateSchema {
         JsonObjectBuilder job2 = Json.createObjectBuilder();
         job2.add("set-property", job1);
 
-        ContentStreamBase.StringStream stringStream = new
-                ContentStreamBase.StringStream(job2.build().toString());
-        Collection<ContentStream> contentStreams = Collections.<ContentStream>
-            singletonList(stringStream);
+        String payload = job2.build().toString();
 
         GenericSolrRequest request = new GenericSolrRequest(
                 SolrRequest.METHOD.POST, "/config", null);
-        request.setContentStreams(contentStreams);
+        request.setContentWriter(new StringPayloadContentWriter(payload,
+                CommonParams.JSON_MIME));
         request.process(solrClient);
         logger.info(" ... done");
     }
@@ -383,14 +379,12 @@ public final class CreateSchema {
         JsonObjectBuilder job2 = Json.createObjectBuilder();
         job2.add("set-user-property", job1);
 
-        ContentStreamBase.StringStream stringStream = new
-                ContentStreamBase.StringStream(job2.build().toString());
-        Collection<ContentStream> contentStreams = Collections.<ContentStream>
-            singletonList(stringStream);
+        String payload = job2.build().toString();
 
         GenericSolrRequest request = new GenericSolrRequest(
                 SolrRequest.METHOD.POST, "/config", null);
-        request.setContentStreams(contentStreams);
+        request.setContentWriter(new StringPayloadContentWriter(payload,
+                CommonParams.JSON_MIME));
         request.process(solrClient);
         logger.info(" ... done");
     }

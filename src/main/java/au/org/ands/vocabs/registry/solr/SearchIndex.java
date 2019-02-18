@@ -11,6 +11,7 @@ import static au.org.ands.vocabs.registry.solr.FieldConstants.FULLTEXT;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.ID;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.LANGUAGE;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.LICENCE;
+import static au.org.ands.vocabs.registry.solr.FieldConstants.OWNER;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.PUBLISHER;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.PUBLISHER_SEARCH;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.SISSVOC_ENDPOINT;
@@ -24,6 +25,7 @@ import static au.org.ands.vocabs.registry.solr.FieldConstants.TITLE_SORT;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.WIDGETABLE;
 
 import java.io.IOException;
+import java.io.StringWriter;
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -41,11 +43,13 @@ import org.apache.solr.client.solrj.SolrQuery.ORDER;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.NoOpResponseParser;
 import org.apache.solr.client.solrj.request.QueryRequest;
+import org.apache.solr.client.solrj.response.QueryResponse;
+import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.params.CommonParams;
 import org.apache.solr.common.params.DisMaxParams;
 import org.apache.solr.common.params.FacetParams;
-import org.apache.solr.common.util.NamedList;
+import org.apache.solr.common.util.JsonTextWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -103,11 +107,14 @@ public final class SearchIndex {
     /** Perform a Solr search.
      * @param filtersJson The query parameters, specified as a String
      *      in JSON format.
-     * @param filtersExtracted A list into which the extracted query
-     *      parameters are stored, for later use in analytics logging.
+     * @param filtersAndResultsExtracted A list into which the extracted
+     *      query parameters and some of the fields of the results are stored,
+     *      for later use in analytics logging.
      *      For each type of logging field, two elements are appended
      *      to the list: the first is the log field name; the second
      *      is the value of the field.
+     * @param logResults true, if details of results are to be included in
+     *      {@code filtersAndResultsExtracted}.
      * @return The response from Solr, in the raw JSON form that came back.
      * @throws IOException If the Solr query generated an IOException.
      * @throws SolrServerException If the Solr query generated a
@@ -119,7 +126,8 @@ public final class SearchIndex {
     @SuppressWarnings("checkstyle:MethodLength")
     public static String query(
             final String filtersJson,
-            final List<Object> filtersExtracted)
+            final List<Object> filtersAndResultsExtracted,
+            final boolean logResults)
             throws IOException, SolrServerException {
         SolrQuery solrQuery = new SolrQuery();
         // Specify that we want the raw JSON that Solr produces.
@@ -185,8 +193,8 @@ public final class SearchIndex {
                      * directly support that. See the Solr doc. */
                     rows = RIDICULOUSLY_LARGE_VALUE;
                 }
-                filtersExtracted.add(Analytics.SEARCH_PP_FIELD);
-                filtersExtracted.add(rows);
+                filtersAndResultsExtracted.add(Analytics.SEARCH_PP_FIELD);
+                filtersAndResultsExtracted.add(rows);
             }
 
             solrQuery.set(DisMaxParams.ALTQ, "*:*");
@@ -199,10 +207,12 @@ public final class SearchIndex {
             // "sissvoc_endpoint" added to the list required by the "main"
             // search. NB: highlighting can/does also return snippets
             // from other fields not listed in fl (which is good!).
+            // OWNER field is required (so far, only) by this method,
+            // to include in analytics logging.
             solrQuery.setFields(
                     ID, SLUG, STATUS, TITLE, ACRONYM,
                     PUBLISHER, DESCRIPTION, WIDGETABLE,
-                    SISSVOC_ENDPOINT);
+                    SISSVOC_ENDPOINT, OWNER);
             solrQuery.set(DisMaxParams.QF,
                     TITLE_SEARCH + "^1 "
                             + SUBJECT_SEARCH + "^0.5 "
@@ -220,8 +230,9 @@ public final class SearchIndex {
                     if (StringUtils.isNotBlank(stringValue)) {
                         solrQuery.setQuery(stringValue);
                         queryIsSet = true;
-                        filtersExtracted.add(Analytics.SEARCH_Q_FIELD);
-                        filtersExtracted.add(stringValue);
+                        filtersAndResultsExtracted.add(
+                                Analytics.SEARCH_Q_FIELD);
+                        filtersAndResultsExtracted.add(stringValue);
                     }
                     break;
                 case "p":
@@ -241,8 +252,8 @@ public final class SearchIndex {
                         int start = rows * (page - 1);
                         solrQuery.setStart(start);
                     }
-                    filtersExtracted.add(Analytics.SEARCH_P_FIELD);
-                    filtersExtracted.add(page);
+                    filtersAndResultsExtracted.add(Analytics.SEARCH_P_FIELD);
+                    filtersAndResultsExtracted.add(page);
                     break;
                 case "pp":
                     // We've already seen this, above.
@@ -254,11 +265,12 @@ public final class SearchIndex {
                                     value.toString()) + "\"";
                     solrQuery.addFilterQuery(WIDGETABLE
                             + ":(" + widgetableValue + ")");
-                    filtersExtracted.add(Analytics.SEARCH_WIDGETABLE_FIELD);
+                    filtersAndResultsExtracted.add(
+                            Analytics.SEARCH_WIDGETABLE_FIELD);
                     if (value instanceof Boolean) {
-                        filtersExtracted.add(value);
+                        filtersAndResultsExtracted.add(value);
                     } else {
-                        filtersExtracted.add(BooleanUtils.toBoolean(
+                        filtersAndResultsExtracted.add(BooleanUtils.toBoolean(
                                 value.toString()));
                     }
                     break;
@@ -286,14 +298,15 @@ public final class SearchIndex {
                                                 v.toString()) + "\"").
                                 collect(Collectors.joining(" "));
                         filterStringValue = filterStringValues;
-                        filtersExtracted.add(logFieldName);
-                        filtersExtracted.add(value);
+                        filtersAndResultsExtracted.add(logFieldName);
+                        filtersAndResultsExtracted.add(value);
                     } else {
                         filterStringValue = "+\""
                                 + StringEscapeUtils.escapeEcmaScript(
                                         value.toString()) + "\"";
-                        filtersExtracted.add(logFieldName);
-                        filtersExtracted.add(new String[] {value.toString()});
+                        filtersAndResultsExtracted.add(logFieldName);
+                        filtersAndResultsExtracted.add(
+                                new String[] {value.toString()});
                     }
                     solrQuery.addFilterQuery(filterEntry.getKey()
                             + ":(" + filterStringValue + ")");
@@ -315,29 +328,36 @@ public final class SearchIndex {
         }
 
         try {
-            NamedList<Object> response = SOLR_CLIENT.request(request);
-            Object responseObject = response.get("response");
-            if (responseObject instanceof SolrDocumentList) {
-                // NB: We reach here _only_ for the embedded Solr.
-                // For "normal" use with the HTTP server, we fall through
-                // without further modifying responseObject.
-                // Special treatment for the embedded Solr used in
-                // testing: fake the JSON that comes back from the HTTP server.
+            QueryResponse responseQuery = SOLR_CLIENT.query(solrQuery);
+            if (logResults) {
                 SolrDocumentList solrDocumentList =
-                        (SolrDocumentList) responseObject;
-                Map<String, Object> map = new HashMap<>();
-                map.put("responseHeader", new HashMap<>());
-                Map<String, Object> responseMap = new HashMap<>();
-                responseMap.put("docs", response.get("response"));
-                responseMap.put("numFound", solrDocumentList.getNumFound());
-                responseMap.put("start", solrDocumentList.getStart());
-                map.put("response", responseMap);
-                // Now overwrite responseObject, so that it approximates
-                // the "real thing".
-                responseObject = JSONSerialization.serializeObjectAsJsonString(
-                        map);
+                        responseQuery.getResults();
+                List<Integer> resultIds = new ArrayList<>();
+                List<String> resultOwners = new ArrayList<>();
+                for (SolrDocument sd : solrDocumentList) {
+                    resultIds.add(Integer.valueOf(
+                            (String) sd.getFieldValue(ID)));
+                    resultOwners.add((String) sd.getFieldValue(OWNER));
+                }
+                LOGGER.info("resultIds: " + resultIds);
+                LOGGER.info("resultOwners: " + resultOwners);
+                filtersAndResultsExtracted.add(
+                        Analytics.SEARCH_RESULT_ID_FIELD);
+                filtersAndResultsExtracted.add(resultIds);
+                filtersAndResultsExtracted.add(
+                        Analytics.SEARCH_RESULT_OWNER_FIELD);
+                filtersAndResultsExtracted.add(resultOwners);
             }
-            return (String) (responseObject);
+
+            StringWriter stringWriter = new StringWriter();
+            // Specify JSON_NL_FLAT to get the standard stupid format
+            // with interleaved keys/values: [ "English", 19, "German", 1 ]
+            ServerSolrJSONWriter solrJSONWriter =
+                    new ServerSolrJSONWriter(stringWriter,
+                    JsonTextWriter.JSON_NL_FLAT);
+            solrJSONWriter.writeObj(responseQuery);
+            solrJSONWriter.close();
+            return stringWriter.toString();
         } catch (IOException | SolrServerException e) {
             LOGGER.error("Exception while performing Solr query", e);
             throw e;

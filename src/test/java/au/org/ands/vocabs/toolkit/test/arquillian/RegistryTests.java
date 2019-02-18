@@ -161,8 +161,9 @@ public class RegistryTests extends ArquillianBaseTest {
         // Explicit commit is required so that we can do a search
         // immediately.
         SolrUtils.getSolrClient().commit();
-        List<Object> filtersExtracted = new ArrayList<Object>();
-        String searchResults = SearchIndex.query("{}", filtersExtracted);
+        List<Object> filtersAndResultsExtracted = new ArrayList<>();
+        String searchResults = SearchIndex.query("{}",
+                filtersAndResultsExtracted, false);
         logger.info("Result: " + searchResults);
         JsonNode resultsJson = TaskUtils.jsonStringToTree(searchResults);
         JsonNode response = resultsJson.get("response");
