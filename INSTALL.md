@@ -265,9 +265,13 @@ wget -O - http://localhost:8080/registry-context/adminApi/database/populateSubje
 
 Create the Solr collection. Here, `vocabs-registry` matches the name
 chosen for the collection and assigned in `registry.properties` above.
+The output of the first command (create) recommends running the second
+command (config), which disables auto-creation of fields. (Substitute
+the correct port number, if it is not the default 8983.)
 
 ```
 /path-to-Solr-installation/bin/solr create -c vocabs-registry
+/path-to-Solr-installation/bin/solr config -c vocabs-registry -p 8983 -action set-user-property -property update.autoCreateFields -value false
 ```
 
 ## Install the schema
