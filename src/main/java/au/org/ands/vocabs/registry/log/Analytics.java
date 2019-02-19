@@ -90,6 +90,12 @@ public final class Analytics {
     /** The name of the field that groups together search results
      * inserted into log entries. */
     private static final String SEARCH_RESULTS_MAP_FIELD = "results";
+    /** The name of the field that groups together subscriber data
+     * inserted into log entries. */
+    private static final String SUBSCRIBER_MAP_FIELD = "subscriber";
+    /** The name of the field that groups together subscription data
+     * inserted into log entries. */
+    private static final String SUBSCRIPTION_MAP_FIELD = "subscription";
     /** The name of the field that groups together user data
      * inserted into log entries. */
     private static final String USER_MAP_FIELD = "user";
@@ -148,6 +154,30 @@ public final class Analytics {
     public static final String ENTITY_STATUS_FIELD = "status";
     /** The name of the failure reason field inserted into log entries. */
     public static final String FAILURE_REASON = "failure_reason";
+    /** The name of the notification element type field
+     * inserted into log entries. */
+    public static final String NOTIFICATION_ELEMENT_TYPE_FIELD = "element_type";
+    /** The value to use for the {@link #NOTIFICATION_ELEMENT_TYPE_FIELD}
+     * field to indicate that this is for all subscripton types. */
+    public static final String NOTIFICATION_ELEMENT_TYPE_ALL = "all";
+    /** The value to use for the {@link #NOTIFICATION_ELEMENT_TYPE_FIELD}
+     * field to indicate that this is a subscription for an owner (or
+     * for all owners). */
+    public static final String NOTIFICATION_ELEMENT_TYPE_OWNER = "owner";
+    /** The value to use for the {@link #NOTIFICATION_ELEMENT_TYPE_FIELD}
+     * field to indicate that this is a subscription for the system. */
+    public static final String NOTIFICATION_ELEMENT_TYPE_SYSTEM = "system";
+    /** The value to use for the {@link #NOTIFICATION_ELEMENT_TYPE_FIELD}
+     * field to indicate that this is a subscription for a vocabulary. */
+    public static final String NOTIFICATION_ELEMENT_TYPE_VOCABULARY =
+            "vocabulary";
+    /** The name of the notification element id field
+     * inserted into log entries. */
+    public static final String NOTIFICATION_ELEMENT_ID_FIELD = "element_id";
+    /** The name of the notification element owner field
+     * inserted into log entries. */
+    public static final String NOTIFICATION_ELEMENT_OWNER_FIELD =
+            "element_owner";
     /** The name of the owner field inserted into log entries. */
     public static final String OWNER_FIELD = "owner";
     /** The name of the related entity ID field inserted into log entries. */
@@ -181,6 +211,10 @@ public final class Analytics {
     public static final String SUCCESS_FIELD = "success";
     /** The name of the slug field inserted into log entries. */
     public static final String SLUG_FIELD = "slug";
+    /** The name of the subscriber email field inserted into log entries. */
+    public static final String SUBSCRIBER_EMAIL_FIELD = "subscriber_email";
+    /** The name of the subscriber id field inserted into log entries. */
+    public static final String SUBSCRIBER_ID_FIELD = "subscriber_id";
     /** The name of the title field inserted into log entries. */
     public static final String TITLE_FIELD = "title";
     /** The name of the vocabulary ID field inserted into log entries. */
@@ -237,6 +271,18 @@ public final class Analytics {
      * for search. */
     public static final String EVENT_SEARCH = "search";
 
+    /** The value of the "message" field to use for log entries
+     * for creating a subscription. */
+    public static final String EVENT_CREATE_SUBSCRIPTION =
+            "create_subscription";
+    /** The value of the "message" field to use for log entries
+     * for getting subscriptions. */
+    public static final String EVENT_GET_SUBSCRIPTION =
+            "read_subscription";
+    /** The value of the "message" field to use for log entries
+     * for deleting a subscription. */
+    public static final String EVENT_DELETE_SUBSCRIPTION =
+            "delete_subscription";
 
     /** The GeoIP2 database reader used for geo lookups of IP addresses. */
     private static DatabaseReader geoDbReader;
@@ -512,6 +558,8 @@ public final class Analytics {
             return;
         }
 
+        // Maps for storing nested fields, and flags to indicate
+        // whether or not they are to be used.
 
         boolean useVocabularyMap = false;
         Map<String, Object> vocabularyMap = new HashMap<>();
@@ -520,14 +568,28 @@ public final class Analytics {
         Map<String, Object> searchFiltersMap = new HashMap<>();
         Map<String, Object> searchResultsMap = new HashMap<>();
 
+        boolean useSubscriberMap = false;
+        Map<String, Object> subscriberMap = new HashMap<>();
+
+        boolean useSubscriptionMap = false;
+        Map<String, Object> subscriptionMap = new HashMap<>();
+
         switch (message) {
-        case Analytics.EVENT_GET_VOCABULARY:
-        case Analytics.EVENT_CREATE_VOCABULARY:
-        case Analytics.EVENT_UPDATE_VOCABULARY:
+        case EVENT_GET_VOCABULARY:
+        case EVENT_CREATE_VOCABULARY:
+        case EVENT_UPDATE_VOCABULARY:
             useVocabularyMap = true;
             break;
-        case Analytics.EVENT_SEARCH:
+        case EVENT_SEARCH:
             useSearchMaps = true;
+            break;
+        case EVENT_GET_SUBSCRIPTION:
+            useSubscriberMap = true;
+            break;
+        case EVENT_CREATE_SUBSCRIPTION:
+        case EVENT_DELETE_SUBSCRIPTION:
+            useSubscriptionMap = true;
+            useSubscriberMap = true;
             break;
         default:
             break;
@@ -539,6 +601,9 @@ public final class Analytics {
                         + "that is not a String: " + otherFields[i]);
             } else {
                 String key = (String) otherFields[i];
+                // moved will be set to true, if the key/value is stored
+                // away (i.e., "moved") into one of the maps.
+                boolean moved = false;
                 switch (key) {
                 case VOCABULARY_ID_FIELD:
                 case TITLE_FIELD:
@@ -548,9 +613,9 @@ public final class Analytics {
                 case VOCABULARY_LOOKUP_FIELD:
                     if (useVocabularyMap) {
                         vocabularyMap.put(key, otherFields[i + 1]);
-                        break;
+                        moved = true;
                     }
-                    // if !useVocabularyMap, fall through to default.
+                    break;
                 case SEARCH_ACCESS_FIELD:
                 case SEARCH_FORMAT_FIELD:
                 case SEARCH_LANGUAGE_FIELD:
@@ -563,19 +628,37 @@ public final class Analytics {
                 case SEARCH_WIDGETABLE_FIELD:
                     if (useSearchMaps) {
                         searchFiltersMap.put(key, otherFields[i + 1]);
-                        break;
+                        moved = true;
                     }
-                    // if !useSearchMap, fall through to default.
+                    break;
                 case SEARCH_RESULT_ID_FIELD:
                 case SEARCH_RESULT_OWNER_FIELD:
                     if (useSearchMaps) {
                         searchResultsMap.put(key, otherFields[i + 1]);
-                        break;
+                        moved = true;
                     }
-                    // if !useSearchResultsMap, fall through to default.
-                default:
-                    lm.and(append(key, otherFields[i + 1]));
                     break;
+                case SUBSCRIBER_ID_FIELD:
+                case SUBSCRIBER_EMAIL_FIELD:
+                    if (useSubscriberMap) {
+                        subscriberMap.put(key, otherFields[i + 1]);
+                        moved = true;
+                    }
+                    break;
+                case NOTIFICATION_ELEMENT_TYPE_FIELD:
+                case NOTIFICATION_ELEMENT_ID_FIELD:
+                case NOTIFICATION_ELEMENT_OWNER_FIELD:
+                    if (useSubscriptionMap) {
+                        subscriptionMap.put(key, otherFields[i + 1]);
+                        moved = true;
+                    }
+                    break;
+                default:
+                    // The key will be added at the top level, below.
+                    break;
+                }
+                if (!moved) {
+                    lm.and(append(key, otherFields[i + 1]));
                 }
             }
         }
@@ -589,6 +672,12 @@ public final class Analytics {
             if (!searchResultsMap.isEmpty()) {
                 lm.and(append(SEARCH_RESULTS_MAP_FIELD, searchResultsMap));
             }
+        }
+        if (useSubscriberMap) {
+            lm.and(append(SUBSCRIBER_MAP_FIELD, subscriberMap));
+        }
+        if (useSubscriptionMap) {
+            lm.and(append(SUBSCRIPTION_MAP_FIELD, subscriptionMap));
         }
 
     }
