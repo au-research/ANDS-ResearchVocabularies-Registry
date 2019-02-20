@@ -199,9 +199,9 @@ public final class Analytics {
     /** The name of the search q field inserted into log entries. */
     public static final String SEARCH_Q_FIELD = "q";
     /** The name of the search result Id field inserted into log entries. */
-    public static final String SEARCH_RESULT_ID_FIELD = "result_id";
+    public static final String SEARCH_RESULT_ID_FIELD = "result_ids";
     /** The name of the search result Id field inserted into log entries. */
-    public static final String SEARCH_RESULT_OWNER_FIELD = "result_owner";
+    public static final String SEARCH_RESULT_OWNER_FIELD = "result_owners";
     /** The name of the search subject labels field inserted into
      * log entries. */
     public static final String SEARCH_SUBJECT_LABELS_FIELD = "subject";
