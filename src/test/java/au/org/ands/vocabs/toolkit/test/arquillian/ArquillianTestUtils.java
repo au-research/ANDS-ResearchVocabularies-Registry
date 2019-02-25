@@ -673,14 +673,20 @@ public final class ArquillianTestUtils {
     public static void clientClearDatabase(final DatabaseSelector dbs,
             final URL baseURL) {
         logger.info("In clientClearDatabase()");
-        Response response = NetClientUtils.doGetWithAdditionalComponents(
-                baseURL, "testing/clearDB",
-                webTarget -> webTarget.queryParam("db", dbs));
+        Response response = null;
+        try {
+            response = NetClientUtils.doGetWithAdditionalComponents(
+                    baseURL, "testing/clearDB",
+                    webTarget -> webTarget.queryParam("db", dbs));
 
-        Assert.assertEquals(response.getStatusInfo().getFamily(),
-                Family.SUCCESSFUL,
-                "clientClearDatabase response status");
-        response.close();
+            Assert.assertEquals(response.getStatusInfo().getFamily(),
+                    Family.SUCCESSFUL,
+                    "clientClearDatabase response status");
+        } finally {
+            if (response != null) {
+                response.close();
+            }
+        }
     }
 
     /** Client-side loading of a database.
@@ -693,15 +699,19 @@ public final class ArquillianTestUtils {
             final URL baseURL,
             final String testName) {
         logger.info("In clientLoadDbUnitTestFile()");
-        Response response = NetClientUtils.doGetWithAdditionalComponents(
-                baseURL, "testing/loadDB",
-                webTarget -> webTarget.queryParam("db", dbs)
-                    .queryParam("testName", testName));
+        Response response = null;
+        try {
+            response = NetClientUtils.doGetWithAdditionalComponents(
+                    baseURL, "testing/loadDB",
+                    webTarget -> webTarget.queryParam("db", dbs)
+                        .queryParam("testName", testName));
 
-        Assert.assertEquals(response.getStatusInfo().getFamily(),
-                Family.SUCCESSFUL,
-                "clientLoadDbUnitTestFile response status");
-        response.close();
+            Assert.assertEquals(response.getStatusInfo().getFamily(),
+                    Family.SUCCESSFUL,
+                    "clientLoadDbUnitTestFile response status");
+        } finally {
+            response.close();
+        }
     }
 
     /** Client-side loading of a database as an update.
@@ -715,17 +725,21 @@ public final class ArquillianTestUtils {
             final DatabaseSelector dbs,
             final URL baseURL, final String testName, final String filename) {
         logger.info("In clientLoadDbUnitTestFileAsUpdate()");
-        Response response = NetClientUtils.doGetWithAdditionalComponents(
-                baseURL, "testing/loadDBAsUpdate",
-                webTarget ->
-                    webTarget.queryParam("db", dbs)
-                    .queryParam("testName", testName)
-                    .queryParam("filename", filename));
+        Response response = null;
+        try {
+            response = NetClientUtils.doGetWithAdditionalComponents(
+                    baseURL, "testing/loadDBAsUpdate",
+                    webTarget ->
+                        webTarget.queryParam("db", dbs)
+                            .queryParam("testName", testName)
+                            .queryParam("filename", filename));
 
-        Assert.assertEquals(response.getStatusInfo().getFamily(),
-                Family.SUCCESSFUL,
-                "clientLoadDbUnitTestFileAsUpdate response status");
-        response.close();
+            Assert.assertEquals(response.getStatusInfo().getFamily(),
+                    Family.SUCCESSFUL,
+                    "clientLoadDbUnitTestFileAsUpdate response status");
+        } finally {
+            response.close();
+        }
     }
 
     /** Get the current contents of a database.

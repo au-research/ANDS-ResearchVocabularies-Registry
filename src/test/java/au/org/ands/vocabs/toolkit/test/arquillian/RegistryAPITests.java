@@ -61,19 +61,24 @@ public class RegistryAPITests extends ArquillianBaseTest {
     @RunAsClient
     public final void testGetVocabularies1() {
         ArquillianTestUtils.clientClearDatabase(REGISTRY, baseURL);
-        Response response = NetClientUtils.doGet(baseURL,
-                ApiPaths.API_RESOURCE + "/" + ApiPaths.VOCABULARIES,
-                MediaType.APPLICATION_XML_TYPE);
+        Response response = null;
+        VocabularyList vocabularyList;
+        try {
+            response = NetClientUtils.doGet(baseURL,
+                    ApiPaths.API_RESOURCE + "/" + ApiPaths.VOCABULARIES,
+                    MediaType.APPLICATION_XML_TYPE);
 
-        Assert.assertEquals(response.getStatusInfo().getFamily(),
-                Family.SUCCESSFUL,
-                "getVocabularies response status");
-        VocabularyList vocabularyList =
-                response.readEntity(VocabularyList.class);
-        response.close();
-
+            Assert.assertEquals(response.getStatusInfo().getFamily(),
+                    Family.SUCCESSFUL,
+                    "getVocabularies response status");
+            vocabularyList = response.readEntity(VocabularyList.class);
+        } finally {
+            if (response != null) {
+                response.close();
+            }
+        }
         Assert.assertEquals(vocabularyList.getVocabulary().size(), 0,
-            "vocabularyList return value");
+                "vocabularyList return value");
     }
 
     /** Client-side test of getVocabularies, when there is one
@@ -87,16 +92,22 @@ public class RegistryAPITests extends ArquillianBaseTest {
         ArquillianTestUtils.clientClearDatabase(REGISTRY, baseURL);
         ArquillianTestUtils.clientLoadDbUnitTestFile(REGISTRY, baseURL,
                 CLASS_NAME_PREFIX + "testGetVocabularies2");
-        Response response = NetClientUtils.doGet(baseURL,
-                ApiPaths.API_RESOURCE + "/" + ApiPaths.VOCABULARIES,
-                MediaType.APPLICATION_XML_TYPE);
+        Response response = null;
+        VocabularyList vocabularyList;
+        try {
+            response = NetClientUtils.doGet(baseURL,
+                    ApiPaths.API_RESOURCE + "/" + ApiPaths.VOCABULARIES,
+                    MediaType.APPLICATION_XML_TYPE);
 
-        Assert.assertEquals(response.getStatusInfo().getFamily(),
-                Family.SUCCESSFUL,
-                "getVocabularies response status");
-        VocabularyList vocabularyList =
-                response.readEntity(VocabularyList.class);
-        response.close();
+            Assert.assertEquals(response.getStatusInfo().getFamily(),
+                    Family.SUCCESSFUL,
+                    "getVocabularies response status");
+            vocabularyList = response.readEntity(VocabularyList.class);
+        } finally {
+            if (response != null) {
+                response.close();
+            }
+        }
 
         Assert.assertEquals(vocabularyList.getVocabulary().size(), 1,
             "vocabularyList size");
@@ -167,28 +178,40 @@ public class RegistryAPITests extends ArquillianBaseTest {
         ArquillianTestUtils.clientClearDatabase(REGISTRY, baseURL);
         ArquillianTestUtils.clientLoadDbUnitTestFile(REGISTRY, baseURL,
                 CLASS_NAME_PREFIX + "testDeleteVocabulary1");
-        Response response = NetClientUtils.doDeleteWithAdditionalComponents(
-                baseURL,
-                ApiPaths.API_RESOURCE + "/" + ApiPaths.VOCABULARIES + "/1",
-                MediaType.APPLICATION_XML_TYPE, "test1", "test",
-                webTarget -> webTarget.queryParam("deleteCurrent", "true"));
+        Response response = null;
+        try {
+            response = NetClientUtils.doDeleteWithAdditionalComponents(
+                    baseURL,
+                    ApiPaths.API_RESOURCE + "/" + ApiPaths.VOCABULARIES + "/1",
+                    MediaType.APPLICATION_XML_TYPE, "test1", "test",
+                    webTarget -> webTarget.queryParam("deleteCurrent", "true"));
 
-        Assert.assertEquals(response.getStatusInfo().getFamily(),
-                Family.SUCCESSFUL,
-                "deleteVocabularies response status");
-        response.close();
+            Assert.assertEquals(response.getStatusInfo().getFamily(),
+                    Family.SUCCESSFUL,
+                    "deleteVocabularies response status");
+        } finally {
+            if (response != null) {
+                response.close();
+                response = null;
+            }
+        }
 
         // Now confirm that there are no current vocabularies.
-        response = NetClientUtils.doGet(baseURL,
-                ApiPaths.API_RESOURCE + "/" + ApiPaths.VOCABULARIES,
-                MediaType.APPLICATION_XML_TYPE);
+        VocabularyList vocabularyList;
+        try {
+            response = NetClientUtils.doGet(baseURL,
+                    ApiPaths.API_RESOURCE + "/" + ApiPaths.VOCABULARIES,
+                    MediaType.APPLICATION_XML_TYPE);
 
-        Assert.assertEquals(response.getStatusInfo().getFamily(),
-                Family.SUCCESSFUL,
-                "getVocabularies response status");
-        VocabularyList vocabularyList =
-                response.readEntity(VocabularyList.class);
-        response.close();
+            Assert.assertEquals(response.getStatusInfo().getFamily(),
+                    Family.SUCCESSFUL,
+                    "getVocabularies response status");
+            vocabularyList = response.readEntity(VocabularyList.class);
+        } finally {
+            if (response != null) {
+                response.close();
+            }
+        }
 
         Assert.assertEquals(vocabularyList.getVocabulary().size(), 0,
             "vocabularyList size");
@@ -218,16 +241,23 @@ public class RegistryAPITests extends ArquillianBaseTest {
                         + "/test-vocabulary-1.xml");
 
         // Get the original vocabulary.
-        Response response = NetClientUtils.doGetWithAdditionalComponents(
-                baseURL,
-                ApiPaths.API_RESOURCE + "/" + ApiPaths.VOCABULARIES + "/1",
-                MediaType.APPLICATION_XML_TYPE,
-                webTarget -> webTarget.queryParam(
-                        "includeRelatedEntitiesAndVocabularies", "true"));
-
+        Response response = null;
         String actualString;
-        actualString = response.readEntity(String.class);
-        response.close();
+        try {
+            response = NetClientUtils.doGetWithAdditionalComponents(
+                    baseURL,
+                    ApiPaths.API_RESOURCE + "/" + ApiPaths.VOCABULARIES + "/1",
+                    MediaType.APPLICATION_XML_TYPE,
+                    webTarget -> webTarget.queryParam(
+                            "includeRelatedEntitiesAndVocabularies", "true"));
+
+            actualString = response.readEntity(String.class);
+        } finally {
+            if (response != null) {
+                response.close();
+                response = null;
+            }
+        }
 
         // Use XMLUnit, as our test data has an additional DOCTYPE.
         MatcherAssert.assertThat("Before update",
@@ -242,27 +272,33 @@ public class RegistryAPITests extends ArquillianBaseTest {
                         + testName
                         + "/test-vocabulary-2.xml");
 
-        response =
-                NetClientUtils.doPutBasicAuthWithAdditionalComponentsXml(
-                        baseURL,
-                        ApiPaths.API_RESOURCE + "/"
-                                + ApiPaths.VOCABULARIES + "/1",
-                        MediaType.APPLICATION_XML_TYPE, "test1", "test",
-                        webTarget -> webTarget,
-                        body);
+        try {
+            response =
+                    NetClientUtils.doPutBasicAuthWithAdditionalComponentsXml(
+                            baseURL,
+                            ApiPaths.API_RESOURCE + "/"
+                                    + ApiPaths.VOCABULARIES + "/1",
+                                    MediaType.APPLICATION_XML_TYPE, "test1",
+                                    "test",
+                                    webTarget -> webTarget,
+                                    body);
 
-        expectedString = ArquillianTestUtils.getTestFileAsString(
-                "test/tests/"
-                        + CLASS_NAME_PREFIX
-                        + testName
-                        + "/test-vocabulary-3.xml");
+            expectedString = ArquillianTestUtils.getTestFileAsString(
+                    "test/tests/"
+                            + CLASS_NAME_PREFIX
+                            + testName
+                            + "/test-vocabulary-3.xml");
 
-        Assert.assertEquals(response.getStatusInfo().getFamily(),
-                Family.SUCCESSFUL,
-                "updateVocabularies response status");
+            Assert.assertEquals(response.getStatusInfo().getFamily(),
+                    Family.SUCCESSFUL,
+                    "updateVocabularies response status");
 
-        actualString = response.readEntity(String.class);
-        response.close();
+            actualString = response.readEntity(String.class);
+        } finally {
+            if (response != null) {
+                response.close();
+            }
+        }
 
 //        logger.debug("Response: " + actualString);
 
@@ -297,16 +333,23 @@ public class RegistryAPITests extends ArquillianBaseTest {
                         + "/test-vocabulary-1.xml").trim();
 
         // Get the original vocabulary.
-        Response response = NetClientUtils.doGetWithAdditionalComponents(
-                baseURL,
-                ApiPaths.API_RESOURCE + "/" + ApiPaths.VOCABULARIES + "/1",
-                MediaType.APPLICATION_XML_TYPE,
-                webTarget -> webTarget.queryParam(
-                        "includeRelatedEntitiesAndVocabularies", "true"));
-
+        Response response = null;
         String actualString;
-        actualString = response.readEntity(String.class);
-        response.close();
+        try {
+            response = NetClientUtils.doGetWithAdditionalComponents(
+                    baseURL,
+                    ApiPaths.API_RESOURCE + "/" + ApiPaths.VOCABULARIES + "/1",
+                    MediaType.APPLICATION_XML_TYPE,
+                    webTarget -> webTarget.queryParam(
+                            "includeRelatedEntitiesAndVocabularies", "true"));
+
+            actualString = response.readEntity(String.class);
+        } finally {
+            if (response != null) {
+                response.close();
+                response = null;
+            }
+        }
 
         // Use XMLUnit, as our test data has an additional DOCTYPE.
         MatcherAssert.assertThat("Before update",
@@ -321,29 +364,35 @@ public class RegistryAPITests extends ArquillianBaseTest {
                         + testName
                         + "/test-vocabulary-2.xml");
 
-        response =
-                NetClientUtils.doPutBasicAuthWithAdditionalComponentsXml(
-                        baseURL,
-                        ApiPaths.API_RESOURCE + "/"
-                                + ApiPaths.VOCABULARIES + "/1",
-                        MediaType.APPLICATION_XML_TYPE, "test1", "test",
-                        webTarget -> webTarget,
-                        body);
+        try {
+            response =
+                    NetClientUtils.doPutBasicAuthWithAdditionalComponentsXml(
+                            baseURL,
+                            ApiPaths.API_RESOURCE + "/"
+                                    + ApiPaths.VOCABULARIES + "/1",
+                                    MediaType.APPLICATION_XML_TYPE, "test1",
+                                    "test",
+                                    webTarget -> webTarget,
+                                    body);
 
-        // test-vocabulary-3.xml contains an error response, not
-        // an updated vocabulary.
-        expectedString = ArquillianTestUtils.getTestFileAsString(
-                "test/tests/"
-                        + CLASS_NAME_PREFIX
-                        + testName
-                        + "/test-vocabulary-3.xml").trim();
+            // test-vocabulary-3.xml contains an error response, not
+            // an updated vocabulary.
+            expectedString = ArquillianTestUtils.getTestFileAsString(
+                    "test/tests/"
+                            + CLASS_NAME_PREFIX
+                            + testName
+                            + "/test-vocabulary-3.xml").trim();
 
-        Assert.assertEquals(response.getStatusInfo().getFamily(),
-                Family.CLIENT_ERROR,
-                "updateVocabularies response status");
+            Assert.assertEquals(response.getStatusInfo().getFamily(),
+                    Family.CLIENT_ERROR,
+                    "updateVocabularies response status");
 
-        actualString = response.readEntity(String.class);
-        response.close();
+            actualString = response.readEntity(String.class);
+        } finally {
+            if (response != null) {
+                response.close();
+            }
+        }
 
 //        logger.debug("Response: " + actualString);
 

@@ -161,14 +161,22 @@ public class ToolkitTests extends ArquillianBaseTest {
     @RunAsClient
     public final void testSystemHealthCheck() {
         ArquillianTestUtils.clientClearDatabase(TOOLKIT, baseURL);
-        Response response = NetClientUtils.doGet(baseURL,
-                "getInfo/systemHealthCheck", MediaType.APPLICATION_JSON_TYPE);
+        Response response = null;
+        String body;
+        try {
+            response = NetClientUtils.doGet(baseURL,
+                    "getInfo/systemHealthCheck",
+                    MediaType.APPLICATION_JSON_TYPE);
 
-        Assert.assertEquals(response.getStatusInfo().getFamily(),
-                Family.SUCCESSFUL,
-                "systemHealthCheck response status");
-        String body = response.readEntity(String.class);
-        response.close();
+            Assert.assertEquals(response.getStatusInfo().getFamily(),
+                    Family.SUCCESSFUL,
+                    "systemHealthCheck response status");
+            body = response.readEntity(String.class);
+        } finally {
+            if (response != null) {
+                response.close();
+            }
+        }
 
         Assert.assertEquals(body, "[]",
             "systemHealthCheck return value");
