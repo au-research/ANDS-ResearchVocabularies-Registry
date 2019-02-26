@@ -22,6 +22,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.http.HttpStatus;
 import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.jax.rs.annotations.Pac4JProfile;
@@ -162,6 +163,59 @@ public class GetVocabularies {
             @DefaultValue("false")
             final boolean includeRelatedEntitiesAndVocabularies) {
         logger.debug("called getVocabularyById: " + vocabularyId);
+        Pair<Response, Vocabulary> responseOrVocabulary =
+                getVocabularyByIdHelper(vocabularyId,
+                        includeVersions, includeAccessPoints,
+                        includeRelatedEntitiesAndVocabularies);
+
+        Response response = responseOrVocabulary.getLeft();
+        if (response != null) {
+            // There was an error; return it.
+            return response;
+        }
+
+        // Vocabulary fetched OK.
+        Vocabulary outputVocabulary = responseOrVocabulary.getRight();
+
+        Logging.logRequest(true, request, uriInfo, null,
+                Analytics.EVENT_GET_VOCABULARY,
+                Analytics.VOCABULARY_LOOKUP_FIELD,
+                    Analytics.VOCABULARY_LOOKUP_BY_ID,
+                Analytics.VOCABULARY_ID_FIELD, vocabularyId,
+                Analytics.TITLE_FIELD, outputVocabulary.getTitle(),
+                Analytics.SLUG_FIELD, outputVocabulary.getSlug(),
+                Analytics.ENTITY_STATUS_FIELD,
+                    outputVocabulary.getStatus(),
+                Analytics.OWNER_FIELD, outputVocabulary.getOwner());
+        return Response.ok().entity(outputVocabulary).build();
+    }
+
+    /** Fetch the current instance of a Vocabulary, returning either
+     * the Vocabulary in Registry Schema format, or a Response, if
+     * there is an error.
+     * The body of this method used to be the core of {@link
+     *   #getVocabularyById(HttpServletRequest, UriInfo, Integer, boolean,
+     *   boolean, boolean)}, but it has now been extracted into a
+     * separate method,
+     * so that it also be used by {@link #getVocabularyByIdEdit(
+     *   HttpServletRequest, UriInfo, CommonProfile, Integer)},
+     * with both calling methods doing their own (different) types of
+     * analytics logging.
+     * @param vocabularyId The Vocabulary Id of the vocabulary to be fetched.
+     * @param includeVersions Whether or not to include version elements.
+     * @param includeAccessPoints Whether or not to include access point
+     *      elements.
+     * @param includeRelatedEntitiesAndVocabularies Whether or not to include
+     *      full related entity elements, and top-level details of
+     *      related vocabularies.
+     * @return A Pair containing <i>either</i> a Response in the left value
+     *      if there was an error fetching the Vocabulary,
+     *      or the Vocabulary, in Registry Schema format, in the right value.
+     */
+    private Pair<Response, Vocabulary> getVocabularyByIdHelper(
+            final Integer vocabularyId,
+            final boolean includeVersions, final boolean includeAccessPoints,
+            final boolean includeRelatedEntitiesAndVocabularies) {
         au.org.ands.vocabs.registry.db.entity.Vocabulary
             dbVocabulary = VocabularyDAO.getCurrentVocabularyByVocabularyId(
                     vocabularyId);
@@ -171,8 +225,9 @@ public class GetVocabularies {
                 VocabularyDbSchemaMapper.INSTANCE;
         outputVocabulary = mapper.sourceToTarget(dbVocabulary, true);
         if (outputVocabulary == null) {
-            return Response.status(Status.BAD_REQUEST).entity(
-                    new ErrorResult("No vocabulary with that id")).build();
+            return Pair.of(Response.status(Status.BAD_REQUEST).entity(
+                    new ErrorResult("No vocabulary with that id")).build(),
+                    null);
         }
 
         // If includeAccessPoints == true,
@@ -240,18 +295,7 @@ public class GetVocabularies {
                 }
             }
         }
-
-        Logging.logRequest(true, request, uriInfo, null,
-                Analytics.EVENT_GET_VOCABULARY,
-                Analytics.VOCABULARY_LOOKUP_FIELD,
-                    Analytics.VOCABULARY_LOOKUP_BY_ID,
-                Analytics.VOCABULARY_ID_FIELD, vocabularyId,
-                Analytics.TITLE_FIELD, outputVocabulary.getTitle(),
-                Analytics.SLUG_FIELD, outputVocabulary.getSlug(),
-                Analytics.ENTITY_STATUS_FIELD,
-                    outputVocabulary.getStatus(),
-                Analytics.OWNER_FIELD, outputVocabulary.getOwner());
-        return Response.ok().entity(outputVocabulary).build();
+        return Pair.of(null, outputVocabulary);
     }
 
     /** Get a vocabulary for editing, by its vocabulary id.
@@ -326,8 +370,16 @@ public class GetVocabularies {
                     em.close();
                 }
             }
-            Logging.logRequest(true, request, uriInfo, null,
-                    "Get a vocabulary to edit");
+            Logging.logRequest(true, request, uriInfo, profile,
+                    Analytics.EVENT_GET_VOCABULARY,
+                    Analytics.VOCABULARY_LOOKUP_FIELD,
+                        Analytics.VOCABULARY_LOOKUP_BY_ID,
+                    Analytics.VOCABULARY_ID_FIELD, vocabularyId,
+                    Analytics.TITLE_FIELD, vocabularyAsSchema.getTitle(),
+                    Analytics.SLUG_FIELD, vocabularyAsSchema.getSlug(),
+                    Analytics.ENTITY_STATUS_FIELD,
+                        vocabularyAsSchema.getStatus(),
+                    Analytics.OWNER_FIELD, vocabularyAsSchema.getOwner());
             return Response.ok().entity(vocabularyAsSchema).build();
         }
         // No draft. Get the current instance.
@@ -344,20 +396,33 @@ public class GetVocabularies {
         }
 
         // No draft, and the caller is authorized. Defer to
-        // getVocabularyById().
-        Response getVocabResponse = getVocabularyById(request, uriInfo,
-                vocabularyId, true, true, true);
-        // But now need to unpack the response ...
-        Object responseEntity = getVocabResponse.getEntity();
-        if (responseEntity instanceof Vocabulary) {
-            Vocabulary responseVocabulary = (Vocabulary) responseEntity;
-            // ... and remove access points with source=SYSTEM.
-            responseVocabulary.getVersion().forEach(
-                    v -> v.getAccessPoint().removeIf(
-                            ap -> ap.getSource() == ApSource.SYSTEM));
-            Response.ok().entity(responseVocabulary).build();
+        // getVocabularyByIdHelper().
+        Pair<Response, Vocabulary> responseOrVocabulary =
+                getVocabularyByIdHelper(vocabularyId, true, true, true);
+
+        Response response = responseOrVocabulary.getLeft();
+        if (response != null) {
+            // There was an error; return it.
+            return response;
         }
-        return getVocabResponse;
+
+        // Vocabulary fetched OK ...
+        Vocabulary responseVocabulary = responseOrVocabulary.getRight();
+        // ... but remove access points with source=SYSTEM.
+        responseVocabulary.getVersion().forEach(
+                v -> v.getAccessPoint().removeIf(
+                            ap -> ap.getSource() == ApSource.SYSTEM));
+        Logging.logRequest(true, request, uriInfo, profile,
+                Analytics.EVENT_GET_VOCABULARY,
+                Analytics.VOCABULARY_LOOKUP_FIELD,
+                    Analytics.VOCABULARY_LOOKUP_BY_ID,
+                Analytics.VOCABULARY_ID_FIELD, vocabularyId,
+                Analytics.TITLE_FIELD, responseVocabulary.getTitle(),
+                Analytics.SLUG_FIELD, responseVocabulary.getSlug(),
+                Analytics.ENTITY_STATUS_FIELD,
+                responseVocabulary.getStatus(),
+                Analytics.OWNER_FIELD, responseVocabulary.getOwner());
+        return Response.ok().entity(responseVocabulary).build();
     }
 
     /** Query if the user profile is authorized to modify the
