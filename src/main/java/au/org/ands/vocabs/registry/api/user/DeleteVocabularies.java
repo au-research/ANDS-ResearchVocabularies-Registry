@@ -194,7 +194,7 @@ public class DeleteVocabularies {
             if (draftTitle != null) {
                 Logging.logRequest(true, request, uriInfo, profile,
                         Analytics.EVENT_DELETE_VOCABULARY,
-                        Analytics.VOCABULARY_ID_FIELD, vocabularyId,
+                        Analytics.ID_FIELD, vocabularyId,
                         Analytics.TITLE_FIELD, draftTitle,
                         Analytics.ENTITY_STATUS_FIELD, VocabularyStatus.DRAFT,
                         Analytics.OWNER_FIELD, draftOwner);
@@ -202,7 +202,7 @@ public class DeleteVocabularies {
             if (currentTitle != null) {
                 Logging.logRequest(true, request, uriInfo, profile,
                         Analytics.EVENT_DELETE_VOCABULARY,
-                        Analytics.VOCABULARY_ID_FIELD, vocabularyId,
+                        Analytics.ID_FIELD, vocabularyId,
                         Analytics.TITLE_FIELD, currentTitle,
                         Analytics.ENTITY_STATUS_FIELD, currentStatus,
                         Analytics.OWNER_FIELD, currentOwner);

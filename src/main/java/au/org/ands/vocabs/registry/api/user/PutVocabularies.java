@@ -165,7 +165,7 @@ public class PutVocabularies {
             // Analytics logging.
             Logging.logRequest(true, request, uriInfo, profile,
                     Analytics.EVENT_CREATE_VOCABULARY,
-                    Analytics.VOCABULARY_ID_FIELD, newVocabularyId,
+                    Analytics.ID_FIELD, newVocabularyId,
                     Analytics.TITLE_FIELD, newVocabulary.getTitle(),
                     Analytics.SLUG_FIELD, newVocabulary.getSlug(),
                     Analytics.ENTITY_STATUS_FIELD, newVocabulary.getStatus(),
@@ -280,7 +280,7 @@ public class PutVocabularies {
             Logging.logRequest(false, request, uriInfo, profile,
                     Analytics.EVENT_UPDATE_VOCABULARY,
                     Analytics.FAILURE_REASON, "validation",
-                    Analytics.VOCABULARY_ID_FIELD, vocabularyId,
+                    Analytics.ID_FIELD, vocabularyId,
                     Analytics.TITLE_FIELD, updatedVocabulary.getTitle(),
                     Analytics.SLUG_FIELD, updatedVocabulary.getSlug(),
                     Analytics.ENTITY_STATUS_FIELD,
@@ -300,7 +300,7 @@ public class PutVocabularies {
                 Logging.logRequest(false, request, uriInfo, profile,
                         Analytics.EVENT_UPDATE_VOCABULARY,
                         Analytics.FAILURE_REASON, "authorization",
-                        Analytics.VOCABULARY_ID_FIELD, vocabularyId,
+                        Analytics.ID_FIELD, vocabularyId,
                         Analytics.TITLE_FIELD, updatedVocabulary.getTitle(),
                         Analytics.SLUG_FIELD, updatedVocabulary.getSlug(),
                         Analytics.ENTITY_STATUS_FIELD,
@@ -319,7 +319,7 @@ public class PutVocabularies {
             Logging.logRequest(false, request, uriInfo, profile,
                     Analytics.EVENT_UPDATE_VOCABULARY,
                     Analytics.FAILURE_REASON, "authorization",
-                    Analytics.VOCABULARY_ID_FIELD, vocabularyId,
+                    Analytics.ID_FIELD, vocabularyId,
                     Analytics.TITLE_FIELD, updatedVocabulary.getTitle(),
                     Analytics.SLUG_FIELD, updatedVocabulary.getSlug(),
                     Analytics.ENTITY_STATUS_FIELD,
@@ -338,7 +338,7 @@ public class PutVocabularies {
             Logging.logRequest(false, request, uriInfo, profile,
                     Analytics.EVENT_UPDATE_VOCABULARY,
                     Analytics.FAILURE_REASON, "validation",
-                    Analytics.VOCABULARY_ID_FIELD, vocabularyId,
+                    Analytics.ID_FIELD, vocabularyId,
                     Analytics.TITLE_FIELD, updatedVocabulary.getTitle(),
                     Analytics.SLUG_FIELD, updatedVocabulary.getSlug(),
                     Analytics.ENTITY_STATUS_FIELD,
@@ -371,7 +371,7 @@ public class PutVocabularies {
             // Analytics logging.
             Logging.logRequest(true, request, uriInfo, profile,
                     Analytics.EVENT_UPDATE_VOCABULARY,
-                    Analytics.VOCABULARY_ID_FIELD, vocabularyId,
+                    Analytics.ID_FIELD, vocabularyId,
                     Analytics.TITLE_FIELD, updatedVocabulary.getTitle(),
                     Analytics.SLUG_FIELD, updatedVocabulary.getSlug(),
                     Analytics.ENTITY_STATUS_FIELD,
@@ -406,20 +406,21 @@ public class PutVocabularies {
                 // The vocabulary has been updated, but it couldn't be
                 // indexed. Oops.
                 logger.error("Solr indexing failed");
+                // We fall through to returning an internal server error.
             }
             if (t instanceof IllegalArgumentException) {
                 // There was a validation error.
-                ErrorResult errorResult =
-                        new ErrorResult("Validation error: " + t.getMessage());
                 Logging.logRequest(false, request, uriInfo, profile,
                         Analytics.EVENT_UPDATE_VOCABULARY,
                         Analytics.FAILURE_REASON, "validation",
-                        Analytics.VOCABULARY_ID_FIELD, vocabularyId,
+                        Analytics.ID_FIELD, vocabularyId,
                         Analytics.TITLE_FIELD, updatedVocabulary.getTitle(),
                         Analytics.SLUG_FIELD, updatedVocabulary.getSlug(),
                         Analytics.ENTITY_STATUS_FIELD,
                             updatedVocabulary.getStatus(),
                         Analytics.OWNER_FIELD, updatedVocabulary.getOwner());
+                ErrorResult errorResult =
+                        new ErrorResult("Validation error: " + t.getMessage());
                 return Response.status(Response.Status.BAD_REQUEST).
                         entity(errorResult).build();
             }
@@ -436,7 +437,7 @@ public class PutVocabularies {
         Logging.logRequest(false, request, uriInfo, profile,
                 Analytics.EVENT_UPDATE_VOCABULARY,
                 Analytics.FAILURE_REASON, "internal error",
-                Analytics.VOCABULARY_ID_FIELD, vocabularyId,
+                Analytics.ID_FIELD, vocabularyId,
                 Analytics.TITLE_FIELD, updatedVocabulary.getTitle(),
                 Analytics.SLUG_FIELD, updatedVocabulary.getSlug(),
                 Analytics.ENTITY_STATUS_FIELD,

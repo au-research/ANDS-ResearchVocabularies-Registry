@@ -84,6 +84,9 @@ public final class Analytics {
     /** The name of the field that groups together portal data
      * inserted into log entries. */
     private static final String PORTAL_MAP_FIELD = "portal";
+    /** The name of the field that groups together related entity data
+     * inserted into log entries. */
+    private static final String RE_MAP_FIELD = "related_entity";
     /** The name of the field that groups together search filters
      * inserted into log entries. */
     private static final String SEARCH_FILTERS_MAP_FIELD = "filters";
@@ -154,6 +157,9 @@ public final class Analytics {
     public static final String ENTITY_STATUS_FIELD = "status";
     /** The name of the failure reason field inserted into log entries. */
     public static final String FAILURE_REASON = "failure_reason";
+    /** The name of the vocabulary or related entity ID field
+     * inserted into log entries. */
+    public static final String ID_FIELD = "id";
     /** The name of the notification element type field
      * inserted into log entries. */
     public static final String NOTIFICATION_ELEMENT_TYPE_FIELD = "element_type";
@@ -180,8 +186,6 @@ public final class Analytics {
             "element_owner";
     /** The name of the owner field inserted into log entries. */
     public static final String OWNER_FIELD = "owner";
-    /** The name of the related entity ID field inserted into log entries. */
-    public static final String RELATED_ENTITY_ID_FIELD = "relatedEntity_id";
     /** The name of the search access field inserted into log entries. */
     public static final String SEARCH_ACCESS_FIELD = "access";
     /** The name of the search format field inserted into log entries. */
@@ -217,8 +221,6 @@ public final class Analytics {
     public static final String SUBSCRIBER_ID_FIELD = "subscriber_id";
     /** The name of the title field inserted into log entries. */
     public static final String TITLE_FIELD = "title";
-    /** The name of the vocabulary ID field inserted into log entries. */
-    public static final String VOCABULARY_ID_FIELD = "id";
     /** The value to use for the {@link #VOCABULARY_LOOKUP_FIELD} field to
      * indicate that the vocabulary was looked up by its resource ID.*/
     public static final String VOCABULARY_LOOKUP_BY_ID = "id";
@@ -243,6 +245,10 @@ public final class Analytics {
      * for creating a vocabulary. */
     public static final String EVENT_CREATE_VOCABULARY =
             "create_vocabulary";
+    /** The value of the "message" field to use for log entries
+     * for getting a list of vocabularies. */
+    public static final String EVENT_GET_VOCABULARY_LIST =
+            "read_vocabulary_list";
     /** The value of the "message" field to use for log entries
      * for getting a vocabulary. */
     public static final String EVENT_GET_VOCABULARY =
@@ -548,6 +554,7 @@ public final class Analytics {
      * @param otherFields Other fields to be logged. This is a list
      *      of pairs of keys and values, of which the keys must be Strings.
      */
+    @SuppressWarnings("checkstyle:MethodLength")
     public static void updateMarkerWithAdditionalFields(
             final LogstashMarker lm,
             final String message, final Object[] otherFields) {
@@ -564,6 +571,9 @@ public final class Analytics {
         boolean useVocabularyMap = false;
         Map<String, Object> vocabularyMap = new HashMap<>();
 
+        boolean useREMap = false;
+        Map<String, Object> reMap = new HashMap<>();
+
         boolean useSearchMaps = false;
         Map<String, Object> searchFiltersMap = new HashMap<>();
         Map<String, Object> searchResultsMap = new HashMap<>();
@@ -579,6 +589,11 @@ public final class Analytics {
         case EVENT_CREATE_VOCABULARY:
         case EVENT_UPDATE_VOCABULARY:
             useVocabularyMap = true;
+            break;
+        case EVENT_CREATE_RELATED_ENTITY:
+        case EVENT_UPDATE_RELATED_ENTITY:
+        case EVENT_DELETE_RELATED_ENTITY:
+            useREMap = true;
             break;
         case EVENT_SEARCH:
             useSearchMaps = true;
@@ -605,14 +620,28 @@ public final class Analytics {
                 // away (i.e., "moved") into one of the maps.
                 boolean moved = false;
                 switch (key) {
-                case VOCABULARY_ID_FIELD:
+                case ID_FIELD:
                 case TITLE_FIELD:
+                case OWNER_FIELD:
+                    if (useVocabularyMap) {
+                        vocabularyMap.put(key, otherFields[i + 1]);
+                        moved = true;
+                    } else if (useREMap) {
+                        reMap.put(key, otherFields[i + 1]);
+                        moved = true;
+                    }
+                    break;
                 case SLUG_FIELD:
                 case ENTITY_STATUS_FIELD:
-                case OWNER_FIELD:
                 case VOCABULARY_LOOKUP_FIELD:
                     if (useVocabularyMap) {
                         vocabularyMap.put(key, otherFields[i + 1]);
+                        moved = true;
+                    }
+                    break;
+                case WAS_MODIFIED_FIELD:
+                    if (useREMap) {
+                        reMap.put(key, otherFields[i + 1]);
                         moved = true;
                     }
                     break;
@@ -664,6 +693,9 @@ public final class Analytics {
         }
         if (useVocabularyMap) {
             lm.and(append(VOCABULARY_MAP_FIELD, vocabularyMap));
+        }
+        if (useREMap) {
+            lm.and(append(RE_MAP_FIELD, reMap));
         }
         if (useSearchMaps) {
             lm.and(append(SEARCH_FILTERS_MAP_FIELD, searchFiltersMap));

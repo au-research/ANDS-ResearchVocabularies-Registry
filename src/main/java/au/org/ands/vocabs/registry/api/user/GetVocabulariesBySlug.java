@@ -189,7 +189,7 @@ public class GetVocabulariesBySlug {
                 Analytics.EVENT_GET_VOCABULARY,
                 Analytics.VOCABULARY_LOOKUP_FIELD,
                     Analytics.VOCABULARY_LOOKUP_BY_SLUG,
-                Analytics.VOCABULARY_ID_FIELD, vocabularyId,
+                Analytics.ID_FIELD, vocabularyId,
                 Analytics.TITLE_FIELD, outputVocabulary.getTitle(),
                 Analytics.ENTITY_STATUS_FIELD,
                     outputVocabulary.getStatus(),
