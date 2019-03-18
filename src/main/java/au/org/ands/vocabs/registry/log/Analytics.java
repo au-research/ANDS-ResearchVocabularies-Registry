@@ -25,8 +25,10 @@ import com.maxmind.geoip2.DatabaseReader;
 import com.maxmind.geoip2.exception.GeoIp2Exception;
 import com.maxmind.geoip2.model.CityResponse;
 import com.maxmind.geoip2.record.City;
+import com.maxmind.geoip2.record.Continent;
 import com.maxmind.geoip2.record.Country;
 import com.maxmind.geoip2.record.Location;
+import com.maxmind.geoip2.record.Postal;
 import com.maxmind.geoip2.record.Subdivision;
 
 import au.org.ands.vocabs.registry.utils.BotDetector;
@@ -112,12 +114,22 @@ public final class Analytics {
     // of field name.
     /** The name of the city name field inserted into log entries. */
     private static final String GEO_CITY_NAME_FIELD = "city_name";
+    /** The name of the continent code field inserted into log entries. */
+    private static final String GEO_CONTINENT_CODE_FIELD = "continent_code";
+    /** The name of the country code field inserted into log entries. */
+    private static final String GEO_COUNTRY_CODE2_FIELD = "country_code2";
     /** The name of the country name field inserted into log entries. */
     private static final String GEO_COUNTRY_NAME_FIELD = "country_name";
     /** The name of the location field inserted into log entries. */
     private static final String GEO_LOCATION_FIELD = "location";
+    /** The name of the postal code field inserted into log entries. */
+    private static final String GEO_POSTAL_CODE_FIELD = "postal_code";
     /** The name of the region code field inserted into log entries. */
     private static final String GEO_REGION_CODE_FIELD = "region_code";
+    /** The name of the region name field inserted into log entries. */
+    private static final String GEO_REGION_NAME_FIELD = "region_name";
+    /** The name of the timezone field inserted into log entries. */
+    private static final String GEO_TIMEZONE_FIELD = "timezone";
     /** The name of the IP address field inserted into log entries. */
     private static final String IP_FIELD = "ip";
     /** The name of the "is_bot" field inserted into log entries. */
@@ -527,21 +539,58 @@ public final class Analytics {
         City city = response.getCity();
 //        city.getName() = 'Minneapolis'
 
-//        Postal postal = response.getPostal();
+        Postal postal = response.getPostal();
 //        postal.getCode() = '55455'
 
         Location location = response.getLocation();
 //        location.getLatitude()   = 44.9733
 //        location.getLongitude()) = -93.2323
 
+        Continent continent = response.getContinent();
+
         Map<String, Object> geoMap = new HashMap<>();
-        geoMap.put(GEO_COUNTRY_NAME_FIELD, country.getName());
-        geoMap.put(GEO_CITY_NAME_FIELD, city.getName());
-        geoMap.put(GEO_REGION_CODE_FIELD, subdivision.getIsoCode());
-        geoMap.put(GEO_LOCATION_FIELD,
-                new Double[]
-                        {location.getLongitude(), location.getLatitude()});
-//        geoMap.put(, );
+        String value;
+        value = country.getName();
+        if (value != null) {
+            geoMap.put(GEO_COUNTRY_NAME_FIELD, value);
+        }
+        value = city.getName();
+        if (value != null) {
+            geoMap.put(GEO_CITY_NAME_FIELD, value);
+        }
+        value = subdivision.getIsoCode();
+        if (value != null) {
+            geoMap.put(GEO_REGION_CODE_FIELD, value);
+        }
+        if (location.getLongitude() != null) {
+            geoMap.put(GEO_LOCATION_FIELD,
+                    new Double[]
+                            {location.getLongitude(), location.getLatitude()});
+        }
+        value = continent.getCode();
+        if (value != null) {
+            geoMap.put(GEO_CONTINENT_CODE_FIELD, value);
+        }
+        value = country.getIsoCode();
+        if (value != null) {
+            geoMap.put(GEO_COUNTRY_CODE2_FIELD, value);
+        }
+        value = postal.getCode();
+        if (value != null) {
+            geoMap.put(GEO_POSTAL_CODE_FIELD, value);
+        }
+        value = subdivision.getName();
+        if (value != null) {
+            geoMap.put(GEO_REGION_NAME_FIELD, value);
+        }
+        value = location.getTimeZone();
+        if (value != null) {
+            geoMap.put(GEO_TIMEZONE_FIELD, value);
+        }
+//        value = ;
+//        if (value != null) {
+//            geoMap.put(, value);
+//        }
         lm.and(append(GEOIP_MAP_FIELD, geoMap));
     }
 
