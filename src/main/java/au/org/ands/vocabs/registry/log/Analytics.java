@@ -165,7 +165,11 @@ public final class Analytics {
      * This is used to represent a <i>registry entity's</i> status, e.g.,
      * that a vocabulary has "deprecated" status.
      * As this log field is embedded within the {@link #VOCABULARY_MAP_FIELD}
-     * map, the use of the value "status" is unambiguous.*/
+     * map, the use of the value "status" is unambiguous.
+     * Note: the values provided for log entries should be the
+     * "values" of the enumerated types, i.e., callers should
+     * use something like {@code ....getStatus().value()}.
+     * */
     public static final String ENTITY_STATUS_FIELD = "status";
     /** The name of the failure reason field inserted into log entries. */
     public static final String FAILURE_REASON = "failure_reason";

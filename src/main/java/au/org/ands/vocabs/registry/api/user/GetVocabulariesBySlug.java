@@ -192,7 +192,7 @@ public class GetVocabulariesBySlug {
                 Analytics.ID_FIELD, vocabularyId,
                 Analytics.TITLE_FIELD, outputVocabulary.getTitle(),
                 Analytics.ENTITY_STATUS_FIELD,
-                    outputVocabulary.getStatus(),
+                    outputVocabulary.getStatus().value(),
                 Analytics.OWNER_FIELD, outputVocabulary.getOwner());
         return Response.ok().entity(outputVocabulary).build();
     }

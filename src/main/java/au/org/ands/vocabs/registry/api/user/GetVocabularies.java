@@ -185,7 +185,7 @@ public class GetVocabularies {
                 Analytics.TITLE_FIELD, outputVocabulary.getTitle(),
                 Analytics.SLUG_FIELD, outputVocabulary.getSlug(),
                 Analytics.ENTITY_STATUS_FIELD,
-                    outputVocabulary.getStatus(),
+                    outputVocabulary.getStatus().value(),
                 Analytics.OWNER_FIELD, outputVocabulary.getOwner());
         return Response.ok().entity(outputVocabulary).build();
     }
@@ -378,7 +378,7 @@ public class GetVocabularies {
                     Analytics.TITLE_FIELD, vocabularyAsSchema.getTitle(),
                     Analytics.SLUG_FIELD, vocabularyAsSchema.getSlug(),
                     Analytics.ENTITY_STATUS_FIELD,
-                        vocabularyAsSchema.getStatus(),
+                        vocabularyAsSchema.getStatus().value(),
                     Analytics.OWNER_FIELD, vocabularyAsSchema.getOwner());
             return Response.ok().entity(vocabularyAsSchema).build();
         }
@@ -420,7 +420,7 @@ public class GetVocabularies {
                 Analytics.TITLE_FIELD, responseVocabulary.getTitle(),
                 Analytics.SLUG_FIELD, responseVocabulary.getSlug(),
                 Analytics.ENTITY_STATUS_FIELD,
-                responseVocabulary.getStatus(),
+                responseVocabulary.getStatus().value(),
                 Analytics.OWNER_FIELD, responseVocabulary.getOwner());
         return Response.ok().entity(responseVocabulary).build();
     }
