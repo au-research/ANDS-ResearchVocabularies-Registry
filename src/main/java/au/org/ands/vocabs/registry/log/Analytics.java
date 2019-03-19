@@ -7,6 +7,8 @@ import static net.logstash.logback.marker.Markers.append;
 import java.io.File;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.HashMap;
@@ -16,6 +18,7 @@ import java.util.UUID;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.UriInfo;
+import javax.xml.bind.annotation.XmlEnum;
 
 import org.pac4j.core.profile.CommonProfile;
 import org.slf4j.Logger;
@@ -684,8 +687,14 @@ public final class Analytics {
                         moved = true;
                     }
                     break;
-                case SLUG_FIELD:
                 case ENTITY_STATUS_FIELD:
+                    // For this field, we accept instances of our
+                    // jaxc-generated enumerated types. We "rewrite"
+                    // to get the result of applying its value() method ...
+                    otherFields[i + 1] = getEntityStatusValue(
+                            otherFields[i + 1]);
+                    // ... then fall through to see if it should be moved.
+                case SLUG_FIELD:
                 case VOCABULARY_LOOKUP_FIELD:
                     if (useVocabularyMap) {
                         vocabularyMap.put(key, otherFields[i + 1]);
@@ -765,6 +774,42 @@ public final class Analytics {
             lm.and(append(SUBSCRIPTION_MAP_FIELD, subscriptionMap));
         }
 
+    }
+
+    /** For values that are to go into log entries, if they are
+     * instances of jaxc-generated enumerated types, invoke the
+     * {@code value()} method on them to get the value as given
+     * in the Registry Schema, rather than the value that would
+     * be given by {@code toString()}. The difference is usually
+     * that the return value is in lower case.
+     * @param o A value to be processed.
+     * @return If o is a String, then o is returned as-is. If o is
+     *      an instance of a jaxc-generated enumerated type, and the
+     *      class has a {@code value()} method, then
+     *      the value returned is the result of applying that method.
+     *      Otherwise, the value returned is the result of applying
+     *      the {@code toString()} method.
+     */
+    private static String getEntityStatusValue(final Object o) {
+        if (o instanceof String) {
+            return (String) o;
+        }
+        Class<?> clazz = o.getClass();
+        if (clazz.isAnnotationPresent(XmlEnum.class)) {
+            Method method;
+            try {
+                method = clazz.getMethod("value", (Class<?>[]) null);
+            } catch (NoSuchMethodException | SecurityException e) {
+                return o.toString();
+            }
+            try {
+                return (String) method.invoke(o, (Object[]) null);
+            } catch (IllegalAccessException | IllegalArgumentException
+                    | InvocationTargetException e) {
+                return o.toString();
+            }
+        }
+        return o.toString();
     }
 
 }

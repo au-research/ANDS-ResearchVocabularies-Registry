@@ -168,8 +168,7 @@ public class PutVocabularies {
                     Analytics.ID_FIELD, newVocabularyId,
                     Analytics.TITLE_FIELD, newVocabulary.getTitle(),
                     Analytics.SLUG_FIELD, newVocabulary.getSlug(),
-                    Analytics.ENTITY_STATUS_FIELD,
-                        newVocabulary.getStatus().value(),
+                    Analytics.ENTITY_STATUS_FIELD, newVocabulary.getStatus(),
                     Analytics.OWNER_FIELD, newVocabulary.getOwner());
             Vocabulary newVocabularyResponse;
             if (newVocabulary.getStatus() == VocabularyStatus.DRAFT) {
@@ -285,7 +284,7 @@ public class PutVocabularies {
                     Analytics.TITLE_FIELD, updatedVocabulary.getTitle(),
                     Analytics.SLUG_FIELD, updatedVocabulary.getSlug(),
                     Analytics.ENTITY_STATUS_FIELD,
-                        updatedVocabulary.getStatus().value(),
+                        updatedVocabulary.getStatus(),
                     Analytics.OWNER_FIELD, updatedVocabulary.getOwner());
             return Response.status(Response.Status.BAD_REQUEST).
                     entity(errorResult).build();
@@ -305,7 +304,7 @@ public class PutVocabularies {
                         Analytics.TITLE_FIELD, updatedVocabulary.getTitle(),
                         Analytics.SLUG_FIELD, updatedVocabulary.getSlug(),
                         Analytics.ENTITY_STATUS_FIELD,
-                            updatedVocabulary.getStatus().value(),
+                            updatedVocabulary.getStatus(),
                         Analytics.OWNER_FIELD, updatedVocabulary.getOwner());
                 return ResponseUtils.generateForbiddenResponseForOwner();
             }
@@ -324,7 +323,7 @@ public class PutVocabularies {
                     Analytics.TITLE_FIELD, updatedVocabulary.getTitle(),
                     Analytics.SLUG_FIELD, updatedVocabulary.getSlug(),
                     Analytics.ENTITY_STATUS_FIELD,
-                        updatedVocabulary.getStatus().value(),
+                        updatedVocabulary.getStatus(),
                     Analytics.OWNER_FIELD, updatedVocabulary.getOwner());
             return ResponseUtils.generateForbiddenResponseForOwner();
         }
@@ -343,7 +342,7 @@ public class PutVocabularies {
                     Analytics.TITLE_FIELD, updatedVocabulary.getTitle(),
                     Analytics.SLUG_FIELD, updatedVocabulary.getSlug(),
                     Analytics.ENTITY_STATUS_FIELD,
-                        updatedVocabulary.getStatus().value(),
+                        updatedVocabulary.getStatus(),
                     Analytics.OWNER_FIELD, updatedVocabulary.getOwner());
             return Response.status(Response.Status.BAD_REQUEST).
                     entity(errorResult).build();
@@ -376,7 +375,7 @@ public class PutVocabularies {
                     Analytics.TITLE_FIELD, updatedVocabulary.getTitle(),
                     Analytics.SLUG_FIELD, updatedVocabulary.getSlug(),
                     Analytics.ENTITY_STATUS_FIELD,
-                        updatedVocabulary.getStatus().value(),
+                        updatedVocabulary.getStatus(),
                     Analytics.OWNER_FIELD, updatedVocabulary.getOwner());
             Vocabulary updatedVocabularyResponse;
             if (updatedVocabulary.getStatus() == VocabularyStatus.DRAFT) {
@@ -418,7 +417,7 @@ public class PutVocabularies {
                         Analytics.TITLE_FIELD, updatedVocabulary.getTitle(),
                         Analytics.SLUG_FIELD, updatedVocabulary.getSlug(),
                         Analytics.ENTITY_STATUS_FIELD,
-                            updatedVocabulary.getStatus().value(),
+                            updatedVocabulary.getStatus(),
                         Analytics.OWNER_FIELD, updatedVocabulary.getOwner());
                 ErrorResult errorResult =
                         new ErrorResult("Validation error: " + t.getMessage());
@@ -442,7 +441,7 @@ public class PutVocabularies {
                 Analytics.TITLE_FIELD, updatedVocabulary.getTitle(),
                 Analytics.SLUG_FIELD, updatedVocabulary.getSlug(),
                 Analytics.ENTITY_STATUS_FIELD,
-                    updatedVocabulary.getStatus().value(),
+                    updatedVocabulary.getStatus(),
                 Analytics.OWNER_FIELD, updatedVocabulary.getOwner());
         return ErrorResultUtils.internalServerError();
     }
