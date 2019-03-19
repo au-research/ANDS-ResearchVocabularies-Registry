@@ -87,9 +87,7 @@ public class GetOwnedVocabularies {
                             })
             })
     public final OwnedVocabularyList getOwnedVocabularies(
-            @SuppressWarnings("unused")
             @Context final HttpServletRequest request,
-            @SuppressWarnings("unused")
             @Context final UriInfo uriInfo,
             @ApiParam(hidden = true) @Pac4JProfile
             final CommonProfile profile) {
@@ -121,6 +119,8 @@ public class GetOwnedVocabularies {
                 // MapStruct mapper for this. Just copy the fields.
                 newOwnedVocabulary.setId(vocabularyId);
                 newOwnedVocabulary.setStatus(vocabulary.getStatus());
+                newOwnedVocabulary.setOwner(vocabulary.getOwner());
+                newOwnedVocabulary.setSlug(vocabulary.getSlug());
                 VocabularyJson vocabularyJson = JSONSerialization.
                         deserializeStringAsJson(vocabulary.getData(),
                                 VocabularyJson.class);

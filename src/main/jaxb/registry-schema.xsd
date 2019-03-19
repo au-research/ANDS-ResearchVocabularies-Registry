@@ -611,6 +611,16 @@ NoLicence</xs:documentation>
                     <xs:documentation>If status="draft", the value of this attribute is true. Otherwise, the value of this attribute is true if there is also a draft instance.</xs:documentation>
                 </xs:annotation>
             </xs:attribute>
+            <xs:attribute name="owner" use="required" type="xs:token">
+                <xs:annotation>
+                    <xs:documentation>The vocabulary's owner. It will be the short name of one of the user's organisational roles.</xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="slug" type="xs:token">
+                <xs:annotation>
+                    <xs:documentation>The vocabulary's slug.</xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
             <xs:attribute name="title" use="required" type="xs:token">
                 <xs:annotation>
                     <xs:documentation>The vocabulary's title.</xs:documentation>
