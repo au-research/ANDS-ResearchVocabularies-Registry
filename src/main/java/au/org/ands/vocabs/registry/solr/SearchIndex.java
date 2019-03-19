@@ -347,6 +347,9 @@ public final class SearchIndex {
                 filtersAndResultsExtracted.add(
                         Analytics.SEARCH_RESULT_OWNER_FIELD);
                 filtersAndResultsExtracted.add(resultOwners);
+                filtersAndResultsExtracted.add(
+                        Analytics.SEARCH_RESULT_NUM_FOUND_FIELD);
+                filtersAndResultsExtracted.add(solrDocumentList.getNumFound());
             }
 
             StringWriter stringWriter = new StringWriter();

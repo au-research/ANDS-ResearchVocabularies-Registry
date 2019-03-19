@@ -223,6 +223,9 @@ public final class Analytics {
     public static final String SEARCH_Q_FIELD = "q";
     /** The name of the search result Id field inserted into log entries. */
     public static final String SEARCH_RESULT_ID_FIELD = "result_ids";
+    /** The name of the search result num_found field
+     * inserted into log entries. */
+    public static final String SEARCH_RESULT_NUM_FOUND_FIELD = "num_found";
     /** The name of the search result Id field inserted into log entries. */
     public static final String SEARCH_RESULT_OWNER_FIELD = "result_owners";
     /** The name of the search subject labels field inserted into
@@ -723,6 +726,7 @@ public final class Analytics {
                     }
                     break;
                 case SEARCH_RESULT_ID_FIELD:
+                case SEARCH_RESULT_NUM_FOUND_FIELD:
                 case SEARCH_RESULT_OWNER_FIELD:
                     if (useSearchMaps) {
                         searchResultsMap.put(key, otherFields[i + 1]);
