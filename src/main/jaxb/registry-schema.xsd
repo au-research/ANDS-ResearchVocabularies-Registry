@@ -12,6 +12,8 @@ See https://documentation.ands.org.au/display/DOC/Research+Vocabularies
 
 Change history (most recent changes first)
 
+2019-03-19
+  * Added owner and slug attributes to the owned-vocabulary element.
 2018-08-27
   * Corrected the remaining instances of camel-cased attribute names (urlPrefix and hasDraft); they now use hyphens (url-prefix and has-draft).
 2018-08-06
