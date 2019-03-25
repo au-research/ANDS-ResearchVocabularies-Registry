@@ -36,7 +36,15 @@ public final class DefaultPriorities {
     public static final Integer DEFAULT_PUBLISH_DELETE_PRIORITY =
             -DEFAULT_PUBLISH_INSERT_PRIORITY;
 
-    /** Default priority for "transform after importer" insert. */
+    /** Default priority for "transform after importer" insert.
+     * Historical note: this constant was originally set to a value
+     * between {@link #DEFAULT_IMPORTER_INSERT_PRIORITY} and
+     * {@link #DEFAULT_PUBLISH_INSERT_PRIORITY}, but was then
+     * repurposed to serve also for subtasks that must be done
+     * after publish subtasks. Now that we also have
+     * {@link #DEFAULT_TRANSFORM_AFTER_PUBLISH_INSERT_PRIORITY},
+     * the value has been left as-is for now, but it could be adjusted to
+     * fit where it was "supposed" to be. */
     public static final Integer
             DEFAULT_TRANSFORM_AFTER_IMPORTER_INSERT_PRIORITY = 50;
     /** Default priority for "transform after importer" delete.
@@ -44,6 +52,15 @@ public final class DefaultPriorities {
     public static final Integer
             DEFAULT_TRANSFORM_AFTER_IMPORTER_DELETE_PRIORITY =
             -DEFAULT_TRANSFORM_AFTER_IMPORTER_INSERT_PRIORITY;
+
+    /** Default priority for "transform after publish" insert. */
+    public static final Integer
+            DEFAULT_TRANSFORM_AFTER_PUBLISH_INSERT_PRIORITY = 50;
+    /** Default priority for "transform after publish" delete.
+     * Note that such subtasks are done <i>before</i> publish deletes! */
+    public static final Integer
+            DEFAULT_TRANSFORM_AFTER_PUBLISH_DELETE_PRIORITY =
+            -DEFAULT_TRANSFORM_AFTER_PUBLISH_INSERT_PRIORITY;
 
     /** Default priority for backup perform. */
     public static final Integer DEFAULT_BACKUP_PERFORM_PRIORITY = null;

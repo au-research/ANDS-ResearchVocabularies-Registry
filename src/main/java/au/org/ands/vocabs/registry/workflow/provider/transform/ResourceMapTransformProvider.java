@@ -416,10 +416,10 @@ public class ResourceMapTransformProvider implements WorkflowProvider {
         case INSERT:
         case PERFORM:
             return DefaultPriorities.
-                    DEFAULT_TRANSFORM_AFTER_IMPORTER_INSERT_PRIORITY;
+                    DEFAULT_TRANSFORM_AFTER_PUBLISH_INSERT_PRIORITY;
         case DELETE:
             return DefaultPriorities.
-                    DEFAULT_TRANSFORM_AFTER_IMPORTER_DELETE_PRIORITY;
+                    DEFAULT_TRANSFORM_AFTER_PUBLISH_DELETE_PRIORITY;
         default:
             // Unknown operation type!
             return null;
