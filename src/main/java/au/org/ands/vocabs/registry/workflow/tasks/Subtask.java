@@ -4,6 +4,7 @@ package au.org.ands.vocabs.registry.workflow.tasks;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeMap;
 
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
@@ -155,7 +156,7 @@ public class Subtask implements Comparable<Subtask> {
      */
     public void setSubtaskProperties(
             final Map<String, String> aSubtaskProperties) {
-        subtaskProperties = new HashMap<>(aSubtaskProperties);
+        subtaskProperties = new TreeMap<>(aSubtaskProperties);
     }
 
     /** Get the map of additional subtask properties. Note: if there
@@ -184,7 +185,7 @@ public class Subtask implements Comparable<Subtask> {
      */
     public void addSubtaskProperty(final String key, final String value) {
         if (subtaskProperties == null) {
-            subtaskProperties = new HashMap<>();
+            subtaskProperties = new TreeMap<>();
         }
         subtaskProperties.put(key, value);
     }
@@ -245,6 +246,28 @@ public class Subtask implements Comparable<Subtask> {
         results.put(key, value);
     }
 
+    /** Helper method for converting the contents of a Map to a String[].
+     * Used by {@link #compareTo(Subtask)}.
+     * @param map The Map to be converted into a String[].
+     * @return The Map converted into a String[]. The elements of
+     *      the array alternate the keys and corresponding values of map.
+     *      If the Map is null, null is returned.
+     */
+    private String[] mapToArray(final Map<String, String> map) {
+        if (map == null) {
+            return null;
+        }
+        String[] array = new String[map.size() * 2];
+        int i = 0;
+        for (Map.Entry<String, String> entry : map.entrySet()) {
+            array[i] = entry.getKey();
+            i++;
+            array[i] = entry.getValue();
+            i++;
+        }
+        return array;
+    }
+
     /** {@inheritDoc}
      * Comparability test based on priority.
      * Values with null priority are sorted at the end.
@@ -267,7 +290,8 @@ public class Subtask implements Comparable<Subtask> {
                                 other.getSubtaskProviderType()).
                         append(operation, other.getOperation()).
                         append(provider, other.getProvider()).
-                        append(subtaskProperties, other.getSubtaskProperties()).
+                        append(mapToArray(subtaskProperties),
+                                mapToArray(other.getSubtaskProperties())).
                         toComparison();
 //                return 0;
             }
@@ -288,7 +312,8 @@ public class Subtask implements Comparable<Subtask> {
                         other.getSubtaskProviderType()).
                 append(operation, other.getOperation()).
                 append(provider, other.getProvider()).
-                append(subtaskProperties, other.getSubtaskProperties()).
+                append(mapToArray(subtaskProperties),
+                        mapToArray(other.getSubtaskProperties())).
                 toComparison();
     }
 
@@ -302,7 +327,7 @@ public class Subtask implements Comparable<Subtask> {
             return false;
         }
         Subtask otherSubtask = (Subtask) other;
-        // Note comparison of subtaskProperties, which is a HashMap.
+        // Note comparison of subtaskProperties, which is a TreeMap.
         // This works correctly, because the keys/values are Strings (and not
         // arrays).
         return new EqualsBuilder().
