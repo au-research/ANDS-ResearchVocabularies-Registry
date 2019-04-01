@@ -39,6 +39,7 @@ import au.org.ands.vocabs.registry.api.validation.FieldValidationHelper;
 import au.org.ands.vocabs.registry.api.validation.ValidationUtils;
 import au.org.ands.vocabs.registry.db.context.DBContext;
 import au.org.ands.vocabs.registry.db.context.TemporalUtils;
+import au.org.ands.vocabs.registry.log.Analytics;
 import au.org.ands.vocabs.registry.log.Logging;
 import au.org.ands.vocabs.registry.subscription.Owners;
 import au.org.ands.vocabs.registry.subscription.SubscriptionUtils;
@@ -140,8 +141,12 @@ public class PutSubscriptions {
                     profile.getUsername());
             txn.commit();
             Logging.logRequest(true, request, uriInfo, profile,
-                    "Create email subscription for a vocabulary");
-            // Successful deletion, and no response body. noContent() creates
+                    Analytics.EVENT_CREATE_SUBSCRIPTION,
+                    Analytics.SUBSCRIBER_EMAIL_FIELD, normalizedEmail,
+                    Analytics.NOTIFICATION_ELEMENT_TYPE_FIELD,
+                    Analytics.NOTIFICATION_ELEMENT_TYPE_VOCABULARY,
+                    Analytics.NOTIFICATION_ELEMENT_ID_FIELD, vocabularyId);
+            // Successful creation, and no response body. noContent() creates
             // status code 204.
             return Response.noContent().build();
         } catch (Throwable t) {
@@ -259,8 +264,12 @@ public class PutSubscriptions {
                     normalizedEmail, owner, em, now, profile.getUsername());
             txn.commit();
             Logging.logRequest(true, request, uriInfo, profile,
-                    "Create email subscription for an owner");
-            // Successful deletion, and no response body. noContent() creates
+                    Analytics.EVENT_CREATE_SUBSCRIPTION,
+                    Analytics.SUBSCRIBER_EMAIL_FIELD, normalizedEmail,
+                    Analytics.NOTIFICATION_ELEMENT_TYPE_FIELD,
+                    Analytics.NOTIFICATION_ELEMENT_TYPE_OWNER,
+                    Analytics.NOTIFICATION_ELEMENT_OWNER_FIELD, owner);
+            // Successful creation, and no response body. noContent() creates
             // status code 204.
             return Response.noContent().build();
         } catch (Throwable t) {
@@ -365,8 +374,11 @@ public class PutSubscriptions {
                     em, now, profile.getUsername());
             txn.commit();
             Logging.logRequest(true, request, uriInfo, profile,
-                    "Create email subscription for the system");
-            // Successful deletion, and no response body. noContent() creates
+                    Analytics.EVENT_CREATE_SUBSCRIPTION,
+                    Analytics.SUBSCRIBER_EMAIL_FIELD, normalizedEmail,
+                    Analytics.NOTIFICATION_ELEMENT_TYPE_FIELD,
+                    Analytics.NOTIFICATION_ELEMENT_TYPE_SYSTEM);
+            // Successful creation, and no response body. noContent() creates
             // status code 204.
             return Response.noContent().build();
         } catch (Throwable t) {

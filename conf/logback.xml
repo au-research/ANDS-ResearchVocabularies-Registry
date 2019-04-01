@@ -62,4 +62,10 @@
   <!-- Uncomment for lots of Hibernate output.
   <logger name="org.hibernate" level="DEBUG" />
   -->
+
+  <!-- Uncomment either or both of these to get additional Pac4j
+       logging. -->
+  <!-- <logger name="org.pac4j.core.credentials.authenticator"
+          level="DEBUG" /-->
+  <!-- <logger name="org.pac4j.core.engine" level="DEBUG" /-->
 </configuration>

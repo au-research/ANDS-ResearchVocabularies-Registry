@@ -57,38 +57,56 @@ public class RegistryIRILookupTests extends ArquillianBaseTest {
         String service = RESOLVE_LOOKUP_IRI;
 
         // Test: resource IRI not specified.
-        Response response = NetClientUtils.doGet(baseURL,
-                service);
-        Assert.assertEquals(response.getStatusInfo().getFamily(),
-                Family.CLIENT_ERROR,
-                "lookupIRI response status");
-        String body = response.readEntity(String.class);
-        response.close();
+        Response response = null;
+        String body;
+        try {
+            response = NetClientUtils.doGet(baseURL, service);
+            Assert.assertEquals(response.getStatusInfo().getFamily(),
+                    Family.CLIENT_ERROR,
+                    "lookupIRI response status");
+            body = response.readEntity(String.class);
+        } finally {
+            if (response != null) {
+                response.close();
+                response = null;
+            }
+        }
         Assert.assertTrue(body.startsWith(ResolveIRI.NO_IRI_SPECIFIED),
                 "Error message when no IRI specified");
 
         // Test: unsupported mode specified.
-        response = NetClientUtils.doGetWithAdditionalComponents(
-                baseURL, service,
-                webTarget -> webTarget.queryParam("iri", "test").
+        try {
+            response = NetClientUtils.doGetWithAdditionalComponents(
+                    baseURL, service,
+                    webTarget -> webTarget.queryParam("iri", "test").
                     queryParam("mode", "bogusMode"));
-        Assert.assertEquals(response.getStatusInfo().getFamily(),
-                Family.CLIENT_ERROR,
-                "lookupIRI response status");
-        body = response.readEntity(String.class);
-        response.close();
+            Assert.assertEquals(response.getStatusInfo().getFamily(),
+                    Family.CLIENT_ERROR,
+                    "lookupIRI response status");
+            body = response.readEntity(String.class);
+        } finally {
+            if (response != null) {
+                response.close();
+                response = null;
+            }
+        }
         Assert.assertTrue(body.startsWith(ResolveIRI.UNSUPPORTED_MODE),
                 "Error message when unsupported mode specified");
 
         // Test: bogus IRI specified.
-        response = NetClientUtils.doGetWithAdditionalComponents(
-                baseURL, service,
-                webTarget -> webTarget.queryParam("iri", "test"));
-        Assert.assertEquals(response.getStatusInfo().getFamily(),
-                Family.CLIENT_ERROR,
-                "lookupIRI response status");
-        body = response.readEntity(String.class);
-        response.close();
+        try {
+            response = NetClientUtils.doGetWithAdditionalComponents(
+                    baseURL, service,
+                    webTarget -> webTarget.queryParam("iri", "test"));
+            Assert.assertEquals(response.getStatusInfo().getFamily(),
+                    Family.CLIENT_ERROR,
+                    "lookupIRI response status");
+            body = response.readEntity(String.class);
+        } finally {
+            if (response != null) {
+                response.close();
+            }
+        }
         Assert.assertTrue(body.startsWith(ResolveIRI.NO_DEFINITION),
                 "Error message when bogus IRI specified");
 
@@ -294,29 +312,46 @@ public class RegistryIRILookupTests extends ArquillianBaseTest {
         // Include an ampersand in the test suffix, as it is important
         // to confirm that this comes back without any form of escaping applied.
         String dummyTestSuffix = "&dummyTestSuffix";
-        Response response;
+        Response response = null;
+        URI redirectLocation;
         for (String resource : resourcesThatShouldResolve) {
-            response = NetClientUtils.doGetWithAdditionalComponentsNoRedirects(
-                    baseURL, service,
-                    webTarget -> webTarget.queryParam("iri", resource));
-            Assert.assertEquals(response.getStatusInfo().getFamily(),
-                    Family.REDIRECTION,
-                    "lookupIRI response status for iri: " + resource);
-            URI redirectLocation = response.getLocation();
-            response.close();
+            try {
+                response =
+                        NetClientUtils.doGetWithAdditionalComponentsNoRedirects(
+                                baseURL, service,
+                                webTarget -> webTarget.queryParam("iri",
+                                        resource));
+                Assert.assertEquals(response.getStatusInfo().getFamily(),
+                        Family.REDIRECTION,
+                        "lookupIRI response status for iri: " + resource);
+                redirectLocation = response.getLocation();
+            } finally {
+                if (response != null) {
+                    response.close();
+                    response = null;
+                }
+            }
             Assert.assertEquals(redirectLocation.toString(),
                     redirectPrefix + "?uri=" + resource,
                     "Redirect URL for " + resource);
             // Now again, with a suffix provided.
-            response = NetClientUtils.doGetWithAdditionalComponentsNoRedirects(
-                    baseURL, service,
-                    webTarget -> webTarget.queryParam("iri", resource)
-                        .queryParam("suffix", dummyTestSuffix));
-            Assert.assertEquals(response.getStatusInfo().getFamily(),
-                    Family.REDIRECTION,
-                    "lookupIRI response status for iri: " + resource);
-            redirectLocation = response.getLocation();
-            response.close();
+            try {
+                response =
+                        NetClientUtils.doGetWithAdditionalComponentsNoRedirects(
+                                baseURL, service,
+                                webTarget -> webTarget.queryParam("iri",
+                                        resource)
+                                .queryParam("suffix", dummyTestSuffix));
+                Assert.assertEquals(response.getStatusInfo().getFamily(),
+                        Family.REDIRECTION,
+                        "lookupIRI response status for iri: " + resource);
+                redirectLocation = response.getLocation();
+            } finally {
+                if (response != null) {
+                    response.close();
+                    response = null;
+                }
+            }
             Assert.assertEquals(redirectLocation.toString(),
                     redirectPrefix + "?uri=" + resource + dummyTestSuffix,
                     "Redirect URL for " + resource
@@ -338,17 +373,25 @@ public class RegistryIRILookupTests extends ArquillianBaseTest {
             final String[] resourcesThatShouldNotResolve,
             final String expectedErrorMessagePrefix,
             final String errorMessageOnFailure) {
-        Response response;
+        Response response = null;
         String body;
         for (String resource : resourcesThatShouldNotResolve) {
-            response = NetClientUtils.doGetWithAdditionalComponentsNoRedirects(
-                    baseURL, service,
-                    webTarget -> webTarget.queryParam("iri", resource));
-            Assert.assertEquals(response.getStatusInfo().getFamily(),
-                    Family.CLIENT_ERROR, "lookupIRI response status, iri: "
-                    + resource);
-            body = response.readEntity(String.class);
-            response.close();
+            try {
+                response =
+                        NetClientUtils.doGetWithAdditionalComponentsNoRedirects(
+                                baseURL, service,
+                                webTarget -> webTarget.queryParam("iri",
+                                        resource));
+                Assert.assertEquals(response.getStatusInfo().getFamily(),
+                        Family.CLIENT_ERROR, "lookupIRI response status, iri: "
+                                + resource);
+                body = response.readEntity(String.class);
+            } finally {
+                if (response != null) {
+                    response.close();
+                    response = null;
+                }
+            }
             Assert.assertTrue(body.startsWith(expectedErrorMessagePrefix),
                     errorMessageOnFailure);
         }

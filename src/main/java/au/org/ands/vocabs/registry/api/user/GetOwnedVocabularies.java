@@ -29,6 +29,8 @@ import au.org.ands.vocabs.registry.db.context.TemporalUtils;
 import au.org.ands.vocabs.registry.db.converter.JSONSerialization;
 import au.org.ands.vocabs.registry.db.dao.VocabularyDAO;
 import au.org.ands.vocabs.registry.db.internal.VocabularyJson;
+import au.org.ands.vocabs.registry.log.Analytics;
+import au.org.ands.vocabs.registry.log.Logging;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.OwnedVocabulary;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.OwnedVocabularyList;
 import io.swagger.annotations.Api;
@@ -85,9 +87,7 @@ public class GetOwnedVocabularies {
                             })
             })
     public final OwnedVocabularyList getOwnedVocabularies(
-            @SuppressWarnings("unused")
             @Context final HttpServletRequest request,
-            @SuppressWarnings("unused")
             @Context final UriInfo uriInfo,
             @ApiParam(hidden = true) @Pac4JProfile
             final CommonProfile profile) {
@@ -119,6 +119,8 @@ public class GetOwnedVocabularies {
                 // MapStruct mapper for this. Just copy the fields.
                 newOwnedVocabulary.setId(vocabularyId);
                 newOwnedVocabulary.setStatus(vocabulary.getStatus());
+                newOwnedVocabulary.setOwner(vocabulary.getOwner());
+                newOwnedVocabulary.setSlug(vocabulary.getSlug());
                 VocabularyJson vocabularyJson = JSONSerialization.
                         deserializeStringAsJson(vocabulary.getData(),
                                 VocabularyJson.class);
@@ -140,6 +142,9 @@ public class GetOwnedVocabularies {
         }
 
         outputVocabularies.addAll(ownedVocabulariesMap.values());
+
+        Logging.logRequest(true, request, uriInfo, profile,
+                Analytics.EVENT_GET_VOCABULARY_LIST);
 
         return outputVocabularyList;
     }

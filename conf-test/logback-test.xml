@@ -57,13 +57,19 @@
     <appender-ref ref="LOGSTASH" />
   </logger>
 
+  <!-- Comment/uncomment the following three lines to get the desired
+       level of DbUnit debug logging. -->
   <!-- logger name="org.dbunit" level="ERROR" /-->
+  <!-- logger name="org.dbunit" level="DEBUG" /-->
   <logger name="org.dbunit" level="INFO" />
+
   <!-- Uncomment for lots of Mean Bean output.
   <logger name="org.meanbean" level="DEBUG" />
   -->
   <!-- Uncomment for lots of Hibernate output.
   <logger name="org.hibernate" level="DEBUG" />
   -->
+  <!-- Uncomment to get Hibernate validator debugging output. -->
+  <!-- <logger name="org.hibernate.validator" level="DEBUG" /-->
 
 </configuration>

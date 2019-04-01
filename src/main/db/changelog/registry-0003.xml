@@ -198,7 +198,7 @@
          https://dev.mysql.com/doc/refman/5.7/en/innodb-parameters.html
 
          In the latter case, MySQL requires a field length, because
-         then the iri column is of a "blob" type.  See:
+         then the owner column is of a "blob" type.  See:
          https://liquibase.jira.com/browse/CORE-1180
          https://liquibase.jira.com/browse/CORE-1649
 

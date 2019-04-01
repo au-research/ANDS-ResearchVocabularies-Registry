@@ -35,6 +35,7 @@ import au.org.ands.vocabs.registry.api.user.ErrorResult;
 import au.org.ands.vocabs.registry.api.user.ErrorResultUtils;
 import au.org.ands.vocabs.registry.db.context.DBContext;
 import au.org.ands.vocabs.registry.db.context.TemporalUtils;
+import au.org.ands.vocabs.registry.log.Analytics;
 import au.org.ands.vocabs.registry.log.Logging;
 import au.org.ands.vocabs.registry.subscription.Owners;
 import au.org.ands.vocabs.registry.subscription.SubscriptionUtils;
@@ -124,7 +125,12 @@ public class DeleteSubscriptions {
                     AuthConstants.SYSTEM_USER);
             txn.commit();
             Logging.logRequest(true, request, uriInfo, profile,
-                    "Delete email subscription for a vocabulary");
+                    Analytics.EVENT_DELETE_SUBSCRIPTION,
+                    Analytics.SUBSCRIBER_ID_FIELD, subscriberId,
+                    Analytics.SUBSCRIBER_EMAIL_FIELD, profile.getEmail(),
+                    Analytics.NOTIFICATION_ELEMENT_TYPE_FIELD,
+                    Analytics.NOTIFICATION_ELEMENT_TYPE_VOCABULARY,
+                    Analytics.NOTIFICATION_ELEMENT_ID_FIELD, vocabularyId);
             // Successful deletion, and no response body. noContent() creates
             // status code 204.
             return Response.noContent().build();
@@ -232,7 +238,12 @@ public class DeleteSubscriptions {
                     subscriberId, owner, em, now, AuthConstants.SYSTEM_USER);
             txn.commit();
             Logging.logRequest(true, request, uriInfo, profile,
-                    "Delete email subscription for an owner");
+                    Analytics.EVENT_DELETE_SUBSCRIPTION,
+                    Analytics.SUBSCRIBER_ID_FIELD, subscriberId,
+                    Analytics.SUBSCRIBER_EMAIL_FIELD, profile.getEmail(),
+                    Analytics.NOTIFICATION_ELEMENT_TYPE_FIELD,
+                    Analytics.NOTIFICATION_ELEMENT_TYPE_OWNER,
+                    Analytics.NOTIFICATION_ELEMENT_OWNER_FIELD, owner);
             // Successful deletion, and no response body. noContent() creates
             // status code 204.
             return Response.noContent().build();
@@ -325,7 +336,11 @@ public class DeleteSubscriptions {
                     subscriberId, em, now, AuthConstants.SYSTEM_USER);
             txn.commit();
             Logging.logRequest(true, request, uriInfo, profile,
-                    "Delete email subscription for the system");
+                    Analytics.EVENT_DELETE_SUBSCRIPTION,
+                    Analytics.SUBSCRIBER_ID_FIELD, subscriberId,
+                    Analytics.SUBSCRIBER_EMAIL_FIELD, profile.getEmail(),
+                    Analytics.NOTIFICATION_ELEMENT_TYPE_FIELD,
+                    Analytics.NOTIFICATION_ELEMENT_TYPE_SYSTEM);
             // Successful deletion, and no response body. noContent() creates
             // status code 204.
             return Response.noContent().build();
@@ -418,7 +433,11 @@ public class DeleteSubscriptions {
                     AuthConstants.SYSTEM_USER);
             txn.commit();
             Logging.logRequest(true, request, uriInfo, profile,
-                    "Delete all email subscriptions for a subscriber");
+                    Analytics.EVENT_DELETE_SUBSCRIPTION,
+                    Analytics.SUBSCRIBER_ID_FIELD, subscriberId,
+                    Analytics.SUBSCRIBER_EMAIL_FIELD, profile.getEmail(),
+                    Analytics.NOTIFICATION_ELEMENT_TYPE_FIELD,
+                    Analytics.NOTIFICATION_ELEMENT_TYPE_ALL);
             // Successful deletion, and no response body. noContent() creates
             // status code 204.
             return Response.noContent().build();

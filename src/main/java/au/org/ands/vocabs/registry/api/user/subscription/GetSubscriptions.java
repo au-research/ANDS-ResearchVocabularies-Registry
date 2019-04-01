@@ -33,6 +33,7 @@ import au.org.ands.vocabs.registry.api.user.ErrorResultUtils;
 import au.org.ands.vocabs.registry.db.context.DBContext;
 import au.org.ands.vocabs.registry.db.converter.SubscriptionDbSchemaMapper;
 import au.org.ands.vocabs.registry.db.dao.SubscriptionDAO;
+import au.org.ands.vocabs.registry.log.Analytics;
 import au.org.ands.vocabs.registry.log.Logging;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.Subscription;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.SubscriptionList;
@@ -117,10 +118,10 @@ public class GetSubscriptions {
                         dbSubscription, em));
             }
 
-            Logging.logRequest(true, request, uriInfo, null,
-                    "Get email subscriptions for a subscriber");
-            // Successful deletion, and no response body. noContent() creates
-            // status code 204.
+            Logging.logRequest(true, request, uriInfo, profile,
+                    Analytics.EVENT_GET_SUBSCRIPTION,
+                    Analytics.SUBSCRIBER_ID_FIELD, subscriberId,
+                    Analytics.SUBSCRIBER_EMAIL_FIELD, profile.getEmail());
             return Response.ok().entity(subscriptionList).build();
         } catch (Throwable t) {
             logger.error("Exception while fetching subcriptions", t);

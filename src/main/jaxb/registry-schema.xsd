@@ -12,6 +12,8 @@ See https://documentation.ands.org.au/display/DOC/Research+Vocabularies
 
 Change history (most recent changes first)
 
+2019-03-19
+  * Added owner and slug attributes to the owned-vocabulary element.
 2018-08-27
   * Corrected the remaining instances of camel-cased attribute names (urlPrefix and hasDraft); they now use hyphens (url-prefix and has-draft).
 2018-08-06
@@ -609,6 +611,16 @@ NoLicence</xs:documentation>
             <xs:attribute name="has-draft" type="xs:boolean">
                 <xs:annotation>
                     <xs:documentation>If status="draft", the value of this attribute is true. Otherwise, the value of this attribute is true if there is also a draft instance.</xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="owner" use="required" type="xs:token">
+                <xs:annotation>
+                    <xs:documentation>The vocabulary's owner. It will be the short name of one of the user's organisational roles.</xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="slug" type="xs:token">
+                <xs:annotation>
+                    <xs:documentation>The vocabulary's slug.</xs:documentation>
                 </xs:annotation>
             </xs:attribute>
             <xs:attribute name="title" use="required" type="xs:token">

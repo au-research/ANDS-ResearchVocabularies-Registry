@@ -255,8 +255,7 @@ public class PutRelatedEntities {
         // Analytics logging.
         Logging.logRequest(true, request, uriInfo, profile,
                 Analytics.EVENT_CREATE_RELATED_ENTITY,
-                Analytics.RELATED_ENTITY_ID_FIELD,
-                    newDbRelatedEntity.getRelatedEntityId(),
+                Analytics.ID_FIELD, newDbRelatedEntity.getRelatedEntityId(),
                 Analytics.TITLE_FIELD, newDbRelatedEntity.getTitle(),
                 Analytics.OWNER_FIELD, newDbRelatedEntity.getOwner());
 
@@ -352,7 +351,7 @@ public class PutRelatedEntities {
                         Analytics.EVENT_UPDATE_RELATED_ENTITY,
                         Analytics.FAILURE_REASON,
                             "No related entity with that id",
-                        Analytics.RELATED_ENTITY_ID_FIELD, relatedEntityId,
+                        Analytics.ID_FIELD, relatedEntityId,
                         Analytics.TITLE_FIELD,
                             updatedRelatedEntity.getTitle(),
                         Analytics.OWNER_FIELD,
@@ -368,7 +367,7 @@ public class PutRelatedEntities {
                         Analytics.EVENT_UPDATE_RELATED_ENTITY,
                         Analytics.FAILURE_REASON,
                             "authorization",
-                        Analytics.RELATED_ENTITY_ID_FIELD, relatedEntityId,
+                        Analytics.ID_FIELD, relatedEntityId,
                         Analytics.TITLE_FIELD,
                             updatedRelatedEntity.getTitle(),
                         Analytics.OWNER_FIELD,
@@ -397,7 +396,7 @@ public class PutRelatedEntities {
                             Analytics.EVENT_UPDATE_RELATED_ENTITY,
                             Analytics.FAILURE_REASON,
                                 "authorization",
-                            Analytics.RELATED_ENTITY_ID_FIELD, relatedEntityId,
+                            Analytics.ID_FIELD, relatedEntityId,
                             Analytics.TITLE_FIELD,
                                 updatedRelatedEntity.getTitle(),
                             Analytics.OWNER_FIELD,
@@ -539,7 +538,7 @@ public class PutRelatedEntities {
                 Logging.logRequest(false, request, uriInfo, profile,
                         Analytics.EVENT_UPDATE_RELATED_ENTITY,
                         Analytics.FAILURE_REASON, "validation",
-                        Analytics.RELATED_ENTITY_ID_FIELD, relatedEntityId,
+                        Analytics.ID_FIELD, relatedEntityId,
                         Analytics.TITLE_FIELD,
                             updatedDbRelatedEntity.getTitle(),
                         Analytics.OWNER_FIELD,
@@ -673,7 +672,7 @@ public class PutRelatedEntities {
             // Analytics logging.
             Logging.logRequest(true, request, uriInfo, profile,
                     Analytics.EVENT_UPDATE_RELATED_ENTITY,
-                    Analytics.RELATED_ENTITY_ID_FIELD, relatedEntityId,
+                    Analytics.ID_FIELD, relatedEntityId,
                     Analytics.TITLE_FIELD, updatedDbRelatedEntity.getTitle(),
                     Analytics.OWNER_FIELD, updatedDbRelatedEntity.getOwner(),
                     Analytics.WAS_MODIFIED_FIELD, reWasUpdated);
@@ -734,7 +733,7 @@ public class PutRelatedEntities {
         Logging.logRequest(false, request, uriInfo, profile,
                 Analytics.EVENT_UPDATE_RELATED_ENTITY,
                 Analytics.FAILURE_REASON, "internal error",
-                Analytics.RELATED_ENTITY_ID_FIELD, relatedEntityId,
+                Analytics.ID_FIELD, relatedEntityId,
                 Analytics.TITLE_FIELD,
                     updatedRelatedEntity.getTitle(),
                 Analytics.OWNER_FIELD,

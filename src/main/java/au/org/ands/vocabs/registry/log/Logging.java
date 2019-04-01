@@ -2,8 +2,6 @@
 
 package au.org.ands.vocabs.registry.log;
 
-import static net.logstash.logback.marker.Markers.append;
-
 import java.lang.invoke.MethodHandles;
 
 import javax.servlet.http.HttpServletRequest;
@@ -26,6 +24,7 @@ public final class Logging {
     }
 
     /** The internal (normal) logger for this class. */
+    @SuppressWarnings("unused")
     private static Logger internalLogger = LoggerFactory.getLogger(
             MethodHandles.lookup().lookupClass());
 
@@ -95,22 +94,8 @@ public final class Logging {
             final Object... otherParameters) {
         LogstashMarker lm = Analytics.createBasicMarker(
                 success, request, uriInfo, profile);
-        int otherParametersLength = otherParameters.length;
-        if (otherParametersLength % 2 != 0) {
-            internalLogger.error("Logging otherParameters was not a list "
-                    + "of pairs of keys/values");
-            return;
-        }
-
-        for (int i = 0; i < otherParametersLength; i = i + 2) {
-            if (!(otherParameters[i] instanceof String)) {
-                internalLogger.error("Logging otherParameters has a key "
-                        + "that is not a String: " + otherParameters[i]);
-            } else {
-                lm.and(append((String) otherParameters[i],
-                        otherParameters[i + 1]));
-            }
-        }
+        Analytics.updateMarkerWithAdditionalFields(lm, message,
+                otherParameters);
         LOGGER.info(lm, message);
     }
 

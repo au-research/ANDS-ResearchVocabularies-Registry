@@ -113,7 +113,6 @@ public class RolesTests extends ArquillianBaseTest {
         profile.setId("testsuper1");
         authorizationFetcher.generate(null, profile);
 
-
         Assert.assertEquals(profile.getDisplayName(), "Test Super 1",
                 "Wrong display name for testsuper1");
 
@@ -156,23 +155,36 @@ public class RolesTests extends ArquillianBaseTest {
                 CLASS_NAME_PREFIX + "testRoles1");
         String urlUnderTest = "api/user/userData";
 
-        Response response = NetClientUtils.doGet(baseURL,
-                urlUnderTest, MediaType.APPLICATION_JSON_TYPE);
-        Assert.assertEquals(response.getStatusInfo().getStatusCode(),
-                HttpStatus.SC_UNAUTHORIZED,
-                "Didn't get an error when not authenticated");
-        response.close();
+        Response response = null;
+        try {
+            response = NetClientUtils.doGet(baseURL,
+                    urlUnderTest, MediaType.APPLICATION_JSON_TYPE);
+            Assert.assertEquals(response.getStatusInfo().getStatusCode(),
+                    HttpStatus.SC_UNAUTHORIZED,
+                    "Didn't get an error when not authenticated");
+        } finally {
+            if (response != null) {
+                response.close();
+                response = null;
+            }
+        }
 
-        response = NetClientUtils.doGetBasicAuthWithAdditionalComponents(
-                baseURL,
-                urlUnderTest, MediaType.APPLICATION_XML_TYPE,
-                "test1", "test", webTarget -> webTarget);
+        UserInfo userInfo;
+        try {
+            response = NetClientUtils.doGetBasicAuthWithAdditionalComponents(
+                    baseURL,
+                    urlUnderTest, MediaType.APPLICATION_XML_TYPE,
+                    "test1", "test", webTarget -> webTarget);
 
-        Assert.assertEquals(response.getStatusInfo().getFamily(),
-                Family.SUCCESSFUL,
-                "User data response status");
-        UserInfo userInfo = response.readEntity(UserInfo.class);
-        response.close();
+            Assert.assertEquals(response.getStatusInfo().getFamily(),
+                    Family.SUCCESSFUL,
+                    "User data response status");
+            userInfo = response.readEntity(UserInfo.class);
+        } finally {
+            if (response != null) {
+                response.close();
+            }
+        }
 
         Assert.assertEquals(userInfo.getId(), "test1",
                 "User data Id");
@@ -192,29 +204,40 @@ public class RolesTests extends ArquillianBaseTest {
                 CLASS_NAME_PREFIX + "testGetOwnedVocabularies");
         String urlUnderTest = "api/resource/ownedVocabularies";
 
-        Response response = NetClientUtils.
-                doGetBasicAuthWithAdditionalComponents(baseURL,
-                        urlUnderTest, MediaType.APPLICATION_XML_TYPE,
-                        "test1", "test", webTarget -> webTarget);
+        Response response = null;
+        String result;
+        try {
+            response = NetClientUtils.
+                    doGetBasicAuthWithAdditionalComponents(baseURL,
+                            urlUnderTest, MediaType.APPLICATION_XML_TYPE,
+                            "test1", "test", webTarget -> webTarget);
 
-        Assert.assertEquals(response.getStatusInfo().getFamily(),
-                Family.SUCCESSFUL,
-                "Response status");
+            Assert.assertEquals(response.getStatusInfo().getFamily(),
+                    Family.SUCCESSFUL,
+                    "Response status");
 
-        String result = response.readEntity(String.class);
-        response.close();
+            result = response.readEntity(String.class);
+        } finally {
+            if (response != null) {
+                response.close();
+            }
+        }
 
         Assert.assertEquals(result,
         "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
         + "<owned-vocabulary-list xmlns=\"http://vocabs.ands.org.au/registry/"
             + "schema/2017/01/vocabulary\">"
         + "<owned-vocabulary id=\"1\" status=\"published\" has-draft=\"true\" "
+            + "owner=\"ANDS\" slug=\"rifcs\" "
             + "title=\"Registry Interchange Format - Collections and Services "
             + "(Vocabularies)\"/>"
         + "<owned-vocabulary id=\"2\" status=\"deprecated\" "
             + "has-draft=\"false\" "
+            + "owner=\"ANDS\" "
+            + "slug=\"agrovoc-multilingual-agricultural-thesaurus\" "
             + "title=\"AGROVOC Multilingual Agricultural Thesaurus\"/>"
         + "<owned-vocabulary id=\"4\" status=\"draft\" has-draft=\"true\" "
+            + "owner=\"ANDS\" slug=\"water-resources-thesaurus\" "
             + "title=\"Water Resources Thesaurus\"/>"
         + "</owned-vocabulary-list>",
                 "Owned vocabulary list");

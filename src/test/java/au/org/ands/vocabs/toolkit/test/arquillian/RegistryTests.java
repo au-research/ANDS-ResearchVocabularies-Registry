@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.solr.client.solrj.SolrServerException;
@@ -160,7 +161,9 @@ public class RegistryTests extends ArquillianBaseTest {
         // Explicit commit is required so that we can do a search
         // immediately.
         SolrUtils.getSolrClient().commit();
-        String searchResults = SearchIndex.query("{}");
+        List<Object> filtersAndResultsExtracted = new ArrayList<>();
+        String searchResults = SearchIndex.query("{}",
+                filtersAndResultsExtracted, false);
         logger.info("Result: " + searchResults);
         JsonNode resultsJson = TaskUtils.jsonStringToTree(searchResults);
         JsonNode response = resultsJson.get("response");

@@ -4,6 +4,8 @@ package au.org.ands.vocabs.registry.api.user;
 
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.constraints.NotNull;
@@ -26,6 +28,7 @@ import au.org.ands.vocabs.registry.api.context.ApiPaths;
 import au.org.ands.vocabs.registry.api.context.FormContentTypeFilter;
 import au.org.ands.vocabs.registry.api.context.ResponseUtils;
 import au.org.ands.vocabs.registry.api.context.SwaggerInterface;
+import au.org.ands.vocabs.registry.log.Analytics;
 import au.org.ands.vocabs.registry.log.Logging;
 import au.org.ands.vocabs.registry.solr.SearchIndex;
 import io.swagger.annotations.Api;
@@ -42,6 +45,12 @@ public class Search {
     /** Logger for this class. */
     private Logger logger = LoggerFactory.getLogger(
             MethodHandles.lookup().lookupClass());
+
+    /** The value of the Portal-ID request header that indicates that
+     * the request is being issued by the Widget Explorer. We don't
+     * include search results in analytics logging in that case.
+     */
+    private static final String PORTAL_JS_WIDGET = "Portal-JS-widget";
 
     /* There's a "feature" here with the fact that we're using Jersey.
      * The filterJson parameter can also be specified as a
@@ -90,15 +99,26 @@ public class Search {
             @FormParam("filtersJson") final String filtersJson
             ) {
         logger.debug("called search");
-        Logging.logRequest(true, request, uriInfo, null,
-                "Search");
+        boolean logResults = !PORTAL_JS_WIDGET.equals(
+                request.getHeader(Analytics.PORTAL_ID));
         try {
-            String queryResponse = SearchIndex.query(filtersJson);
+            List<Object> filtersAndResultsExtracted = new ArrayList<>();
+            String queryResponse = SearchIndex.query(filtersJson,
+                    filtersAndResultsExtracted, logResults);
+            Logging.logRequest(true, request, uriInfo, null,
+                    Analytics.EVENT_SEARCH,
+                    filtersAndResultsExtracted.toArray());
             return Response.ok(queryResponse).build();
         } catch (IOException | SolrServerException e) {
+            Logging.logRequest(false, request, uriInfo, null,
+                    Analytics.EVENT_SEARCH,
+                    Analytics.FAILURE_REASON, "internal error");
             return ResponseUtils.generateInternalServerError(
                     "Error response from Solr");
         } catch (IllegalArgumentException e) {
+            Logging.logRequest(false, request, uriInfo, null,
+                    Analytics.EVENT_SEARCH,
+                    Analytics.FAILURE_REASON, "validation");
             return ErrorResultUtils.badRequest("Error in request: "
                     + e.getMessage());
         }
