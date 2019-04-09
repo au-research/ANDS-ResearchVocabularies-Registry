@@ -30,6 +30,7 @@ import au.org.ands.vocabs.registry.db.entity.Version;
 import au.org.ands.vocabs.registry.db.entity.Vocabulary;
 import au.org.ands.vocabs.registry.db.entity.clone.VersionClone;
 import au.org.ands.vocabs.registry.db.internal.VersionJson;
+import au.org.ands.vocabs.registry.enums.BrowseFlag;
 import au.org.ands.vocabs.registry.enums.RegistryEventElementType;
 import au.org.ands.vocabs.registry.enums.RegistryEventEventType;
 import au.org.ands.vocabs.registry.enums.SubtaskOperationType;
@@ -744,13 +745,32 @@ public class VersionsModel extends ModelBase {
                         JSONSerialization.deserializeStringAsJson(
                                 newCurrentVersion.getData(), VersionJson.class);
                 // Sorry for the spaghetti.
-                // The structure of each of these is:
+                // The structure of most of these is:
                 //   Is workflow forced, or did the value of the flag change?
                 //   If yes, then:
                 //     Is the flag now set to true? If so, do an INSERT.
                 //     Otherwise (it is now false): do a DELETE.
                 // The "tricky" bit is managing any follow-on. For now,
                 // means that a (re-)harvest can also force a (re-)import.
+                // The sequence:
+                // 1. browseFlags
+                // 2. isDoPoolPartyHarvest
+                // 3. isDoImport
+                // 4. isDoPublish
+                //
+                // browseFlags:
+                // For now, we don't re-transform _just_ for isForceWorkflow.
+                // However, a PoolParty harvest will _imply_ a re-transform:
+                // see addImpliedSubtasks().
+                // Note that the generated implementation of the
+                // getBrowseFlag() method always returns a non-null
+                // value, as required by changedBrowseFlags().
+                if (changedBrowseFlags(newCurrentVersionJson.getBrowseFlag(),
+                        existingVersionJson.getBrowseFlag())) {
+                    logger.info("Browse flags were changed; "
+                            + "adding ConceptBrowse subtask");
+                    task.addSubtask(WorkflowMethods.newConceptBrowseSubtask());
+                }
                 if (BooleanUtils.isTrue(schemaVersion.isForceWorkflow())
                         || (changedBoolean(
                                 newCurrentVersionJson.isDoPoolpartyHarvest(),
@@ -1135,6 +1155,21 @@ public class VersionsModel extends ModelBase {
     public boolean changedBoolean(final Boolean b1, final Boolean b2) {
         return BooleanUtils.toInteger(b1, 1, 0, 2)
                 != BooleanUtils.toInteger(b2, 1, 0, 2);
+    }
+
+    /** Compare two {@code List<BrowseFlag>} values,
+     * returning true if they don't contain exactly the same set
+     * of flags. The flags in each list must be in canonical order.
+     * @param bf1 One of the lists of BrowseFlags to be compared;
+     *  it may not be null.
+     * @param bf2 The other lists of BrowseFlags to be compared; it may not
+     *  be null.
+     * @return True, iff the lists of BrowseFlag values, considered as sets,
+     *  are different.
+     */
+    public boolean changedBrowseFlags(final List<BrowseFlag> bf1,
+            final List<BrowseFlag> bf2) {
+        return !bf1.equals(bf2);
     }
 
 }

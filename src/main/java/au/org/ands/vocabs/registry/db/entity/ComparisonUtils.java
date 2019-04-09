@@ -52,8 +52,8 @@ public final class ComparisonUtils {
     /** Compare two versions to see if they should be considered
      * "different" for the sake of the registry database.
      * The fields that are compared are:
-     * status, slug, release date, title, note, and the flags:
-     * PoolParty harvest, import, and publish.
+     * status, slug, release date, title, note, the flags:
+     * PoolParty harvest, import, and publish, and the browse flags.
      * @param v1 A version that is an existing database entity.
      * @param v2 A version in registry schema format.
      * @return true, if the two versions should be considered
@@ -75,6 +75,7 @@ public final class ComparisonUtils {
                         v2.isDoPoolpartyHarvest()).
                 append(versionJson.isDoImport(), v2.isDoImport()).
                 append(versionJson.isDoPublish(), v2.isDoPublish()).
+                append(versionJson.getBrowseFlag(), v2.getBrowseFlag()).
                 isEquals();
     }
 

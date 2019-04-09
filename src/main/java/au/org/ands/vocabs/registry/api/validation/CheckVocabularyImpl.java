@@ -6,6 +6,7 @@ import static au.org.ands.vocabs.registry.api.validation.CheckVocabulary.INTERFA
 
 import java.io.StringWriter;
 import java.lang.invoke.MethodHandles;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -27,6 +28,7 @@ import au.org.ands.vocabs.registry.db.dao.VocabularyDAO;
 import au.org.ands.vocabs.registry.db.entity.RelatedEntity;
 import au.org.ands.vocabs.registry.enums.AccessPointType;
 import au.org.ands.vocabs.registry.enums.ApSource;
+import au.org.ands.vocabs.registry.enums.BrowseFlag;
 import au.org.ands.vocabs.registry.enums.RelatedEntityRelation;
 import au.org.ands.vocabs.registry.enums.RelatedVocabularyRelation;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.AccessPoint;
@@ -813,6 +815,7 @@ public class CheckVocabularyImpl
         // doImport
         // doPublish
         // accessPoint
+        // browseFlags
 
         // id: mode-specific validation.
         valid = isValidVersionId(valid, newVersion, versionIndex,
@@ -966,6 +969,72 @@ public class CheckVocabularyImpl
                     addBeanNode().inIterable().
                     atIndex(versionIndex).
                     addConstraintViolation();
+            }
+        }
+
+        // browseFlags
+        List<BrowseFlag> browseFlags = newVersion.getBrowseFlag();
+        if (browseFlags != null) {
+            // Things to check:
+            // 1. If defaultSortByNotation, then maySortByNotation
+            // 2. If any notation..., then maySortByNotation
+            // 3. If maySortByNotation, then exactly one of notation...
+            boolean maySortByNotation = false;
+            boolean defaultSortByNotation = false;
+            int notationFormats = 0;
+            for (BrowseFlag browseFlag : browseFlags) {
+                switch (browseFlag) {
+                case DEFAULT_SORT_BY_NOTATION:
+                    defaultSortByNotation = true;
+                    break;
+                case MAY_SORT_BY_NOTATION:
+                    maySortByNotation = true;
+                    break;
+                case NOTATION_ALPHA:
+                case NOTATION_DOTTED:
+                case NOTATION_FLOAT:
+                    notationFormats++;
+                    break;
+                default:
+                    // Oops, unknown.
+                    break;
+                }
+            }
+            if (defaultSortByNotation && !maySortByNotation) {
+                valid = false;
+                constraintContext.buildConstraintViolationWithTemplate(
+                        "{" + INTERFACE_NAME
+                        + ".version.browseFlagsDefaultButNoMaySortByNotation}").
+                    addPropertyNode("version").
+                    addPropertyNode("browseFlags").inIterable().
+                    atIndex(versionIndex).
+                    addConstraintViolation();
+            }
+            if (notationFormats > 0 && !maySortByNotation) {
+                valid = false;
+                constraintContext.buildConstraintViolationWithTemplate(
+                        "{" + INTERFACE_NAME
+                        + ".version.browseFlagsFormatsButNoMaySortByNotation}").
+                    addPropertyNode("version").
+                    addPropertyNode("browseFlags").inIterable().
+                    atIndex(versionIndex).
+                    addConstraintViolation();
+            }
+            if (maySortByNotation && notationFormats != 1) {
+                valid = false;
+                constraintContext.buildConstraintViolationWithTemplate(
+                        "{" + INTERFACE_NAME
+                        + ".version.browseFlagsMaySortButNoFormat}").
+                    addPropertyNode("version").
+                    addPropertyNode("browseFlags").inIterable().
+                    atIndex(versionIndex).
+                    addConstraintViolation();
+            }
+            // Order the flags in a canonical order (i.e., based on
+            // the values of the enumerated type), to help us
+            // to decide in future if the set of flags changes.
+            if (valid) {
+                Collections.sort(browseFlags);
             }
         }
 

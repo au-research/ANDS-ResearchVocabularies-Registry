@@ -12,6 +12,8 @@ See https://documentation.ands.org.au/display/DOC/Research+Vocabularies
 
 Change history (most recent changes first)
 
+2019-04-09
+  * Added the browse-flag element to the version element.
 2019-03-19
   * Added owner and slug attributes to the owned-vocabulary element.
 2018-08-27
@@ -221,6 +223,8 @@ NoLicence</xs:documentation>
         </xs:annotation>
         <xs:complexType>
             <xs:sequence>
+                <xs:element maxOccurs="unbounded" minOccurs="0" name="browse-flag"
+                    type="common:browse-flag"/>
                 <xs:element maxOccurs="unbounded" minOccurs="0" ref="access-point"/>
             </xs:sequence>
             <xs:attribute name="id" type="id-type" use="optional">

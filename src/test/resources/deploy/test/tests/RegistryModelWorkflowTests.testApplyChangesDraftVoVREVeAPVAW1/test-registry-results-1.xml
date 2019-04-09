@@ -43,12 +43,12 @@
   <VERSIONS ID="2" VERSION_ID="1" VOCABULARY_ID="1"
             START_DATE="9999-12-02 00:00:00.0" END_DATE="9999-12-03 00:00:00.0"
             MODIFIED_BY="TEST" STATUS="SUPERSEDED" SLUG="version-1" RELEASE_DATE="2014-01"
-            DATA="{''draft-created-date'':''2017-10-01T10:10'',''draft-modified-date'':''2017-10-01T10:10'',''note'':''Note for v1'',''title'':''Version 1''}"
+            DATA="{''browse-flag'':[],''draft-created-date'':''2017-10-01T10:10'',''draft-modified-date'':''2017-10-01T10:10'',''note'':''Note for v1'',''title'':''Version 1''}"
             />
   <VERSIONS ID="3" VERSION_ID="2" VOCABULARY_ID="1"
             START_DATE="9999-12-02 00:00:00.0" END_DATE="9999-12-03 00:00:00.0"
             MODIFIED_BY="TEST" STATUS="CURRENT" SLUG="version-2" RELEASE_DATE="2015-01"
-            DATA="{''draft-created-date'':''2017-10-01T10:10'',''draft-modified-date'':''2017-10-01T10:10'',''note'':''Note for v2'',''title'':''Version 2''}"
+            DATA="{''browse-flag'':[],''draft-created-date'':''2017-10-01T10:10'',''draft-modified-date'':''2017-10-01T10:10'',''note'':''Note for v2'',''title'':''Version 2''}"
             />
 
   <UPLOADS ID="1" MODIFIED_BY="SYSTEM" OWNER="ANDS-Curated"

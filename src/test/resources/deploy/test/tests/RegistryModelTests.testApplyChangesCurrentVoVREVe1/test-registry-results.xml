@@ -33,12 +33,12 @@
   <VERSIONS ID="1" VERSION_ID="1" VOCABULARY_ID="1"
             START_DATE="2017-10-01 10:10:00.0" END_DATE="9999-12-01 00:00:00.0"
             MODIFIED_BY="TEST" STATUS="SUPERSEDED" SLUG="version-1" RELEASE_DATE="2014-01"
-            DATA="{''note'':''Note for v1'',''title'':''Version 1''}"
+            DATA="{''browse-flag'':[],''note'':''Note for v1'',''title'':''Version 1''}"
             />
   <VERSIONS ID="2" VERSION_ID="2" VOCABULARY_ID="1"
             START_DATE="2017-10-01 10:10:00.0" END_DATE="9999-12-01 00:00:00.0"
             MODIFIED_BY="TEST" STATUS="CURRENT" SLUG="version-2" RELEASE_DATE="2015-01"
-            DATA="{''note'':''Note for v2'',''title'':''Version 2''}"
+            DATA="{''browse-flag'':[],''note'':''Note for v2'',''title'':''Version 2''}"
             />
 
   <REGISTRY_EVENTS ID="1" ELEMENT_TYPE="VOCABULARIES" ELEMENT_ID="1" EVENT_DATE="2017-10-01 10:10:00.0" EVENT_TYPE="UPDATED" EVENT_USER="TEST" EVENT_DETAILS="{''id'':2,''previous_id'':1,''status'':''published''}" />
