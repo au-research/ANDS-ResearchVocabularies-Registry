@@ -1022,7 +1022,8 @@ public class VersionsModel extends ModelBase {
 
     /** To any existing Tasks, add subtasks that are implied by
      * the subtasks already present. For now, that means adding
-     * subtasks for the JsonList, JsonTree, and ResourceMapTransform providers.
+     * subtasks for the JsonList, ConceptTree, and ResourceMap
+     * transform providers.
      */
     private void addImpliedSubtasks() {
         for (Task task : versionTasks.values()) {
