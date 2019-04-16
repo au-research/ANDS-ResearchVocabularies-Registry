@@ -564,14 +564,14 @@ public class ConceptTreeTransformProvider implements WorkflowProvider {
         public void setPrefLabel(final String aPrefLabel,
                 final String aLanguage,
                 final String primaryLanguage) {
-            // CC-1866 For now, give preference to English labels.
+            // Give preference to labels in the primary language.
             // That means:
             // 1. If this method is called when there is not already a
             //    prefLabel recorded, then use aPrefLabel/aLanguage.
             // 2. If this method is called when there _is_ already a
             //    prefLabel recorded, but there _is_ a language
-            //    recorded, and it is not "en". (This gives "last one
-            //    wins" behaviour.)
+            //    recorded, and it is not the primary language.
+            //    (This gives "last one wins" behaviour.)
             // 3. Otherwise, leave the existing prefLabel/prefLabelLanguage
             //    values unchanged.
 
@@ -582,7 +582,8 @@ public class ConceptTreeTransformProvider implements WorkflowProvider {
             // per language tag, and no more than one value of skos:prefLabel
             // without language tag.".
             // So we make no attempt to specify the behaviour in the case of
-            // multiple prefLabels with language tag "en".
+            // multiple prefLabels with language tag that is the primary
+            // language.
             if (prefLabel == null
                     ||
                     (prefLabelLanguage != null
