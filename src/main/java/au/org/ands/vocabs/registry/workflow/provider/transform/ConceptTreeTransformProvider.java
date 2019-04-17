@@ -336,12 +336,23 @@ public class ConceptTreeTransformProvider implements WorkflowProvider {
     public static final String CONCEPTS_TREE_NOT_PROVIDED =
             "concepts-tree-not-provided";
 
+    /** Key to use for a result that says that the concepts tree does
+     * not contain information about notations, because of an exception.
+     */
+    private static final String CONCEPTS_TREE_NO_NOTATIONS =
+            "concepts-tree-no-notations";
+
     /** Create/update the ConceptTree version artefact for the version.
      * @param taskInfo The top-level TaskInfo for the subtask.
      * @param subtask The subtask to be performed.
      */
+    @SuppressWarnings("checkstyle:MethodLength")
     public final void transform(final TaskInfo taskInfo,
             final Subtask subtask) {
+        // Reset any existing subtask status (i.e., in case this
+        // is in a task that's being re-run).
+        subtask.setStatus(null);
+
         Vocabulary vocabulary = taskInfo.getVocabulary();
         VocabularyJson vocabularyJson =
                 JSONSerialization.deserializeStringAsJson(vocabulary.getData(),
@@ -400,6 +411,8 @@ public class ConceptTreeTransformProvider implements WorkflowProvider {
                 // to the result, e.g., if something went wrong.
                 // For now, generate a JSON tree _only_ if there are no
                 // cycles.
+                // Well, and we now also return alert information if
+                // there was an error parsing a notation value.
                 if (!conceptHandler.isCycle()) {
                     // Serialize the forest and write to the file system.
                     // Jackson will serialize TreeSets in sorted order of values
@@ -408,13 +421,26 @@ public class ConceptTreeTransformProvider implements WorkflowProvider {
                     ConceptResult conceptResult = new ConceptResult();
                     conceptResult.setForest(conceptTree);
                     conceptResult.setLanguage(primaryLanguage);
-                    conceptResult.setMaySortByNotation(
-                            bfParsed.isMaySortByNotation());
-                    if (bfParsed.isMaySortByNotation()) {
-                        conceptResult.setDefaultSortByNotation(
-                                bfParsed.isDefaultSortByNotation());
-                        conceptResult.setNotationFormat(
-                                bfParsed.getNotationFormat());
+                    if (conceptHandler.getNotationException() == null) {
+                        // No problem to set flags as specified in the version.
+                        conceptResult.setMaySortByNotation(
+                                bfParsed.isMaySortByNotation());
+                        if (bfParsed.isMaySortByNotation()) {
+                            conceptResult.setDefaultSortByNotation(
+                                    bfParsed.isDefaultSortByNotation());
+                            conceptResult.setNotationFormat(
+                                    bfParsed.getNotationFormat());
+                        }
+                    } else {
+                        // There was an exception when parsing a notation.
+                        conceptResult.setMaySortByNotation(false);
+                        subtask.setStatus(TaskStatus.PARTIAL);
+                        subtask.addResult(CONCEPTS_TREE_NO_NOTATIONS,
+                                "No notation information because of a "
+                                + "parse error.");
+                        subtask.addResult(TaskRunner.ALERT_HTML,
+                                conceptHandler.getNotationException().
+                                getAlertHTML());
                     }
                     FileUtils.writeStringToFile(out,
                             JSONSerialization.serializeObjectAsJsonString(
@@ -477,7 +503,11 @@ public class ConceptTreeTransformProvider implements WorkflowProvider {
             untransform(taskInfo, subtask);
         }
 
-        subtask.setStatus(TaskStatus.SUCCESS);
+        // We may already have set the status to the value we want
+        // (i.e., to PARTIAL); if not so, set it to SUCCESS.
+        if (subtask.getStatus() == null) {
+            subtask.setStatus(TaskStatus.SUCCESS);
+        }
     }
 
     /** Inner class for representing concepts, to be used as
@@ -952,6 +982,10 @@ public class ConceptTreeTransformProvider implements WorkflowProvider {
          * notation values. */
         private BrowseFlag notationFormat;
 
+        /** If an exception related to parsing of notations is generated,
+         * it is stored in this field. Otherwise, it remains null. */
+        private NotationException notationException;
+
         /** Constructor.
          * @param aPrimaryLanguage The primary language of the vocabulary.
          * @param aDefaultSortByNotation Whether or not sorting by
@@ -1254,22 +1288,27 @@ public class ConceptTreeTransformProvider implements WorkflowProvider {
                     depthFirstSearch(newRoot, conceptMap.get(newRoot));
                 } while (!nodesNotVisited.isEmpty());
             }
-            if (maySortByNotation && notationFormat != null) {
-                logger.info("Will do notation sort by " + notationFormat);
-                NotationComparator comparator =
-                        new NotationComparator(notationFormat);
-                assignSortOrders(roots, comparator, defaultSortByNotation);
-                if (defaultSortByNotation) {
-                    // Resort the children using the computed
-                    // notation order.
-                    TreeSet<ConceptOrRef> resortedRoots =
-                            new TreeSet<>(
-                                    new PrecomputedNotationComparator());
-                    resortedRoots.addAll(roots);
-                    // Now remove all the notation order values.
-                    resortedRoots.forEach(n -> n.setNotationSortOrder(null));
-                    roots = resortedRoots;
+            try {
+                if (maySortByNotation && notationFormat != null) {
+                    logger.info("Will do notation sort by " + notationFormat);
+                    NotationComparator comparator =
+                            new NotationComparator(notationFormat);
+                    assignSortOrders(roots, comparator, defaultSortByNotation);
+                    if (defaultSortByNotation) {
+                        // Resort the children using the computed
+                        // notation order.
+                        TreeSet<ConceptOrRef> resortedRoots =
+                                new TreeSet<>(
+                                        new PrecomputedNotationComparator());
+                        resortedRoots.addAll(roots);
+                        // Now remove all the notation order values.
+                        resortedRoots.forEach(n ->
+                            n.setNotationSortOrder(null));
+                        roots = resortedRoots;
+                    }
                 }
+            } catch (NotationException ne) {
+                setNotationException(ne);
             }
             return roots;
         }
@@ -1345,6 +1384,21 @@ public class ConceptTreeTransformProvider implements WorkflowProvider {
                 }
             }
         }
+
+        /** Set the value of {@link #notationException}.
+         * @param ne The value of notationException to set.
+         */
+        private void setNotationException(final NotationException ne) {
+            notationException = ne;
+        }
+
+        /** Get the value of {@link #notationException}.
+         * @return The value of notationException.
+         */
+        NotationException getNotationException() {
+            return notationException;
+        }
+
     }
 
     /** Class for representing the result of the transform. An
@@ -1479,16 +1533,89 @@ public class ConceptTreeTransformProvider implements WorkflowProvider {
             notationFormat = aNotationFormat;
         }
 
+        /** Plain text alert message to indicate that because of an
+         * error with a notation value, sorting by notation will not
+         * be offered on the view page. */
+        private static final String SORT_BY_NOTATION_NOT_OFFERED =
+                "Sorting by notation will not be offered.";
+
+        /** HTML alert message to indicate that there was an
+         * error in one of the notation values, because a floating-point
+         * value was expected, but there was more than one decimal point. */
+        private static final String FLOAT_MULTIPLE_POINTS_HTML =
+                "The notation format was specified to "
+                        + "be floating-point numbers, but one of "
+                        + "the notation values contains more than "
+                        + "one decimal point. (Hint: is the format "
+                        + "in fact multi-level hierarchical?) "
+                        + SORT_BY_NOTATION_NOT_OFFERED;
+
+        /** HTML alert message to indicate an error in parsing
+         * a floating-point value. */
+        private static final String FLOAT_OTHER_ERROR_HTML =
+                "The notation format was specified to "
+                        + "be floating-point numbers, but one of "
+                        + "the notation values is not a "
+                        + "floating-point number. "
+                        + SORT_BY_NOTATION_NOT_OFFERED;
+
+        /** HTML alert message to indicate an error in parsing
+         * an Integer value as a component of a dotted notation. */
+        private static final String DOTTED_ERROR_HTML =
+                "The notation format was specified to "
+                        + "be numeric hierarchical, but one of "
+                        + "the notation values contains a component that "
+                        + "is not a number. "
+                        + SORT_BY_NOTATION_NOT_OFFERED;
+
+        /** Create and return a {@link NotationException} based on
+         * the contents of a {@link NumberFormatException} that has
+         * been thrown when attempting to parse a floating-point value.
+         * @param nfe The NumberFormatException that was thrown
+         * @param n The String that was being parsed as a floating-point value.
+         * @return a NotationException that incorporates an appropriate
+         *      alert text.
+         */
+        private NotationException floatNotationException(
+                final NumberFormatException nfe, final String n) {
+            logger.error("Exception while parsing float value: " + n
+                    + "; message: " + nfe.getMessage());
+            NotationException ne = new NotationException();
+            if ("multiple points".equals(nfe.getMessage())) {
+                ne.setAlertHTML(FLOAT_MULTIPLE_POINTS_HTML);
+            } else {
+                ne.setAlertHTML(FLOAT_OTHER_ERROR_HTML);
+            }
+            return ne;
+        }
+
+        /** Create and return a {@link NotationException} based on
+         * the contents of a {@link NumberFormatException} that has
+         * been thrown when attempting to parse a numeric value as an Integer.
+         * @param nfe The NumberFormatException that was thrown
+         * @param n The String that was being parsed as an Integer value.
+         * @return a NotationException that incorporates an appropriate
+         *      alert text.
+         */
+        private NotationException dottedNotationException(
+                final NumberFormatException nfe, final String n) {
+            logger.error("Exception while parsing integer: " + n
+                    + "; message: " + nfe.getMessage());
+            NotationException ne = new NotationException();
+            ne.setAlertHTML(DOTTED_ERROR_HTML);
+            return ne;
+        }
+
         /* {@inheritDoc} */
         @Override
         public int compare(final Pair<ConceptOrRef, Integer> o1,
                 final Pair<ConceptOrRef, Integer> o2) {
             String n1 = o1.getLeft().getNotation();
             String n2 = o2.getLeft().getNotation();
-            if (n1 == null) {
+            if (n1 == null || n1.isEmpty()) {
                 // o1 has no notation. It will be sorted
                 // after all concepts that _do_ have notations.
-                if (n2 == null) {
+                if (n2 == null || n2.isEmpty()) {
                     // Both concepts have null notations, so
                     // fall back to the ordering produced by the original
                     // prefLabel/IRI sort.
@@ -1498,7 +1625,7 @@ public class ConceptTreeTransformProvider implements WorkflowProvider {
                 return 1;
             }
             // o1 has a notation.
-            if (n2 == null) {
+            if (n2 == null || n2.isEmpty()) {
                 // o2 doesn't have a notation. It is sorted after o1.
                 return -1;
             }
@@ -1521,12 +1648,20 @@ public class ConceptTreeTransformProvider implements WorkflowProvider {
                 for (int i = 0; i < partsLength; i++) {
                     int n1Part, n2Part;
                     if (i < n1Parts.length) {
-                        n1Part = Integer.parseInt(n1Parts[i]);
+                        try {
+                            n1Part = Integer.parseInt(n1Parts[i]);
+                        } catch (NumberFormatException nfe) {
+                            throw dottedNotationException(nfe, n1Parts[i]);
+                        }
                     } else {
                         n1Part = 0;
                     }
                     if (i < n2Parts.length) {
+                        try {
                         n2Part = Integer.parseInt(n2Parts[i]);
+                        } catch (NumberFormatException nfe) {
+                            throw dottedNotationException(nfe, n2Parts[i]);
+                        }
                     } else {
                         n2Part = 0;
                     }
@@ -1539,8 +1674,20 @@ public class ConceptTreeTransformProvider implements WorkflowProvider {
                 }
                 break;
             case NOTATION_FLOAT:
-                float f1 = Float.parseFloat(n1);
-                float f2 = Float.parseFloat(n2);
+                // Empty strings have been catered for above, so we won't
+                // get an exception for that here.
+                float f1;
+                float f2;
+                try {
+                    f1 = Float.parseFloat(n1);
+                } catch (NumberFormatException nfe) {
+                    throw floatNotationException(nfe, n1);
+                }
+                try {
+                    f2 = Float.parseFloat(n2);
+                } catch (NumberFormatException nfe) {
+                    throw floatNotationException(nfe, n2);
+                }
                 notationComparison = Float.compare(f1, f2);
                 if (notationComparison != 0) {
                     return notationComparison;
@@ -1637,6 +1784,32 @@ public class ConceptTreeTransformProvider implements WorkflowProvider {
         @Override
         public int compare(final ConceptOrRef o1, final ConceptOrRef o2) {
             return o1.getNotationSortOrder() - o2.getNotationSortOrder();
+        }
+    }
+
+    /** An exception class to use when an error is found in one of
+     * the notation values.
+     */
+    private static class NotationException extends RuntimeException {
+
+        /** Serial version UID for serialization. */
+        private static final long serialVersionUID = 622153466578384982L;
+
+        /** The HTML text of the alert to be provided to the user. */
+        private String alertHTML;
+
+        /** Set the HTML text of the alert to be provided to the user.
+         * @param anAlertHTML The HTML text of the alert.
+         */
+        public void setAlertHTML(final String anAlertHTML) {
+            alertHTML = anAlertHTML;
+        }
+
+        /** Set the HTML text of the alert to be provided to the user.
+         * @return The HTML text of the alert.
+         */
+        public String getAlertHTML() {
+            return alertHTML;
         }
     }
 
