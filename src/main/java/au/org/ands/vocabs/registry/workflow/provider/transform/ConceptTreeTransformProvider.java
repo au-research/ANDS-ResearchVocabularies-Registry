@@ -410,10 +410,12 @@ public class ConceptTreeTransformProvider implements WorkflowProvider {
                     conceptResult.setLanguage(primaryLanguage);
                     conceptResult.setMaySortByNotation(
                             bfParsed.isMaySortByNotation());
-                    conceptResult.setDefaultSortByNotation(
-                            bfParsed.isDefaultSortByNotation());
-                    conceptResult.setNotationFormat(
-                            bfParsed.getNotationFormat());
+                    if (bfParsed.isMaySortByNotation()) {
+                        conceptResult.setDefaultSortByNotation(
+                                bfParsed.isDefaultSortByNotation());
+                        conceptResult.setNotationFormat(
+                                bfParsed.getNotationFormat());
+                    }
                     FileUtils.writeStringToFile(out,
                             JSONSerialization.serializeObjectAsJsonString(
                                     conceptResult),
@@ -1383,7 +1385,7 @@ public class ConceptTreeTransformProvider implements WorkflowProvider {
         /** In case {@link #maySortByNotation} is true,
          * whether the default sort order is by notation (true)
          * or by preferred label (false). */
-        private boolean defaultSortByNotation;
+        private Boolean defaultSortByNotation;
 
         /** Set the value of defaultSortByNotation.
          * @param aDefaultSortByNotation The value of defaultSortByNotation
@@ -1399,7 +1401,7 @@ public class ConceptTreeTransformProvider implements WorkflowProvider {
          * @return The value of defaultSortByNotation.
          */
         @SuppressWarnings("unused")
-        public boolean getDefaultSortByNotation() {
+        public Boolean getDefaultSortByNotation() {
             return defaultSortByNotation;
         }
 
