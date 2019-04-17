@@ -36,6 +36,7 @@ import au.org.ands.vocabs.registry.enums.RegistryEventEventType;
 import au.org.ands.vocabs.registry.enums.SubtaskOperationType;
 import au.org.ands.vocabs.registry.enums.SubtaskProviderType;
 import au.org.ands.vocabs.registry.enums.TaskStatus;
+import au.org.ands.vocabs.registry.enums.VersionStatus;
 import au.org.ands.vocabs.registry.enums.VocabularyStatus;
 import au.org.ands.vocabs.registry.log.RegistryEventUtils;
 import au.org.ands.vocabs.registry.model.sequence.VersionElement;
@@ -698,17 +699,38 @@ public class VersionsModel extends ModelBase {
         }
 
         /** {@inheritDoc} */
+        @SuppressWarnings("checkstyle:MethodLength")
         @Override
         public void visitKeepCommand(final VersionElement ve) {
             // This could contain metadata updates. If so, make the
             // existing current row historical, and add a new current row.
+            // There are also some processing rules to take care of along
+            // the way.
             Integer versionId = ve.getVersionId();
             Version existingVersion = ve.getDbVersion();
             au.org.ands.vocabs.registry.schema.vocabulary201701.Version
             schemaVersion = updatedVersions.get(versionId);
 
-            if (!ComparisonUtils.isEqualVersion(existingVersion,
-                    schemaVersion)
+            // Handle the rule:
+            // * If the vocabulary's primary language is being changed, and
+            //   this is the current version (i.e., so that the
+            //   browse visualisation will be visible on the Portal
+            //   view page), we update the Concept Tree version artefact.
+            boolean doConceptBrowseSubtask = false;
+            if (vocabularyModel.isPrimaryLanguageChanged()
+                    && schemaVersion.getStatus() == VersionStatus.CURRENT) {
+                logger.info("Primary language was changed; ConceptTree will "
+                        + "be run for current version");
+                doConceptBrowseSubtask = true;
+            }
+
+            // We'll make a new Version instance if either:
+            // * doConceptBrowseSubtask, or
+            // * the version metadata has changed, or
+            // * force-workflow is true
+            if (doConceptBrowseSubtask
+                    || !ComparisonUtils.isEqualVersion(existingVersion,
+                            schemaVersion)
                     || BooleanUtils.isTrue(schemaVersion.isForceWorkflow())) {
                 TemporalUtils.makeHistorical(existingVersion, nowTime());
                 existingVersion.setModifiedBy(modifiedBy());
@@ -832,6 +854,11 @@ public class VersionsModel extends ModelBase {
                                 createPublishSissvocSubtask(
                                         SubtaskOperationType.DELETE));
                     }
+                }
+                // And last, if doConceptBrowseSubtask is true, we schedule
+                // that transform. (It may already have been added above.)
+                if (doConceptBrowseSubtask) {
+                    task.addSubtask(WorkflowMethods.newConceptBrowseSubtask());
                 }
             }
         }
