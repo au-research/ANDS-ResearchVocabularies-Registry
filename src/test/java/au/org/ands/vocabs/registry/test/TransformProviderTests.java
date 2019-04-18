@@ -261,7 +261,7 @@ public class TransformProviderTests extends ArquillianBaseTest {
     // au.org.ands.vocabs.registry.workflow.provider.transform.
     //   ConceptTreeTransformProvider.
 
-    // Task numbers 3 and 4 generate magic number warnings.
+    // Task numbers >= 3 generate magic number warnings.
     /** Server-side test of {@code ConceptTreeTransformProvider}.
      * @throws DatabaseUnitException If a problem with DbUnit.
      * @throws HibernateException If a problem getting the underlying
@@ -424,6 +424,144 @@ public class TransformProviderTests extends ArquillianBaseTest {
                     + CLASS_NAME_PREFIX
                     + "testConceptTreeTransformProvider1/"
                     + "test-data5-concepts_tree.json");
+            txn.commit();
+        } catch (Throwable t) {
+            if (txn != null && txn.isActive()) {
+                try {
+                    logger.error("Exception during transaction; rolling back",
+                            t);
+                    txn.rollback();
+                } catch (Exception e) {
+                    logger.error("Rollback failure!", e);
+                }
+            } else {
+                logger.error("Exception other than during transaction: ", t);
+            }
+            throw t;
+        } finally {
+            if (em != null) {
+                em.close();
+            }
+        }
+    }
+
+    // Task numbers >= 3 generate magic number warnings.
+    /** Server-side test of {@code ConceptTreeTransformProvider}.
+     * The test data of this test exercises the support for notation
+     * formats and sorting.
+     * @throws DatabaseUnitException If a problem with DbUnit.
+     * @throws HibernateException If a problem getting the underlying
+     *          JDBC connection.
+     * @throws IOException If a problem getting test data for DbUnit,
+     *          or reading JSON from the correct and test output files.
+     * @throws SQLException If DbUnit has a problem performing
+     *           performing JDBC operations.
+     */
+    @Test
+    @SuppressWarnings("checkstyle:MagicNumber")
+    public final void testConceptTreeTransformProvider2() throws
+        DatabaseUnitException, HibernateException, IOException, SQLException {
+        String testsPath = ArquillianTestUtils.getClassesPath()
+                + "/test/tests/";
+        ArquillianTestUtils.clearDatabase(REGISTRY);
+        ArquillianTestUtils.loadDbUnitTestFile(REGISTRY, CLASS_NAME_PREFIX
+                + "testConceptTreeTransformProvider2");
+
+        EntityManager em = null;
+        EntityTransaction txn = null;
+        try {
+            em = DBContext.getEntityManager();
+            txn = em.getTransaction();
+            txn.begin();
+
+            Vocabulary vocabulary = VocabularyDAO.
+                    getCurrentVocabularyByVocabularyId(em, 1);
+            Version version;
+
+            TaskInfo taskInfo;
+            au.org.ands.vocabs.registry.workflow.tasks.Task workflowTask;
+            VersionArtefact va;
+            VaConceptTree vaConceptTree;
+
+            List<Task> taskList = TaskDAO.getAllTask();
+            logger.info("testConceptTreeTransformProvider2: task list length = "
+                    + taskList.size());
+            Assert.assertEquals(taskList.size(), 3, "Not three tasks");
+
+            Task task = TaskDAO.getTaskById(1);
+            version = VersionDAO.getCurrentVersionByVersionId(em, 1);
+            taskInfo = new TaskInfo(task, vocabulary, version);
+            taskInfo.setEm(em);
+            taskInfo.setModifiedBy("SYSTEM");
+            taskInfo.setNowTime(nowTime1);
+            taskInfo.process();
+            workflowTask = taskInfo.getTask();
+
+            Assert.assertEquals(workflowTask.getStatus(), TaskStatus.SUCCESS,
+                "ConceptTreeTransformProvider failed on task 1");
+
+            va = VersionArtefactDAO.
+                    getCurrentVersionArtefactListForVersionByType(1,
+                            VersionArtefactType.CONCEPT_TREE, em).get(0);
+            vaConceptTree = JSONSerialization.deserializeStringAsJson(
+                    va.getData(), VaConceptTree.class);
+
+            String conceptsTreeFilename = vaConceptTree.getPath();
+            ArquillianTestUtils.compareJson(conceptsTreeFilename,
+                    testsPath
+                    + CLASS_NAME_PREFIX
+                    + "testConceptTreeTransformProvider2/"
+                    + "test-data1-concepts_tree.json");
+
+            // Wrong notation format specified, so there's a parse error.
+            task = TaskDAO.getTaskById(2);
+            version = VersionDAO.getCurrentVersionByVersionId(em, 2);
+            taskInfo = new TaskInfo(task, vocabulary, version);
+            taskInfo.setEm(em);
+            taskInfo.setModifiedBy("SYSTEM");
+            taskInfo.setNowTime(nowTime1);
+            taskInfo.process();
+            workflowTask = taskInfo.getTask();
+
+            Assert.assertEquals(workflowTask.getStatus(), TaskStatus.PARTIAL,
+                    "ConceptTreeTransformProvider failed on task 2");
+            va = VersionArtefactDAO.
+                    getCurrentVersionArtefactListForVersionByType(2,
+                            VersionArtefactType.CONCEPT_TREE, em).get(0);
+            vaConceptTree = JSONSerialization.deserializeStringAsJson(
+                    va.getData(), VaConceptTree.class);
+            conceptsTreeFilename = vaConceptTree.getPath();
+            // Note the use of the same correct output as the previous test.
+            ArquillianTestUtils.compareJson(conceptsTreeFilename,
+                    testsPath
+                    + CLASS_NAME_PREFIX
+                    + "testConceptTreeTransformProvider2/"
+                    + "test-data2-concepts_tree.json");
+
+            // Polyhierarchy detection: we get an artefact in this case.
+            task = TaskDAO.getTaskById(3);
+            version = VersionDAO.getCurrentVersionByVersionId(em, 3);
+            taskInfo = new TaskInfo(task, vocabulary, version);
+            taskInfo.setEm(em);
+            taskInfo.setModifiedBy("SYSTEM");
+            taskInfo.setNowTime(nowTime1);
+            taskInfo.process();
+            workflowTask = taskInfo.getTask();
+
+            Assert.assertEquals(workflowTask.getStatus(), TaskStatus.SUCCESS,
+                    "ConceptTreeTransformProvider failed on task 3");
+            va = VersionArtefactDAO.
+                    getCurrentVersionArtefactListForVersionByType(3,
+                            VersionArtefactType.CONCEPT_TREE, em).get(0);
+            vaConceptTree = JSONSerialization.deserializeStringAsJson(
+                    va.getData(), VaConceptTree.class);
+            conceptsTreeFilename = vaConceptTree.getPath();
+            ArquillianTestUtils.compareJson(conceptsTreeFilename,
+                    testsPath
+                    + CLASS_NAME_PREFIX
+                    + "testConceptTreeTransformProvider2/"
+                    + "test-data3-concepts_tree.json");
+
             txn.commit();
         } catch (Throwable t) {
             if (txn != null && txn.isActive()) {

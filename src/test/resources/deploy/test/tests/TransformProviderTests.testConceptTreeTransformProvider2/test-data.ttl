@@ -1,0 +1,52 @@
+# Test data for sorting by prefLabel and by notation.
+# Has a polyhierarchy.
+
+@prefix skos:  <http://www.w3.org/2004/02/skos/core#> .
+@prefix my:    <http://test/> .
+
+my:1	a skos:Concept ;
+	skos:prefLabel "A"@en ;
+        skos:narrower my:3 ;
+        skos:narrower my:4 .
+
+my:2	a skos:Concept ;
+	skos:prefLabel "TC2"@en .
+
+my:3	a skos:Concept ;
+	skos:prefLabel "B"@en ;
+        skos:notation "2" ;
+        skos:narrower my:5 .
+
+my:4	a skos:Concept ;
+	skos:prefLabel "C"@en ;
+	skos:notation "1" ;
+        skos:narrower my:10 .
+
+my:5	a skos:Concept ;
+	skos:prefLabel "D"@en ;
+	skos:narrower my:6 ;
+        skos:narrower my:7 .
+
+my:6	a skos:Concept ;
+	skos:prefLabel "E"@en ;
+        skos:notation "1.1.1.2" .
+
+my:7	a skos:Concept ;
+	skos:prefLabel "F"@en ;
+	skos:notation "1.1.1.1" ;
+	skos:narrower my:8 ;
+        skos:narrower my:9 .
+
+my:8	a skos:Concept ;
+	skos:prefLabel "H"@en ;
+        skos:narrower my:12 .
+
+my:9	a skos:Concept ;
+	skos:prefLabel "I"@en .
+
+my:10	a skos:Concept ;
+	skos:prefLabel "G"@en ;
+	skos:narrower my:7 .
+
+my:12	a skos:Concept ;
+	skos:prefLabel "J"@en .
