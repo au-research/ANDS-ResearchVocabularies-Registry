@@ -56,7 +56,7 @@ svoc:${SVC_ID} a api:API
 ##############################################################
 
 # generic SISSvoc stuff
-	; api:maxPageSize "50"
+	; api:maxPageSize "200"
 	; api:defaultPageSize "10"
 	; api:defaultFormatter [
 			a api:XsltFormatter
