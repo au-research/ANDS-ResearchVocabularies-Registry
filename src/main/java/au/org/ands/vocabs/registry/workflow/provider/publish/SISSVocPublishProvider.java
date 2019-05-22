@@ -158,28 +158,28 @@ public class SISSVocPublishProvider implements WorkflowProvider {
                 RegistryProperties.getProperty(
                         PropertyConstants.SISSVOC_VARIABLE_DEPLOYPATH,
                         "/repository/api/lda"));
-        // The name of the ANDS Vocabulary service
+        // The name of the ARDC Vocabulary service
         specProperties.put("SERVICE_TITLE",
                 RegistryProperties.getProperty(
                         PropertyConstants.SISSVOC_VARIABLE_SERVICE_TITLE,
                         "ARDC Vocabularies LDA service"));
-        // The name of the ANDS Vocabulary service owner
+        // The name of the ARDC Vocabulary service owner
         specProperties.put("SERVICE_AUTHOR",
                 RegistryProperties.getProperty(
                         PropertyConstants.SISSVOC_VARIABLE_SERVICE_AUTHOR,
                         "ARDC Services"));
-        // Contact email address for the ANDS Vocabulary service owner
+        // Contact email address for the ARDC Vocabulary service owner
         specProperties.put("SERVICE_AUTHOR_EMAIL",
                 RegistryProperties.getProperty(
                         PropertyConstants.SISSVOC_VARIABLE_SERVICE_AUTHOR_EMAIL,
                         "services@ardc.edu.au"));
         // Homepage of the ANDS Vocabulary service
-        // ANDS home page for now; in future, could be
+        // ARDC home page for now; in future, could be
         // vocabs.ands.org.au itself.
         specProperties.put("SERVICE_HOMEPAGE",
                 RegistryProperties.getProperty(
                         PropertyConstants.SISSVOC_VARIABLE_SERVICE_HOMEPAGE,
-                        "http://www.ands.org.au/"));
+                        "https://ardc.edu.au/"));
         // Vocabulary title
         specProperties.put("SERVICE_LABEL",
                 StringEscapeUtils.escapeJava(

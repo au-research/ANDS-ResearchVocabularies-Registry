@@ -74,9 +74,9 @@ New/changed vocabularies from ${ownerFullNames?api.get(ownerId)}
 
 This is an automated email; please do not reply. For more information,
 ideas for improvements, or issues using the service, email
-services@ands.org.au.
+services@ardc.edu.au.
 
 Research Vocabularies Australia is provided by
-the Australian National Data Service.
+the Australian Research Data Commons.
 ${properties["Notifications.portalPrefix"]}
-https://ands.org.au/
+https://ardc.edu.au/
