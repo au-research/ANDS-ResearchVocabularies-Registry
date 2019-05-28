@@ -1298,8 +1298,8 @@
           SELECT rme FROM ResourceMapEntry rme, AccessPoint e1, Version e2
           WHERE rme.iri = :iri
             AND rme.owned = TRUE
-            AND rme.accessPointId = e1.id
-            AND e1.versionId = e2.id
+            AND rme.accessPointId = e1.accessPointId
+            AND e1.versionId = e2.versionId
             AND e2.status = 'CURRENT'
             AND
             #TEMPORAL_QUERY_VALID_CLAUSE_E1
