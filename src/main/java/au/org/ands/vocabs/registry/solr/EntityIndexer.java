@@ -288,17 +288,30 @@ public final class EntityIndexer {
                         JSONSerialization.deserializeStringAsJson(
                                 artefactData, VaConceptList.class);
                 File conceptsFile = new File(vaConceptList.getPath());
-                Map<String, Map<String, Object>> conceptsData =
-                        JSONSerialization.deserializeStringAsJson(
-                        conceptsFile,
-                        new TypeReference<Map<String,
-                        Map<String, Object>>>() { });
-                for (Map<String, Object> concept : conceptsData.values()) {
-                    if (concept.containsKey(JsonListTransformProvider.
-                            PREF_LABEL)) {
-                        concepts.add((String) concept.get(
-                                JsonListTransformProvider.PREF_LABEL));
+                try {
+                    Map<String, Map<String, Object>> conceptsData =
+                            JSONSerialization.deserializeStringAsJson(
+                                    conceptsFile,
+                                    new TypeReference<Map<String,
+                                    Map<String, Object>>>() { });
+                    for (Map<String, Object> concept : conceptsData.values()) {
+                        if (concept.containsKey(JsonListTransformProvider.
+                                PREF_LABEL)) {
+                            concepts.add((String) concept.get(
+                                    JsonListTransformProvider.PREF_LABEL));
+                        }
                     }
+                } catch (IllegalStateException ise) {
+                    // This happens when Jackson's own hash implementation
+                    // thinks it has detected a DoS:
+                    // java.lang.IllegalStateException: Spill-over slots
+                    //   in symbol table with 7128 entries,
+                    //   hash area of 16384 slots is now full
+                    //   (all 2048 slots -- suspect a DoS attack based on
+                    //   hash collisions. You can disable the check via
+                    //   `JsonFactory.Feature.FAIL_ON_SYMBOL_HASH_OVERFLOW`
+                    LOGGER.error("Not indexing concepts, because Jackson says "
+                            + "it looks like a DoS", ise);
                 }
             }
             List<AccessPoint> accessPoints = AccessPointDAO.
