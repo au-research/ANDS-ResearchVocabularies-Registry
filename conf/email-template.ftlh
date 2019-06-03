@@ -96,11 +96,11 @@
 
     <p>This is an automated email; please do not reply. For more information,
         ideas for improvements, or issues using the service, email
-        <a href="mailto:services@ands.org.au">services@ands.org.au</a>.</p>
+        <a href="mailto:services@ardc.edu.au">services@ardc.edu.au</a>.</p>
 
     <p><a href="${properties["Notifications.portalPrefix"]}"
           target="_blank">Research Vocabularies Australia</a>
         is provided by the
-        <a href="https://ands.org.au/"
-           target="_blank">Australian National Data Service</a>.</p>
+        <a href="https://ardc.edu.au/"
+           target="_blank">Australian Research Data Commons</a>.</p>
 </div>

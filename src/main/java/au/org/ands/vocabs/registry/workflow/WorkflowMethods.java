@@ -41,8 +41,8 @@ import au.org.ands.vocabs.registry.utils.fileformat.UploadFormatUtils;
 import au.org.ands.vocabs.registry.workflow.provider.harvest.PoolPartyHarvestProvider;
 import au.org.ands.vocabs.registry.workflow.provider.importer.SesameImporterProvider;
 import au.org.ands.vocabs.registry.workflow.provider.publish.SISSVocPublishProvider;
+import au.org.ands.vocabs.registry.workflow.provider.transform.ConceptTreeTransformProvider;
 import au.org.ands.vocabs.registry.workflow.provider.transform.JsonListTransformProvider;
-import au.org.ands.vocabs.registry.workflow.provider.transform.JsonTreeTransformProvider;
 import au.org.ands.vocabs.registry.workflow.provider.transform.SesameInsertMetadataTransformProvider;
 import au.org.ands.vocabs.registry.workflow.tasks.AccessPointUtils;
 import au.org.ands.vocabs.registry.workflow.tasks.Subtask;
@@ -393,7 +393,7 @@ public final class WorkflowMethods {
             break;
         case CONCEPT_TREE:
             subtask.setSubtaskProviderType(SubtaskProviderType.TRANSFORM);
-            subtask.setProvider(JsonTreeTransformProvider.class);
+            subtask.setProvider(ConceptTreeTransformProvider.class);
             subtask.setOperation(SubtaskOperationType.DELETE);
             subtask.determinePriority();
             break;
@@ -411,25 +411,41 @@ public final class WorkflowMethods {
         return subtaskList;
     }
 
-    /** To a given subtask list, add subtask insert operations
-     * for the JsonList and JsonTree transform providers.
+    /** To a given subtask list, add subtask transform operations
+     * for the JsonList and ConceptTree transform providers.
      * @param subtaskList An existing list of subtasks. It must not be null,
      *      but it may be empty.
      */
     public static void addConceptTransformSubtasks(
             final List<Subtask> subtaskList) {
+        subtaskList.add(newConceptExtractionSubtask());
+        subtaskList.add(newConceptBrowseSubtask());
+    }
+
+    /** Factory method to create a new subtask transform operation
+     * for the JsonList transform provider.
+     * @return The new Subtask instance.
+     */
+    private static Subtask newConceptExtractionSubtask() {
         Subtask subtask = new Subtask();
         subtask.setSubtaskProviderType(SubtaskProviderType.TRANSFORM);
         subtask.setProvider(JsonListTransformProvider.class);
         subtask.setOperation(SubtaskOperationType.INSERT);
         subtask.determinePriority();
-        subtaskList.add(subtask);
-        subtask = new Subtask();
+        return subtask;
+    }
+
+    /** Factory method to create a subtask transform operation
+     * for the ConceptTree transform provider.
+     * @return The new Subtask instance.
+     */
+    public static Subtask newConceptBrowseSubtask() {
+        Subtask subtask = new Subtask();
         subtask.setSubtaskProviderType(SubtaskProviderType.TRANSFORM);
-        subtask.setProvider(JsonTreeTransformProvider.class);
+        subtask.setProvider(ConceptTreeTransformProvider.class);
         subtask.setOperation(SubtaskOperationType.INSERT);
         subtask.determinePriority();
-        subtaskList.add(subtask);
+        return subtask;
     }
 
     // Utility methods for "quickly" creating a subtask of a particular

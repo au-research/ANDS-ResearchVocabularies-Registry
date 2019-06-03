@@ -16,7 +16,7 @@
 #          simon.cox@csiro.au
 #
 
-# ANDS Customizations
+# ARDC Customizations
 
 
 
@@ -56,7 +56,7 @@ svoc:${SVC_ID} a api:API
 ##############################################################
 
 # generic SISSvoc stuff
-	; api:maxPageSize "50"
+	; api:maxPageSize "200"
 	; api:defaultPageSize "10"
 	; api:defaultFormatter [
 			a api:XsltFormatter
@@ -81,7 +81,7 @@ svoc:${SVC_ID} a api:API
 ## end of TODO:
 ##############################################################
 
-        # ANDS override of default JSON formatter,
+        # ARDC override of default JSON formatter,
         # so as to get date/time values in ISO 8601 format.
         ; api:formatter [
                 a api:JsonFormatter
@@ -90,7 +90,7 @@ svoc:${SVC_ID} a api:API
                 ; elda:jsonUsesISOdate true
         ]
 	; api:endpoint
-                # ANDS: uncomment as needed.
+                # ARDC: uncomment as needed.
 		# svoc:LandingPage ,
 		svoc:URIEndpoint ,
 		svoc:conceptSchemeEndpoint ,
@@ -106,7 +106,7 @@ svoc:${SVC_ID} a api:API
 		svoc:narrowerLabelEndpoint ,
 		svoc:broaderTransitiveLabelEndpoint ,
 		svoc:narrowerTransitiveLabelEndpoint ,
-                # ANDS extras
+                # ARDC extras
                 svoc:topConceptsByConceptSchemeEndpoint ,
                 svoc:topConceptsEndpoint ,
                 svoc:conceptByLabelNotationURIEndpoint ,
@@ -131,7 +131,7 @@ svoc:${SVC_ID} a api:API
 		, [api:name "_resourceRoot"; api:value "{webapp}/lda-assets/"]
 		, [api:name "resourcePath"; api:value "{webapp}${SVC_PREFIX}/resource"]
 		, [api:name "resourceEndPoint"; api:value "{webapp}${SVC_PREFIX}/resource"]
-                # ANDS-specific: a list endpoint that supports filters. Used
+                # ARDC-specific: a list endpoint that supports filters. Used
                 # by searchURI-mode template in ands-ashtml-sissvoc.xsl.
                 , [api:name "conceptSearchEndPoint"; api:value "{webapp}${SVC_PREFIX}/concept"]
 		, [api:name "serviceTitle"; api:value "${SERVICE_TITLE}"]
@@ -139,15 +139,15 @@ svoc:${SVC_ID} a api:API
 		, [api:name "serviceAuthorEmail"; api:value "${SERVICE_AUTHOR_EMAIL}"]
 		, [api:name "serviceHomePage"; api:value "${SERVICE_HOMEPAGE}"]
 		, [api:name "configID"; api:value "$Header$"]
-                # ANDS-specific variables, used in ands-ashtml-sissvoc.xsl
+                # ARDC-specific variables, used in ands-ashtml-sissvoc.xsl
                 # These are legacy, from the original deployment on RDA.
                 # The variables were called _vocabName, etc. but have now been
                 # renamed to _ANDS_vocabName, etc. to show clearly that they
-                # are ANDS customizations.
+                # are ARDC customizations.
                 , [api:name "_ANDS_vocabName"; api:value "${ANDS_VOCABNAME}"]
                 , [api:name "_ANDS_vocabMore"; api:value "${ANDS_VOCABMORE}"]
                 , [api:name "_ANDS_vocabAPIDoco"; api:value "${ANDS_VOCABAPIDOCO}"]
-                # ANDS-specific configuration
+                # ARDC-specific configuration
                 # Suppress isPrimaryTopicOf per Kim Finney request email 2015-02-25
                 , [api:name "_suppress_ipto"; api:value "yes"]
                 # Need to specify _velocityPath if SISSVoc has been deployed by
@@ -186,7 +186,7 @@ svoc:${SVC_ID} a api:API
 ## SPARQL 1.1 endpoints ONLY!
 ## remove this if the endpoint does not support SPARQL 1.1
 
-# ANDS: elda now requires SPARQL 1.1 and emits a warning if you _include_ this!
+# ARDC: elda now requires SPARQL 1.1 and emits a warning if you _include_ this!
 
 ## <${SPARQL_ENDPOINT}> elda:supportsNestedSelect true .
 
@@ -209,13 +209,13 @@ svoc:basicCollectionViewer a api:Viewer
     ; api:property rdfs:label, skos:prefLabel, skos:member
     .
 
-# ANDS: This is the original svoc:basicConceptViewer
+# ARDC: This is the original svoc:basicConceptViewer
 #svoc:basicConceptViewer a api:Viewer
 #    ; api:name "concept"
 #    ; api:property skos:prefLabel, skos:notation, skos:broader, skos:definition, skos:narrower
 #    .
 
-# ANDS: And this is the ANDS-specific concept viewer.
+# ARDC: And this is the ARDC-specific concept viewer.
 #  It fetches labels for narrower and broader concepts.
 svoc:basicConceptViewer a api:Viewer
     ; api:name "concept"
@@ -225,14 +225,14 @@ svoc:basicConceptViewer a api:Viewer
       dcterms:created, dcterms:modified
     .
 
-# ANDS custom concept scheme viewer
+# ARDC custom concept scheme viewer
 #   This one fetches labels for top concepts.
 andsvocabs:basicConceptSchemeViewerLabelled a api:Viewer
     ; api:name "scheme-labelled"
     ; api:property rdfs:label, ( skos:hasTopConcept skos:prefLabel )
     .
 
-# ANDS custom concept viewer, based on svoc:basicConceptViewer
+# ARDC custom concept viewer, based on svoc:basicConceptViewer
 #   This one fetches labels for narrower and broader concepts.
 # andsvocabs:basicConceptViewerNarrowerBroader a api:Viewer
 #    ; api:name "concept-labelled"
@@ -253,7 +253,7 @@ andsvocabs:basicConceptSchemeViewerLabelled a api:Viewer
 
 
 
-# ANDS custom XML formatter
+# ARDC custom XML formatter
 #   Implements the identity transformation, so you see all the XML.
 #   Useful for debugging; shows you the input to an XSLT.
 
@@ -271,7 +271,7 @@ andsvocabs:basicConceptSchemeViewerLabelled a api:Viewer
 
 ## 000.000. This is the metadata identifier for the vocabulary content.
 
-# ANDS: If the vocab has a "top-level" IRI, uncomment this in
+# ARDC: If the vocab has a "top-level" IRI, uncomment this in
 # the api:endpoint setting above, and set the api:itemTemplate
 # below to the vocab's top-level IRI.
 
@@ -286,7 +286,7 @@ svoc:LandingPage a api:ItemEndpoint
 
 
 ## 0. This is the basic "tell me what you know about the resource identified by this URI" request.
-# ANDS: This endpoint's uriTemplate is referred to in the Vocab Toolkit's
+# ARDC: This endpoint's uriTemplate is referred to in the Vocab Toolkit's
 # IRI resolution service. See:
 #   au.org.ands.vocabs.toolkit.db.ResourceMapEntryUtils#RESOURCE_ENDPOINT.
 svoc:URIEndpoint a api:ItemEndpoint
@@ -636,7 +636,7 @@ svoc:narrowerTransitiveLabelEndpoint a api:ListEndpoint
 ##############################################################
 
 
-# ANDS extra endpoints
+# ARDC extra endpoints
 
 
 # List all of the top concepts in the vocabulary.
@@ -664,7 +664,7 @@ svoc:topConceptsByConceptSchemeEndpoint a api:ListEndpoint
                 ; api:viewer  api:basicViewer,svoc:basicConceptViewer
                 .
 
-# Other endpoints needed specifically for the ANDS Vocab Widget.
+# Other endpoints needed specifically for the ARDC Vocab Widget.
 
 # List of concepts where either there's a match:
 # (a) against an rdfs:label, skos:prefLabel, or skos:altLabel, case-insensitive
@@ -873,7 +873,7 @@ skos:relatedMatch
                 rdfs:range      skos:Concept .
 
 
-# ANDS:
+# ARDC:
 
 ## Dublin Core
 

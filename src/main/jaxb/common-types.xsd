@@ -324,4 +324,36 @@ http://viaf.org/</xs:documentation>
             <xs:enumeration value="vocabulary"/>
         </xs:restriction>
     </xs:simpleType>
+    <xs:simpleType name="browse-flag">
+        <xs:annotation>
+            <xs:documentation>Enumerated type of properties for the browse visualization.</xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="maySortByNotation">
+                <xs:annotation>
+                    <xs:documentation>The vocabulary data contains concepts that have values for the SKOS notation property. One of the notation... values must also be specified.</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="defaultSortByNotation">
+                <xs:annotation>
+                    <xs:documentation>When presenting the vocabulary data, the concepts should be sorted by their SKOS notation values by default. maySortByNotation must also be specified. One of the notation... values must also be specified.</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="notationAlpha">
+                <xs:annotation>
+                    <xs:documentation>The values of the SKOS notation property are alphabetical. maySortByNotation must also be specified.</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="notationFloat">
+                <xs:annotation>
+                    <xs:documentation>The values of the SKOS notation property are numeric. They are either integer values, or have at most one decimal point, e.g., 3.6. If the values are to be sorted, they are sorted as decimal values, so, for example, the value 3.6 would be sorted before 3.45. maySortByNotation must also be specified.</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="notationDotted">
+                <xs:annotation>
+                    <xs:documentation>The values of the SKOS notation property are numeric. They are either integer values, or they may have one or more decimal points, e.g., 3.6, or 3.7.2. If the values are to be sorted, each component between the decimal points is treated as an integer value, so, for example, the value 3.45 would be sorted after 3.6. maySortByNotation must also be specified.</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+        </xs:restriction>
+    </xs:simpleType>
 </xs:schema>

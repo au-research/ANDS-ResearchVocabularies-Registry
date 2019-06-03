@@ -50,7 +50,8 @@ import au.org.ands.vocabs.registry.workflow.tasks.TaskRunner;
 import au.org.ands.vocabs.registry.workflow.tasks.TaskUtils;
 import au.org.ands.vocabs.registry.workflow.tasks.VersionArtefactUtils;
 
-/** Transform provider for generating a forest-like representation of the
+/** This class is obsolete; see {@link ConceptTreeTransformProvider}.
+ * Transform provider for generating a forest-like representation of the
  * concepts as JSON. This assumes a vocabulary encoded using SKOS.
  * The resulting output is sorted at each level by prefLabel,
  * case-insensitively.
@@ -63,7 +64,7 @@ import au.org.ands.vocabs.registry.workflow.tasks.VersionArtefactUtils;
  *     "iri": "http://uri1",
  *     "prefLabel": "Label 1",
  *     "definition": "Definition 1",
- *     "notation": "1"
+ *     "notation": "1",
  *     "narrower": [
  *       {
  *         "iri": "http://uri1/narrower1",
@@ -83,7 +84,7 @@ import au.org.ands.vocabs.registry.workflow.tasks.VersionArtefactUtils;
  *   },
  *   {
  *     "iri": "http://uri2",
- *     "prefLabel: "Label 2",
+ *     "prefLabel": "Label 2",
  *     "definition": "Definition 2"
  *   },
  *   {
@@ -210,7 +211,7 @@ public class JsonTreeTransformProvider implements WorkflowProvider {
                     | RDFHandlerException
                     | UnsupportedRDFormatException ex) {
                 subtask.addResult(PARSE_PREFIX + entry.getFileName(),
-                        "Exception in JsonListTransform while Parsing RDF");
+                        "Exception in JsonTreeTransform while Parsing RDF");
                 logger.error("Exception in JsonTreeTransform "
                         + "while Parsing RDF:", ex);
             }

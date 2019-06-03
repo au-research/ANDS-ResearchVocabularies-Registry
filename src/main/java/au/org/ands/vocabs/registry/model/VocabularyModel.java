@@ -14,12 +14,14 @@ import org.slf4j.LoggerFactory;
 
 import au.org.ands.vocabs.registry.api.converter.VocabularyRegistrySchemaMapper;
 import au.org.ands.vocabs.registry.db.context.TemporalUtils;
+import au.org.ands.vocabs.registry.db.converter.JSONSerialization;
 import au.org.ands.vocabs.registry.db.converter.VocabularyDbSchemaMapper;
 import au.org.ands.vocabs.registry.db.dao.VocabularyDAO;
 import au.org.ands.vocabs.registry.db.dao.VocabularyIdDAO;
 import au.org.ands.vocabs.registry.db.dao.VocabularyRelatedVocabularyDAO;
 import au.org.ands.vocabs.registry.db.entity.Vocabulary;
 import au.org.ands.vocabs.registry.db.entity.clone.VocabularyClone;
+import au.org.ands.vocabs.registry.db.internal.VocabularyJson;
 import au.org.ands.vocabs.registry.enums.RegistryEventElementType;
 import au.org.ands.vocabs.registry.enums.RegistryEventEventType;
 import au.org.ands.vocabs.registry.enums.VocabularyStatus;
@@ -204,6 +206,26 @@ public class VocabularyModel extends ModelBase {
      */
     public boolean hasDraft() {
         return draftVocabulary != null;
+    }
+
+    /** Flag for use by {@link VersionsModel} to see if the primary
+     * language of the current instance has changed.
+     */
+    private boolean primaryLanguageChanged = false;
+
+    /** Set the {@link #primaryLanguageChanged} flag.
+     * @param changed The value of {@code primaryLanguageChanged} to set.
+     */
+    private void setPrimaryLanguageChanged(final boolean changed) {
+        primaryLanguageChanged = changed;
+    }
+
+    /** Is the primary language of the current instance being changed?
+     * @return true, if the primary language of the current instance
+     *      is being changed.
+     */
+    protected boolean isPrimaryLanguageChanged() {
+        return primaryLanguageChanged;
     }
 
     /** Get the current instance of the vocabulary, in registry schema
@@ -450,7 +472,7 @@ public class VocabularyModel extends ModelBase {
      * vocabulary and version metadata.
      * Prepare the incoming data to be used by the model, by
      * making the necessary adjustments.
-     * @param updatedVocabulary The vocabulary metada in registry schema
+     * @param updatedVocabulary The vocabulary metadata in registry schema
      *      format, that may need adjustment before it can be used.
      */
     private void prepareUpdatedVocabulary(
@@ -571,6 +593,20 @@ public class VocabularyModel extends ModelBase {
             TemporalUtils.makeCurrentlyValid(currentVocabulary);
             currentVocabulary.setModifiedBy(modifiedBy());
             VocabularyDAO.saveVocabulary(em(), currentVocabulary);
+        }
+
+        // See if we need to set primaryLanguageChanged.
+        // That is: if there was already an existing (old) current vocabulary,
+        // and its primary language is different from updatedVocabulary's.
+        if (oldCurrentVocabulary != null) {
+            VocabularyJson oldCurrentVocabularyJson =
+                    JSONSerialization.deserializeStringAsJson(
+                            oldCurrentVocabulary.getData(),
+                            VocabularyJson.class);
+            if (!oldCurrentVocabularyJson.getPrimaryLanguage().equals(
+                    updatedVocabulary.getPrimaryLanguage())) {
+                setPrimaryLanguageChanged(true);
+            }
         }
 
         // Join paths, for the registry event.

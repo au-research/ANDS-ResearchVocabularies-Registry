@@ -1,10 +1,14 @@
-# ANDS Vocabulary Services Registry
+# ARDC (ANDS) Vocabulary Services Registry
+
+This is the repository for the ARDC Vocabulary Registry.
+See also the repositories for the corresponding Portal, Linked Data
+API, and the documentation repository.
 
 ## What the Registry does
 
 The Registry implements a vocabulary metadata catalogue and
-repository, and provides an API interface for a vocabulary portal and
-for machine-to-machine clients.
+repository, and provides an API for a vocabulary portal and for
+machine-to-machine clients.
 
 ## Installation
 
@@ -33,10 +37,11 @@ This is an overview of the repository functions:
   * SPARQL endpoint
   * File
 * Transform
-  * Create a tree of SKOS concepts in JSON format
-  * Create a list of SKOS concepts in JSON format
+  * Extract a list of SKOS concepts in JSON format
+  * Create a tree of SKOS concepts in JSON format to support
+    a browse visualisation
 * Import
-  * Upload data into a Sesame repository
+  * Upload RDF data into a Sesame repository
 * Publish
   * Create a configuration file for use with the Elda library
 * Unpublish

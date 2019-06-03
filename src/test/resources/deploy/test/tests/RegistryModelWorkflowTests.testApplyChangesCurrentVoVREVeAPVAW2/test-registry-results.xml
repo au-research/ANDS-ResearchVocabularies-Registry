@@ -30,12 +30,12 @@
   <VERSIONS ID="1" VERSION_ID="1" VOCABULARY_ID="1"
             START_DATE="2017-10-01 10:10:00.0" END_DATE="9999-12-01 00:00:00.0"
             MODIFIED_BY="TEST" STATUS="SUPERSEDED" SLUG="version-1" RELEASE_DATE="2014-01"
-            DATA="{''note'':''Note for v1'',''title'':''Version 1''}"
+            DATA="{''browse-flag'':[],''note'':''Note for v1'',''title'':''Version 1''}"
             />
   <VERSIONS ID="2" VERSION_ID="2" VOCABULARY_ID="1"
             START_DATE="2017-10-01 10:10:00.0" END_DATE="9999-12-01 00:00:00.0"
             MODIFIED_BY="TEST" STATUS="CURRENT" SLUG="version-2" RELEASE_DATE="2015-01"
-            DATA="{''note'':''Note for v2'',''title'':''Version 2''}"
+            DATA="{''browse-flag'':[],''note'':''Note for v2'',''title'':''Version 2''}"
             />
 
   <UPLOADS ID="1" MODIFIED_BY="SYSTEM" OWNER="ANDS-Curated"
@@ -62,20 +62,20 @@
 
   <VERSION_ARTEFACTS ID="1" VERSION_ARTEFACT_ID="1" VERSION_ID="2"
             START_DATE="2017-10-01 10:10:00.0" END_DATE="9999-12-01 00:00:00.0"
+            MODIFIED_BY="TEST" STATUS="CURRENT" TYPE="CONCEPT_TREE"
+            DATA="{''path'':''{VOCABS}/ands-curated/1/2/20171001T1010/concepts_tree2.json''}" />
+  <VERSION_ARTEFACTS ID="2" VERSION_ARTEFACT_ID="2" VERSION_ID="2"
+            START_DATE="2017-10-01 10:10:00.0" END_DATE="9999-12-01 00:00:00.0"
             MODIFIED_BY="TEST" STATUS="CURRENT" TYPE="CONCEPT_LIST"
             DATA="{''path'':''{VOCABS}/ands-curated/1/2/20171001T1010/concepts_list.json''}"
             />
-  <VERSION_ARTEFACTS ID="2" VERSION_ARTEFACT_ID="2" VERSION_ID="2"
-            START_DATE="2017-10-01 10:10:00.0" END_DATE="9999-12-01 00:00:00.0"
-            MODIFIED_BY="TEST" STATUS="CURRENT" TYPE="CONCEPT_TREE"
-            DATA="{''path'':''{VOCABS}/ands-curated/1/2/20171001T1010/concepts_tree.json''}" />
 
   <TASKS ID="1" VOCABULARY_ID="1" VERSION_ID="1"
-         PARAMS="[{''operation'':''insert'',''priority'':20,''provider'':''JsonList'',''results'':{''parse-1.txt'':''Exception in JsonListTransform while Parsing RDF'',''timestamp'':''2018-02-16T02:51:59.490''},''status'':''success'',''subtaskProviderType'':''transform''},{''operation'':''insert'',''priority'':20,''provider'':''JsonTree'',''results'':{''parse-1.txt'':''Exception in JsonListTransform while Parsing RDF'',''timestamp'':''2018-02-16T02:51:59.497''},''status'':''success'',''subtaskProviderType'':''transform''}]" RESPONSE="{''response'':''All subtasks completed successfully.'',''timestamp'':''2018-02-16T02:51:59.497''}"
+         PARAMS="[{''operation'':''insert'',''priority'':20,''provider'':''ConceptTree'',''results'':{''parse-1.txt'':''Exception in ConceptTreeTransform while Parsing RDF'',''timestamp'':''2018-02-16T02:51:59.497''},''status'':''success'',''subtaskProviderType'':''transform''},{''operation'':''insert'',''priority'':20,''provider'':''JsonList'',''results'':{''parse-1.txt'':''Exception in JsonListTransform while Parsing RDF'',''timestamp'':''2018-02-16T02:51:59.490''},''status'':''success'',''subtaskProviderType'':''transform''}]" RESPONSE="{''response'':''All subtasks completed successfully.'',''timestamp'':''2018-02-16T02:51:59.497''}"
          STATUS="SUCCESS" />
 
   <TASKS ID="2" VOCABULARY_ID="1" VERSION_ID="2"
-         PARAMS="[{''operation'':''insert'',''priority'':20,''provider'':''JsonList'',''results'':{''timestamp'':''2018-02-16T02:37:47.299''},''status'':''success'',''subtaskProviderType'':''transform''},{''operation'':''insert'',''priority'':20,''provider'':''JsonTree'',''results'':{''timestamp'':''2018-02-16T02:37:47.314''},''status'':''success'',''subtaskProviderType'':''transform''}]" RESPONSE="{''response'':''All subtasks completed successfully.'',''timestamp'':''2018-02-16T02:37:47.314''}"
+         PARAMS="[{''operation'':''insert'',''priority'':20,''provider'':''ConceptTree'',''results'':{''timestamp'':''2018-02-16T02:37:47.314''},''status'':''success'',''subtaskProviderType'':''transform''},{''operation'':''insert'',''priority'':20,''provider'':''JsonList'',''results'':{''timestamp'':''2018-02-16T02:37:47.299''},''status'':''success'',''subtaskProviderType'':''transform''}]" RESPONSE="{''response'':''All subtasks completed successfully.'',''timestamp'':''2018-02-16T02:37:47.314''}"
          STATUS="SUCCESS" />
 
   <REGISTRY_EVENTS ID="1" ELEMENT_TYPE="VOCABULARIES" ELEMENT_ID="1" EVENT_DATE="2017-10-01 10:10:00.0" EVENT_TYPE="DELETED" EVENT_USER="TEST" EVENT_DETAILS="{''status'':''draft''}" />

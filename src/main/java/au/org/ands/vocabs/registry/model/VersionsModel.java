@@ -30,11 +30,13 @@ import au.org.ands.vocabs.registry.db.entity.Version;
 import au.org.ands.vocabs.registry.db.entity.Vocabulary;
 import au.org.ands.vocabs.registry.db.entity.clone.VersionClone;
 import au.org.ands.vocabs.registry.db.internal.VersionJson;
+import au.org.ands.vocabs.registry.enums.BrowseFlag;
 import au.org.ands.vocabs.registry.enums.RegistryEventElementType;
 import au.org.ands.vocabs.registry.enums.RegistryEventEventType;
 import au.org.ands.vocabs.registry.enums.SubtaskOperationType;
 import au.org.ands.vocabs.registry.enums.SubtaskProviderType;
 import au.org.ands.vocabs.registry.enums.TaskStatus;
+import au.org.ands.vocabs.registry.enums.VersionStatus;
 import au.org.ands.vocabs.registry.enums.VocabularyStatus;
 import au.org.ands.vocabs.registry.log.RegistryEventUtils;
 import au.org.ands.vocabs.registry.model.sequence.VersionElement;
@@ -697,17 +699,38 @@ public class VersionsModel extends ModelBase {
         }
 
         /** {@inheritDoc} */
+        @SuppressWarnings("checkstyle:MethodLength")
         @Override
         public void visitKeepCommand(final VersionElement ve) {
             // This could contain metadata updates. If so, make the
             // existing current row historical, and add a new current row.
+            // There are also some processing rules to take care of along
+            // the way.
             Integer versionId = ve.getVersionId();
             Version existingVersion = ve.getDbVersion();
             au.org.ands.vocabs.registry.schema.vocabulary201701.Version
             schemaVersion = updatedVersions.get(versionId);
 
-            if (!ComparisonUtils.isEqualVersion(existingVersion,
-                    schemaVersion)
+            // Handle the rule:
+            // * If the vocabulary's primary language is being changed, and
+            //   this is the current version (i.e., so that the
+            //   browse visualisation will be visible on the Portal
+            //   view page), we update the Concept Tree version artefact.
+            boolean doConceptBrowseSubtask = false;
+            if (vocabularyModel.isPrimaryLanguageChanged()
+                    && schemaVersion.getStatus() == VersionStatus.CURRENT) {
+                logger.info("Primary language was changed; ConceptTree will "
+                        + "be run for current version");
+                doConceptBrowseSubtask = true;
+            }
+
+            // We'll make a new Version instance if either:
+            // * doConceptBrowseSubtask, or
+            // * the version metadata has changed, or
+            // * force-workflow is true
+            if (doConceptBrowseSubtask
+                    || !ComparisonUtils.isEqualVersion(existingVersion,
+                            schemaVersion)
                     || BooleanUtils.isTrue(schemaVersion.isForceWorkflow())) {
                 TemporalUtils.makeHistorical(existingVersion, nowTime());
                 existingVersion.setModifiedBy(modifiedBy());
@@ -744,13 +767,32 @@ public class VersionsModel extends ModelBase {
                         JSONSerialization.deserializeStringAsJson(
                                 newCurrentVersion.getData(), VersionJson.class);
                 // Sorry for the spaghetti.
-                // The structure of each of these is:
+                // The structure of most of these is:
                 //   Is workflow forced, or did the value of the flag change?
                 //   If yes, then:
                 //     Is the flag now set to true? If so, do an INSERT.
                 //     Otherwise (it is now false): do a DELETE.
                 // The "tricky" bit is managing any follow-on. For now,
                 // means that a (re-)harvest can also force a (re-)import.
+                // The sequence:
+                // 1. browseFlags
+                // 2. isDoPoolPartyHarvest
+                // 3. isDoImport
+                // 4. isDoPublish
+                //
+                // browseFlags:
+                // For now, we don't re-transform _just_ for isForceWorkflow.
+                // However, a PoolParty harvest will _imply_ a re-transform:
+                // see addImpliedSubtasks().
+                // Note that the generated implementation of the
+                // getBrowseFlag() method always returns a non-null
+                // value, as required by changedBrowseFlags().
+                if (changedBrowseFlags(newCurrentVersionJson.getBrowseFlag(),
+                        existingVersionJson.getBrowseFlag())) {
+                    logger.info("Browse flags were changed; "
+                            + "adding ConceptBrowse subtask");
+                    task.addSubtask(WorkflowMethods.newConceptBrowseSubtask());
+                }
                 if (BooleanUtils.isTrue(schemaVersion.isForceWorkflow())
                         || (changedBoolean(
                                 newCurrentVersionJson.isDoPoolpartyHarvest(),
@@ -812,6 +854,11 @@ public class VersionsModel extends ModelBase {
                                 createPublishSissvocSubtask(
                                         SubtaskOperationType.DELETE));
                     }
+                }
+                // And last, if doConceptBrowseSubtask is true, we schedule
+                // that transform. (It may already have been added above.)
+                if (doConceptBrowseSubtask) {
+                    task.addSubtask(WorkflowMethods.newConceptBrowseSubtask());
                 }
             }
         }
@@ -1002,7 +1049,8 @@ public class VersionsModel extends ModelBase {
 
     /** To any existing Tasks, add subtasks that are implied by
      * the subtasks already present. For now, that means adding
-     * subtasks for the JsonList, JsonTree, and ResourceMapTransform providers.
+     * subtasks for the JsonList, ConceptTree, and ResourceMap
+     * transform providers.
      */
     private void addImpliedSubtasks() {
         for (Task task : versionTasks.values()) {
@@ -1135,6 +1183,21 @@ public class VersionsModel extends ModelBase {
     public boolean changedBoolean(final Boolean b1, final Boolean b2) {
         return BooleanUtils.toInteger(b1, 1, 0, 2)
                 != BooleanUtils.toInteger(b2, 1, 0, 2);
+    }
+
+    /** Compare two {@code List<BrowseFlag>} values,
+     * returning true if they don't contain exactly the same set
+     * of flags. The flags in each list must be in canonical order.
+     * @param bf1 One of the lists of BrowseFlags to be compared;
+     *  it may not be null.
+     * @param bf2 The other lists of BrowseFlags to be compared; it may not
+     *  be null.
+     * @return True, iff the lists of BrowseFlag values, considered as sets,
+     *  are different.
+     */
+    public boolean changedBrowseFlags(final List<BrowseFlag> bf1,
+            final List<BrowseFlag> bf2) {
+        return !bf1.equals(bf2);
     }
 
 }

@@ -33,9 +33,9 @@ import io.swagger.annotations.Tag;
                 title = "Vocabulary Registry API",
                 termsOfService = "http://documentation.ands.org.au/",
                 contact = @Contact(
-                   name = "ANDS Services",
-                   email = "services@ands.org.au",
-                   url = "http://ands.org.au/"
+                   name = "ARDC Services",
+                   email = "services@ardc.edu.au",
+                   url = "https://ardc.edu.au/"
                 ),
                 license = @License(
                    name = "Apache 2.0",

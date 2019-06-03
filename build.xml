@@ -685,6 +685,32 @@
     </java>
   </target>
 
+  <!-- Perform migration of existing JsonTree version artefacts
+       into the new ConceptTree version artefacts! -->
+  <path id="migrate-jsontree-artefacts.classpath">
+    <pathelement path="${build}" />
+    <fileset dir="lib">
+      <include name="**/*.jar" />
+      <exclude name="**/*javadoc*.jar" />
+      <exclude name="**/*sources*.jar" />
+    </fileset>
+    <fileset dir="build-jar">
+      <include name="*.jar" />
+    </fileset>
+  </path>
+  <target name="migrate-jsontree-artefacts"
+          depends="compile-main,registry-db-model-jar">
+    <java
+        fork="true"
+        failonerror="true"
+        classname="au.org.ands.vocabs.registry.db.utils.migration.MigrateJsonTreesToConceptTrees"
+        classpathref="migrate-jsontree-artefacts.classpath"
+      >
+      <sysproperty key="REGISTRY_PROPS_FILE"
+                   value="conf/registry.properties" />
+    </java>
+  </target>
+
   <!-- Coding conventions, style, static analysis -->
 
   <target name="checkstyle"

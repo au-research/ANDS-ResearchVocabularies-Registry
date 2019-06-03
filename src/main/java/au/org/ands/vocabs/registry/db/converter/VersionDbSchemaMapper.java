@@ -31,6 +31,7 @@ public interface VersionDbSchemaMapper {
     @Mapping(target = "doPoolpartyHarvest", ignore = true)
     @Mapping(target = "doImport", ignore = true)
     @Mapping(target = "doPublish", ignore = true)
+    @Mapping(target = "browseFlag", ignore = true)
     @Mapping(target = "forceWorkflow", ignore = true)
     @Mapping(target = "accessPoint", ignore = true)
     au.org.ands.vocabs.registry.schema.vocabulary201701.Version

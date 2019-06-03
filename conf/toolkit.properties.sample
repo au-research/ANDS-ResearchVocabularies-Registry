@@ -1,4 +1,4 @@
-## Build and runtime-specific system variables for ANDS Vocab Toolkit App.
+## Build and runtime-specific system variables for ARDC Vocab Toolkit App.
 ## DATABASE
 
 # Database properties can be specified here instead of/as well as
@@ -89,7 +89,7 @@ SISSVoc.variable.SERVICE_AUTHOR = [author]
 # Contact email address for the Vocabulary service owner
 SISSVoc.variable.SERVICE_AUTHOR_EMAIL = [email]
 # URL of the homepage of the Vocabulary service
-# ANDS home page for now; in future, could be
+# ARDC home page for now; in future, could be
 # vocabs.ands.org.au itself.
 SISSVoc.variable.SERVICE_HOMEPAGE = [URL]
 # URL prefix of SPARQL endpoint to use for doing queries.
