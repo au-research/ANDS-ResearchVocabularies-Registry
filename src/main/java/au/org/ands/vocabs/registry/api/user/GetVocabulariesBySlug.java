@@ -62,6 +62,7 @@ public class GetVocabulariesBySlug {
      * @param uriInfo The UriInfo of the request.
      * @param slug The slug of the vocabulary to be fetched.
      * @param includeVersions Whether or not to include version elements.
+     *      If enabled, versions are returned in reverse order of release date.
      * @param includeAccessPoints Whether or not to include access point
      *      elements.
      * @param includeRelatedEntitiesAndVocabularies Whether or not to include
@@ -85,7 +86,9 @@ public class GetVocabulariesBySlug {
             @ApiParam(value = "The slug of the vocabulary to get.")
             @NotNull(message = "The slug must be specified.")
             @PathParam("slug") final String slug,
-            @ApiParam(value = "Whether or not to include version elements.",
+            @ApiParam(value = "Whether or not to include version elements. "
+                    + "If enabled, versions are returned in "
+                    + "reverse order of release date.",
                 defaultValue = "false")
             @QueryParam("includeVersions") @DefaultValue("false")
             final boolean includeVersions,
@@ -121,7 +124,8 @@ public class GetVocabulariesBySlug {
         // override any "includeVersions=false" setting.
         if (includeVersions || includeAccessPoints) {
             List<au.org.ands.vocabs.registry.db.entity.Version>
-            dbVersions = VersionDAO.getCurrentVersionListForVocabulary(
+            dbVersions = VersionDAO.
+            getCurrentVersionListForVocabularyByReleaseDate(
                     vocabularyId);
             List<Version> outputVersions = outputVocabulary.getVersion();
 
