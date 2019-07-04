@@ -3,7 +3,9 @@
 package au.org.ands.vocabs.registry.utils.fileformat;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /** Utilities to support file formats.
  * For the most part, this class is customized for uploads:
@@ -21,6 +23,9 @@ public final class FileFormatUtils {
 
     /** Map from format MIME typess to FileFormat objects .*/
     private static Map<String, FileFormat> mimeTypeToFormat;
+
+    /** List of all format names of formats supported as Sesame downloads. */
+    private static List<String> allSesameDownloadFormatNames;
 
     static {
         nameToFormat = new HashMap<>();
@@ -61,6 +66,10 @@ public final class FileFormatUtils {
         addFileFormat("TTL", "ttl", "text/turtle", true);
         addFileFormat("XML", "xml", "application/xml", false);
         addFileFormat("ZIP", "zip", "application/zip", false);
+
+        allSesameDownloadFormatNames = nameToFormat.values().stream().
+                filter(ff -> ff.getIsSesameDownloadFormat()).
+                map(ff -> ff.getName()).collect(Collectors.toList());
     }
 
     /** Define a FileFormat, registering it in the three Maps.
@@ -107,6 +116,15 @@ public final class FileFormatUtils {
      */
     public static FileFormat getFileFormatByMimeType(final String mimeType) {
         return mimeTypeToFormat.get(mimeType);
+    }
+
+    /** Get the list of all format names of formats supported as
+     * Sesame downloads.
+     * @return The list of all format names of formats supported as
+     *  Sesame downloads. Treat this as a read-only value.
+     */
+    public static List<String> getAllSesameDownloadFormatNames() {
+        return allSesameDownloadFormatNames;
     }
 
 }

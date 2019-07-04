@@ -69,6 +69,7 @@ import au.org.ands.vocabs.registry.enums.AccessPointType;
 import au.org.ands.vocabs.registry.enums.RelatedEntityRelation;
 import au.org.ands.vocabs.registry.enums.VersionArtefactType;
 import au.org.ands.vocabs.registry.enums.VersionStatus;
+import au.org.ands.vocabs.registry.utils.fileformat.FileFormatUtils;
 import au.org.ands.vocabs.registry.workflow.provider.transform.JsonListTransformProvider;
 
 /** Methods to support Solr indexing, including creating a Solr document
@@ -318,15 +319,18 @@ public final class EntityIndexer {
                     getCurrentAccessPointListForVersion(currentVersionId);
             for (AccessPoint accessPoint : accessPoints) {
                 accessList.add(accessPointName.get(accessPoint.getType()));
-                String format = "";
                 switch (accessPoint.getType()) {
                 case API_SPARQL:
                     break;
                 case FILE:
                     ApFile apFile = JSONSerialization.deserializeStringAsJson(
                             accessPoint.getData(), ApFile.class);
-                    format = apFile.getFormat();
+                    formatList.add(apFile.getFormat());
+                    break;
                 case SESAME_DOWNLOAD:
+                    // CC-2455 Add all Sesame download types as formats.
+                    formatList.addAll(
+                            FileFormatUtils.getAllSesameDownloadFormatNames());
                     break;
                 case SISSVOC:
                     // Be careful not to try to add a second SISSVOC_ENDPOINT,
@@ -347,7 +351,6 @@ public final class EntityIndexer {
                 default:
                     // Oops.
                 }
-                formatList.add(format);
             }
             document.addField(ACCESS, accessList);
             document.addField(FORMAT, formatList);
