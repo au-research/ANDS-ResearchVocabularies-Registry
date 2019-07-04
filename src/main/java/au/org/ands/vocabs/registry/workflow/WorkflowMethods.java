@@ -37,7 +37,7 @@ import au.org.ands.vocabs.registry.enums.ApSource;
 import au.org.ands.vocabs.registry.enums.SubtaskOperationType;
 import au.org.ands.vocabs.registry.enums.SubtaskProviderType;
 import au.org.ands.vocabs.registry.utils.RegistryFileUtils;
-import au.org.ands.vocabs.registry.utils.fileformat.UploadFormatUtils;
+import au.org.ands.vocabs.registry.utils.fileformat.FileFormatUtils;
 import au.org.ands.vocabs.registry.workflow.provider.harvest.PoolPartyHarvestProvider;
 import au.org.ands.vocabs.registry.workflow.provider.importer.SesameImporterProvider;
 import au.org.ands.vocabs.registry.workflow.provider.publish.SISSVocPublishProvider;
@@ -281,7 +281,7 @@ public final class WorkflowMethods {
             // Here, we don't trust the extension of the original filename
             // (e.g., it could be in upper case).
             String filename = uploadId.toString() + "."
-                    + UploadFormatUtils.getFileFormatByName(
+                    + FileFormatUtils.getFileFormatByName(
                             upload.getFormat()).getExtension();
             Path destPath = Paths.get(harvestOutputPath, filename);
             try {

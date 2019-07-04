@@ -45,7 +45,7 @@ import au.org.ands.vocabs.registry.db.entity.Upload;
 import au.org.ands.vocabs.registry.log.Logging;
 import au.org.ands.vocabs.registry.utils.RegistryFileUtils;
 import au.org.ands.vocabs.registry.utils.fileformat.FileFormat;
-import au.org.ands.vocabs.registry.utils.fileformat.UploadFormatUtils;
+import au.org.ands.vocabs.registry.utils.fileformat.FileFormatUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -165,7 +165,7 @@ public class PutUpload {
 
         // Check the format.
         FileFormat formatFromFormat =
-                UploadFormatUtils.getFileFormatByName(format);
+                FileFormatUtils.getFileFormatByName(format);
         if (formatFromFormat == null) {
             return ErrorResultUtils.badRequest("Unsupported format.");
         }
@@ -184,7 +184,7 @@ public class PutUpload {
         // Convert the extension to lower case before looking up.
         String extension = FilenameUtils.getExtension(filename).toLowerCase();
         FileFormat formatFromExtension =
-                UploadFormatUtils.getFileFormatByExtension(extension);
+                FileFormatUtils.getFileFormatByExtension(extension);
         if (formatFromFormat != formatFromExtension) {
             return ErrorResultUtils.badRequest(
                     "Filename extension does not correspond to the format.");
