@@ -166,7 +166,19 @@
             value="${tools-bin}/xjc-private-fields-plugin.jar" />
   <property name="build-xjc-private-fields-plugin"
             value="${build-tools}/build-xjc-plugin" />
-  <target name="xjc-private-fields-plugin-jar">
+  <!-- Check if generated plugin JAR is up-to-date. -->
+  <target name="check-xjc-private-fields-plugin-jar">
+    <uptodate property="xjc-private-fields-plugin-jar.uptodate"
+              targetfile="${xjc-private-fields-plugin-jar}">
+      <srcfiles dir="${build-xjc-private-fields-plugin}">
+        <include name="au/org/ands/vocabs/registry/schema/utils/*.class" />
+      </srcfiles>
+    </uptodate>
+  </target>
+  <!-- Build JAR containing plugin for xjc. -->
+  <target name="xjc-private-fields-plugin-jar"
+          depends="check-xjc-private-fields-plugin-jar"
+          unless="xjc-private-fields-plugin-jar.uptodate">
     <mkdir dir="${build-xjc-private-fields-plugin}" />
     <javac debug="true" debuglevel="${debuglevel}"
            destdir="${build-xjc-private-fields-plugin}"
