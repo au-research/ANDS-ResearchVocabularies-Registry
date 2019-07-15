@@ -693,7 +693,10 @@
         classname="au.org.ands.vocabs.registry.solr.admin.CreateSchema"
         classpathref="create-solr-schema.classpath"
       >
+      <arg value="${Registry.Solr.baseURL}" />
+      <arg value="${Registry.Solr.collection}" />
       <arg value="${Registry.Solr.collectionURL}" />
+      <arg value="${Registry.Solr.zkHost}" />
     </java>
   </target>
 

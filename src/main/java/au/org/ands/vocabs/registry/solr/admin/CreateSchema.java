@@ -9,10 +9,12 @@ import static au.org.ands.vocabs.registry.solr.FieldConstants.BOOLEAN;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.CONCEPT;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.CONCEPT_SEARCH;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.DESCRIPTION;
+import static au.org.ands.vocabs.registry.solr.FieldConstants.DESCRIPTION_PHRASE;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.FORMAT;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.FULLTEXT;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.LANGUAGE;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.LICENCE;
+import static au.org.ands.vocabs.registry.solr.FieldConstants.LOWER_EXACT_WORDS;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.OWNER;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.POOLPARTY_ID;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.PUBLISHER;
@@ -29,6 +31,7 @@ import static au.org.ands.vocabs.registry.solr.FieldConstants.SUBJECT_SEARCH;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.SUBJECT_SOURCES;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.TEXT_EN_SPLITTING;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.TITLE;
+import static au.org.ands.vocabs.registry.solr.FieldConstants.TITLE_PHRASE;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.TITLE_SEARCH;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.TITLE_SORT;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.TOP_CONCEPT;
@@ -48,15 +51,19 @@ import javax.json.JsonObjectBuilder;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrRequest;
 import org.apache.solr.client.solrj.SolrServerException;
+import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
+import org.apache.solr.client.solrj.request.CollectionAdminRequest;
 import org.apache.solr.client.solrj.request.GenericSolrRequest;
 import org.apache.solr.client.solrj.request.RequestWriter.StringPayloadContentWriter;
 import org.apache.solr.client.solrj.request.schema.AnalyzerDefinition;
 import org.apache.solr.client.solrj.request.schema.FieldTypeDefinition;
 import org.apache.solr.client.solrj.request.schema.SchemaRequest;
+import org.apache.solr.client.solrj.response.CollectionAdminResponse;
 import org.apache.solr.client.solrj.response.SimpleSolrResponse;
 import org.apache.solr.client.solrj.response.SolrResponseBase;
 import org.apache.solr.client.solrj.response.schema.SchemaResponse.UpdateResponse;
+import org.apache.solr.common.cloud.SolrZkClient;
 import org.apache.solr.common.params.CommonParams;
 import org.apache.solr.common.util.NamedList;
 import org.slf4j.Logger;
@@ -74,6 +81,14 @@ public final class CreateSchema {
     /** Logger for this class. */
     private Logger logger = LoggerFactory.getLogger(
             MethodHandles.lookup().lookupClass());
+
+    /** Value to use for the positionIncrementGap attribute of
+     * field type definitions. Instances of the field type that
+     * are defined as being multivalued will get this setting.
+     * As noted in the Solr documentation, this
+     * is used to "prevent spurious phrase matches".
+     */
+    private static final int POSITION_INCREMENT_GAP = 100;
 
     /** Check that a SolrJ action completed successfully.
      * Throws a RuntimeException if there was an error.
@@ -221,6 +236,51 @@ public final class CreateSchema {
         filter3.put("replacement", "");
         filter3.put("replace", "all");
         filters.add(filter3);
+        analyzerDefinition.setFilters(filters);
+        // Same analyzer for indexing and querying.
+        fieldTypeDefinition.setIndexAnalyzer(analyzerDefinition);
+        fieldTypeDefinition.setQueryAnalyzer(analyzerDefinition);
+        SchemaRequest.AddFieldType addFieldTypeRequest =
+                new SchemaRequest.AddFieldType(fieldTypeDefinition);
+        UpdateResponse updateResponse =
+                addFieldTypeRequest.process(solrClient);
+        checkResponse(updateResponse);
+        logger.info(" ... done");
+    }
+
+    /** Submit a request to the Solr API to create a text field type
+     * {@link FieldConstants#LOWER_EXACT_WORDS} that uses the
+     * ICUTokenizerFactory and ICUFoldingFilterFactory.
+     * @param solrClient The SolrClient used to access Solr.
+     * @throws IOException If there is an error communicating with
+     *      the Solr server.
+     * @throws SolrServerException If the Solr server returns an error.
+     */
+    private void addLowerFieldType(final SolrClient solrClient)
+            throws SolrServerException, IOException {
+        logger.info("Adding field type " + LOWER_EXACT_WORDS + " ... ");
+
+        FieldTypeDefinition fieldTypeDefinition = new FieldTypeDefinition();
+        Map<String, Object> fieldTypeAttributes = new LinkedHashMap<>();
+        // Top-level attributes of the field type:
+        //   name="lower" class="solr.TextField" positionIncrementGap="100"
+        fieldTypeAttributes.put("name", LOWER_EXACT_WORDS);
+        fieldTypeAttributes.put("class", "solr.TextField");
+        fieldTypeAttributes.put("positionIncrementGap", POSITION_INCREMENT_GAP);
+        fieldTypeDefinition.setAttributes(fieldTypeAttributes);
+        AnalyzerDefinition analyzerDefinition = new AnalyzerDefinition();
+        // Tokenizer: <tokenizer class="solr.ICUTokenizerFactory"/>
+        Map<String, Object> tokenizerAttributes = new LinkedHashMap<>();
+        tokenizerAttributes.put("class", "solr.ICUTokenizerFactory");
+        analyzerDefinition.setTokenizer(tokenizerAttributes);
+        // Filters:
+        List<Map<String, Object>> filters = new ArrayList<>();
+        //  <filter class="solr.ICUFoldingFilterFactory"/>
+        // The ICUFoldingFilter is a Unicode-friendly lower-case filter,
+        // for when you want your sorting to be case insensitive.
+        Map<String, Object> filter1 = new LinkedHashMap<>();
+        filter1.put("class", "solr.ICUFoldingFilterFactory");
+        filters.add(filter1);
         analyzerDefinition.setFilters(filters);
         // Same analyzer for indexing and querying.
         fieldTypeDefinition.setIndexAnalyzer(analyzerDefinition);
@@ -421,17 +481,18 @@ public final class CreateSchema {
       }
     */
 
-    /** Install schema version 1.
+    /** Install schema version 2.
      * @param client The SolrClient into which to install the schema.
      * @throws SolrServerException If a SolrServerException was generated
      *      by the SolrJ API.
      * @throws IOException If an IOException was generated by the SolrJ API.
      */
-    public void installSchema1(final SolrClient client)
+    private void installSchema2(final SolrClient client)
             throws SolrServerException, IOException {
         try {
-            setInstalledSchemaVersion(client, 1);
+            setInstalledSchemaVersion(client, 2);
             addAlphaOnlySortFieldType(client);
+            addLowerFieldType(client);
             addField(client, SLUG, STRING, true, true, false);
             addField(client, TITLE, STRING, true, true, false);
             addField(client, TITLE_SORT, ALPHA_ONLY_SORT, false, true, false);
@@ -461,7 +522,7 @@ public final class CreateSchema {
             addField(client, CONCEPT_SEARCH, TEXT_EN_SPLITTING,
                     false, true, true);
             addField(client, TITLE_SEARCH, TEXT_EN_SPLITTING,
-                    false, true, true);
+                    false, true, false);
             addField(client, SUBJECT_SEARCH, TEXT_EN_SPLITTING,
                     false, true, true);
             addField(client, PUBLISHER_SEARCH, TEXT_EN_SPLITTING,
@@ -469,9 +530,15 @@ public final class CreateSchema {
             addField(client, FULLTEXT, TEXT_EN_SPLITTING,
                     false, true, true);
 
+            // Phrase fields have stored = true, indexed = true.
+            addField(client, TITLE_PHRASE, LOWER_EXACT_WORDS,
+                    true, true, false);
+            addField(client, DESCRIPTION_PHRASE, LOWER_EXACT_WORDS,
+                    true, true, false);
+
             addCopyField(client, "*", Arrays.asList(FULLTEXT));
             addCopyField(client, FieldConstants.TITLE,
-                    Arrays.asList(TITLE_SEARCH, TITLE_SORT));
+                    Arrays.asList(TITLE_SEARCH, TITLE_SORT, TITLE_PHRASE));
             addCopyField(client, CONCEPT, Arrays.asList(CONCEPT_SEARCH));
             addCopyField(client, TOP_CONCEPT,
                     Arrays.asList(SUBJECT_SEARCH));
@@ -479,6 +546,11 @@ public final class CreateSchema {
                     Arrays.asList(SUBJECT_SEARCH));
             addCopyField(client, SUBJECT_NOTATIONS,
                     Arrays.asList(SUBJECT_SEARCH));
+            addCopyField(client, PUBLISHER,
+                    Arrays.asList(PUBLISHER_SEARCH));
+
+            addCopyField(client, DESCRIPTION,
+                    Arrays.asList(DESCRIPTION_PHRASE));
 
             /** Part of the data-driven schema, but we don't use it. */
             deleteDynamicField(client, "*_point");
@@ -503,13 +575,87 @@ public final class CreateSchema {
         }
     }
 
-    /** Install the schema.
-     * @param client The SolrClient into which to install the schema.
+    /** Timeout to use when connecting to ZooKeeper, in milliseconds. */
+    private static final int ZK_TIMEOUT = 30000;
+
+    /** The base filename of solrconfig.xml. */
+    private static final String SOLRCONFIG_XML = "solrconfig.xml";
+
+    /** Upload our custom {@code solrconfig.xml} to ZooKeeper.
+     * @param collectionName The name of the Solr collection.
+     * @param zkHost The value of zkHost to use to connect to ZooKeeper.
+     * @throws Exception If the ZooKeeper upload could not be completed.
+     */
+    private void uploadSolrconfig(final String collectionName,
+            final String zkHost) throws Exception {
+        try (SolrZkClient zkClient = new SolrZkClient(zkHost, ZK_TIMEOUT)) {
+          logger.info("Connecting to ZooKeeper at " + zkHost + " ...");
+
+          String fullPath = "conf/" + SOLRCONFIG_XML;
+
+          String src = fullPath;
+          String dst = "configs/" + collectionName + "/" + SOLRCONFIG_XML;
+          Boolean recurse = false;
+          logger.info("Copying from '" + src + "' to '" + dst
+                  + "'. ZooKeeper at " + zkHost);
+
+          boolean srcIsZk = false;
+          boolean dstIsZk = true;
+
+          String srcName = src;
+          String dstName = dst;
+          zkClient.zkTransfer(srcName, srcIsZk, dstName, dstIsZk, recurse);
+        } catch (Exception e) {
+          logger.error("Could not complete the zk operation for reason: "
+                  + e.getMessage());
+          throw (e);
+        }
+    }
+
+    /** Reload the Solr collection.
+     * @param baseURL The base URL of Solr.
+     * @param collectionName The name of the Solr collection.
      * @throws SolrServerException If a SolrServerException was generated
      *      by the SolrJ API.
      * @throws IOException If an IOException was generated by the SolrJ API.
      */
-    public void installSchema(final SolrClient client)
+    private void reloadCollection(final String baseURL,
+            final String collectionName)
+            throws SolrServerException, IOException {
+        try (SolrClient client = new HttpSolrClient.Builder(baseURL).build()) {
+            CollectionAdminResponse caResponse;
+            CollectionAdminRequest.Reload reloadCollectionRequest =
+                    CollectionAdminRequest.reloadCollection(
+                            collectionName);
+
+            caResponse = reloadCollectionRequest.process(client);
+            System.out.println("reload status:" + caResponse.getStatus());
+            System.out.println("reload isSuccess:" + caResponse.isSuccess());
+        } catch (SolrServerException sse) {
+            logger.error("Got a SolrServerException:", sse);
+            throw sse;
+        } catch (IOException ioe) {
+            logger.error("Got an IOException:", ioe);
+            throw ioe;
+        }
+    }
+
+    /** Install the schema.
+     * @param baseURL The base URL of Solr.
+     * @param client The SolrClient into which to install the schema.
+     *  This can be an instance of {@link EmbeddedSolrServer},
+     *  in which case, the value of the other three parameters may be
+     *  {@code null}.
+     * @param collectionName The name of the Solr collection.
+     * @param zkHost The value of zkHost to use to connect to ZooKeeper.
+     * @throws SolrServerException If a SolrServerException was generated
+     *      by the SolrJ API.
+     * @throws IOException If an IOException was generated by the SolrJ API.
+     */
+    public void installSchema(final String baseURL,
+            final SolrClient client,
+            final String collectionName,
+            final String zkHost)
             throws SolrServerException, IOException {
         // Of course, this will become more sophisticated, once there
         // is a revision of the schema.
@@ -523,33 +669,48 @@ public final class CreateSchema {
             logger.info("Installed schema version is: "
                     + installedSchemaVersion);
             if (installedSchemaVersion < 1) {
-                installSchema1(client);
+                if (!(client instanceof EmbeddedSolrServer)) {
+                    uploadSolrconfig(collectionName, zkHost);
+                    reloadCollection(baseURL, collectionName);
+                }
+                installSchema2(client);
             }
             // Don't want to have to wait. This is most useful when
             // running the embedded Solr instance used for the test suite.
             client.commit();
-        } catch (RuntimeException re) {
+        } catch (Exception e) {
             // Most likely, already installed.
-            logger.error("Runtime exception: ", re);
+            logger.error("Runtime exception: ", e);
         }
     }
 
     /** Create the schema.
-     *
-     * @param args The command-line parameters.
+     * @param args The command-line parameters:
+     * <ol>
+     *   <li>The base URL of Solr</li>
+     *   <li>the collection name</li>
+     *   <li>the URL of the Solr collection</li>
+     *   <li>the zkHost.</li>
+     * </ol>
      */
+    // Magic number errors generated for argument positions 3 and 4.
+    @SuppressWarnings("checkstyle:MagicNumber")
     public static void main(final String[] args) {
-        String apiURL;
         CreateSchema createSchema = new CreateSchema();
-        if (args.length != 1) {
-            createSchema.logger.error("Must provide one command-line "
-                    + "parameter");
+        if (args.length != 4) {
+            createSchema.logger.error("Must provide four command-line "
+                    + "parameters");
             return;
         }
-        apiURL = args[0];
+
+        String baseURL = args[0];
+        String collectionName = args[1];
+        String apiURL = args[2];
+        String zkHost = args[3];
 
         try (SolrClient client = new HttpSolrClient.Builder(apiURL).build()) {
-            createSchema.installSchema(client);
+            createSchema.installSchema(
+                    baseURL, client, collectionName, zkHost);
         } catch (SolrServerException sse) {
             createSchema.logger.info("Got a SolrServerException:");
             sse.printStackTrace();

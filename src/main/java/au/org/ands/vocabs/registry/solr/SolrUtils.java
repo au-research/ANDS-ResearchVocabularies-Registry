@@ -55,7 +55,7 @@ public final class SolrUtils {
             solrClient = new EmbeddedSolrServer(container, TEST_COLLECTION);
             CreateSchema createSchema = new CreateSchema();
             try {
-                createSchema.installSchema(solrClient);
+                createSchema.installSchema(null, solrClient, null, null);
             } catch (SolrServerException | IOException e) {
                 LOGGER.error("Unable to install schema", e);
             }

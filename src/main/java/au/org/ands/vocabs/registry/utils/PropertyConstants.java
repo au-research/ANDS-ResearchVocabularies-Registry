@@ -75,6 +75,11 @@ public final class PropertyConstants {
     public static final String REGISTRY_SOLR_BASE_URL =
             "Registry.Solr.baseURL";
 
+    /** Solr ZooKeeper zkHost. Used for ZooKeeper requests, e.g.,
+     * uploading configuration files. */
+    public static final String REGISTRY_SOLR_ZKHOST =
+            "Registry.Solr.zkHost";
+
     /** Solr collection. The name of the Solr collection used for
      * indexing registry entities. */
     public static final String REGISTRY_SOLR_COLLECTION =

@@ -21,6 +21,8 @@ public final class FieldConstants {
     public static final String CONCEPT_SEARCH = "concept_search";
     /** The name of the "description" Solr field. */
     public static final String DESCRIPTION = "description";
+    /** The name of the "description_phrase" Solr field. */
+    public static final String DESCRIPTION_PHRASE = "description_phrase";
     /** The name of the "format" Solr field. */
     public static final String FORMAT = "format";
     /** The name of the "fulltext" Solr field. */
@@ -60,6 +62,8 @@ public final class FieldConstants {
     public static final String SUBJECT_SOURCES = "subject_sources";
     /** The name of the "title" Solr field. */
     public static final String TITLE = "title";
+    /** The name of the "title_phrase" Solr field. */
+    public static final String TITLE_PHRASE = "title_phrase";
     /** The name of the "title_search" Solr field. */
     public static final String TITLE_SEARCH = "title_search";
     /** The name of the "title_sort" Solr field. */
@@ -75,6 +79,8 @@ public final class FieldConstants {
     public static final String ALPHA_ONLY_SORT = "alphaOnlySort";
     /** The name of the "boolean" Solr field type. */
     public static final String BOOLEAN = "boolean";
+    /** The name of the custom "lower_exact_words" Solr field type. */
+    public static final String LOWER_EXACT_WORDS = "lower_exact_words";
     /** The name of the "string" Solr field type. */
     public static final String STRING = "string";
     /** The name of the "text_en_splitting" Solr field type. */
