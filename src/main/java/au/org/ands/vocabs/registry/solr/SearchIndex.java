@@ -56,6 +56,7 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.core.type.TypeReference;
 
 import au.org.ands.vocabs.registry.db.converter.JSONSerialization;
+import au.org.ands.vocabs.registry.enums.SearchSortOrder;
 import au.org.ands.vocabs.registry.log.Analytics;
 
 /** Methods for Solr searching. */
@@ -91,7 +92,9 @@ public final class SearchIndex {
      * value for rows. The name "ridiculously large value" comes
      * from the Solr documentation for the rows parameter at
      * <a
-     *  href="https://wiki.apache.org/solr/CommonQueryParameters">https://wiki.apache.org/solr/CommonQueryParameters</a>.
+     *  href="https://wiki.apache.org/solr/CommonQueryParameters">https://wiki.apache.org/solr/CommonQueryParameters</a>
+     * (archived at <a
+     *  href="https://web.archive.org/web/20190405125211/https://wiki.apache.org/solr/CommonQueryParameters">https://web.archive.org/web/20190405125211/https://wiki.apache.org/solr/CommonQueryParameters</a>).
      */
     private static final int RIDICULOUSLY_LARGE_VALUE = 10000000;
 
@@ -152,6 +155,8 @@ public final class SearchIndex {
         // Set 10 rows as default. This can be overridden by passing
         // in a "pp" filter.
         int rows = DEFAULT_ROWS;
+        // Keep track of any search sort order specified.
+        SearchSortOrder searchSortOrder = null;
 
         // See if there are filters; if so, apply them.
         if (filtersJson != null) {
@@ -258,6 +263,21 @@ public final class SearchIndex {
                 case "pp":
                     // We've already seen this, above.
                     break;
+                case "sort":
+                    Object ssoValueAsObject = filterEntry.getValue();
+                    if (ssoValueAsObject instanceof String) {
+                        try {
+                            searchSortOrder = SearchSortOrder.fromValue(
+                                    (String) ssoValueAsObject);
+                        } catch (IllegalArgumentException e) {
+                            throw new IllegalArgumentException("sort "
+                                    + "parameter must be one of the "
+                                    + "supported values");
+                        }
+                    }
+                    // searchSortOrder remains null if no value specified,
+                    // or the value specified was not a string.
+                    break;
                 case WIDGETABLE:
                     String widgetableValue;
                     widgetableValue = "+\""
@@ -324,7 +344,38 @@ public final class SearchIndex {
         // and sort by title_sort.
         if (!queryIsSet) {
             solrQuery.setQuery("*:*");
-            solrQuery.setSort(TITLE_SORT, ORDER.asc);
+            if (searchSortOrder == null) {
+                searchSortOrder = SearchSortOrder.A_TO_Z;
+            }
+            switch (searchSortOrder) {
+            case A_TO_Z:
+                solrQuery.setSort(TITLE_SORT, ORDER.asc);
+                break;
+            case Z_TO_A:
+                solrQuery.setSort(TITLE_SORT, ORDER.desc);
+                break;
+            case RELEVANCE:
+                throw new IllegalArgumentException("relevance sort "
+                        + "only allowed when there is a query term");
+            default:
+                LOGGER.error("Unknown search sort order: " + searchSortOrder);
+            }
+        } else {
+            if (searchSortOrder == null) {
+                searchSortOrder = SearchSortOrder.RELEVANCE;
+            }
+            switch (searchSortOrder) {
+            case A_TO_Z:
+                solrQuery.setSort(TITLE_SORT, ORDER.asc);
+                break;
+            case Z_TO_A:
+                solrQuery.setSort(TITLE_SORT, ORDER.desc);
+                break;
+            case RELEVANCE:
+                // Nothing to do.
+            default:
+                LOGGER.error("Unknown search sort order: " + searchSortOrder);
+            }
         }
 
         try {

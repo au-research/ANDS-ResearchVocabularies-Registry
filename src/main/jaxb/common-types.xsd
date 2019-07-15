@@ -356,4 +356,14 @@ http://viaf.org/</xs:documentation>
             </xs:enumeration>
         </xs:restriction>
     </xs:simpleType>
+    <xs:simpleType name="search-sort-order">
+        <xs:annotation>
+            <xs:documentation>Enumerated type of possible sort orders for search results.</xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="aToZ"/>
+            <xs:enumeration value="zToA"/>
+            <xs:enumeration value="relevance"/>
+        </xs:restriction>
+    </xs:simpleType>
 </xs:schema>
