@@ -500,7 +500,7 @@ public final class CreateSchema {
             // For example, the timestamp of the last update.
             addField(client, LAST_UPDATED, DATE_POINT, true, true, false);
 
-            // Basic fields that are stored, and not multiValued:
+            // Basic fields that are stored, and not multiValued.
             addField(client, SLUG, STRING, true, true, false);
             addField(client, TITLE, STRING, true, true, false);
             addField(client, DESCRIPTION, TEXT_EN_SPLITTING,
@@ -514,7 +514,7 @@ public final class CreateSchema {
                     true, true, false);
             addField(client, WIDGETABLE, BOOLEAN, true, true, false);
 
-            // Basic fields that are stored, and multiValued:
+            // Basic fields that are stored, and multiValued.
             addField(client, TOP_CONCEPT, TEXT_EN_SPLITTING,
                     true, true, true);
             addField(client, LANGUAGE, STRING, true, true, true);
@@ -527,19 +527,21 @@ public final class CreateSchema {
             addField(client, SUBJECT_NOTATIONS, STRING, true, true, true);
             addField(client, SUBJECT_IRIS, STRING, true, true, true);
 
-            // Fields with custom type alphaOnlySort, used for sorting results
-            addField(client, TITLE_SORT, ALPHA_ONLY_SORT, false, true, false);
+            // Fields with custom type alphaOnlySort, used only for
+            // sorting results.
+            addField(client, TITLE_SORT, ALPHA_ONLY_SORT, true, true, false);
 
-            // Fields that are used for searching, that are not stored,
-            // but are "analysed".
+            // Fields that are used for searching, that are "analysed".
+            // They are stored, so that we get highlighting for them.
             addField(client, CONCEPT_SEARCH, TEXT_EN_SPLITTING,
-                    false, true, true);
+                    true, true, true);
             addField(client, TITLE_SEARCH, TEXT_EN_SPLITTING,
-                    false, true, false);
+                    true, true, false);
             addField(client, SUBJECT_SEARCH, TEXT_EN_SPLITTING,
-                    false, true, true);
+                    true, true, true);
             addField(client, PUBLISHER_SEARCH, TEXT_EN_SPLITTING,
-                    false, true, true);
+                    true, true, true);
+            // The fulltext field is not stored.
             addField(client, FULLTEXT, TEXT_EN_SPLITTING,
                     false, true, true);
 
