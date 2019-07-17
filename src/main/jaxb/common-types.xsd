@@ -373,7 +373,7 @@ http://viaf.org/</xs:documentation>
             </xs:enumeration>
             <xs:enumeration value="relevance">
                 <xs:annotation>
-                    <xs:documentation>Sort in descending order of relevance.</xs:documentation>
+                    <xs:documentation>Sort in descending order of relevance. To use this sort order, a query term must be provided.</xs:documentation>
                 </xs:annotation>
             </xs:enumeration>
             <xs:enumeration value="lastUpdatedAsc">
