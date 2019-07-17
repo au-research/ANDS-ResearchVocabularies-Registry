@@ -9,6 +9,7 @@ import static au.org.ands.vocabs.registry.solr.FieldConstants.DESCRIPTION;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.FORMAT;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.ID;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.LANGUAGE;
+import static au.org.ands.vocabs.registry.solr.FieldConstants.LAST_UPDATED;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.LICENCE;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.OWNER;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.POOLPARTY_ID;
@@ -27,6 +28,9 @@ import static au.org.ands.vocabs.registry.solr.FieldConstants.WIDGETABLE;
 import java.io.File;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -129,7 +133,7 @@ public final class EntityIndexer {
     private static final ULocale LANGUAGE_LOCALE = new ULocale("en_NZ");
 
     /** Add a key/value pair to the Solr document, if the value
-     * is non-null and non-empty.
+     * is non-null and non-empty. The value is specified as a String.
      * @param document The Solr document.
      * @param key The key.
      * @param value The value.
@@ -143,6 +147,21 @@ public final class EntityIndexer {
         // are _sequences_ of whitespace.
         if (StringUtils.isNotBlank(value)) {
             document.addField(key, value);
+        }
+    }
+
+    /** Add a key/value pair to the Solr document, if the value
+     * is non-null and non-empty. The value is specified as a LocalDateTime.
+     * @param document The Solr document.
+     * @param key The key.
+     * @param value The value.
+     */
+    private static void addDataToDocument(final SolrInputDocument document,
+            final String key, final LocalDateTime value) {
+        if (value != null) {
+            document.addField(key,
+                    value.atZone(ZoneOffset.UTC).
+                        format(DateTimeFormatter.ISO_INSTANT));
         }
     }
 
@@ -162,6 +181,8 @@ public final class EntityIndexer {
         // The order of the fields matches:
         // https://intranet.ands.org.au/display/PROJ/
         //         Vocabulary+Solr+documents+and+queries
+        addDataToDocument(document, LAST_UPDATED,
+                vocabulary.getStartDate());
         addDataToDocument(document, ID,
                 Integer.toString(vocabularyId));
         addDataToDocument(document, TITLE, vocabularyData.getTitle());

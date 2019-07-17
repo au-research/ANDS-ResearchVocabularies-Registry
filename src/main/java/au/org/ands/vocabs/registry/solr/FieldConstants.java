@@ -31,6 +31,8 @@ public final class FieldConstants {
     public static final String ID = "id";
     /** The name of the "language" Solr field. */
     public static final String LANGUAGE = "language";
+    /** The name of the "last_updated" Solr field. */
+    public static final String LAST_UPDATED = "last_updated";
     /** The name of the "licence" Solr field. */
     public static final String LICENCE = "licence";
     /** The name of the "owner" Solr field. */
@@ -79,6 +81,9 @@ public final class FieldConstants {
     public static final String ALPHA_ONLY_SORT = "alphaOnlySort";
     /** The name of the "boolean" Solr field type. */
     public static final String BOOLEAN = "boolean";
+    /** The name of the "pdate" Solr field type, based on the
+     * "solr.DatePointField" class. */
+    public static final String DATE_POINT = "pdate";
     /** The name of the custom "lower_exact_words" Solr field type. */
     public static final String LOWER_EXACT_WORDS = "lower_exact_words";
     /** The name of the "string" Solr field type. */

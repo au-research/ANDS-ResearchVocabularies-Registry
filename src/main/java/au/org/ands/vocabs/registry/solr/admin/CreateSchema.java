@@ -8,11 +8,13 @@ import static au.org.ands.vocabs.registry.solr.FieldConstants.ALPHA_ONLY_SORT;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.BOOLEAN;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.CONCEPT;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.CONCEPT_SEARCH;
+import static au.org.ands.vocabs.registry.solr.FieldConstants.DATE_POINT;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.DESCRIPTION;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.DESCRIPTION_PHRASE;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.FORMAT;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.FULLTEXT;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.LANGUAGE;
+import static au.org.ands.vocabs.registry.solr.FieldConstants.LAST_UPDATED;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.LICENCE;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.LOWER_EXACT_WORDS;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.OWNER;
@@ -493,9 +495,14 @@ public final class CreateSchema {
             setInstalledSchemaVersion(client, 2);
             addAlphaOnlySortFieldType(client);
             addLowerFieldType(client);
+
+            // Data about the Registry's storage of the vocabulary.
+            // For example, the timestamp of the last update.
+            addField(client, LAST_UPDATED, DATE_POINT, true, true, false);
+
+            // Basic fields that are stored, and not multiValued:
             addField(client, SLUG, STRING, true, true, false);
             addField(client, TITLE, STRING, true, true, false);
-            addField(client, TITLE_SORT, ALPHA_ONLY_SORT, false, true, false);
             addField(client, DESCRIPTION, TEXT_EN_SPLITTING,
                     true, true, false);
             addField(client, LICENCE, STRING, true, true, false);
@@ -507,6 +514,7 @@ public final class CreateSchema {
                     true, true, false);
             addField(client, WIDGETABLE, BOOLEAN, true, true, false);
 
+            // Basic fields that are stored, and multiValued:
             addField(client, TOP_CONCEPT, TEXT_EN_SPLITTING,
                     true, true, true);
             addField(client, LANGUAGE, STRING, true, true, true);
@@ -519,6 +527,11 @@ public final class CreateSchema {
             addField(client, SUBJECT_NOTATIONS, STRING, true, true, true);
             addField(client, SUBJECT_IRIS, STRING, true, true, true);
 
+            // Fields with custom type alphaOnlySort, used for sorting results
+            addField(client, TITLE_SORT, ALPHA_ONLY_SORT, false, true, false);
+
+            // Fields that are used for searching, that are not stored,
+            // but are "analysed".
             addField(client, CONCEPT_SEARCH, TEXT_EN_SPLITTING,
                     false, true, true);
             addField(client, TITLE_SEARCH, TEXT_EN_SPLITTING,

@@ -10,6 +10,7 @@ import static au.org.ands.vocabs.registry.solr.FieldConstants.FORMAT;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.FULLTEXT;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.ID;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.LANGUAGE;
+import static au.org.ands.vocabs.registry.solr.FieldConstants.LAST_UPDATED;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.LICENCE;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.OWNER;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.PUBLISHER;
@@ -215,7 +216,7 @@ public final class SearchIndex {
             // OWNER field is required (so far, only) by this method,
             // to include in analytics logging.
             solrQuery.setFields(
-                    ID, SLUG, STATUS, TITLE, ACRONYM,
+                    ID, LAST_UPDATED, SLUG, STATUS, TITLE, ACRONYM,
                     PUBLISHER, DESCRIPTION, WIDGETABLE,
                     SISSVOC_ENDPOINT, OWNER);
             solrQuery.set(DisMaxParams.QF,
@@ -357,6 +358,12 @@ public final class SearchIndex {
             case RELEVANCE:
                 throw new IllegalArgumentException("relevance sort "
                         + "only allowed when there is a query term");
+            case LAST_UPDATED_ASC:
+                solrQuery.setSort(LAST_UPDATED, ORDER.asc);
+                break;
+            case LAST_UPDATED_DESC:
+                solrQuery.setSort(LAST_UPDATED, ORDER.desc);
+                break;
             default:
                 LOGGER.error("Unknown search sort order: " + searchSortOrder);
             }
@@ -373,6 +380,13 @@ public final class SearchIndex {
                 break;
             case RELEVANCE:
                 // Nothing to do.
+                break;
+            case LAST_UPDATED_ASC:
+                solrQuery.setSort(LAST_UPDATED, ORDER.asc);
+                break;
+            case LAST_UPDATED_DESC:
+                solrQuery.setSort(LAST_UPDATED, ORDER.desc);
+                break;
             default:
                 LOGGER.error("Unknown search sort order: " + searchSortOrder);
             }
