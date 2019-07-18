@@ -50,7 +50,9 @@ import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.params.CommonParams;
 import org.apache.solr.common.params.DisMaxParams;
 import org.apache.solr.common.params.FacetParams;
+import org.apache.solr.common.params.HighlightParams;
 import org.apache.solr.common.util.JsonTextWriter;
+import org.apache.solr.handler.component.HighlightComponent.HighlightMethod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -175,6 +177,10 @@ public final class SearchIndex {
             // Since there are filters, always apply highlighting.
             // addHighlightField() does solrQuery.setHighlight(true) for us.
             solrQuery.addHighlightField("*");
+            // Use the "unified" highlight method, as it's significantly
+            // faster than the "original" method.
+            solrQuery.setParam(HighlightParams.METHOD,
+                    HighlightMethod.UNIFIED.getMethodName());
             solrQuery.setHighlightSimplePre("&lt;b&gt;");
             solrQuery.setHighlightSimplePost("&lt;/b&gt;");
             solrQuery.setHighlightSnippets(2);
