@@ -101,6 +101,9 @@ public final class SearchIndex {
      */
     private static final int RIDICULOUSLY_LARGE_VALUE = 10000000;
 
+    /** Value to use for "hl.maxAnalyzedChars". */
+    private static final String HIGHLIGHT_MAX_CHARS = "10000000";
+
     /* Things to pay attention to, when performing maintenance on
      * this method:
      *
@@ -181,6 +184,11 @@ public final class SearchIndex {
             // faster than the "original" method.
             solrQuery.setParam(HighlightParams.METHOD,
                     HighlightMethod.UNIFIED.getMethodName());
+            // By default, highlighting stops after 51200 characters
+            // of content. To get highlighting of all concept data,
+            // need to say explicitly to keep looking.
+            solrQuery.setParam(HighlightParams.MAX_CHARS, HIGHLIGHT_MAX_CHARS);
+            // Put an HTML <b> element around the highlighted content.
             solrQuery.setHighlightSimplePre("&lt;b&gt;");
             solrQuery.setHighlightSimplePost("&lt;/b&gt;");
             solrQuery.setHighlightSnippets(2);
