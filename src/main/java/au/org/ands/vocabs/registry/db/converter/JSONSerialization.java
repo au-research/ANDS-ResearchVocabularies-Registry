@@ -86,7 +86,7 @@ public final class JSONSerialization {
     }
 
     /** Deserialize a String in JSON format.
-     * @param jsonString The String to be deSerialized. It should normally be
+     * @param jsonString The String to be deserialized. It should normally be
      *      an instance of one of our custom JSON storage objects,
      *      such as {@link VocabularyJson} or {@link VersionJson}.
      *      However, generic collections such as Map are supported.
