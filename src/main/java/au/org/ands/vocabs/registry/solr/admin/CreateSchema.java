@@ -43,6 +43,7 @@ import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -296,6 +297,8 @@ public final class CreateSchema {
     }
 
     /** Submit a request to the Solr API to create a field.
+     * This version of the method accepts {@code stored}, {@code indexed},
+     * and {@code multivalued} parameters.
      * @param solrClient The SolrClient used to access Solr.
      * @param fieldName The name of the new field.
      * @param type The type of the new field.
@@ -321,6 +324,48 @@ public final class CreateSchema {
         if (multivalued) {
             fieldAttributes.put("multiValued", true);
         }
+
+        SchemaRequest.AddField addFieldRequest =
+                new SchemaRequest.AddField(fieldAttributes);
+        UpdateResponse updateResponse =
+                addFieldRequest.process(solrClient);
+        checkResponse(updateResponse);
+        logger.info(" ... done");
+      }
+
+    /** Submit a request to the Solr API to create a field.
+     * This version of the method accepts {@code stored}, {@code indexed},
+     * and {@code multivalued} parameters, as well as a parameter
+     * {@code extraAttributes} containing additional field attributes.
+     * @param solrClient The SolrClient used to access Solr.
+     * @param fieldName The name of the new field.
+     * @param type The type of the new field.
+     * @param stored Whether the values of the field are to be stored.
+     * @param indexed Whether the values of the field are to be indexed.
+     * @param multivalued Whether the field is multivalued.
+     * @param extraAttributes Additional field attributes.
+     * @throws IOException If there is an error communicating with
+     *      the Solr server.
+     * @throws SolrServerException If the Solr server returns an error.
+     */
+    private void addField(final SolrClient solrClient,
+            final String fieldName,
+            final String type,
+            final boolean stored,
+            final boolean indexed,
+            final boolean multivalued,
+            final Map<String, Object> extraAttributes)
+                    throws SolrServerException, IOException {
+        logger.info("Adding field: " + fieldName + " ... ");
+        Map<String, Object> fieldAttributes = new LinkedHashMap<>();
+        fieldAttributes.put("name", fieldName);
+        fieldAttributes.put("type", type);
+        fieldAttributes.put("stored", stored);
+        fieldAttributes.put("indexed", indexed);
+        if (multivalued) {
+            fieldAttributes.put("multiValued", true);
+        }
+        fieldAttributes.putAll(extraAttributes);
 
         SchemaRequest.AddField addFieldRequest =
                 new SchemaRequest.AddField(fieldAttributes);
@@ -496,6 +541,23 @@ public final class CreateSchema {
             addAlphaOnlySortFieldType(client);
             addLowerFieldType(client);
 
+            // Additional field attributes for fields that hold
+            // large content, i.e., fields that hold concepts,
+            // as recommended to improve highlighting performance
+            // for the "unified" highlight method:
+            // https://lucene.apache.org/solr/guide/8_1/highlighting.html
+            //         #schema-options-and-performance-considerations
+            Map<String, Object> extraAttributesForConcepts =
+                    new HashMap<>();
+            extraAttributesForConcepts.put("storeOffsetsWithPositions", true);
+            // The advice suggests that we should also do this:
+            //   extraAttributesForConcepts.put("termVectors", true);
+            // but there seems to be a defect in Solr, so that Solr
+            // has an exception during highlighting. See:
+            // http://mail-archives.apache.org/mod_mbox/lucene-solr-user/
+            //        201907.mbox/%3cDCFD018B-87D1-4B01-8D99-4B8775EC46F2
+            //        @ardc.edu.au%3e
+
             // Data about the Registry's storage of the vocabulary.
             // For example, the timestamp of the last update.
             addField(client, LAST_UPDATED, DATE_POINT, true, true, false);
@@ -518,7 +580,8 @@ public final class CreateSchema {
             addField(client, TOP_CONCEPT, TEXT_EN_SPLITTING,
                     true, true, true);
             addField(client, LANGUAGE, STRING, true, true, true);
-            addField(client, CONCEPT, STRING, true, true, true);
+            addField(client, CONCEPT, STRING, true, true, true,
+                    extraAttributesForConcepts);
             addField(client, PUBLISHER, STRING, true, true, true);
             addField(client, ACCESS, STRING, true, true, true);
             addField(client, FORMAT, STRING, true, true, true);
@@ -534,7 +597,7 @@ public final class CreateSchema {
             // Fields that are used for searching, that are "analysed".
             // They are stored, so that we get highlighting for them.
             addField(client, CONCEPT_SEARCH, TEXT_EN_SPLITTING,
-                    true, true, true);
+                    true, true, true, extraAttributesForConcepts);
             addField(client, TITLE_SEARCH, TEXT_EN_SPLITTING,
                     true, true, false);
             addField(client, SUBJECT_SEARCH, TEXT_EN_SPLITTING,
