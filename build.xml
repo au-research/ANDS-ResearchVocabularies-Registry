@@ -279,16 +279,16 @@
   <!-- Check if generated JAXB source code is up-to-date. -->
   <target name="check-jaxb-source">
     <uptodate property="jaxb-source.uptodate"
-              targetfile="src/jaxb-gen/timestamp">
+              targetfile="${src-jaxb-gen}/timestamp">
       <srcfiles dir="src/main/jaxb">
-        <include name="*/*.xsd" />
-        <include name="*/*.xjb" />
+        <include name="**/*.xsd" />
+        <include name="**/*.xjb" />
       </srcfiles>
     </uptodate>
   </target>
 
   <target name="generate-jaxb-source"
-          depends="xjc-private-fields-plugin-jar"
+          depends="xjc-private-fields-plugin-jar,check-jaxb-source"
           unless="jaxb-source.uptodate">
     <!-- Common classes: enums -->
     <mkdir dir="src/jaxb-gen/java" />
@@ -329,7 +329,7 @@
     <copy
       file="src/main/jaxb/au.org.ands.vocabs.registry.schema.vocabulary201701.package-info.java"
       tofile="src/jaxb-gen/java/au/org/ands/vocabs/registry/schema/vocabulary201701/package-info.java" />
-        <touch file="src/jaxb-gen/timestamp" />
+    <touch file="${src-jaxb-gen}/timestamp" />
   </target>
 
   <!-- Generation of utility class for bot detection. -->
