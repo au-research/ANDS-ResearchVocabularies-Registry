@@ -407,6 +407,7 @@ public final class SearchIndex {
         }
 
         try {
+            LOGGER.debug("solrQuery: " + solrQuery.toString());
             QueryResponse responseQuery = SOLR_CLIENT.query(solrQuery);
             if (logResults) {
                 SolrDocumentList solrDocumentList =
@@ -418,8 +419,8 @@ public final class SearchIndex {
                             (String) sd.getFieldValue(ID)));
                     resultOwners.add((String) sd.getFieldValue(OWNER));
                 }
-                LOGGER.info("resultIds: " + resultIds);
-                LOGGER.info("resultOwners: " + resultOwners);
+                LOGGER.debug("resultIds: " + resultIds);
+                LOGGER.debug("resultOwners: " + resultOwners);
                 filtersAndResultsExtracted.add(
                         Analytics.SEARCH_RESULT_ID_FIELD);
                 filtersAndResultsExtracted.add(resultIds);
