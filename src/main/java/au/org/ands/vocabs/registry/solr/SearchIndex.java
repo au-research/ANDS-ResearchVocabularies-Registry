@@ -4,8 +4,10 @@ package au.org.ands.vocabs.registry.solr;
 
 import static au.org.ands.vocabs.registry.solr.FieldConstants.ACCESS;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.ACRONYM;
+import static au.org.ands.vocabs.registry.solr.FieldConstants.CONCEPT_PHRASE;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.CONCEPT_SEARCH;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.DESCRIPTION;
+import static au.org.ands.vocabs.registry.solr.FieldConstants.DESCRIPTION_PHRASE;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.FORMAT;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.ID;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.LANGUAGE;
@@ -13,13 +15,16 @@ import static au.org.ands.vocabs.registry.solr.FieldConstants.LAST_UPDATED;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.LICENCE;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.OWNER;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.PUBLISHER;
+import static au.org.ands.vocabs.registry.solr.FieldConstants.PUBLISHER_PHRASE;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.PUBLISHER_SEARCH;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.SISSVOC_ENDPOINT;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.SLUG;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.STATUS;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.SUBJECT_LABELS;
+import static au.org.ands.vocabs.registry.solr.FieldConstants.SUBJECT_PHRASE;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.SUBJECT_SEARCH;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.TITLE;
+import static au.org.ands.vocabs.registry.solr.FieldConstants.TITLE_PHRASE;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.TITLE_SEARCH;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.TITLE_SORT;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.WIDGETABLE;
@@ -56,6 +61,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.ifactory.press.db.solr.search.SafariQueryParser;
 
 import au.org.ands.vocabs.registry.db.converter.JSONSerialization;
 import au.org.ands.vocabs.registry.enums.SearchSortOrder;
@@ -182,7 +188,7 @@ public final class SearchIndex {
             //   solrQuery.addHighlightField("*");
             // add highlight fields for precisely the fields that
             // are searched. See the setting of the DisMaxParams.QF
-            // parameter below.
+            // and SafariQueryParser.PQF parameters below.
             // All of these fields have stored="true".
             // All of this means you never get a search result that doesn't
             // also have highlighting.
@@ -191,11 +197,11 @@ public final class SearchIndex {
             solrQuery.addHighlightField(DESCRIPTION);
             solrQuery.addHighlightField(CONCEPT_SEARCH);
             solrQuery.addHighlightField(PUBLISHER_SEARCH);
-//            solrQuery.addHighlightField();
-//            solrQuery.addHighlightField();
-//            solrQuery.addHighlightField();
-//            solrQuery.addHighlightField();
-//            solrQuery.addHighlightField();
+            solrQuery.addHighlightField(TITLE_PHRASE);
+            solrQuery.addHighlightField(SUBJECT_PHRASE);
+            solrQuery.addHighlightField(DESCRIPTION_PHRASE);
+            solrQuery.addHighlightField(CONCEPT_PHRASE);
+            solrQuery.addHighlightField(PUBLISHER_PHRASE);
             // Use the "unified" highlight method, as it's significantly
             // faster than the "original" method.
             solrQuery.setParam(HighlightParams.METHOD,
@@ -250,13 +256,19 @@ public final class SearchIndex {
                     PUBLISHER, DESCRIPTION, WIDGETABLE,
                     SISSVOC_ENDPOINT, OWNER);
             // Ensure that the highlight fields are set above, corresponding
-            // to the fields listed in the QF parameter.
+            // to the fields listed in the QF and PQF parameters.
             solrQuery.set(DisMaxParams.QF,
                     TITLE_SEARCH + "^1 "
                             + SUBJECT_SEARCH + "^0.5 "
                             + DESCRIPTION + "^0.01 "
                             + CONCEPT_SEARCH + "^0.02 "
                             + PUBLISHER_SEARCH + "^0.5");
+            solrQuery.set(SafariQueryParser.PQF,
+                    TITLE_PHRASE + "^1 "
+                            + SUBJECT_PHRASE + "^0.5 "
+                            + DESCRIPTION_PHRASE + "^0.01 "
+                            + CONCEPT_PHRASE + "^0.02 "
+                            + PUBLISHER_PHRASE + "^0.5");
 
             for (Entry<String, Object> filterEntry : filters.entrySet()) {
                 Object value = filterEntry.getValue();
