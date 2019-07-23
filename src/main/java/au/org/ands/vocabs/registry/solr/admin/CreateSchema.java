@@ -7,6 +7,7 @@ import static au.org.ands.vocabs.registry.solr.FieldConstants.ACRONYM;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.ALPHA_ONLY_SORT;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.BOOLEAN;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.CONCEPT;
+import static au.org.ands.vocabs.registry.solr.FieldConstants.CONCEPT_PHRASE;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.CONCEPT_SEARCH;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.DATE_POINT;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.DESCRIPTION;
@@ -20,6 +21,7 @@ import static au.org.ands.vocabs.registry.solr.FieldConstants.LOWER_EXACT_WORDS;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.OWNER;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.POOLPARTY_ID;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.PUBLISHER;
+import static au.org.ands.vocabs.registry.solr.FieldConstants.PUBLISHER_PHRASE;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.PUBLISHER_SEARCH;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.SCHEMA_VERSION;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.SISSVOC_ENDPOINT;
@@ -29,6 +31,7 @@ import static au.org.ands.vocabs.registry.solr.FieldConstants.STRING;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.SUBJECT_IRIS;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.SUBJECT_LABELS;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.SUBJECT_NOTATIONS;
+import static au.org.ands.vocabs.registry.solr.FieldConstants.SUBJECT_PHRASE;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.SUBJECT_SEARCH;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.SUBJECT_SOURCES;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.TEXT_EN_SPLITTING;
@@ -609,23 +612,33 @@ public final class CreateSchema {
                     false, true, true);
 
             // Phrase fields have stored = true, indexed = true.
+            // Have a *_phrase field for every field mentioned in
+            // the edismax qf parameter. These fields are then used
+            // in the custom query plugin's pqf parameter.
             addField(client, TITLE_PHRASE, LOWER_EXACT_WORDS,
                     true, true, false);
+            addField(client, SUBJECT_PHRASE, LOWER_EXACT_WORDS,
+                    true, true, true);
             addField(client, DESCRIPTION_PHRASE, LOWER_EXACT_WORDS,
                     true, true, false);
+            addField(client, CONCEPT_PHRASE, LOWER_EXACT_WORDS,
+                    true, true, true, extraAttributesForConcepts);
+            addField(client, PUBLISHER_PHRASE, LOWER_EXACT_WORDS,
+                    true, true, true);
 
             addCopyField(client, "*", Arrays.asList(FULLTEXT));
             addCopyField(client, FieldConstants.TITLE,
                     Arrays.asList(TITLE_SEARCH, TITLE_SORT, TITLE_PHRASE));
-            addCopyField(client, CONCEPT, Arrays.asList(CONCEPT_SEARCH));
+            addCopyField(client, CONCEPT,
+                    Arrays.asList(CONCEPT_SEARCH, CONCEPT_PHRASE));
             addCopyField(client, TOP_CONCEPT,
                     Arrays.asList(SUBJECT_SEARCH));
             addCopyField(client, SUBJECT_LABELS,
-                    Arrays.asList(SUBJECT_SEARCH));
+                    Arrays.asList(SUBJECT_SEARCH, SUBJECT_PHRASE));
             addCopyField(client, SUBJECT_NOTATIONS,
                     Arrays.asList(SUBJECT_SEARCH));
             addCopyField(client, PUBLISHER,
-                    Arrays.asList(PUBLISHER_SEARCH));
+                    Arrays.asList(PUBLISHER_SEARCH, PUBLISHER_PHRASE));
 
             addCopyField(client, DESCRIPTION,
                     Arrays.asList(DESCRIPTION_PHRASE));

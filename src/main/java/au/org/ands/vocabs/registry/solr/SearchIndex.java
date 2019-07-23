@@ -7,7 +7,6 @@ import static au.org.ands.vocabs.registry.solr.FieldConstants.ACRONYM;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.CONCEPT_SEARCH;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.DESCRIPTION;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.FORMAT;
-import static au.org.ands.vocabs.registry.solr.FieldConstants.FULLTEXT;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.ID;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.LANGUAGE;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.LAST_UPDATED;
@@ -179,7 +178,24 @@ public final class SearchIndex {
 
             // Since there are filters, always apply highlighting.
             // addHighlightField() does solrQuery.setHighlight(true) for us.
-            solrQuery.addHighlightField("*");
+            // Rather than using a wildcard:
+            //   solrQuery.addHighlightField("*");
+            // add highlight fields for precisely the fields that
+            // are searched. See the setting of the DisMaxParams.QF
+            // parameter below.
+            // All of these fields have stored="true".
+            // All of this means you never get a search result that doesn't
+            // also have highlighting.
+            solrQuery.addHighlightField(TITLE_SEARCH);
+            solrQuery.addHighlightField(SUBJECT_SEARCH);
+            solrQuery.addHighlightField(DESCRIPTION);
+            solrQuery.addHighlightField(CONCEPT_SEARCH);
+            solrQuery.addHighlightField(PUBLISHER_SEARCH);
+//            solrQuery.addHighlightField();
+//            solrQuery.addHighlightField();
+//            solrQuery.addHighlightField();
+//            solrQuery.addHighlightField();
+//            solrQuery.addHighlightField();
             // Use the "unified" highlight method, as it's significantly
             // faster than the "original" method.
             solrQuery.setParam(HighlightParams.METHOD,
@@ -233,11 +249,12 @@ public final class SearchIndex {
                     ID, LAST_UPDATED, SLUG, STATUS, TITLE, ACRONYM,
                     PUBLISHER, DESCRIPTION, WIDGETABLE,
                     SISSVOC_ENDPOINT, OWNER);
+            // Ensure that the highlight fields are set above, corresponding
+            // to the fields listed in the QF parameter.
             solrQuery.set(DisMaxParams.QF,
                     TITLE_SEARCH + "^1 "
                             + SUBJECT_SEARCH + "^0.5 "
                             + DESCRIPTION + "^0.01 "
-                            + FULLTEXT + "^0.001 "
                             + CONCEPT_SEARCH + "^0.02 "
                             + PUBLISHER_SEARCH + "^0.5");
 

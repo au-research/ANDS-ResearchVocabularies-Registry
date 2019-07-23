@@ -17,6 +17,8 @@ public final class FieldConstants {
     public static final String ACRONYM = "acronym";
     /** The name of the "concept" Solr field. */
     public static final String CONCEPT = "concept";
+    /** The name of the "concept_phrase" Solr field. */
+    public static final String CONCEPT_PHRASE = "concept_phrase";
     /** The name of the "concept_search" Solr field. */
     public static final String CONCEPT_SEARCH = "concept_search";
     /** The name of the "description" Solr field. */
@@ -41,6 +43,8 @@ public final class FieldConstants {
     public static final String POOLPARTY_ID = "poolparty_id";
     /** The name of the "publisher" Solr field. */
     public static final String PUBLISHER = "publisher";
+    /** The name of the "publisher_phrase" Solr field. */
+    public static final String PUBLISHER_PHRASE = "publisher_phrase";
     /** The name of the "publisher_search" Solr field. */
     public static final String PUBLISHER_SEARCH = "publisher_search";
     /** The name of the "schema_version" Solr user property. */
@@ -57,6 +61,8 @@ public final class FieldConstants {
     public static final String SUBJECT_LABELS = "subject_labels";
     /** The name of the "subject_notations" Solr field. */
     public static final String SUBJECT_NOTATIONS = "subject_notations";
+    /** The name of the "subject_phrase" Solr field. */
+    public static final String SUBJECT_PHRASE = "subject_phrase";
     /** The name of the "subject_search" Solr field. */
     public static final String SUBJECT_SEARCH = "subject_search";
     /** The name of the "subject_sources" Solr field. This was formerly
