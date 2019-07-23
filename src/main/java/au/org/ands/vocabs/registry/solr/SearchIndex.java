@@ -214,7 +214,7 @@ public final class SearchIndex {
             solrQuery.setHighlightSimplePre("&lt;b&gt;");
             solrQuery.setHighlightSimplePost("&lt;/b&gt;");
             solrQuery.setHighlightSnippets(2);
-            solrQuery.set("defType", "edismax");
+            solrQuery.set("defType", "safari");
             // Check for a "pp" setting, now, as we might need it later
             // if we find a "p" filter.
             if (filters.containsKey("pp")) {

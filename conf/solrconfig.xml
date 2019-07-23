@@ -89,8 +89,10 @@
   <!-- ARDC: add support for ICU tokenizer and filter. Note:
        The ICU library itself is already included by the element
        above that imports from contrib/extraction/lib. -->
-
   <lib dir="${solr.install.dir:../../../..}/contrib/analysis-extras/lucene-libs" regex="lucene-analyzers-icu-\d.*\.jar" />
+
+  <!-- ARDC: custom query parser for phrase queries. -->
+  <lib dir="${solr.install.dir:../../../..}/ardc/" regex="ifpress-solr-plugin-\d.*\.jar" />
 
   <!-- an exact 'path' can be used instead of a 'dir' to specify a
        specific jar file.  This will cause a serious error to be logged
@@ -1326,6 +1328,12 @@
   <!--
      <queryParser name="myparser" class="com.mycompany.MyQParserPlugin"/>
     -->
+
+  <!-- ARDC: custom query parser for phrase queries. -->
+  <queryParser
+      name="safari"
+      class="com.ifactory.press.db.solr.search.SafariQueryParserPlugin"
+      />
 
   <!-- Function Parsers
 

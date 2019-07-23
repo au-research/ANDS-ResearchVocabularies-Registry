@@ -50,6 +50,9 @@ public final class SolrUtils {
                     getRealPath("/WEB-INF/classes"));
             Path home = classesPath.resolve("solr");
             Path configFile = home.resolve("solr.xml");
+            // Define solr.install.dir, as used by solrconfig.xml.
+            System.setProperty("solr.install.dir",
+                    home.toAbsolutePath().toString());
             CoreContainer container = CoreContainer.createAndLoad(
                     home, configFile);
             solrClient = new EmbeddedSolrServer(container, TEST_COLLECTION);

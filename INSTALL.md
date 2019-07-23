@@ -266,6 +266,25 @@ wget -O - http://localhost:8080/registry-context/adminApi/database/populateSubje
 
 # Create Solr collection and install schema
 
+## Add custom query plugin
+
+The Registry's search function uses a custom Solr query plugin.
+
+You must install the plugin into _every_ Solr instance that is part of
+your SolrCloud setup.
+
+In the top level of each Solr instance, make a directory `ardc`.
+(For example, if your Solr instance is installed in `/opt/solr`,
+create a directory `/opt/solr/ardc`.)
+
+Copy the JAR file from `lib/ifpress-solr-plugin-*/*.jar` (currently,
+that is `lib/ifpress-solr-plugin-1.6.2/ifpress-solr-plugin-1.6.2.jar`)
+into the `ardc` directory in your Solr installation.
+
+Note: there must be only one version of the plugin in the `ardc`
+directory of your Solr installation. If you ever upgrade the plugin,
+make sure to remove any old version.
+
 ## Create the collection
 
 Create the Solr collection. Here, `vocabs-registry` matches the name

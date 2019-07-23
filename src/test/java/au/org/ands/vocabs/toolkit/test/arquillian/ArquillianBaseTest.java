@@ -266,6 +266,14 @@ public class ArquillianBaseTest extends Arquillian {
         // ... but use our own custom version.
         war.addAsResource(new File("conf/solrconfig.xml"),
                 "solr/" + SolrUtils.TEST_COLLECTION + "/conf/solrconfig.xml");
+        // And copy in the Safari Press query plugin.
+        Files.walk(Paths.get("lib"))
+            .filter(Files::isRegularFile)
+            .filter(p -> p.getFileName().toString().endsWith(".jar"))
+            .filter(p -> p.getParent().getFileName().
+                    toString().startsWith("ifpress"))
+            .forEach(p -> war.addAsResource(p.toFile(),
+                    "solr/ardc/" + p.getFileName().toString()));
     }
 
     /** Add an optional resource. Any exception generated when locating
