@@ -45,7 +45,9 @@ import org.apache.commons.text.StringEscapeUtils;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrQuery.ORDER;
+import org.apache.solr.client.solrj.SolrRequest;
 import org.apache.solr.client.solrj.SolrServerException;
+import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
 import org.apache.solr.client.solrj.impl.NoOpResponseParser;
 import org.apache.solr.client.solrj.request.QueryRequest;
 import org.apache.solr.client.solrj.response.QueryResponse;
@@ -437,7 +439,20 @@ public final class SearchIndex {
 
         try {
             LOGGER.debug("solrQuery: " + solrQuery.toString());
-            QueryResponse responseQuery = SOLR_CLIENT.query(solrQuery);
+            // Queries can get long, so force the use of the POST
+            // method. (If the query exceeds 8192 characters,
+            // the default GET method fails.)
+            // See https://issues.apache.org/jira/browse/SOLR-13014
+            // Sigh: this is currently _broken_ for EmbeddedSolrServer,
+            // so for the test suite, need to use the default (GET) method.
+            // See https://issues.apache.org/jira/browse/SOLR-12858
+            QueryResponse responseQuery;
+            if (SOLR_CLIENT instanceof EmbeddedSolrServer) {
+                responseQuery = SOLR_CLIENT.query(solrQuery);
+            } else {
+                responseQuery = SOLR_CLIENT.query(solrQuery,
+                        SolrRequest.METHOD.POST);
+            }
             if (logResults) {
                 SolrDocumentList solrDocumentList =
                         responseQuery.getResults();
