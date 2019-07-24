@@ -263,14 +263,16 @@ public final class SearchIndex {
                     TITLE_SEARCH + "^1 "
                             + SUBJECT_SEARCH + "^0.5 "
                             + DESCRIPTION + "^0.01 "
-                            + CONCEPT_SEARCH + "^0.02 "
+                            + CONCEPT_SEARCH + "^0.5 "
                             + PUBLISHER_SEARCH + "^0.5");
+            // Default (1) boosting for phrases: phrase matches should
+            // be considered (much) more important than non-phrase matches.
             solrQuery.set(SafariQueryParser.PQF,
-                    TITLE_PHRASE + "^1 "
-                            + SUBJECT_PHRASE + "^0.5 "
-                            + DESCRIPTION_PHRASE + "^0.01 "
-                            + CONCEPT_PHRASE + "^0.02 "
-                            + PUBLISHER_PHRASE + "^0.5");
+                    TITLE_PHRASE + " "
+                            + SUBJECT_PHRASE + " "
+                            + DESCRIPTION_PHRASE + " "
+                            + CONCEPT_PHRASE + " "
+                            + PUBLISHER_PHRASE);
 
             for (Entry<String, Object> filterEntry : filters.entrySet()) {
                 Object value = filterEntry.getValue();
