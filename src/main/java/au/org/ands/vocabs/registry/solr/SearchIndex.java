@@ -59,6 +59,7 @@ import org.apache.solr.common.params.FacetParams;
 import org.apache.solr.common.params.HighlightParams;
 import org.apache.solr.common.util.JsonTextWriter;
 import org.apache.solr.handler.component.HighlightComponent.HighlightMethod;
+import org.apache.solr.search.QueryParsing;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -216,7 +217,7 @@ public final class SearchIndex {
             solrQuery.setHighlightSimplePre("&lt;b&gt;");
             solrQuery.setHighlightSimplePost("&lt;/b&gt;");
             solrQuery.setHighlightSnippets(2);
-            solrQuery.set("defType", "safari");
+            solrQuery.set(QueryParsing.DEFTYPE, "safari");
             // Check for a "pp" setting, now, as we might need it later
             // if we find a "p" filter.
             if (filters.containsKey("pp")) {
