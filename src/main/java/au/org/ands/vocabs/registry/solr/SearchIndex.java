@@ -248,8 +248,6 @@ public final class SearchIndex {
                      * directly support that. See the Solr doc. */
                     rows = RIDICULOUSLY_LARGE_VALUE;
                 }
-                filtersAndResultsExtracted.add(Analytics.SEARCH_PP_FIELD);
-                filtersAndResultsExtracted.add(rows);
             }
 
             solrQuery.set(DisMaxParams.ALTQ, "*:*");
@@ -399,6 +397,10 @@ public final class SearchIndex {
 
         // We can now set rows.
         solrQuery.setRows(rows);
+        // Always log the value of rows that we use, whether or not
+        // the user provided a value for it.
+        filtersAndResultsExtracted.add(Analytics.SEARCH_PP_FIELD);
+        filtersAndResultsExtracted.add(rows);
         // If there was no query specified, get all documents,
         // and sort by title_sort.
         if (!queryIsSet) {
@@ -449,6 +451,10 @@ public final class SearchIndex {
                 LOGGER.error("Unknown search sort order: " + searchSortOrder);
             }
         }
+        // Always log the value of searchSortOrder that we use,
+        // whether or not the user provided a value for it.
+        filtersAndResultsExtracted.add(Analytics.SEARCH_SORT_ORDER_FIELD);
+        filtersAndResultsExtracted.add(searchSortOrder.value());
 
         try {
             LOGGER.debug("solrQuery: " + solrQuery.toString());
