@@ -213,6 +213,16 @@ public final class SearchIndex {
             // of content. To get highlighting of all concept data,
             // need to say explicitly to keep looking.
             solrQuery.setParam(HighlightParams.MAX_CHARS, HIGHLIGHT_MAX_CHARS);
+            // With the "unified" highlight method (but not with the "original"
+            // highlight method!), it seems we need
+            // to set hl.requireFieldMatch=true to avoid some cases
+            // of missing highlighting: e.g., where the
+            // query is abc AND def, but no single field has _both_ terms.
+            // See mailing list thread at:
+            // http://mail-archives.apache.org/mod_mbox/lucene-solr-user/
+            //        201907.mbox/%3cB5D715AC-C028-4081-BA7B-CFDE27CD6B0D@
+            //        ardc.edu.au%3e
+            solrQuery.setParam(HighlightParams.FIELD_MATCH, true);
             // Put an HTML <b> element around the highlighted content.
             solrQuery.setHighlightSimplePre("&lt;b&gt;");
             solrQuery.setHighlightSimplePost("&lt;/b&gt;");
