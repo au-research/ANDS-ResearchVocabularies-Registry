@@ -18,6 +18,8 @@ import static au.org.ands.vocabs.registry.solr.FieldConstants.LANGUAGE;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.LAST_UPDATED;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.LICENCE;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.LOWER_EXACT_WORDS;
+import static au.org.ands.vocabs.registry.solr.FieldConstants.NOTE;
+import static au.org.ands.vocabs.registry.solr.FieldConstants.NOTE_PHRASE;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.OWNER;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.POOLPARTY_ID;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.PUBLISHER;
@@ -570,6 +572,8 @@ public final class CreateSchema {
             addField(client, TITLE, STRING, true, true, false);
             addField(client, DESCRIPTION, TEXT_EN_SPLITTING,
                     true, true, false);
+            addField(client, NOTE, TEXT_EN_SPLITTING,
+                    true, true, false);
             addField(client, LICENCE, STRING, true, true, false);
             addField(client, POOLPARTY_ID, STRING, true, true, false);
             addField(client, OWNER, STRING, true, true, false);
@@ -621,6 +625,8 @@ public final class CreateSchema {
                     true, true, true);
             addField(client, DESCRIPTION_PHRASE, LOWER_EXACT_WORDS,
                     true, true, false);
+            addField(client, NOTE_PHRASE, LOWER_EXACT_WORDS,
+                    true, true, false);
             addField(client, CONCEPT_PHRASE, LOWER_EXACT_WORDS,
                     true, true, true, extraAttributesForConcepts);
             addField(client, PUBLISHER_PHRASE, LOWER_EXACT_WORDS,
@@ -642,6 +648,8 @@ public final class CreateSchema {
 
             addCopyField(client, DESCRIPTION,
                     Arrays.asList(DESCRIPTION_PHRASE));
+            addCopyField(client, NOTE,
+                    Arrays.asList(NOTE_PHRASE));
 
             /** Part of the data-driven schema, but we don't use it. */
             deleteDynamicField(client, "*_point");

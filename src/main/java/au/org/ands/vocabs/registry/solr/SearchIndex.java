@@ -13,6 +13,8 @@ import static au.org.ands.vocabs.registry.solr.FieldConstants.ID;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.LANGUAGE;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.LAST_UPDATED;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.LICENCE;
+import static au.org.ands.vocabs.registry.solr.FieldConstants.NOTE;
+import static au.org.ands.vocabs.registry.solr.FieldConstants.NOTE_PHRASE;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.OWNER;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.PUBLISHER;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.PUBLISHER_PHRASE;
@@ -198,11 +200,13 @@ public final class SearchIndex {
             solrQuery.addHighlightField(TITLE_SEARCH);
             solrQuery.addHighlightField(SUBJECT_SEARCH);
             solrQuery.addHighlightField(DESCRIPTION);
+            solrQuery.addHighlightField(NOTE);
             solrQuery.addHighlightField(CONCEPT_SEARCH);
             solrQuery.addHighlightField(PUBLISHER_SEARCH);
             solrQuery.addHighlightField(TITLE_PHRASE);
             solrQuery.addHighlightField(SUBJECT_PHRASE);
             solrQuery.addHighlightField(DESCRIPTION_PHRASE);
+            solrQuery.addHighlightField(NOTE_PHRASE);
             solrQuery.addHighlightField(CONCEPT_PHRASE);
             solrQuery.addHighlightField(PUBLISHER_PHRASE);
             // Use the "unified" highlight method, as it's significantly
@@ -272,6 +276,7 @@ public final class SearchIndex {
                     TITLE_SEARCH + "^1 "
                             + SUBJECT_SEARCH + "^0.5 "
                             + DESCRIPTION + "^0.01 "
+                            + NOTE + "^0.01 "
                             + CONCEPT_SEARCH + "^0.5 "
                             + PUBLISHER_SEARCH + "^0.5");
             // Default (1) boosting for phrases: phrase matches should
@@ -280,6 +285,7 @@ public final class SearchIndex {
                     TITLE_PHRASE + " "
                             + SUBJECT_PHRASE + " "
                             + DESCRIPTION_PHRASE + " "
+                            + NOTE_PHRASE + " "
                             + CONCEPT_PHRASE + " "
                             + PUBLISHER_PHRASE);
 

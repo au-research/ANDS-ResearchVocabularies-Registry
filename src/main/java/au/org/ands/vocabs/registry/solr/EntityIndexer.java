@@ -11,6 +11,7 @@ import static au.org.ands.vocabs.registry.solr.FieldConstants.ID;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.LANGUAGE;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.LAST_UPDATED;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.LICENCE;
+import static au.org.ands.vocabs.registry.solr.FieldConstants.NOTE;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.OWNER;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.POOLPARTY_ID;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.PUBLISHER;
@@ -201,6 +202,13 @@ public final class EntityIndexer {
         // corresponding Unicode characters.
         addDataToDocument(document, DESCRIPTION,
                 Jsoup.parse(vocabularyData.getDescription()).text());
+        // Note is like description, but it is optional.
+        String note = vocabularyData.getNote();
+        if (note != null) {
+            // Strip HTML tags, and convert HTML elements into their
+            // corresponding Unicode characters.
+            addDataToDocument(document, NOTE, Jsoup.parse(note).text());
+        }
         // languages
         ArrayList<String> languages = new ArrayList<>();
         ULocale loc = new ULocale(vocabularyData.getPrimaryLanguage());

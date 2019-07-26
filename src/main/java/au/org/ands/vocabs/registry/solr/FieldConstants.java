@@ -37,6 +37,12 @@ public final class FieldConstants {
     public static final String LAST_UPDATED = "last_updated";
     /** The name of the "licence" Solr field. */
     public static final String LICENCE = "licence";
+    /** The name of the "note" Solr field, used for the top-level
+     * vocabulary notes. */
+    public static final String NOTE = "note";
+    /** The name of the "note_phrase" Solr field, used for the top-level
+     * vocabulary notes. */
+    public static final String NOTE_PHRASE = "note_phrase";
     /** The name of the "owner" Solr field. */
     public static final String OWNER = "owner";
     /** The name of the "poolparty_id" Solr field. */
