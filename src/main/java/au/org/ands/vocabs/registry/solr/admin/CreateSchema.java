@@ -632,7 +632,7 @@ public final class CreateSchema {
             addCopyField(client, CONCEPT,
                     Arrays.asList(CONCEPT_SEARCH, CONCEPT_PHRASE));
             addCopyField(client, TOP_CONCEPT,
-                    Arrays.asList(SUBJECT_SEARCH));
+                    Arrays.asList(CONCEPT_SEARCH, CONCEPT_PHRASE));
             addCopyField(client, SUBJECT_LABELS,
                     Arrays.asList(SUBJECT_SEARCH, SUBJECT_PHRASE));
             addCopyField(client, SUBJECT_NOTATIONS,
