@@ -114,6 +114,12 @@ public final class SearchIndex {
     /** Value to use for "hl.maxAnalyzedChars". */
     private static final String HIGHLIGHT_MAX_CHARS = "10000000";
 
+    /** Value to use for "hl.simple.pre". */
+    private static final String HIGHLIGHT_PRE = "HL_START";
+
+    /** Value to use for "hl.simple.post". */
+    private static final String HIGHLIGHT_POST = "HL_END";
+
     /* Things to pay attention to, when performing maintenance on
      * this method:
      *
@@ -228,8 +234,8 @@ public final class SearchIndex {
             //        ardc.edu.au%3e
             solrQuery.setParam(HighlightParams.FIELD_MATCH, true);
             // Put an HTML <b> element around the highlighted content.
-            solrQuery.setHighlightSimplePre("&lt;b&gt;");
-            solrQuery.setHighlightSimplePost("&lt;/b&gt;");
+            solrQuery.setHighlightSimplePre(HIGHLIGHT_PRE);
+            solrQuery.setHighlightSimplePost(HIGHLIGHT_POST);
             solrQuery.setHighlightSnippets(2);
             solrQuery.set(QueryParsing.DEFTYPE, "safari");
             // Check for a "pp" setting, now, as we might need it later
