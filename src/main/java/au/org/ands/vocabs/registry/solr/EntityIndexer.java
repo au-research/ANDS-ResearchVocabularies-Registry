@@ -45,7 +45,6 @@ import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.BaseHttpSolrClient.RemoteSolrException;
 import org.apache.solr.common.SolrInputDocument;
 import org.jsoup.Jsoup;
-import org.jsoup.parser.Parser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -202,15 +201,13 @@ public final class EntityIndexer {
         // Strip HTML tags, and convert HTML elements into their
         // corresponding Unicode characters.
         addDataToDocument(document, DESCRIPTION,
-                Parser.unescapeEntities(Jsoup.parse(
-                        vocabularyData.getDescription()).text(), false));
+                Jsoup.parse(vocabularyData.getDescription()).text());
         // Note is like description, but it is optional.
         String note = vocabularyData.getNote();
         if (note != null) {
             // Strip HTML tags, and convert HTML elements into their
             // corresponding Unicode characters.
-            addDataToDocument(document, NOTE,
-                    Parser.unescapeEntities(Jsoup.parse(note).text(), false));
+            addDataToDocument(document, NOTE, Jsoup.parse(note).text());
         }
         // languages
         ArrayList<String> languages = new ArrayList<>();
