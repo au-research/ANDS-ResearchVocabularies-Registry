@@ -5,6 +5,7 @@ package au.org.ands.vocabs.registry.utils;
 import java.lang.invoke.MethodHandles;
 
 import org.jsoup.Jsoup;
+import org.jsoup.parser.Parser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.Assert;
@@ -119,6 +120,13 @@ public class TestValidationUtils {
                 + "repository/api/download/910/aodn_aodn-geographic-"
                 + "extents-vocabulary_version-2-0.rdf (link is external)"
                 + "English Abstract:");
+
+        // Unescaping of HTML entities.
+        Assert.assertEquals(
+                Parser.unescapeEntities(
+                        "&ldquo;Hi &lt; hi&rdquo;.", false),
+                "“Hi < hi”.");
+
     }
 
 }
