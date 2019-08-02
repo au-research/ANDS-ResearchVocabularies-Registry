@@ -233,7 +233,7 @@ public final class SearchIndex {
             //        201907.mbox/%3cB5D715AC-C028-4081-BA7B-CFDE27CD6B0D@
             //        ardc.edu.au%3e
             solrQuery.setParam(HighlightParams.FIELD_MATCH, true);
-            // Put an HTML <b> element around the highlighted content.
+            // Put markers around the highlighted content.
             solrQuery.setHighlightSimplePre(HIGHLIGHT_PRE);
             solrQuery.setHighlightSimplePost(HIGHLIGHT_POST);
             solrQuery.setHighlightSnippets(2);
