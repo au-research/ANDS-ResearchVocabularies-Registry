@@ -166,7 +166,19 @@
             value="${tools-bin}/xjc-private-fields-plugin.jar" />
   <property name="build-xjc-private-fields-plugin"
             value="${build-tools}/build-xjc-plugin" />
-  <target name="xjc-private-fields-plugin-jar">
+  <!-- Check if generated plugin JAR is up-to-date. -->
+  <target name="check-xjc-private-fields-plugin-jar">
+    <uptodate property="xjc-private-fields-plugin-jar.uptodate"
+              targetfile="${xjc-private-fields-plugin-jar}">
+      <srcfiles dir="${build-xjc-private-fields-plugin}">
+        <include name="au/org/ands/vocabs/registry/schema/utils/*.class" />
+      </srcfiles>
+    </uptodate>
+  </target>
+  <!-- Build JAR containing plugin for xjc. -->
+  <target name="xjc-private-fields-plugin-jar"
+          depends="check-xjc-private-fields-plugin-jar"
+          unless="xjc-private-fields-plugin-jar.uptodate">
     <mkdir dir="${build-xjc-private-fields-plugin}" />
     <javac debug="true" debuglevel="${debuglevel}"
            destdir="${build-xjc-private-fields-plugin}"
@@ -267,16 +279,16 @@
   <!-- Check if generated JAXB source code is up-to-date. -->
   <target name="check-jaxb-source">
     <uptodate property="jaxb-source.uptodate"
-              targetfile="src/jaxb-gen/timestamp">
+              targetfile="${src-jaxb-gen}/timestamp">
       <srcfiles dir="src/main/jaxb">
-        <include name="*/*.xsd" />
-        <include name="*/*.xjb" />
+        <include name="**/*.xsd" />
+        <include name="**/*.xjb" />
       </srcfiles>
     </uptodate>
   </target>
 
   <target name="generate-jaxb-source"
-          depends="xjc-private-fields-plugin-jar"
+          depends="xjc-private-fields-plugin-jar,check-jaxb-source"
           unless="jaxb-source.uptodate">
     <!-- Common classes: enums -->
     <mkdir dir="src/jaxb-gen/java" />
@@ -317,7 +329,7 @@
     <copy
       file="src/main/jaxb/au.org.ands.vocabs.registry.schema.vocabulary201701.package-info.java"
       tofile="src/jaxb-gen/java/au/org/ands/vocabs/registry/schema/vocabulary201701/package-info.java" />
-        <touch file="src/jaxb-gen/timestamp" />
+    <touch file="${src-jaxb-gen}/timestamp" />
   </target>
 
   <!-- Generation of utility class for bot detection. -->
@@ -681,7 +693,10 @@
         classname="au.org.ands.vocabs.registry.solr.admin.CreateSchema"
         classpathref="create-solr-schema.classpath"
       >
+      <arg value="${Registry.Solr.baseURL}" />
+      <arg value="${Registry.Solr.collection}" />
       <arg value="${Registry.Solr.collectionURL}" />
+      <arg value="${Registry.Solr.zkHost}" />
     </java>
   </target>
 

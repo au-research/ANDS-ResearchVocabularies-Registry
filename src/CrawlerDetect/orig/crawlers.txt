@@ -3248,3 +3248,213 @@ HonesoSearchEngine/1.0
 orion-semantics.com 0.1
 ExperianCrawlUK (andrew dot swanton at phgroup dot com)
 Trendsmap Resolver/0.0.1
+Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1; FunWebProducts; .NET CLR 1.1.4322; PeoplePal 6.2)
+Mozilla/4.0 (compatible; MSIE 5.0; Windows NT; DigExt; DTS Agent
+Mozilla/3.0 (compatible; Indy Library)
+VB Project
+webster-internet.de pad browser
+LWP::Simple/5.805
+Microsoft Data Access Internet Publishing Provider DAV
+MSFrontPage/4.0
+Microsoft Data Access Internet Publishing Provider Cache Manager
+VB Project
+eCatch/3.0
+MSFrontPage/12.0
+Mozilla/4.7 (compatible; OffByOne; Windows 2000) Webster Pro V3.4
+Mozilla/4.7 (compatible; OffByOne; Windows 98) Webster Pro V3.2
+webster-internet.de pad browser
+Trendsmap Resolver/0.0.1
+Mozilla/4.0 (compatible; MSIE 6.0; MS Web Services Client Protocol 4.0.30319.17929)
+Arukereso/1.0
+Trendsmap Resolver/0.0.1
+Flock/14.15 (Android 2.9; fr_BE;)
+Mozilla/5.0 (Windows; U; Windows NT 6.1; en-GB; rv:1.9.0.16) Gecko/2010021003 Firefox/3.0.16 Flock/2.5.6
+Mozilla/5.0 (Windows; U; Windows NT 6.0; en-US; rv:1.8.1.14) Gecko/20080414 Firefox/2.0.0.14 Flock/1.1.2
+Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.8.1.6) Gecko/20070801 Firefox/2.0.0.6 Flock/0.9.0.2
+AppStoreScraperZ/1 CFNetwork/889.9 Darwin/17.2.0 (x86_64)
+Everwall Link Expander ( http://everwall.com )
+Wfuzz/2.2.2
+The Knowledge AI the.knowledge.ai@gmail.com
+The Knowledge AI
+Mozilla/5.0 (compatible; DataXu/1.0; +http://dataxu.com)
+Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36 (+https://whatis.contentkingapp.com)
+AdAuth/1.0; +https://www.adauth.com
+twibble.io
+JolokiaPwn, https://matmannion.com/jolokiapwn/, mat.mannion@gmail.com
+CookieReports.com/0.1
+GoogleCloudMonitoring
+kube-probe/1.9+
+Mozilla/5.0 Chrome/10.0.613.0 Safari/534.15 Zombie.js/5.0.7
+Microsoft Office/16.0 (Microsoft Outlook Mail 16.0.7167; Pro)Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 6.1; Win64; x64; Trident/7.0; .NET CLR 2.0.50727; SLCC2; .NET CLR 3.5.30729; .NET CLR 3.0.30729; Media Center PC 6.0; .NET4.0C; .NET4.0E; Tablet PC 2.0; InfoPath.3; Microsoft Outlook 14.0.6025; ms-office; MSOf
+Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 6.1; Win64; x64; Trident/7.0; .NET CLR 2.0.50727; SLCC2; .NET CLR 3.5.30729; .NET CLR 3.0.30729; Media Center PC 6.0; .NET4.0C; InfoPath.3; .NET4.0E; Microsoft Outlook 14.0.7167; ms-office; MSOffice 14)
+Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 6.1; WOW64; Trident/7.0; SLCC2; .NET CLR 2.0.50727; .NET CLR 3.5.30729; .NET CLR 3.0.30729; Media Center PC 6.0; .NET4.0C; .NET4.0E; InfoPath.3; Microsoft Outlook 15.0.4805; ms-office; MSOffice 15)
+Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 10.0; WOW64; Trident/7.0; .NET4.0C; .NET4.0E; .NET CLR 2.0.50727; .NET CLR 3.0.30729; .NET CLR 3.5.30729; Tablet PC 2.0; MALNJS; Microsoft Outlook 16.0.6001; ms-office; MSOffice 16)
+Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 6.1; WOW64; Trident/5.0; SLCC2; .NET CLR 2.0.50727; .NET CLR 3.5.30729; .NET CLR 3.0.30729; Media Center PC 6.0; .NET4.0C; .NET4.0E; InfoPath.3; Microsoft Outlook 14.0.6025)
+Outlook-Express/7.0 (MSIE 7.0; Windows NT 6.1; WOW64; Trident/7.0; SLCC2; .NET CLR 2.0.50727; .NET CLR 3.5.30729; .NET CLR 3.0.30729; Media Center PC 6.0; McAfee; .NET4.0C; .NET4.0E; GWX:QUALIFIED; TmstmpExt)
+Mail/3445.4.7 CFNetwork/889.9 Darwin/17.2.0 (x86_64)
+SPDYCheck SPDY Protocol Tester, see http://spdycheck.org/about.html
+SpamExperts/128741 (Virus Scan)
+Unshorten.It! /1.0 (unshorten.it)
+Monit/5.25.2
+Mozilla/5.0 (compatible; PingAdmin.Ru/1.1; +http://pingadmin.ru/)
+Mozilla/5.0 (compatible; localsearch-web/2.0; +http://www.localsearch.ch/en/legal-notice)
+Mozilla/5.0 (X11; Datanyze; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36
+annotate_google; http://ponderer.org/download/annotate_google.user.js
+Apache OpenOffice/4.1.2
+Bidtellect/0.0.346.0
+BlockNote.Net
+Bloglines/3.1 (http://www.bloglines.com)
+DemandbasePublisherAnalyzer/0.1 (http://www.demandbase.com; info@demandbase.com)
+endo/1.0 (Mac OS X; ppc i386; http://kula.jp/endo)
+Feedable/0.1 (compatible; MSIE 6.0; Windows NT 5.1)
+Feedreader 3.xx (Powered by Newsbrain)
+FeedshowOnline (http://www.feedshow.com)
+FeedZcollector v1.x (Platinum) http://www.feeds4all.com/feedzcollector
+ImageVisu/v4.x.x
+InetURL:/1.0
+Mixmax-LinkPreview 1.0 (+https://sdk.mixmax.com)
+Mozilla/5.0 (compatible; DNS SSL/TLS HTTP and HTML scanner/0.1; +https://www.htmlyse.com/)
+Mozilla/5.0 (compatible; DNS SSL/TLS HTTP HTML Website Security Scanner/0.2 beta; +https://www.htmlyse.com/)
+Mozilla/5.0 (compatible; Scrutiny/8; +https://peacockmedia.software/mac/scrutiny/
+NetNewsWire/2.x (Mac OS X; http://ranchero.com/netnewswire/)
+og-scraper/1.0.0
+Plagger/0.x.xx (http://plagger.org/)
+raynette_httprequest/1.0
+RssReader/1.0.xx.x (http://www.rssreader.com) Microsoft Windows NT 5.1.2600.0
+ScrapeBox Page Scanner
+SearchExpress
+Snarfer/0.x.x (http://www.snarfware.com/)
+unirest-java/1.3.11
+WinPodder (http://winpodder.com)
+WordupinfoSearch/1.0
+13TABS/13TABS-1.14 (https://www.13tabs.com/aboutUs.jsp)
+777Siters/1.05 (+http://777s.ru/siters/)
+7Siters/1.07 (+http://7ooo.ru/siters/)
+Aranea Web Corpora Project (Sk Crawl) (+http://unesco.uniba.sk/guest)
+censys.io internet census
+Chromaxa/1.0 Sonar/1.0
+compatible; Licorne Uri Checker 1.0; +http://www.jednorozec.cz)
+CronDroid v0.80a http://www.crondroid.com
+Cronjob.de
+Cronless/2.0 (+http://cronless.com)
+EasyCron/1.0 (https://www.easycron.com/)
+EDS EXIF/1.0 (https://www.exif-search.com)
+EDS EXIF/1.0 (https:/exif-search.com)
+faviconkit/1.0 (https://faviconkit.com)
+HomePage Rss Reader 1.0
+Hong Kong Education City/1.0 (built with Hong Kong Education City 1.10; http://www.hkedcity.net/; search@hkedcity.net)
+https://getroot.sh survey
+isUp.li Website Monitoring 2
+JAHHO check
+MB-SitemapGenerator
+Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.0; http://basicstate.com/)
+Mozilla/5.0 (compatible; Aprc/2.9.15-24; +https://aprc.it/) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3528.4 Safari/537.36
+Mozilla/5.0 (compatible; Google AppsViewer; http://drive.google.com)
+Mozilla/5.0 (compatible; GoogleSites)
+Mozilla/5.0 (compatible; iThemes Sync/1.0; +http://ithemes.com/sync)
+Mozilla/5.0 (compatible; iThemes Sync/1.0; ITX WP-Admin API/1.0; +http://ithemes.com/sync)
+Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; Trident/5.0; CHKD 1.2; Akamai_Site_Analyzer)
+Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; Trident/5.0; WAC-OFU)
+Mozilla/5.0 (compatible; WebDataStats/1.0 ; +https://webdatastats.com/policy.html)
+Mozilla/5.0 (Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/36.0.1985.143 Safari/537.36 Nodemeter 0.7
+Mozilla/5.0 (Macintosh; Intel Mac OS X 10.10; rv:41.0) Gecko/20100101 Firefox/55.0 BrandVerity/1.0 (http://www.brandverity.com/why-is-brandverity-visiting-me)
+Mozilla/5.0 (Windows NT 6.1; rv:12.0; StumbleUpon; noc@stumbleupon.com) Gecko/20100101 Firefox/12.0
+Mozilla/5.0 (Windows NT 6.1; rv:40.0; StumbleUpon; noc@stumbleupon.com) Gecko/20100101 Firefox/40.1
+Mozilla/5.0 (Windows NT 6.1; stumbleupon.com) Chrome/58.0.3029.110 Safari/537.36
+Mozilla/5.0 AppleWebKit (compatible; s4a-probe/1.0; +https://www.seo4ajax.com/webscraper)
+Mozilla/5.0 AppleWebKit (compatible; s4a/1.0; +https://www.seo4ajax.com/webscraper)
+Mozilla/5.0 Gecko/20100101 Firefox/51.0.1 SnapSearch
+NodePing
+PocketImageCache/1.0
+queuedriver/1.0 (eng@linqia.com)
+Re-re Studio (+http://re-re.ru/)
+Tarmot Gezgin/1.0 (compatible; TarmotGezgin/1.1; +http://www.tarmot.com/gezgin)
+WDT.io
+webeval.researchready.com - support@imagineeasy.com for info.
+WWW::Document/0.02
+Y!J-BRW/1.0 (https://www.yahoo-help.jp/app/answers/detail/p/595/a_id/42716)
+YoYs.net
+YP.PL
+Mozilla/5.0 (Windows NT 6.1; rv:40.0; StumbleUpon; noc@stumbleupon.com) Gecko/20100101 Firefox/40.1
+Mozilla/5.0 (Windows NT 6.1; StumbleUpon; noc@stumbleupon.com) Chrome/58.0.3029.110 Safari/537.36
+Mozilla/5.0 (Windows NT 6.1; stumbleupon.com) Chrome/58.0.3029.110 Safari/537.36
+Mozilla/5.0 (compatible; tracemyfile/1.0)
+Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/66.0.3336.0 Safari/537.36
+Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36 Pix/1.0 (Criteo; x64-criteo)
+CDR/1.7.1 Simulator/0.7(+http://timewe.net) Profile/MIDP-1.0 Configuration/CLDC-1.0
+Email%20Extractor/1 CFNetwork/760.6.3 Darwin/15.6.0 (x86_64)
+Email%20Extractor/29 CFNetwork/897.15 Darwin/17.5.0 (x86_64)
+HTTP Banner Detection (https://security.ipip.net)
+HTTP Banner Detection(security.ipip.net)
+Mozilla/5.0 (compatible; SimpleScraper)
+http_get
+MeltwaterNews www.meltwater.com
+Disqus/1.0
+Datafeedwatch/2.1.x
+Zabbix
+Mozilla/5.0 (compatible; Google Desktop/5.9.1005.12335; http://desktop.google.com/)
+httpRequest
+Google-Transparency-Report
+Mozilla/5.0 (compatible; TrendsmapResolver/0.1)
+Embarcadero URI Client/1.0
+GetCode
+Gregarius/0.5.2 ( http://devlog.gregarius.net/docs/ua)
+GRequests/0.10
+DAP/NetHTTP
+Hadi Agent
+Canary%20Mail/397 CFNetwork/893.13.1 Darwin/17.4.0 (x86_64)
+Sendsay.Ru/1.0; https://Sendsay.Ru/; ask@sendsay.ru
+Mozilla/5.0 (Zoom.Mac 10.8.5 x86)
+Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.77 Safari/537.36 TryJsoup/1.0 (+http://try.jsoup.org/)
+Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.0 ; BacklinkHttpStatus)
+SilverReader/1.0; http://silverreader.com
+ExtractorPro
+WebsiteExtractor
+Mozilla/5.0 (Windows NT 5.1) AppleWebKit/535.1 (KHTML, like Gecko) Chrome/14.0.835.202 Safari/535.1 google_partner_monitoring FWSzVTDDBz14547302713138T
+Outlook-iOS/696.1188109.prod.iphone (2.102.0)
+Polymail/1.47 (ctrlla.Polymail; build:64; OS X 10.12.6) Alamofire/4.5.1
+nyawc/1.8.1 CPython/3.6.5 Linux/3.10.0-862.9.1.el7.x86_64
+commonscan.org cralwer v1.01
+AdminLabs
+WebGazer/1.0 (+https://www.webgazer.io)
+HappyApps-WebCheck/1.0
+Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6; +feeder.co) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.99 Safari/537.36
+Mozilla/5.0 (compatible; TestURI; +http://testuri.org/)
+WebSniffer/1.0 (+http://websniffer.cc/)
+Mozilla/5.0 (iPhone; CPU iPhone OS 9_1 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13B143 Safari/601.1 SeoSiteCheckup (https://seositecheckup.co
+Adstxtaggregator.com/1.0
+Discourse Forum Onebox v2.0.0.beta10
+faviconarchive.org
+GreatNews/1.0
+MemGator:1.0-rc2 <@WebSciDL>
+URLTester/1 CFNetwork/974.1 Darwin/18.0.0 (x86_64)
+URLTester/1 CFNetwork/975.0.3 Darwin/18.2.0 (x86_64)
+Urlcheckr/2.0
+SimpleChecker
+reqwest/0.9.9
+ReactorNetty/0.7.10.RELEASE
+Mozilla/5.0 (compatible; woorankreview/2.0; +https://www.woorank.com/)
+https://www.nominet.uk/privacy-notice
+<a href='http://www.unchaos.com/'> UnChaos </a> From Chaos To Order Hybrid Web Search Engine.(vadim_gonchar@unchaos.com)
+Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36(KHTML, like Gecko) Chrome/69.0.3464.0 Safari/537.36 Chrome-Lighthouse
+Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5 Build/MRA58N) AppleWebKit/537.36(KHTML, like Gecko) Chrome/61.0.3116.0 Mobile Safari/537.36 Chrome-Lighthouse
+Trackuity (+http://trackuity.com)
+deeris/1.0 (+http://www.deeris.com)
+Mediametric
+TextRazor Downloader (https://www.textrazor.com)
+ddline.cn rank history
+Web spyder
+AppleSyndication/52.8
+AutomaticWPTester/1 CFNetwork/975.0.3 Darwin/17.7.0
+CSSCheck/1.2.2
+dBpoweramp
+Thumbor/6.4.1
+Reeder/1000.02.01 CFNetwork/454.11.5 Darwin/10.5.0 (i386) (Macmini2)
+worldping-api
+Geziyor 1.0
+adstxt-worker (www.column6.com)
+adstxt.com/1.2
+Mozilla/5.0 (compatible; ZnHTTP/7.80)
+khttp/1.0.0-SNAPSHOT
+IZaBEE/IZaBEE-1.01 (Buzzing Abound The Web; https://izabee.com; info at izabee dot com)
+HTTPie/1.0.2

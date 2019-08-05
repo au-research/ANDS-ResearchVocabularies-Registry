@@ -228,6 +228,8 @@ public final class Analytics {
     public static final String SEARCH_RESULT_NUM_FOUND_FIELD = "num_found";
     /** The name of the search result Id field inserted into log entries. */
     public static final String SEARCH_RESULT_OWNER_FIELD = "result_owners";
+    /** The name of the search sort field inserted into log entries. */
+    public static final String SEARCH_SORT_ORDER_FIELD = "sort";
     /** The name of the search subject labels field inserted into
      * log entries. */
     public static final String SEARCH_SUBJECT_LABELS_FIELD = "subject";
@@ -718,6 +720,7 @@ public final class Analytics {
                 case SEARCH_PP_FIELD:
                 case SEARCH_PUBLISHER_FIELD:
                 case SEARCH_Q_FIELD:
+                case SEARCH_SORT_ORDER_FIELD:
                 case SEARCH_SUBJECT_LABELS_FIELD:
                 case SEARCH_WIDGETABLE_FIELD:
                     if (useSearchMaps) {

@@ -64,6 +64,11 @@ public class Download {
 
     // List taken from:
     // http://rdf4j.org/sesame/2.8/docs/system.docbook?view#content-types
+    // That page is now archived:
+    //   https://web.archive.org/web/20160412201949/
+    //     http://rdf4j.org/sesame/2.8/docs/system.docbook?view#content-types
+    // See also the Sesame source code:
+    //   core/rio/api/src/main/java/org/openrdf/rio/RDFFormat.java
     static {
         SESAME_FORMAT_TO_MIMETYPE_MAP.put("rdf", "application/rdf+xml");
         SESAME_FORMAT_TO_MIMETYPE_MAP.put("nt", "text/plain");
@@ -74,6 +79,8 @@ public class Download {
         SESAME_FORMAT_TO_MIMETYPE_MAP.put("trix", "application/trix");
         SESAME_FORMAT_TO_MIMETYPE_MAP.put("trig", "application/x-trig");
         SESAME_FORMAT_TO_MIMETYPE_MAP.put("bin", "application/x-binary-rdf");
+        // This one is not in the system documentation, but is in the source:
+        SESAME_FORMAT_TO_MIMETYPE_MAP.put("jsonld", "application/ld+json");
     }
 
     /** Mapping of file formats to MIME types. */

@@ -356,4 +356,36 @@ http://viaf.org/</xs:documentation>
             </xs:enumeration>
         </xs:restriction>
     </xs:simpleType>
+    <xs:simpleType name="search-sort-order">
+        <xs:annotation>
+            <xs:documentation>Enumerated type of possible sort orders for search results.</xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="aToZ">
+                <xs:annotation>
+                    <xs:documentation>Sort alphabetically in ascending order, from A to Z.</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="zToA">
+                <xs:annotation>
+                    <xs:documentation>Sort alphabetically in descending order, from Z to A.</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="relevance">
+                <xs:annotation>
+                    <xs:documentation>Sort in descending order of relevance. To use this sort order, a query term must be provided.</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="lastUpdatedAsc">
+                <xs:annotation>
+                    <xs:documentation>Sort in ascending order of the timestamp of the last update.</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="lastUpdatedDesc">
+                <xs:annotation>
+                    <xs:documentation>Sort in descending order of the timestamp of the last update.</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+        </xs:restriction>
+    </xs:simpleType>
 </xs:schema>

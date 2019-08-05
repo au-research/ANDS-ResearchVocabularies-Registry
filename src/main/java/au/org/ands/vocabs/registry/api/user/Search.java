@@ -90,6 +90,7 @@ public class Search {
                     + "'\"q\":\"query term\"': query term; "
                     + "'\"pp\":10' number of results per page;"
                     + "'\"p\":3' page number of results; "
+                    + "'\"sort\":\"zToA\"': sort order of results; "
                     + "'\"widgetable\":true': select only widgetable "
                     + "vocabularies. Facets are also specified with filters: "
                     + "e.g., '\"publisher\":\"CSIRO\"'. Supported facets: "

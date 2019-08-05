@@ -18,7 +18,9 @@ for LDA custom configuration.)
 * Ant
 * gawk version 4
 * MySQL (at least version 5.6)
-* Solr (at least version 6.6.5 or 7.4.0 is recommended)
+* Solr (at least version 8.1 is required)
+  * Solr must be run in SolrCloud mode. You may use either the
+    embedded ZooKeeper, or use an external ZooKeeper.
 * Tomcat (at least version 7)
 
 # Locale setting for JDK
@@ -126,6 +128,9 @@ chown tomcat.tomcat /var/vocab-files/registry-data
 ```
 
 ### Solr configuration
+
+Set `Registry.Solr.baseURL` to the base URL of your Solr installation,
+and `Registry.Solr.zkHost` to the zkZost setting of your ZooKeeper.
 
 Set Registry.Solr.collection to your choice of name for the Solr
 collection. In the following, we have chosen `vocabs-registry`.
@@ -261,6 +266,25 @@ wget -O - http://localhost:8080/registry-context/adminApi/database/populateSubje
 
 # Create Solr collection and install schema
 
+## Add custom query plugin
+
+The Registry's search function uses a custom Solr query plugin.
+
+You must install the plugin into _every_ Solr instance that is part of
+your SolrCloud setup.
+
+In the top level of each Solr instance, make a directory `ardc`.
+(For example, if your Solr instance is installed in `/opt/solr`,
+create a directory `/opt/solr/ardc`.)
+
+Copy the JAR file from `lib/ifpress-solr-plugin-*/*.jar` (currently,
+that is `lib/ifpress-solr-plugin-1.6.2/ifpress-solr-plugin-1.6.2.jar`)
+into the `ardc` directory in your Solr installation.
+
+Note: there must be only one version of the plugin in the `ardc`
+directory of your Solr installation. If you ever upgrade the plugin,
+make sure to remove any old version.
+
 ## Create the collection
 
 Create the Solr collection. Here, `vocabs-registry` matches the name
@@ -275,6 +299,9 @@ the correct port number, if it is not the default 8983.)
 ```
 
 ## Install the schema
+
+Use this build target to upload a custom `solrconfig.xml` (from the
+file `conf/solrconfig.xml`) and to create the Solr schema.
 
 ```
 ant create-solr-schema

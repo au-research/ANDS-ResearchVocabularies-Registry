@@ -23,6 +23,8 @@ import org.slf4j.LoggerFactory;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import au.org.ands.vocabs.registry.solr.SolrUtils;
+
 /** Base class for Arquillian tests. Defines the standard deployment. */
 @ArquillianSuiteDeployment
 @Test(groups = "arquillian")
@@ -91,47 +93,7 @@ public class ArquillianBaseTest extends Arquillian {
                                 + "roles/db/entity/[^/]*.class"),
                         "au.org.ands.vocabs");
         try {
-            JavaArchive toolkitDbModelJar =
-                    ShrinkWrap.create(JavaArchive.class,
-                            "toolkit-db-model.jar");
-            toolkitDbModelJar.addPackage("au.org.ands.vocabs.toolkit.db.model");
-            toolkitDbModelJar.addAsManifestResource(new File(
-                    "src/main/java/au/org/ands/vocabs/toolkit/db/model/"
-                            + "META-INF/persistence.xml"));
-            toolkitDbModelJar.addManifest();
-            logger.info("toolkitDbModelJar = "
-                    + toolkitDbModelJar.toString(Formatters.VERBOSE));
-            war.addAsLibrary(toolkitDbModelJar);
-
-            JavaArchive registryDbModelJar =
-                    ShrinkWrap.create(JavaArchive.class,
-                            "registry-db-model.jar");
-            registryDbModelJar.addPackage(
-                    "au.org.ands.vocabs.registry.db.entity");
-            registryDbModelJar.addPackage(
-                    "au.org.ands.vocabs.registry.db.context.converter");
-            registryDbModelJar.addAsManifestResource(new File(
-                    "src/main/java/au/org/ands/vocabs/registry/db/entity/"
-                            + "META-INF/persistence.xml"));
-            registryDbModelJar.addManifest();
-            logger.info("registryDbModelJar = "
-                    + registryDbModelJar.toString(Formatters.VERBOSE));
-            war.addAsLibrary(registryDbModelJar);
-
-            JavaArchive rolesDbModelJar =
-                    ShrinkWrap.create(JavaArchive.class,
-                            "roles-db-model.jar");
-            rolesDbModelJar.addPackage(
-                    "au.org.ands.vocabs.roles.db.entity");
-            rolesDbModelJar.addPackage(
-                    "au.org.ands.vocabs.roles.db.context.converter");
-            rolesDbModelJar.addAsManifestResource(new File(
-                    "src/main/java/au/org/ands/vocabs/roles/db/entity/"
-                            + "META-INF/persistence.xml"));
-            rolesDbModelJar.addManifest();
-            logger.info("rolesDbModelJar = "
-                    + rolesDbModelJar.toString(Formatters.VERBOSE));
-            war.addAsLibrary(rolesDbModelJar);
+            addModelJARs(war);
 
             // Add all the JAR files from the lib directory.
             Files.walk(Paths.get("lib"))
@@ -175,6 +137,8 @@ public class ArquillianBaseTest extends Arquillian {
                 .forEach(p -> war.addAsResource(p.toFile(),
                         p.toString().substring(
                                 RESOURCES_DEPLOY_PATH.length())));
+
+            addSolrConfig(war);
 
             // Add certain JAR files from the libdev directory.
             // For now, that means Mean Bean, DbUnit, XStream, and XMLUnit.
@@ -227,6 +191,89 @@ public class ArquillianBaseTest extends Arquillian {
         }
         logger.info(war.toString(Formatters.VERBOSE));
         return war;
+    }
+
+    /** Add the model JAR files to the test WebArchive.
+     * @param war The test WebArchive being constructed.
+     */
+    private static void addModelJARs(final WebArchive war) {
+        // Toolkit.
+        JavaArchive toolkitDbModelJar =
+                ShrinkWrap.create(JavaArchive.class,
+                        "toolkit-db-model.jar");
+        toolkitDbModelJar.addPackage("au.org.ands.vocabs.toolkit.db.model");
+        toolkitDbModelJar.addAsManifestResource(new File(
+                "src/main/java/au/org/ands/vocabs/toolkit/db/model/"
+                        + "META-INF/persistence.xml"));
+        toolkitDbModelJar.addManifest();
+        logger.info("toolkitDbModelJar = "
+                + toolkitDbModelJar.toString(Formatters.VERBOSE));
+        war.addAsLibrary(toolkitDbModelJar);
+
+        // Registry.
+        JavaArchive registryDbModelJar =
+                ShrinkWrap.create(JavaArchive.class,
+                        "registry-db-model.jar");
+        registryDbModelJar.addPackage(
+                "au.org.ands.vocabs.registry.db.entity");
+        registryDbModelJar.addPackage(
+                "au.org.ands.vocabs.registry.db.context.converter");
+        registryDbModelJar.addAsManifestResource(new File(
+                "src/main/java/au/org/ands/vocabs/registry/db/entity/"
+                        + "META-INF/persistence.xml"));
+        registryDbModelJar.addManifest();
+        logger.info("registryDbModelJar = "
+                + registryDbModelJar.toString(Formatters.VERBOSE));
+        war.addAsLibrary(registryDbModelJar);
+
+        // Roles.
+        JavaArchive rolesDbModelJar =
+                ShrinkWrap.create(JavaArchive.class,
+                        "roles-db-model.jar");
+        rolesDbModelJar.addPackage(
+                "au.org.ands.vocabs.roles.db.entity");
+        rolesDbModelJar.addPackage(
+                "au.org.ands.vocabs.roles.db.context.converter");
+        rolesDbModelJar.addAsManifestResource(new File(
+                "src/main/java/au/org/ands/vocabs/roles/db/entity/"
+                        + "META-INF/persistence.xml"));
+        rolesDbModelJar.addManifest();
+        logger.info("rolesDbModelJar = "
+                + rolesDbModelJar.toString(Formatters.VERBOSE));
+        war.addAsLibrary(rolesDbModelJar);
+    }
+
+    /** Add the Solr configuration files to the test WebArchive.
+     * @param war The test WebArchive being constructed.
+     * @throws IOException If unable to access the directory containing
+     *      Solr configuration files.
+     */
+    private static void addSolrConfig(final WebArchive war)
+            throws IOException {
+        // Directory containing the configset "_default".
+        String solrConfResources = RESOURCES_DEPLOY_PATH
+                + "/solr/configsets/_default/conf/";
+        // Copy the config files from _default into the test collection.
+        Files.walk(Paths.get(solrConfResources))
+            .filter(Files::isRegularFile)
+            // Don't copy solrconfig.xml from the template ...
+            .filter(p -> !p.getFileName().
+                    toString().equals("solrconfig.xml"))
+            .forEach(p -> war.addAsResource(p.toFile(),
+                    "solr/" + SolrUtils.TEST_COLLECTION
+                    + "/conf/" + p.toString().substring(
+                            solrConfResources.length())));
+        // ... but use our own custom version.
+        war.addAsResource(new File("conf/solrconfig.xml"),
+                "solr/" + SolrUtils.TEST_COLLECTION + "/conf/solrconfig.xml");
+        // And copy in the Safari Press query plugin.
+        Files.walk(Paths.get("lib"))
+            .filter(Files::isRegularFile)
+            .filter(p -> p.getFileName().toString().endsWith(".jar"))
+            .filter(p -> p.getParent().getFileName().
+                    toString().startsWith("ifpress"))
+            .forEach(p -> war.addAsResource(p.toFile(),
+                    "solr/ardc/" + p.getFileName().toString()));
     }
 
     /** Add an optional resource. Any exception generated when locating

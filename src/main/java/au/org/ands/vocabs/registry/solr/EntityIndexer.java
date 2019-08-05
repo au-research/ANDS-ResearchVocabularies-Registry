@@ -9,7 +9,9 @@ import static au.org.ands.vocabs.registry.solr.FieldConstants.DESCRIPTION;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.FORMAT;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.ID;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.LANGUAGE;
+import static au.org.ands.vocabs.registry.solr.FieldConstants.LAST_UPDATED;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.LICENCE;
+import static au.org.ands.vocabs.registry.solr.FieldConstants.NOTE;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.OWNER;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.POOLPARTY_ID;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.PUBLISHER;
@@ -27,6 +29,9 @@ import static au.org.ands.vocabs.registry.solr.FieldConstants.WIDGETABLE;
 import java.io.File;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -37,7 +42,7 @@ import javax.ws.rs.core.MultivaluedMap;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.client.solrj.impl.HttpSolrClient.RemoteSolrException;
+import org.apache.solr.client.solrj.impl.BaseHttpSolrClient.RemoteSolrException;
 import org.apache.solr.common.SolrInputDocument;
 import org.jsoup.Jsoup;
 import org.slf4j.Logger;
@@ -69,6 +74,7 @@ import au.org.ands.vocabs.registry.enums.AccessPointType;
 import au.org.ands.vocabs.registry.enums.RelatedEntityRelation;
 import au.org.ands.vocabs.registry.enums.VersionArtefactType;
 import au.org.ands.vocabs.registry.enums.VersionStatus;
+import au.org.ands.vocabs.registry.utils.fileformat.FileFormatUtils;
 import au.org.ands.vocabs.registry.workflow.provider.transform.JsonListTransformProvider;
 
 /** Methods to support Solr indexing, including creating a Solr document
@@ -128,7 +134,7 @@ public final class EntityIndexer {
     private static final ULocale LANGUAGE_LOCALE = new ULocale("en_NZ");
 
     /** Add a key/value pair to the Solr document, if the value
-     * is non-null and non-empty.
+     * is non-null and non-empty. The value is specified as a String.
      * @param document The Solr document.
      * @param key The key.
      * @param value The value.
@@ -142,6 +148,21 @@ public final class EntityIndexer {
         // are _sequences_ of whitespace.
         if (StringUtils.isNotBlank(value)) {
             document.addField(key, value);
+        }
+    }
+
+    /** Add a key/value pair to the Solr document, if the value
+     * is non-null and non-empty. The value is specified as a LocalDateTime.
+     * @param document The Solr document.
+     * @param key The key.
+     * @param value The value.
+     */
+    private static void addDataToDocument(final SolrInputDocument document,
+            final String key, final LocalDateTime value) {
+        if (value != null) {
+            document.addField(key,
+                    value.atZone(ZoneOffset.UTC).
+                        format(DateTimeFormatter.ISO_INSTANT));
         }
     }
 
@@ -161,6 +182,8 @@ public final class EntityIndexer {
         // The order of the fields matches:
         // https://intranet.ands.org.au/display/PROJ/
         //         Vocabulary+Solr+documents+and+queries
+        addDataToDocument(document, LAST_UPDATED,
+                vocabulary.getStartDate());
         addDataToDocument(document, ID,
                 Integer.toString(vocabularyId));
         addDataToDocument(document, TITLE, vocabularyData.getTitle());
@@ -179,6 +202,13 @@ public final class EntityIndexer {
         // corresponding Unicode characters.
         addDataToDocument(document, DESCRIPTION,
                 Jsoup.parse(vocabularyData.getDescription()).text());
+        // Note is like description, but it is optional.
+        String note = vocabularyData.getNote();
+        if (note != null) {
+            // Strip HTML tags, and convert HTML elements into their
+            // corresponding Unicode characters.
+            addDataToDocument(document, NOTE, Jsoup.parse(note).text());
+        }
         // languages
         ArrayList<String> languages = new ArrayList<>();
         ULocale loc = new ULocale(vocabularyData.getPrimaryLanguage());
@@ -318,15 +348,18 @@ public final class EntityIndexer {
                     getCurrentAccessPointListForVersion(currentVersionId);
             for (AccessPoint accessPoint : accessPoints) {
                 accessList.add(accessPointName.get(accessPoint.getType()));
-                String format = "";
                 switch (accessPoint.getType()) {
                 case API_SPARQL:
                     break;
                 case FILE:
                     ApFile apFile = JSONSerialization.deserializeStringAsJson(
                             accessPoint.getData(), ApFile.class);
-                    format = apFile.getFormat();
+                    formatList.add(apFile.getFormat());
+                    break;
                 case SESAME_DOWNLOAD:
+                    // CC-2455 Add all Sesame download types as formats.
+                    formatList.addAll(
+                            FileFormatUtils.getAllSesameDownloadFormatNames());
                     break;
                 case SISSVOC:
                     // Be careful not to try to add a second SISSVOC_ENDPOINT,
@@ -347,7 +380,6 @@ public final class EntityIndexer {
                 default:
                     // Oops.
                 }
-                formatList.add(format);
             }
             document.addField(ACCESS, accessList);
             document.addField(FORMAT, formatList);

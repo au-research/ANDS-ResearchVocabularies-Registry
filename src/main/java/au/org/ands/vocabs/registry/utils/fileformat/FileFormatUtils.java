@@ -3,9 +3,16 @@
 package au.org.ands.vocabs.registry.utils.fileformat;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
-/** Utilities to support file formats. */
+/** Utilities to support file formats.
+ * For the most part, this class is customized for uploads:
+ * the file format names match those offered/used in the portal.
+ * It will also used during indexing to identify those formats
+ * which are supported as Sesame downloads.
+ */
 public final class FileFormatUtils {
 
     /** Map from format names to FileFormat objects .*/
@@ -17,45 +24,67 @@ public final class FileFormatUtils {
     /** Map from format MIME typess to FileFormat objects .*/
     private static Map<String, FileFormat> mimeTypeToFormat;
 
+    /** List of all format names of formats supported as Sesame downloads. */
+    private static List<String> allSesameDownloadFormatNames;
+
     static {
         nameToFormat = new HashMap<>();
         extensionToFormat = new HashMap<>();
         mimeTypeToFormat = new HashMap<>();
 
-        addFileFormat("BinaryRDF", "bin", "application/x-binary-rdf");
-        addFileFormat("CSV", "csv", "text/csv");
-        addFileFormat("Excel (XLS)", "xls", "application/vnd.ms-excel");
-        addFileFormat("Excel (XLSX)", "xlsx",
+        // Possible future: support both a "long" name and a "short" name,
+        // e.g., "OpenDocument Spreadsheet (ODS)" and "ODS".
+        addFileFormat("BinaryRDF", "bin", "application/x-binary-rdf", true);
+        addFileFormat("CSV", "csv", "text/csv", false);
+        // Excel (XLS)
+        addFileFormat("XLS", "xls", "application/vnd.ms-excel", false);
+        // Excel (XLSX)
+        addFileFormat("XLSX", "xlsx",
                 "application/vnd.openxmlformats-officedocument."
-                + "spreadsheetml.sheet");
-        addFileFormat("JSON-LD", "jsonld", "application/ld+json");
-        addFileFormat("N-Quads", "nq", "application/n-quads");
-        addFileFormat("N-Triples", "nt", "application/n-triples");
-        addFileFormat("Notation-3", "n3", "text/rdf+n3");
-        addFileFormat("OpenDocument Spreadsheet (ODS)", "ods",
-                "application/vnd.oasis.opendocument.spreadsheet");
-        addFileFormat("OpenDocument Text (ODT)", "odt",
-                "application/vnd.oasis.opendocument.text");
-        addFileFormat("RDF/JSON", "rj", "application/rdf+json");
-        addFileFormat("RDF/XML", "rdf", "application/rdf+xml");
-        addFileFormat("TSV", "tsv", "text/tab-separated-values");
-        addFileFormat("Text", "txt", "text/plain");
-        addFileFormat("TriG", "trig", "application/x-trig");
-        addFileFormat("TriX", "trix", "application/trix");
-        addFileFormat("Turtle", "ttl", "text/turtle");
-        addFileFormat("XML", "xml", "application/xml");
-        addFileFormat("ZIP", "zip", "application/zip");
+                + "spreadsheetml.sheet", false);
+        addFileFormat("JSON", "json", "application/json", false);
+        addFileFormat("JSON-LD", "jsonld", "application/ld+json", true);
+        addFileFormat("N-Quads", "nq", "application/n-quads", true);
+        addFileFormat("N-Triples", "nt", "application/n-triples", true);
+        addFileFormat("N3", "n3", "text/rdf+n3", true);
+        // OpenDocument Spreadsheet (ODS)
+        addFileFormat("ODS", "ods",
+                "application/vnd.oasis.opendocument.spreadsheet", false);
+        // OpenDocument Text (ODT)
+        addFileFormat("ODT", "odt",
+                "application/vnd.oasis.opendocument.text", false);
+        addFileFormat("PDF", "pdf", "application/pdf", false);
+        addFileFormat("RDF/JSON", "rj", "application/rdf+json", true);
+        addFileFormat("RDF/XML", "rdf", "application/rdf+xml", true);
+        addFileFormat("TSV", "tsv", "text/tab-separated-values", false);
+        addFileFormat("TXT", "txt", "text/plain", false);
+        // Sigh, can't support both "TXT" and "TEXT" here.
+//        addFileFormat("TEXT", "txt", "text/plain");
+        addFileFormat("TriG", "trig", "application/x-trig", true);
+        addFileFormat("TriX", "trix", "application/trix", true);
+        // Turtle
+        addFileFormat("TTL", "ttl", "text/turtle", true);
+        addFileFormat("XML", "xml", "application/xml", false);
+        addFileFormat("ZIP", "zip", "application/zip", false);
+
+        allSesameDownloadFormatNames = nameToFormat.values().stream().
+                filter(ff -> ff.getIsSesameDownloadFormat()).
+                map(ff -> ff.getName()).collect(Collectors.toList());
     }
 
     /** Define a FileFormat, registering it in the three Maps.
      * @param aName The name of the format.
      * @param anExtension The file extension of the format.
      * @param aMimeType The MIME type of the format.
+     * @param anIsSesameDownloadFormat Whether or not the format is supported
+     *  as a Sesame download format.
      */
     private static void addFileFormat(final String aName,
             final String anExtension,
-            final String aMimeType) {
-        FileFormat fileFormat = new FileFormat(aName, anExtension, aMimeType);
+            final String aMimeType,
+            final boolean anIsSesameDownloadFormat) {
+        FileFormat fileFormat = new FileFormat(aName, anExtension, aMimeType,
+                anIsSesameDownloadFormat);
         nameToFormat.put(aName, fileFormat);
         extensionToFormat.put(anExtension, fileFormat);
         mimeTypeToFormat.put(aMimeType, fileFormat);
@@ -87,6 +116,15 @@ public final class FileFormatUtils {
      */
     public static FileFormat getFileFormatByMimeType(final String mimeType) {
         return mimeTypeToFormat.get(mimeType);
+    }
+
+    /** Get the list of all format names of formats supported as
+     * Sesame downloads.
+     * @return The list of all format names of formats supported as
+     *  Sesame downloads. Treat this as a read-only value.
+     */
+    public static List<String> getAllSesameDownloadFormatNames() {
+        return allSesameDownloadFormatNames;
     }
 
 }

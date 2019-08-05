@@ -4,22 +4,29 @@ package au.org.ands.vocabs.registry.solr;
 
 import static au.org.ands.vocabs.registry.solr.FieldConstants.ACCESS;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.ACRONYM;
+import static au.org.ands.vocabs.registry.solr.FieldConstants.CONCEPT_PHRASE;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.CONCEPT_SEARCH;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.DESCRIPTION;
+import static au.org.ands.vocabs.registry.solr.FieldConstants.DESCRIPTION_PHRASE;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.FORMAT;
-import static au.org.ands.vocabs.registry.solr.FieldConstants.FULLTEXT;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.ID;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.LANGUAGE;
+import static au.org.ands.vocabs.registry.solr.FieldConstants.LAST_UPDATED;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.LICENCE;
+import static au.org.ands.vocabs.registry.solr.FieldConstants.NOTE;
+import static au.org.ands.vocabs.registry.solr.FieldConstants.NOTE_PHRASE;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.OWNER;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.PUBLISHER;
+import static au.org.ands.vocabs.registry.solr.FieldConstants.PUBLISHER_PHRASE;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.PUBLISHER_SEARCH;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.SISSVOC_ENDPOINT;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.SLUG;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.STATUS;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.SUBJECT_LABELS;
+import static au.org.ands.vocabs.registry.solr.FieldConstants.SUBJECT_PHRASE;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.SUBJECT_SEARCH;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.TITLE;
+import static au.org.ands.vocabs.registry.solr.FieldConstants.TITLE_PHRASE;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.TITLE_SEARCH;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.TITLE_SORT;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.WIDGETABLE;
@@ -40,7 +47,9 @@ import org.apache.commons.text.StringEscapeUtils;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrQuery.ORDER;
+import org.apache.solr.client.solrj.SolrRequest;
 import org.apache.solr.client.solrj.SolrServerException;
+import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
 import org.apache.solr.client.solrj.impl.NoOpResponseParser;
 import org.apache.solr.client.solrj.request.QueryRequest;
 import org.apache.solr.client.solrj.response.QueryResponse;
@@ -49,13 +58,18 @@ import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.params.CommonParams;
 import org.apache.solr.common.params.DisMaxParams;
 import org.apache.solr.common.params.FacetParams;
+import org.apache.solr.common.params.HighlightParams;
 import org.apache.solr.common.util.JsonTextWriter;
+import org.apache.solr.handler.component.HighlightComponent.HighlightMethod;
+import org.apache.solr.search.QueryParsing;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.ifactory.press.db.solr.search.SafariQueryParser;
 
 import au.org.ands.vocabs.registry.db.converter.JSONSerialization;
+import au.org.ands.vocabs.registry.enums.SearchSortOrder;
 import au.org.ands.vocabs.registry.log.Analytics;
 
 /** Methods for Solr searching. */
@@ -91,9 +105,20 @@ public final class SearchIndex {
      * value for rows. The name "ridiculously large value" comes
      * from the Solr documentation for the rows parameter at
      * <a
-     *  href="https://wiki.apache.org/solr/CommonQueryParameters">https://wiki.apache.org/solr/CommonQueryParameters</a>.
+     *  href="https://wiki.apache.org/solr/CommonQueryParameters">https://wiki.apache.org/solr/CommonQueryParameters</a>
+     * (archived at <a
+     *  href="https://web.archive.org/web/20190405125211/https://wiki.apache.org/solr/CommonQueryParameters">https://web.archive.org/web/20190405125211/https://wiki.apache.org/solr/CommonQueryParameters</a>).
      */
     private static final int RIDICULOUSLY_LARGE_VALUE = 10000000;
+
+    /** Value to use for "hl.maxAnalyzedChars". */
+    private static final String HIGHLIGHT_MAX_CHARS = "10000000";
+
+    /** Value to use for "hl.simple.pre". */
+    private static final String HIGHLIGHT_PRE = "HL_START";
+
+    /** Value to use for "hl.simple.post". */
+    private static final String HIGHLIGHT_POST = "HL_END";
 
     /* Things to pay attention to, when performing maintenance on
      * this method:
@@ -152,6 +177,8 @@ public final class SearchIndex {
         // Set 10 rows as default. This can be overridden by passing
         // in a "pp" filter.
         int rows = DEFAULT_ROWS;
+        // Keep track of any search sort order specified.
+        SearchSortOrder searchSortOrder = null;
 
         // See if there are filters; if so, apply them.
         if (filtersJson != null) {
@@ -168,11 +195,49 @@ public final class SearchIndex {
 
             // Since there are filters, always apply highlighting.
             // addHighlightField() does solrQuery.setHighlight(true) for us.
-            solrQuery.addHighlightField("*");
-            solrQuery.setHighlightSimplePre("&lt;b&gt;");
-            solrQuery.setHighlightSimplePost("&lt;/b&gt;");
+            // Rather than using a wildcard:
+            //   solrQuery.addHighlightField("*");
+            // add highlight fields for precisely the fields that
+            // are searched. See the setting of the DisMaxParams.QF
+            // and SafariQueryParser.PQF parameters below.
+            // All of these fields have stored="true".
+            // All of this means you never get a search result that doesn't
+            // also have highlighting.
+            solrQuery.addHighlightField(TITLE_SEARCH);
+            solrQuery.addHighlightField(SUBJECT_SEARCH);
+            solrQuery.addHighlightField(DESCRIPTION);
+            solrQuery.addHighlightField(NOTE);
+            solrQuery.addHighlightField(CONCEPT_SEARCH);
+            solrQuery.addHighlightField(PUBLISHER_SEARCH);
+            solrQuery.addHighlightField(TITLE_PHRASE);
+            solrQuery.addHighlightField(SUBJECT_PHRASE);
+            solrQuery.addHighlightField(DESCRIPTION_PHRASE);
+            solrQuery.addHighlightField(NOTE_PHRASE);
+            solrQuery.addHighlightField(CONCEPT_PHRASE);
+            solrQuery.addHighlightField(PUBLISHER_PHRASE);
+            // Use the "unified" highlight method, as it's significantly
+            // faster than the "original" method.
+            solrQuery.setParam(HighlightParams.METHOD,
+                    HighlightMethod.UNIFIED.getMethodName());
+            // By default, highlighting stops after 51200 characters
+            // of content. To get highlighting of all concept data,
+            // need to say explicitly to keep looking.
+            solrQuery.setParam(HighlightParams.MAX_CHARS, HIGHLIGHT_MAX_CHARS);
+            // With the "unified" highlight method (but not with the "original"
+            // highlight method!), it seems we need
+            // to set hl.requireFieldMatch=true to avoid some cases
+            // of missing highlighting: e.g., where the
+            // query is abc AND def, but no single field has _both_ terms.
+            // See mailing list thread at:
+            // http://mail-archives.apache.org/mod_mbox/lucene-solr-user/
+            //        201907.mbox/%3cB5D715AC-C028-4081-BA7B-CFDE27CD6B0D@
+            //        ardc.edu.au%3e
+            solrQuery.setParam(HighlightParams.FIELD_MATCH, true);
+            // Put markers around the highlighted content.
+            solrQuery.setHighlightSimplePre(HIGHLIGHT_PRE);
+            solrQuery.setHighlightSimplePost(HIGHLIGHT_POST);
             solrQuery.setHighlightSnippets(2);
-            solrQuery.set("defType", "edismax");
+            solrQuery.set(QueryParsing.DEFTYPE, "safari");
             // Check for a "pp" setting, now, as we might need it later
             // if we find a "p" filter.
             if (filters.containsKey("pp")) {
@@ -193,8 +258,6 @@ public final class SearchIndex {
                      * directly support that. See the Solr doc. */
                     rows = RIDICULOUSLY_LARGE_VALUE;
                 }
-                filtersAndResultsExtracted.add(Analytics.SEARCH_PP_FIELD);
-                filtersAndResultsExtracted.add(rows);
             }
 
             solrQuery.set(DisMaxParams.ALTQ, "*:*");
@@ -210,16 +273,27 @@ public final class SearchIndex {
             // OWNER field is required (so far, only) by this method,
             // to include in analytics logging.
             solrQuery.setFields(
-                    ID, SLUG, STATUS, TITLE, ACRONYM,
+                    ID, LAST_UPDATED, SLUG, STATUS, TITLE, ACRONYM,
                     PUBLISHER, DESCRIPTION, WIDGETABLE,
                     SISSVOC_ENDPOINT, OWNER);
+            // Ensure that the highlight fields are set above, corresponding
+            // to the fields listed in the QF and PQF parameters.
             solrQuery.set(DisMaxParams.QF,
                     TITLE_SEARCH + "^1 "
                             + SUBJECT_SEARCH + "^0.5 "
                             + DESCRIPTION + "^0.01 "
-                            + FULLTEXT + "^0.001 "
-                            + CONCEPT_SEARCH + "^0.02 "
+                            + NOTE + "^0.01 "
+                            + CONCEPT_SEARCH + "^0.5 "
                             + PUBLISHER_SEARCH + "^0.5");
+            // Default (1) boosting for phrases: phrase matches should
+            // be considered (much) more important than non-phrase matches.
+            solrQuery.set(SafariQueryParser.PQF,
+                    TITLE_PHRASE + " "
+                            + SUBJECT_PHRASE + " "
+                            + DESCRIPTION_PHRASE + " "
+                            + NOTE_PHRASE + " "
+                            + CONCEPT_PHRASE + " "
+                            + PUBLISHER_PHRASE);
 
             for (Entry<String, Object> filterEntry : filters.entrySet()) {
                 Object value = filterEntry.getValue();
@@ -257,6 +331,21 @@ public final class SearchIndex {
                     break;
                 case "pp":
                     // We've already seen this, above.
+                    break;
+                case "sort":
+                    Object ssoValueAsObject = filterEntry.getValue();
+                    if (ssoValueAsObject instanceof String) {
+                        try {
+                            searchSortOrder = SearchSortOrder.fromValue(
+                                    (String) ssoValueAsObject);
+                        } catch (IllegalArgumentException e) {
+                            throw new IllegalArgumentException("sort "
+                                    + "parameter must be one of the "
+                                    + "supported values");
+                        }
+                    }
+                    // searchSortOrder remains null if no value specified,
+                    // or the value specified was not a string.
                     break;
                 case WIDGETABLE:
                     String widgetableValue;
@@ -320,15 +409,81 @@ public final class SearchIndex {
 
         // We can now set rows.
         solrQuery.setRows(rows);
+        // Always log the value of rows that we use, whether or not
+        // the user provided a value for it.
+        filtersAndResultsExtracted.add(Analytics.SEARCH_PP_FIELD);
+        filtersAndResultsExtracted.add(rows);
         // If there was no query specified, get all documents,
         // and sort by title_sort.
         if (!queryIsSet) {
             solrQuery.setQuery("*:*");
-            solrQuery.setSort(TITLE_SORT, ORDER.asc);
+            if (searchSortOrder == null) {
+                searchSortOrder = SearchSortOrder.A_TO_Z;
+            }
+            switch (searchSortOrder) {
+            case A_TO_Z:
+                solrQuery.setSort(TITLE_SORT, ORDER.asc);
+                break;
+            case Z_TO_A:
+                solrQuery.setSort(TITLE_SORT, ORDER.desc);
+                break;
+            case RELEVANCE:
+                throw new IllegalArgumentException("relevance sort "
+                        + "only allowed when there is a query term");
+            case LAST_UPDATED_ASC:
+                solrQuery.setSort(LAST_UPDATED, ORDER.asc);
+                break;
+            case LAST_UPDATED_DESC:
+                solrQuery.setSort(LAST_UPDATED, ORDER.desc);
+                break;
+            default:
+                LOGGER.error("Unknown search sort order: " + searchSortOrder);
+            }
+        } else {
+            if (searchSortOrder == null) {
+                searchSortOrder = SearchSortOrder.RELEVANCE;
+            }
+            switch (searchSortOrder) {
+            case A_TO_Z:
+                solrQuery.setSort(TITLE_SORT, ORDER.asc);
+                break;
+            case Z_TO_A:
+                solrQuery.setSort(TITLE_SORT, ORDER.desc);
+                break;
+            case RELEVANCE:
+                // Nothing to do.
+                break;
+            case LAST_UPDATED_ASC:
+                solrQuery.setSort(LAST_UPDATED, ORDER.asc);
+                break;
+            case LAST_UPDATED_DESC:
+                solrQuery.setSort(LAST_UPDATED, ORDER.desc);
+                break;
+            default:
+                LOGGER.error("Unknown search sort order: " + searchSortOrder);
+            }
         }
+        // Always log the value of searchSortOrder that we use,
+        // whether or not the user provided a value for it.
+        filtersAndResultsExtracted.add(Analytics.SEARCH_SORT_ORDER_FIELD);
+        filtersAndResultsExtracted.add(searchSortOrder.value());
 
         try {
-            QueryResponse responseQuery = SOLR_CLIENT.query(solrQuery);
+            LOGGER.debug("solrQuery: " + solrQuery.toString());
+            // Queries can get long, so force the use of the POST
+            // method. (If the query exceeds 8192 characters,
+            // the default GET method fails.)
+            // See https://issues.apache.org/jira/browse/SOLR-13014
+            // Sigh: this is currently _broken_ for EmbeddedSolrServer,
+            // so for the test suite, need to use the default (GET) method.
+            // See https://issues.apache.org/jira/browse/SOLR-12858
+            QueryResponse responseQuery;
+            if (SOLR_CLIENT instanceof EmbeddedSolrServer) {
+                responseQuery = SOLR_CLIENT.query(solrQuery);
+            } else {
+                responseQuery = SOLR_CLIENT.query(solrQuery,
+                        SolrRequest.METHOD.POST);
+            }
             if (logResults) {
                 SolrDocumentList solrDocumentList =
                         responseQuery.getResults();
@@ -339,8 +494,8 @@ public final class SearchIndex {
                             (String) sd.getFieldValue(ID)));
                     resultOwners.add((String) sd.getFieldValue(OWNER));
                 }
-                LOGGER.info("resultIds: " + resultIds);
-                LOGGER.info("resultOwners: " + resultOwners);
+                LOGGER.debug("resultIds: " + resultIds);
+                LOGGER.debug("resultOwners: " + resultOwners);
                 filtersAndResultsExtracted.add(
                         Analytics.SEARCH_RESULT_ID_FIELD);
                 filtersAndResultsExtracted.add(resultIds);

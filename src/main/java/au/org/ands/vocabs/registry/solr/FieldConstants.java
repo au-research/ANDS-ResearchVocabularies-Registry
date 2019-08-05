@@ -17,10 +17,14 @@ public final class FieldConstants {
     public static final String ACRONYM = "acronym";
     /** The name of the "concept" Solr field. */
     public static final String CONCEPT = "concept";
+    /** The name of the "concept_phrase" Solr field. */
+    public static final String CONCEPT_PHRASE = "concept_phrase";
     /** The name of the "concept_search" Solr field. */
     public static final String CONCEPT_SEARCH = "concept_search";
     /** The name of the "description" Solr field. */
     public static final String DESCRIPTION = "description";
+    /** The name of the "description_phrase" Solr field. */
+    public static final String DESCRIPTION_PHRASE = "description_phrase";
     /** The name of the "format" Solr field. */
     public static final String FORMAT = "format";
     /** The name of the "fulltext" Solr field. */
@@ -29,14 +33,24 @@ public final class FieldConstants {
     public static final String ID = "id";
     /** The name of the "language" Solr field. */
     public static final String LANGUAGE = "language";
+    /** The name of the "last_updated" Solr field. */
+    public static final String LAST_UPDATED = "last_updated";
     /** The name of the "licence" Solr field. */
     public static final String LICENCE = "licence";
+    /** The name of the "note" Solr field, used for the top-level
+     * vocabulary notes. */
+    public static final String NOTE = "note";
+    /** The name of the "note_phrase" Solr field, used for the top-level
+     * vocabulary notes. */
+    public static final String NOTE_PHRASE = "note_phrase";
     /** The name of the "owner" Solr field. */
     public static final String OWNER = "owner";
     /** The name of the "poolparty_id" Solr field. */
     public static final String POOLPARTY_ID = "poolparty_id";
     /** The name of the "publisher" Solr field. */
     public static final String PUBLISHER = "publisher";
+    /** The name of the "publisher_phrase" Solr field. */
+    public static final String PUBLISHER_PHRASE = "publisher_phrase";
     /** The name of the "publisher_search" Solr field. */
     public static final String PUBLISHER_SEARCH = "publisher_search";
     /** The name of the "schema_version" Solr user property. */
@@ -53,6 +67,8 @@ public final class FieldConstants {
     public static final String SUBJECT_LABELS = "subject_labels";
     /** The name of the "subject_notations" Solr field. */
     public static final String SUBJECT_NOTATIONS = "subject_notations";
+    /** The name of the "subject_phrase" Solr field. */
+    public static final String SUBJECT_PHRASE = "subject_phrase";
     /** The name of the "subject_search" Solr field. */
     public static final String SUBJECT_SEARCH = "subject_search";
     /** The name of the "subject_sources" Solr field. This was formerly
@@ -60,6 +76,8 @@ public final class FieldConstants {
     public static final String SUBJECT_SOURCES = "subject_sources";
     /** The name of the "title" Solr field. */
     public static final String TITLE = "title";
+    /** The name of the "title_phrase" Solr field. */
+    public static final String TITLE_PHRASE = "title_phrase";
     /** The name of the "title_search" Solr field. */
     public static final String TITLE_SEARCH = "title_search";
     /** The name of the "title_sort" Solr field. */
@@ -75,6 +93,11 @@ public final class FieldConstants {
     public static final String ALPHA_ONLY_SORT = "alphaOnlySort";
     /** The name of the "boolean" Solr field type. */
     public static final String BOOLEAN = "boolean";
+    /** The name of the "pdate" Solr field type, based on the
+     * "solr.DatePointField" class. */
+    public static final String DATE_POINT = "pdate";
+    /** The name of the custom "lower_exact_words" Solr field type. */
+    public static final String LOWER_EXACT_WORDS = "lower_exact_words";
     /** The name of the "string" Solr field type. */
     public static final String STRING = "string";
     /** The name of the "text_en_splitting" Solr field type. */

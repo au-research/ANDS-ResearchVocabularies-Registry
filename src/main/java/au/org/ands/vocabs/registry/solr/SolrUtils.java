@@ -34,6 +34,9 @@ public final class SolrUtils {
     /** Access to the Solr API. */
     private static SolrClient solrClient;
 
+    /** Name of the collection used during tests. */
+    public static final String TEST_COLLECTION = "vocabs-registry";
+
     static {
         String solrCollectionUrl = RegistryProperties.getProperty(
                 PropertyConstants.REGISTRY_SOLR_COLLECTION_URL);
@@ -41,19 +44,21 @@ public final class SolrUtils {
             solrClient = new HttpSolrClient.Builder(solrCollectionUrl).build();
         } else {
             // Start an embedded Solr for automated testing.
-            String coreName = "vocabs-registry";
             LOGGER.info("Starting an embedded Solr.");
             Path classesPath = Paths.get(
                     ApplicationContextListener.getServletContext().
                     getRealPath("/WEB-INF/classes"));
             Path home = classesPath.resolve("solr");
             Path configFile = home.resolve("solr.xml");
+            // Define solr.install.dir, as used by solrconfig.xml.
+            System.setProperty("solr.install.dir",
+                    home.toAbsolutePath().toString());
             CoreContainer container = CoreContainer.createAndLoad(
                     home, configFile);
-            solrClient = new EmbeddedSolrServer(container, coreName);
+            solrClient = new EmbeddedSolrServer(container, TEST_COLLECTION);
             CreateSchema createSchema = new CreateSchema();
             try {
-                createSchema.installSchema(solrClient);
+                createSchema.installSchema(null, solrClient, null, null);
             } catch (SolrServerException | IOException e) {
                 LOGGER.error("Unable to install schema", e);
             }

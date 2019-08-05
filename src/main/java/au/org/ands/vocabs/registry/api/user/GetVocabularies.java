@@ -122,6 +122,7 @@ public class GetVocabularies {
      * @param uriInfo The UriInfo of the request.
      * @param vocabularyId The VocabularyId of the vocabulary to be fetched.
      * @param includeVersions Whether or not to include version elements.
+     *      If enabled, versions are returned in reverse order of release date.
      * @param includeAccessPoints Whether or not to include access point
      *      elements.
      * @param includeRelatedEntitiesAndVocabularies Whether or not to include
@@ -144,7 +145,9 @@ public class GetVocabularies {
             @Context final UriInfo uriInfo,
             @ApiParam(value = "The ID of the vocabulary to get.")
             @PathParam("vocabularyId") final Integer vocabularyId,
-            @ApiParam(value = "Whether or not to include version elements.",
+            @ApiParam(value = "Whether or not to include version elements. "
+                    + "If enabled, versions are returned in "
+                    + "reverse order of release date.",
                 defaultValue = "false")
             @QueryParam("includeVersions") @DefaultValue("false")
             final boolean includeVersions,
@@ -203,6 +206,7 @@ public class GetVocabularies {
      * analytics logging.
      * @param vocabularyId The Vocabulary Id of the vocabulary to be fetched.
      * @param includeVersions Whether or not to include version elements.
+     *      If enabled, versions are returned in reverse order of release date.
      * @param includeAccessPoints Whether or not to include access point
      *      elements.
      * @param includeRelatedEntitiesAndVocabularies Whether or not to include
@@ -234,7 +238,8 @@ public class GetVocabularies {
         // override any "includeVersions=false" setting.
         if (includeVersions || includeAccessPoints) {
             List<au.org.ands.vocabs.registry.db.entity.Version>
-            dbVersions = VersionDAO.getCurrentVersionListForVocabulary(
+            dbVersions = VersionDAO.
+            getCurrentVersionListForVocabularyByReleaseDate(
                     vocabularyId);
             List<Version> outputVersions = outputVocabulary.getVersion();
 
@@ -529,6 +534,7 @@ public class GetVocabularies {
     }
 
     /** Get the current versions of a vocabulary, by its vocabulary id.
+     * The results are returned in reverse order of their release date.
      * @param vocabularyId The VocabularyId of the versions to be fetched.
      * @return The list of versions, in either XML or JSON format,
      *      or an error result, if there is no such vocabulary. */
@@ -536,7 +542,8 @@ public class GetVocabularies {
     @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     @GET
     @ApiOperation(value = "Get the current versions of a vocabulary, "
-            + "by its vocabulary id.")
+            + "by its vocabulary id. The results are returned in "
+            + "reverse order of release date.")
     public final VersionList getVersionsForVocabularyById(
             @ApiParam(value = "The ID of the vocabulary from which to get "
                     + "the current versions.")
@@ -544,7 +551,8 @@ public class GetVocabularies {
         logger.debug("called getVersionsForVocabularyById: " + vocabularyId);
 
         List<au.org.ands.vocabs.registry.db.entity.Version>
-            dbVersions = VersionDAO.getCurrentVersionListForVocabulary(
+            dbVersions = VersionDAO.
+            getCurrentVersionListForVocabularyByReleaseDate(
                     vocabularyId);
         VersionList outputVersionList = new VersionList();
         List<Version> outputVersions = outputVersionList.getVersion();

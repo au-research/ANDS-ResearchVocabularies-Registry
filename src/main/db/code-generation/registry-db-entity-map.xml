@@ -325,6 +325,44 @@
     <foreignKeyQueries>
       <foreignKeyQuery keyColumn="vocabularyId" entityName="Vocabulary" />
     </foreignKeyQueries>
+    <extraQueries>
+      <extraQuery name="GET_CURR_VER_LIST_FOR_VOC_BY_REL_DATE">
+        <extraQueryParameter name="vocabularyId" />
+        <queryText temporal="true">
+          SELECT entity FROM Version entity
+          WHERE entity.vocabularyId = :vocabularyId
+          #AND_TEMPORAL_QUERY_VALID_SUFFIX
+          ORDER BY releaseDate DESC
+        </queryText>
+        <method>    /** Get all current Version instances for a Vocabulary,
+     * with results returned in decreasing order of their releaseDate.
+     * This version of the method creates and uses its own EntityManager.
+     * @param id The Vocabulary.
+     * @return The list of current Version
+     *     instances for this Vocabulary.
+     */
+    @SuppressWarnings("checkstyle:LineLength")
+    public static List&lt;Version&gt;
+    getCurrentVersionListForVocabularyByReleaseDate(
+            final Integer id) {
+        EntityManager em = DBContext.getEntityManager();
+        TypedQuery&lt;Version&gt; q = em.createNamedQuery(
+            Version.
+                GET_CURR_VER_LIST_FOR_VOC_BY_REL_DATE,
+            Version.class).
+            setParameter(
+                Version.
+                    GET_CURR_VER_LIST_FOR_VOC_BY_REL_DATE_VOCABULARYID,
+                id);
+        q = TemporalUtils.setDatetimeConstantParameters(q);
+        List&lt;Version&gt; entityList = q.getResultList();
+        em.close();
+        return entityList;
+    }
+
+</method>
+      </extraQuery>
+    </extraQueries>
   </map>
   <map tableName="version_artefacts"
        entityName="VersionArtefact"

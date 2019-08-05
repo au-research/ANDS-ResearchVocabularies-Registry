@@ -72,8 +72,22 @@ SISSVoc.specsPath = ${Registry.storagePath}/specs
 
 ## Solr
 
+# Base URL of Solr. Used for CoreAdmin requests, e.g.,
+# creating/deleting a collection. Typically something like:
+#   http://localhost:8983/solr
+#Registry.Solr.baseURL = http://localhost:8983/solr
+# The hostname and port of the ZooKeeper instance, in the format
+# "hostname:port". For an embedded Solr, the port is typically
+# the Solr port plus 1000. So, if the Solr is on localhost at
+# port 8983, and you are using the embedded ZooKeeper,
+# set this to "localhost:9983".
+#Registry.Solr.zkHost = localhost:9983
+# The name of the Solr collection used for indexing registry entities.
+#Registry.Solr.collection = vocabs-registry
 # Specify that an embedded Solr instance will be used.
 Registry.Solr.collectionURL = test
+# Full path to the Solr collection, to be used when creating a SolrClient.
+#Registry.Solr.collectionURL = ${Registry.Solr.baseURL}/${Registry.Solr.collection}
 
 ## PoolParty
 
