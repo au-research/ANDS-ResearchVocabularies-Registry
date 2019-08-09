@@ -132,30 +132,30 @@ public class SesameImporterProvider implements WorkflowProvider {
     public final void doImport(final TaskInfo taskInfo,
             final Subtask subtask) {
         boolean success;
-        // Create repository
+        // Create the repository.
         success = createRepository(taskInfo, subtask);
         if (!success) {
+            // createRepository() will already have set the subtask status
+            // and logged an error in this case.
             return;
         }
-        // Upload the RDF
+        // Upload the RDF.
         success = uploadRDF(taskInfo, subtask);
         if (!success) {
+            // uploadRDF() will already have set the subtask status
+            // and logged an error in this case.
             return;
         }
         String repositoryId = TaskUtils.getSesameRepositoryId(taskInfo);
-//        subtask.addResult("repository_id", repositoryId);
         // Use the nice JAX-RS libraries to construct the path to
         // the SPARQL endpoint.
         Client client = RegistryNetUtils.getClient();
         WebTarget target = client.target(sparqlPrefix);
-        WebTarget sparqlTarget = target
-                .path(repositoryId);
-//        subtask.addResult("sparql_endpoint",
-//                sparqlTarget.getUri().toString());
-        // Add apiSparql endpoint
+        WebTarget sparqlTarget = target.path(repositoryId);
+        // Add apiSparql endpoint.
         AccessPointUtils.createApiSparqlAccessPoint(taskInfo,
                 sparqlTarget.getUri().toString());
-        // Add sesameDownload endpoint
+        // Add sesameDownload endpoint.
         AccessPointUtils.createSesameDownloadAccessPoint(taskInfo,
                 repositoryId, sesameServer);
         subtask.setStatus(TaskStatus.SUCCESS);
@@ -249,6 +249,9 @@ public class SesameImporterProvider implements WorkflowProvider {
             Repository repository = manager.getRepository(repositoryID);
             if (repository == null) {
                 // Repository is missing. This is bad.
+                subtask.setStatus(TaskStatus.ERROR);
+                subtask.addResult(TaskRunner.ERROR,
+                        "Sesame uploadRDF, repository missing");
                 logger.error("Sesame uploadRDF, repository missing");
                 return false;
             }
