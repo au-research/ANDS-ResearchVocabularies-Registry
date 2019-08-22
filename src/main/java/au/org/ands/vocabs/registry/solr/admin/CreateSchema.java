@@ -767,7 +767,7 @@ public final class CreateSchema {
             }
             logger.info("Installed schema version is: "
                     + installedSchemaVersion);
-            if (installedSchemaVersion < 1) {
+            if (installedSchemaVersion < 2) {
                 if (!(client instanceof EmbeddedSolrServer)) {
                     uploadSolrconfig(collectionName, zkHost);
                     reloadCollection(baseURL, collectionName);
