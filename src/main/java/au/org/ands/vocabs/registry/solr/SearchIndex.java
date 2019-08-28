@@ -382,7 +382,7 @@ public final class SearchIndex {
                         @SuppressWarnings("unchecked")
                         String filterStringValues = ((ArrayList<String>) value).
                                 stream().
-                                map(v -> "+\""
+                                map(v -> "\""
                                         + StringEscapeUtils.escapeEcmaScript(
                                                 v.toString()) + "\"").
                                 collect(Collectors.joining(" "));
@@ -390,7 +390,7 @@ public final class SearchIndex {
                         filtersAndResultsExtracted.add(logFieldName);
                         filtersAndResultsExtracted.add(value);
                     } else {
-                        filterStringValue = "+\""
+                        filterStringValue = "\""
                                 + StringEscapeUtils.escapeEcmaScript(
                                         value.toString()) + "\"";
                         filtersAndResultsExtracted.add(logFieldName);
