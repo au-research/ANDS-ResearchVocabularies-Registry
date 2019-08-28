@@ -129,9 +129,12 @@ public final class EntityIndexer {
 
     static {
         accessPointName.put(AccessPointType.API_SPARQL, "API/SPARQL");
-        accessPointName.put(AccessPointType.FILE, "Direct Download");
-        accessPointName.put(AccessPointType.SESAME_DOWNLOAD,
-                "Repository Download");
+        // No longer distinguish FILE and SESAME_DOWNLOAD access points.
+        // accessPointName.put(AccessPointType.FILE, "Direct Download");
+        accessPointName.put(AccessPointType.FILE, "Download");
+        // accessPointName.put(AccessPointType.SESAME_DOWNLOAD,
+        //         "Repository Download");
+        accessPointName.put(AccessPointType.SESAME_DOWNLOAD, "Download");
         accessPointName.put(AccessPointType.SISSVOC, "Linked Data API");
         accessPointName.put(AccessPointType.WEB_PAGE, "Online");
     }
