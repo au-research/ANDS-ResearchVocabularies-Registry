@@ -170,6 +170,7 @@ public final class SearchIndex {
                 FORMAT, LICENCE, WIDGETABLE);
         solrQuery.setFacetSort(FacetParams.FACET_SORT_INDEX);
         solrQuery.setFacetMinCount(1);
+        solrQuery.setFacetLimit(-1);
 
         // Keep track if we have seen a query term.
         boolean queryIsSet = false;
