@@ -651,7 +651,7 @@ public final class CreateSchema {
             addCopyField(client, SUBJECT_LABELS,
                     Arrays.asList(SUBJECT_SEARCH, SUBJECT_PHRASE));
             addCopyField(client, SUBJECT_NOTATIONS,
-                    Arrays.asList(SUBJECT_SEARCH));
+                    Arrays.asList(SUBJECT_SEARCH, SUBJECT_PHRASE));
             addCopyField(client, PUBLISHER,
                     Arrays.asList(PUBLISHER_SEARCH, PUBLISHER_PHRASE));
 
