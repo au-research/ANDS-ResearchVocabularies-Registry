@@ -58,6 +58,7 @@ import javax.json.JsonObjectBuilder;
 
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrRequest;
+import org.apache.solr.client.solrj.SolrResponse;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
@@ -69,7 +70,6 @@ import org.apache.solr.client.solrj.request.schema.FieldTypeDefinition;
 import org.apache.solr.client.solrj.request.schema.SchemaRequest;
 import org.apache.solr.client.solrj.response.CollectionAdminResponse;
 import org.apache.solr.client.solrj.response.SimpleSolrResponse;
-import org.apache.solr.client.solrj.response.SolrResponseBase;
 import org.apache.solr.client.solrj.response.schema.SchemaResponse.UpdateResponse;
 import org.apache.solr.common.cloud.SolrZkClient;
 import org.apache.solr.common.params.CommonParams;
@@ -102,7 +102,7 @@ public final class CreateSchema {
      * Throws a RuntimeException if there was an error.
      * @param response The response from SolrJ to be checked.
      */
-    private void checkResponse(final SolrResponseBase response) {
+    private void checkResponse(final SolrResponse response) {
         NamedList<Object> responseList = response.getResponse();
         Object errors = responseList.get("errors");
         if (errors != null) {
@@ -446,7 +446,8 @@ public final class CreateSchema {
                 SolrRequest.METHOD.POST, "/config", null);
         request.setContentWriter(new StringPayloadContentWriter(payload,
                 CommonParams.JSON_MIME));
-        request.process(solrClient);
+        SimpleSolrResponse response = request.process(solrClient);
+        checkResponse(response);
         logger.info(" ... done");
     }
 
@@ -497,7 +498,8 @@ public final class CreateSchema {
                 SolrRequest.METHOD.POST, "/config", null);
         request.setContentWriter(new StringPayloadContentWriter(payload,
                 CommonParams.JSON_MIME));
-        request.process(solrClient);
+        SimpleSolrResponse response = request.process(solrClient);
+        checkResponse(response);
         logger.info(" ... done");
     }
 
@@ -728,6 +730,7 @@ public final class CreateSchema {
                             collectionName);
 
             caResponse = reloadCollectionRequest.process(client);
+            checkResponse(caResponse);
             System.out.println("reload status:" + caResponse.getStatus());
             System.out.println("reload isSuccess:" + caResponse.isSuccess());
         } catch (SolrServerException sse) {
