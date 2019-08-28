@@ -98,8 +98,12 @@ public final class EntityIndexer {
     // Long term solution should use a vocabulary service (such as ANDS's)
     */
 
-    /** Map of licence keys to a generic description. */
-    private static Map<String, String> licenceGroups = new HashMap<>();
+    /** Map of licence keys to a generic description.
+     * Defined as a {@link HashMap} rather than as a {@link Map},
+     * as the code relies on the ability to pass in the value
+     * {@code null} to the {@link HashMap#get(Object)} method
+     * without getting a {@code NullPointerException}. */
+    private static HashMap<String, String> licenceGroups = new HashMap<>();
 
     static {
         licenceGroups.put("GPL", "Open Licence");
@@ -113,6 +117,11 @@ public final class EntityIndexer {
         licenceGroups.put("AusGoalRestrictive", "Restrictive Licence");
         licenceGroups.put("NoLicence", "No Licence");
     }
+
+    /** Fallback value to use for licence, if the vocabulary specifies
+     * a licence value, but that value is not one of the keys of
+     * {@code licenceGroups}. */
+    private static final String LICENCE_UNKNOWN = "Unknown/Other";
 
     /** Map of access point types to a human-readable description. */
     private static Map<AccessPointType, String> accessPointName =
@@ -195,8 +204,17 @@ public final class EntityIndexer {
         }
         addDataToDocument(document, STATUS,
                 vocabulary.getStatus().toString());
-        addDataToDocument(document, LICENCE,
-                licenceGroups.get(vocabularyData.getLicence()));
+        // Licence values are grouped together into categories.
+        // Map the licence value to its category for indexing.
+        String licence = vocabularyData.getLicence();
+        String licenceGroup = licenceGroups.get(licence);
+        if (licenceGroup != null) {
+            addDataToDocument(document, LICENCE, licenceGroup);
+        } else if (StringUtils.isNotBlank(licence)) {
+            // Non-blank licence, but one we don't recognize;
+            // use the fallback value.
+            addDataToDocument(document, LICENCE, LICENCE_UNKNOWN);
+        }
         addDataToDocument(document, ACRONYM, vocabularyData.getAcronym());
         // Strip HTML tags, and convert HTML elements into their
         // corresponding Unicode characters.
