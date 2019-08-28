@@ -34,6 +34,7 @@ import au.org.ands.vocabs.registry.db.context.TemporalUtils;
 import au.org.ands.vocabs.registry.db.converter.JSONSerialization;
 import au.org.ands.vocabs.registry.db.dao.AccessPointDAO;
 import au.org.ands.vocabs.registry.db.entity.AccessPoint;
+import au.org.ands.vocabs.registry.db.internal.ApSesameDownload;
 import au.org.ands.vocabs.registry.db.internal.VersionJson;
 import au.org.ands.vocabs.registry.db.internal.VocabularyJson;
 import au.org.ands.vocabs.registry.enums.AccessPointType;
@@ -315,7 +316,8 @@ public class SesameImporterProvider implements WorkflowProvider {
      */
     public final void unimport(final TaskInfo taskInfo,
             final Subtask subtask) {
-        // Remove the sesameDownload access point.
+        // Remove the sesameDownload access point(s) and the
+        // Sesame repository (repositories).
         List<AccessPoint> aps = AccessPointDAO.
                 getCurrentAccessPointListForVersionByType(
                         taskInfo.getVersion().getVersionId(),
@@ -323,12 +325,52 @@ public class SesameImporterProvider implements WorkflowProvider {
                         taskInfo.getEm());
         for (AccessPoint ap : aps) {
             if (ap.getSource() == ApSource.SYSTEM) {
+                ApSesameDownload apSesameDownload = JSONSerialization.
+                        deserializeStringAsJson(ap.getData(),
+                                ApSesameDownload.class);
+                String apServerBase = apSesameDownload.getServerBase();
+                String apRepositoryID = apSesameDownload.getRepository();
+
                 TemporalUtils.makeHistorical(ap, taskInfo.getNowTime());
                 ap.setModifiedBy(taskInfo.getModifiedBy());
                 AccessPointDAO.updateAccessPoint(taskInfo.getEm(), ap);
+
+                // Remove the repository from the Sesame server.
+                // We do all the RepositoryManager stuff inside the loop,
+                // because it could be the case that there are multiple
+                // sesameDownload access points from _different_
+                // Sesame servers. Well, not at the moment, but maybe
+                // in future.
+                RepositoryManager manager = null;
+                try {
+                    manager = RepositoryProvider.getRepositoryManager(
+                            apServerBase);
+                    Repository repository = manager.getRepository(
+                            apRepositoryID);
+                    if (repository == null) {
+                        // No such repository; nothing to do.
+                         logger.info("Sesame unimport: repository "
+                                 + apRepositoryID + " already gone.");
+                         continue;
+                    }
+                    manager.removeRepository(apRepositoryID);
+                    // Seems to be necessary to invoke refresh() to make
+                    // the manager "forget" about the repository.
+                    // Without it, if you immediately reimport,
+                    // createRepository's call to getRepository()
+                    // wrongly reports that the repository already exists,
+                    // and the subsequent importing of data fails.
+                    manager.refresh();
+                } catch (RepositoryConfigException | RepositoryException e) {
+                    subtask.setStatus(TaskStatus.ERROR);
+                    subtask.addResult(TaskRunner.ERROR,
+                            "Exception in Sesame unimport");
+                    logger.error("Exception in Sesame unimport", e);
+                    return;
+                }
             }
         }
-        // Remove the apiSparql access point.
+        // Remove the apiSparql access point(s).
         aps = AccessPointDAO.
                 getCurrentAccessPointListForVersionByType(
                         taskInfo.getVersion().getVersionId(),
@@ -341,36 +383,8 @@ public class SesameImporterProvider implements WorkflowProvider {
                 AccessPointDAO.updateAccessPoint(taskInfo.getEm(), ap);
             }
         }
-        // Remove the repository from the Sesame server.
-        RepositoryManager manager = null;
-        try {
-            manager = RepositoryProvider.getRepositoryManager(sesameServer);
-            String repositoryID = TaskUtils.getSesameRepositoryId(
-                    taskInfo);
-            Repository repository = manager.getRepository(repositoryID);
-            if (repository == null) {
-                // No such repository; nothing to do.
-                 logger.debug("Sesame unimport: nothing to do.");
-                 subtask.setStatus(TaskStatus.SUCCESS);
-                return;
-            }
-            manager.removeRepository(repositoryID);
-            // Seems to be necessary to invoke refresh() to make
-            // the manager "forget" about the repository.
-            // Without it, if you immediately reimport,
-            // createRepository's call to getRepository() wrongly reports
-            // that the repository already exists, and the subsequent
-            // importing of data fails.
-            manager.refresh();
-            // If we're still here, success, so return with success.
-            subtask.setStatus(TaskStatus.SUCCESS);
-            return;
-        } catch (RepositoryConfigException | RepositoryException e) {
-            subtask.setStatus(TaskStatus.ERROR);
-            subtask.addResult(TaskRunner.ERROR,
-                    "Exception in Sesame unimport");
-            logger.error("Exception in Sesame unimport", e);
-        }
+        // If we're still here, success, so return with success.
+        subtask.setStatus(TaskStatus.SUCCESS);
         return;
     }
 
