@@ -415,10 +415,10 @@ public final class CreateSchema {
             final String field)
                     throws SolrServerException, IOException {
         logger.info("Deleting dynamic field: " + field + " ... ");
-        SchemaRequest.DeleteDynamicField deleteCopyFieldRequest =
+        SchemaRequest.DeleteDynamicField deleteDynamicFieldRequest =
                 new SchemaRequest.DeleteDynamicField(field);
         UpdateResponse updateResponse =
-                deleteCopyFieldRequest.process(solrClient);
+                deleteDynamicFieldRequest.process(solrClient);
         checkResponse(updateResponse);
         logger.info(" ... done");
       }
