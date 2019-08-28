@@ -132,7 +132,7 @@ public final class CreateSchema {
                 // No such property. OK, return 0.
                 return 0;
             }
-            return Integer.parseInt((schemaVersion));
+            return Integer.parseInt(schemaVersion);
         } catch (SolrServerException e) {
             logger.error("Exception:", e);
             return -1;
