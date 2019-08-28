@@ -238,11 +238,9 @@ public final class EntityIndexer {
         }
         // languages
         ArrayList<String> languages = new ArrayList<>();
-        ULocale loc = new ULocale(vocabularyData.getPrimaryLanguage());
-        languages.add(loc.getDisplayName(LANGUAGE_LOCALE));
+        languages.add(resolveLanguage(vocabularyData.getPrimaryLanguage()));
         for (String otherLanguage : vocabularyData.getOtherLanguages()) {
-            loc = new ULocale(otherLanguage);
-            languages.add(loc.getDisplayName(LANGUAGE_LOCALE));
+            languages.add(resolveLanguage(otherLanguage));
         }
         // Use addField() directly, as we know that languages is non-empty.
         document.addField(LANGUAGE, languages);
@@ -413,6 +411,24 @@ public final class EntityIndexer {
         }
         document.addField(CONCEPT, concepts);
         document.addField(WIDGETABLE, widgetable);
+    }
+
+    /** Resolve a language tag into its full name.
+     * If the result is the same (except for case), we take that to
+     * mean that the language name is unknown, so we return the original
+     * value: this means a tag such as "English" is left alone.
+     * @param lang The language tag to be resolved.
+     * @return The resolved language name, or lang, if resolution
+     *      fails.
+     */
+    public static String resolveLanguage(final String lang) {
+        ULocale loc = new ULocale(lang);
+        String displayName = loc.getDisplayName(LANGUAGE_LOCALE);
+        if (lang.equalsIgnoreCase(displayName)) {
+            return lang;
+        } else {
+            return displayName;
+        }
     }
 
     /* Methods for communicating with Solr.
