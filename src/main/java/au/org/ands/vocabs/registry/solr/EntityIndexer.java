@@ -202,10 +202,8 @@ public final class EntityIndexer {
         // The order of the fields matches:
         // https://intranet.ands.org.au/display/PROJ/
         //         Vocabulary+Solr+documents+and+queries
-        addDataToDocument(document, LAST_UPDATED,
-                vocabulary.getStartDate());
-        addDataToDocument(document, ID,
-                Integer.toString(vocabularyId));
+        addDataToDocument(document, LAST_UPDATED, vocabulary.getStartDate());
+        addDataToDocument(document, ID, Integer.toString(vocabularyId));
         addDataToDocument(document, TITLE, vocabularyData.getTitle());
         addDataToDocument(document, SLUG, vocabulary.getSlug());
         PoolpartyProject ppProject = vocabularyData.getPoolpartyProject();
