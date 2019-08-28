@@ -2,10 +2,6 @@
 
 package au.org.ands.vocabs.registry.utils;
 
-import java.lang.invoke.MethodHandles;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
@@ -14,10 +10,6 @@ import au.org.ands.vocabs.registry.solr.EntityIndexer;
 /** Unit tests of the conversion between ISO 639 and human-readable
  * forms of language names. */
 public class TestLanguageConversion {
-
-    /** Logger for this class. */
-    private static final Logger LOGGER = LoggerFactory.getLogger(
-            MethodHandles.lookup().lookupClass());
 
     /** Run tests of the language conversion. */
     @Test
