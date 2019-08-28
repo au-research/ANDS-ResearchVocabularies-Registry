@@ -163,6 +163,16 @@ public final class EntityIndexer {
         }
     }
 
+    /** Convert a {@link LocalDateTime} to a String, in the format
+     * expected by Solr.
+     * @param timestamp The LocalDateTime value to be converted.
+     * @return The timestamp converted into a String.
+     */
+    public static String localDateTimeToString(final LocalDateTime timestamp) {
+        return timestamp.atZone(ZoneOffset.UTC).
+            format(DateTimeFormatter.ISO_INSTANT);
+    }
+
     /** Add a key/value pair to the Solr document, if the value
      * is non-null and non-empty. The value is specified as a LocalDateTime.
      * @param document The Solr document.
@@ -172,9 +182,7 @@ public final class EntityIndexer {
     private static void addDataToDocument(final SolrInputDocument document,
             final String key, final LocalDateTime value) {
         if (value != null) {
-            document.addField(key,
-                    value.atZone(ZoneOffset.UTC).
-                        format(DateTimeFormatter.ISO_INSTANT));
+            document.addField(key, localDateTimeToString(value));
         }
     }
 
