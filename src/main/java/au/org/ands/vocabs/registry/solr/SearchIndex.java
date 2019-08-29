@@ -36,9 +36,11 @@ import java.io.StringWriter;
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang.StringUtils;
@@ -52,6 +54,7 @@ import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
 import org.apache.solr.client.solrj.impl.NoOpResponseParser;
 import org.apache.solr.client.solrj.request.QueryRequest;
+import org.apache.solr.client.solrj.request.json.TermsFacetMap;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
@@ -60,6 +63,7 @@ import org.apache.solr.common.params.DisMaxParams;
 import org.apache.solr.common.params.FacetParams;
 import org.apache.solr.common.params.HighlightParams;
 import org.apache.solr.common.util.JsonTextWriter;
+import org.apache.solr.common.util.Utils;
 import org.apache.solr.handler.component.HighlightComponent.HighlightMethod;
 import org.apache.solr.search.QueryParsing;
 import org.slf4j.Logger;
@@ -85,6 +89,22 @@ public final class SearchIndex {
         filterArrays.put(LICENCE, Analytics.SEARCH_LICENCE_FIELD);
         filterArrays.put(PUBLISHER, Analytics.SEARCH_PUBLISHER_FIELD);
         filterArrays.put(SUBJECT_LABELS, Analytics.SEARCH_SUBJECT_LABELS_FIELD);
+    }
+
+    /** Set containing the names of field names used as facets.
+     * Populated by a static block */
+    private static Set<String> facets = new HashSet<>();
+
+    static {
+        facets.add(ACCESS);
+        facets.add(FORMAT);
+        facets.add(LANGUAGE);
+        facets.add(LICENCE);
+        facets.add(PUBLISHER);
+        facets.add(SUBJECT_LABELS);
+        // We don't currently offer widgetable as a facet in the Portal.
+        // Leave it in for now, for possible future expansion.
+        facets.add(WIDGETABLE);
     }
 
     /** Private constructor for a utility class. */
@@ -158,6 +178,31 @@ public final class SearchIndex {
             final boolean logResults)
             throws IOException, SolrServerException {
         SolrQuery solrQuery = new SolrQuery();
+
+        // We specify two sets of facets in two different ways in
+        // the Solr query:
+        // 1. Using "traditional" Solr facets. The facet-based filters
+        // specified in filtersJson get turned into these. The
+        // facet counts for each facet/value reflect the number
+        // of search results that match that facet/value.
+        // 2. Using JSON facets. These are specified in order to
+        // get facet values that are _not_ included in the
+        // search results, but which would give extra search results
+        // _if_ the client added them to filtersJson. The facet counts
+        // for these facets/values are the number of _additional_
+        // search results for these facets/values.
+
+        // Prepare JSON facet information.
+        // First, create a set to keep track of which facets are
+        // been mentioned in filtersJson.
+        Set<String> facetsActive = new HashSet<>();
+        // Second, create and populate a JSON facet for _all_
+        // of our facets. This will later be "trimmed": we will send to
+        // Solr a request for a JSON facet for each facet mentioned
+        // in filtersJson.
+        Map<String, TermsFacetMap> jsonFacets = new HashMap<>();
+        prepareJsonFacets(jsonFacets);
+
         // Specify that we want the raw JSON that Solr produces.
         // See one of the non-accepted answers at:
         // https://stackoverflow.com/questions/28374428/
@@ -167,15 +212,15 @@ public final class SearchIndex {
         rawJsonResponseParser.setWriterType(CommonParams.JSON);
         request.setResponseParser(rawJsonResponseParser);
 
-        // Always add these facet fields.
-        solrQuery.addFacetField(
-                SUBJECT_LABELS, PUBLISHER, LANGUAGE, ACCESS,
-                FORMAT, LICENCE, WIDGETABLE);
+        // Always add these facet fields. These are the "traditional"
+        // Solr facets mentioned above, that give facet counts that are
+        // the number of search results that match each facet value.
+        solrQuery.addFacetField(facets.toArray(new String[0]));
         solrQuery.setFacetSort(FacetParams.FACET_SORT_INDEX);
         solrQuery.setFacetMinCount(1);
         solrQuery.setFacetLimit(-1);
 
-        // Keep track if we have seen a query term.
+        // Keep track if we have seen a query term (i.e., the "q" parameter).
         boolean queryIsSet = false;
         // Keep track of the rows we will ask for.
         // Set 10 rows as default. This can be overridden by passing
@@ -203,7 +248,7 @@ public final class SearchIndex {
             //   solrQuery.addHighlightField("*");
             // add highlight fields for precisely the fields that
             // are searched. See the setting of the DisMaxParams.QF
-            // and SafariQueryParser.PQF parameters below.
+            // and SafariQueryParser.PQF parameters in setQueryFields() below.
             // All of these fields have stored="true".
             // All of this means you never get a search result that doesn't
             // also have highlighting.
@@ -282,22 +327,7 @@ public final class SearchIndex {
                     SISSVOC_ENDPOINT, OWNER);
             // Ensure that the highlight fields are set above, corresponding
             // to the fields listed in the QF and PQF parameters.
-            solrQuery.set(DisMaxParams.QF,
-                    TITLE_SEARCH + "^1 "
-                            + SUBJECT_SEARCH + "^0.5 "
-                            + DESCRIPTION + "^0.01 "
-                            + NOTE + "^0.01 "
-                            + CONCEPT_SEARCH + "^0.5 "
-                            + PUBLISHER_SEARCH + "^0.5");
-            // Default (1) boosting for phrases: phrase matches should
-            // be considered (much) more important than non-phrase matches.
-            solrQuery.set(SafariQueryParser.PQF,
-                    TITLE_PHRASE + " "
-                            + SUBJECT_PHRASE + " "
-                            + DESCRIPTION_PHRASE + " "
-                            + NOTE_PHRASE + " "
-                            + CONCEPT_PHRASE + " "
-                            + PUBLISHER_PHRASE);
+            setQueryFields(solrQuery);
 
             for (Entry<String, Object> filterEntry : filters.entrySet()) {
                 Object value = filterEntry.getValue();
@@ -401,8 +431,8 @@ public final class SearchIndex {
                         filtersAndResultsExtracted.add(
                                 new String[] {value.toString()});
                     }
-                    solrQuery.addFilterQuery(filterEntry.getKey()
-                            + ":(" + filterStringValue + ")");
+                    addFilterQuery(solrQuery, jsonFacets, facetsActive,
+                            filterKey, filterStringValue);
                     break;
                 default:
                     // For now, ignore it.
@@ -472,6 +502,11 @@ public final class SearchIndex {
         filtersAndResultsExtracted.add(Analytics.SEARCH_SORT_ORDER_FIELD);
         filtersAndResultsExtracted.add(searchSortOrder.value());
 
+        trimSolrFacets(jsonFacets, facetsActive);
+        if (!jsonFacets.isEmpty()) {
+            solrQuery.add("json.facet", Utils.toJSONString(jsonFacets));
+        }
+
         try {
             LOGGER.debug("solrQuery: " + solrQuery.toString());
             // Queries can get long, so force the use of the POST
@@ -523,6 +558,113 @@ public final class SearchIndex {
         } catch (IOException | SolrServerException e) {
             LOGGER.error("Exception while performing Solr query", e);
             throw e;
+        }
+    }
+
+    /** Set the query fields. This sets the "qf" parameter, and
+     * the "pqf" parameter provided by the Safari custom query parser.
+     * @param query The Solr query being constructed.
+     */
+    private static void setQueryFields(
+            final SolrQuery query) {
+        // NB: ensure that the highlight fields are set above, corresponding
+        // to the fields listed in the QF and PQF parameters.
+        query.set(DisMaxParams.QF,
+                TITLE_SEARCH + "^1 "
+                        + SUBJECT_SEARCH + "^0.5 "
+                        + DESCRIPTION + "^0.01 "
+                        + NOTE + "^0.01 "
+                        + CONCEPT_SEARCH + "^0.5 "
+                        + PUBLISHER_SEARCH + "^0.5");
+        // Default (1) boosting for phrases: phrase matches should
+        // be considered (much) more important than non-phrase matches.
+        query.set(SafariQueryParser.PQF,
+                TITLE_PHRASE + " "
+                        + SUBJECT_PHRASE + " "
+                        + DESCRIPTION_PHRASE + " "
+                        + NOTE_PHRASE + " "
+                        + CONCEPT_PHRASE + " "
+                        + PUBLISHER_PHRASE);
+    }
+
+    /** Populate the JSON facets map with initial values for
+     * each facet.
+     * @param jsonFacets The map of JSON facets.
+     */
+    private static void prepareJsonFacets(
+            final Map<String, TermsFacetMap> jsonFacets) {
+        for (String f : facets) {
+            TermsFacetMap facetDefinition = new TermsFacetMap(f);
+            jsonFacets.put(f, facetDefinition);
+            facetDefinition.setSort("index asc");
+            // Sigh, setLimit() requires a non-negative value!
+            // We'd like to say:
+            //  facetDefinition.setLimit(-1);
+            // but that fails. So fall back to this "low-level" way instead:
+            facetDefinition.put("limit", -1);
+            Map<String, String> domain = new HashMap<>();
+            domain.put("query", null);
+            facetDefinition.put("domain", domain);
+        }
+    }
+
+    /** Add a filter to the query for one facet. This adds a
+     * Solr "filter query" that is a disjunction of the values specified
+     * for the facet. It marks the facet as being "active", and
+     * it creates/adds clauses in all of the JSON facets.
+     * @param solrQuery The Solr query being constructed.
+     * @param jsonFacets The map of JSON facets.
+     * @param facetsActive The set of active facets, i.e., the facets
+     *      for which the query specified at least one filter.
+     * @param facet The name of the facet.
+     * @param filterStringValue The filter value(s) selected for the facet.
+     */
+    private static void addFilterQuery(
+            final SolrQuery solrQuery,
+            final Map<String, TermsFacetMap> jsonFacets,
+            final Set<String> facetsActive,
+            final String facet, final String filterStringValue) {
+        solrQuery.addFilterQuery(facet + ":(" + filterStringValue + ")");
+        facetsActive.add(facet);
+        for (String f : facets) {
+            TermsFacetMap jsonFacet = jsonFacets.get(f);
+            @SuppressWarnings("unchecked")
+            Map<String, String> jsonFacetDomain =
+                    (Map<String, String>) jsonFacet.get("domain");
+            String jsonFacetDomainQuery = jsonFacetDomain.get("query");
+            if (jsonFacetDomainQuery == null) {
+                jsonFacetDomainQuery = "";
+            } else {
+                jsonFacetDomainQuery = jsonFacetDomainQuery + " AND ";
+            }
+            if (f.equals(facet)) {
+                // For the same facet, do negation of the
+                // existing filter values!
+                jsonFacetDomainQuery = jsonFacetDomainQuery
+                        + "-" + facet
+                        + ":(" + filterStringValue + ")";
+            } else {
+                jsonFacetDomainQuery = jsonFacetDomainQuery
+                        + facet + ":(" + filterStringValue + ")";
+            }
+            jsonFacetDomain.put("query", jsonFacetDomainQuery);
+        }
+    }
+
+    /** Trim the map of JSON facets by removing the key/value pairs
+     *  for facets that are not "active", i.e., for which no filter was
+     *  specified for the facet.
+     * @param jsonFacets The map of JSON facets.
+     * @param facetsActive The set of active facets, i.e., the facets
+     *      for which the query specified at least one filter.
+     */
+    private static void trimSolrFacets(
+            final Map<String, TermsFacetMap> jsonFacets,
+            final Set<String> facetsActive) {
+        for (String f : facets) {
+            if (!facetsActive.contains(f)) {
+                jsonFacets.remove(f);
+            }
         }
     }
 
