@@ -98,6 +98,9 @@ public final class SearchIndex {
     private static final Logger LOGGER = LoggerFactory.getLogger(
             MethodHandles.lookup().lookupClass());
 
+    /** The name of the query parser to use. */
+    private static final String QUERY_PARSER = "safari";
+
     /** Default number of rows to be returned. */
     private static final int DEFAULT_ROWS = 10;
 
@@ -238,7 +241,7 @@ public final class SearchIndex {
             solrQuery.setHighlightSimplePre(HIGHLIGHT_PRE);
             solrQuery.setHighlightSimplePost(HIGHLIGHT_POST);
             solrQuery.setHighlightSnippets(2);
-            solrQuery.set(QueryParsing.DEFTYPE, "safari");
+            solrQuery.set(QueryParsing.DEFTYPE, QUERY_PARSER);
             // Check for a "pp" setting, now, as we might need it later
             // if we find a "p" filter.
             if (filters.containsKey("pp")) {
