@@ -434,7 +434,7 @@ public final class EntityIndexer {
     /* Methods for communicating with Solr.
      * Note: for single additions/deletions, there are no explicit commits.
      * We rely on the updateHandler.autoSoftCommit.maxTime setting
-     * made by CreateSchema.
+     * made by CreateSolrSchemaRegistry.
      */
 
     /** Index a current vocabulary in Solr.

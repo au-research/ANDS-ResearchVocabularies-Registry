@@ -15,7 +15,7 @@ import org.apache.solr.core.CoreContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import au.org.ands.vocabs.registry.solr.admin.CreateSchema;
+import au.org.ands.vocabs.registry.solr.admin.CreateSolrSchemaRegistry;
 import au.org.ands.vocabs.registry.utils.PropertyConstants;
 import au.org.ands.vocabs.registry.utils.RegistryProperties;
 import au.org.ands.vocabs.toolkit.utils.ApplicationContextListener;
@@ -56,9 +56,11 @@ public final class SolrUtils {
             CoreContainer container = CoreContainer.createAndLoad(
                     home, configFile);
             solrClient = new EmbeddedSolrServer(container, TEST_COLLECTION);
-            CreateSchema createSchema = new CreateSchema();
+            CreateSolrSchemaRegistry createSolrSchemaRegistry =
+                    new CreateSolrSchemaRegistry();
             try {
-                createSchema.installSchema(null, solrClient, null, null);
+                createSolrSchemaRegistry.installSchema(
+                        null, solrClient, null, null);
             } catch (SolrServerException | IOException e) {
                 LOGGER.error("Unable to install schema", e);
             }

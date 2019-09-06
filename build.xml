@@ -690,7 +690,7 @@
     <java
         fork="true"
         failonerror="true"
-        classname="au.org.ands.vocabs.registry.solr.admin.CreateSchema"
+        classname="au.org.ands.vocabs.registry.solr.admin.CreateSolrSchemaRegistry"
         classpathref="create-solr-schema.classpath"
       >
       <arg value="${Registry.Solr.baseURL}" />
