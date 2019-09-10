@@ -603,7 +603,12 @@ public final class SearchIndex {
             // but that fails. So fall back to this "low-level" way instead:
             facetDefinition.put("limit", -1);
             Map<String, String> domain = new HashMap<>();
-            domain.put("query", null);
+            // "filter" will contain negation of the top-level filter values
+            // for this facet, and require all other top-level filters for
+            // other facets.
+            domain.put("filter", null);
+            // "excludeTags" will include a tag for every top-level filter.
+            domain.put("excludeTags", null);
             facetDefinition.put("domain", domain);
         }
     }
@@ -624,14 +629,18 @@ public final class SearchIndex {
             final Map<String, TermsFacetMap> jsonFacets,
             final Set<String> facetsActive,
             final String facet, final String filterStringValue) {
-        solrQuery.addFilterQuery(facet + ":(" + filterStringValue + ")");
+        // Add filter to top-level query, tagging it so that it can
+        // be excluded in the jsonFacets.
+        solrQuery.addFilterQuery(
+                "{!tag=" + facet + "}"
+                        + facet + ":(" + filterStringValue + ")");
         facetsActive.add(facet);
         for (String f : facets) {
             TermsFacetMap jsonFacet = jsonFacets.get(f);
             @SuppressWarnings("unchecked")
             Map<String, String> jsonFacetDomain =
                     (Map<String, String>) jsonFacet.get("domain");
-            String jsonFacetDomainQuery = jsonFacetDomain.get("query");
+            String jsonFacetDomainQuery = jsonFacetDomain.get("filter");
             if (jsonFacetDomainQuery == null) {
                 jsonFacetDomainQuery = "";
             } else {
@@ -647,7 +656,16 @@ public final class SearchIndex {
                 jsonFacetDomainQuery = jsonFacetDomainQuery
                         + facet + ":(" + filterStringValue + ")";
             }
-            jsonFacetDomain.put("query", jsonFacetDomainQuery);
+            jsonFacetDomain.put("filter", jsonFacetDomainQuery);
+            String jsonFacetDomainExcludeTags =
+                    jsonFacetDomain.get("excludeTags");
+            if (jsonFacetDomainExcludeTags == null) {
+                jsonFacetDomainExcludeTags = facet;
+            } else {
+                jsonFacetDomainExcludeTags = jsonFacetDomainExcludeTags
+                        + "," + facet;
+            }
+            jsonFacetDomain.put("excludeTags", jsonFacetDomainExcludeTags);
         }
     }
 
