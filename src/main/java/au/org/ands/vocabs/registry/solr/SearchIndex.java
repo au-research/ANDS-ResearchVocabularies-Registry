@@ -604,9 +604,9 @@ public final class SearchIndex {
             facetDefinition.put("limit", -1);
             Map<String, String> domain = new HashMap<>();
             // "filter" will contain negation of the top-level filter values
-            // for this facet, and require all other top-level filters for
-            // other facets.
-            domain.put("filter", null);
+            // for this facet. No need to define it here; it is assigned
+            // in addFilterQuery().
+            //   domain.put("filter", null);
             // Use "excludeTags" to exclude the top-level filters
             // for this facet. The tag is the name of the facet.
             domain.put("excludeTags", f);
@@ -644,8 +644,8 @@ public final class SearchIndex {
         // Replace filters for this facet with the negation!
         // (Note that this works in combination with the "excludeTags"
         // setting applied by prepareJsonFacets().)
-        String jsonFacetDomainQuery = jsonFacetDomain.get("filter");
-        jsonFacetDomainQuery = "-" + facet + ":(" + filterStringValue + ")";
+        String jsonFacetDomainQuery = "-" + facet
+                + ":(" + filterStringValue + ")";
         jsonFacetDomain.put("filter", jsonFacetDomainQuery);
     }
 
