@@ -3,6 +3,7 @@
 package au.org.ands.vocabs.registry.workflow.tasks;
 
 import java.lang.invoke.MethodHandles;
+import java.lang.reflect.InvocationTargetException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.function.Consumer;
@@ -95,10 +96,10 @@ public final class VersionArtefactUtils {
 
         T vaT;
         try {
-            vaT = vaClass.newInstance();
-            // errorprone says this would be better:
-//            vaT = vaClass.getConstructor().newInstance();
-        } catch (InstantiationException | IllegalAccessException e) {
+            vaT = vaClass.getConstructor().newInstance();
+        } catch (InstantiationException | IllegalAccessException
+                | IllegalArgumentException | InvocationTargetException
+                | NoSuchMethodException | SecurityException e) {
             logger.error("Error creating instance of class: " + vaClass, e);
             return;
         }

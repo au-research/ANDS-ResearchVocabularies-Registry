@@ -3,6 +3,7 @@
 package au.org.ands.vocabs.registry.db.converter;
 
 import java.lang.invoke.MethodHandles;
+import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 
 import org.mapstruct.MappingTarget;
@@ -97,13 +98,11 @@ public abstract class AccessPointDbSchemaMapperDecorator
             try {
                 au.org.ands.vocabs.registry.schema.
                     vocabulary201701.ApCommon ap =
-                    schemaTargetClass.newInstance();
-                // errorprone says this would be better:
-//                au.org.ands.vocabs.registry.schema.
-//                    vocabulary201701.ApCommon ap =
-//                    schemaTargetClass.getConstructor().newInstance();
+                    schemaTargetClass.getConstructor().newInstance();
                 jsonDataIntoTarget(data, ap, target);
-            } catch (InstantiationException | IllegalAccessException e) {
+            } catch (InstantiationException | IllegalAccessException
+                    | IllegalArgumentException | InvocationTargetException
+                    | NoSuchMethodException | SecurityException e) {
                 logger.error("Unable to instantiate a new instance of a "
                         + "registry schema access point", e);
             }
