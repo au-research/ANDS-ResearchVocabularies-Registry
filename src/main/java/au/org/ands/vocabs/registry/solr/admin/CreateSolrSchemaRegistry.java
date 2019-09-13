@@ -281,8 +281,8 @@ public final class CreateSolrSchemaRegistry extends SolrSchemaBase {
 
             caResponse = reloadCollectionRequest.process(client);
             checkResponse(caResponse);
-            System.out.println("reload status:" + caResponse.getStatus());
-            System.out.println("reload isSuccess:" + caResponse.isSuccess());
+            logger.info("reload status:" + caResponse.getStatus());
+            logger.info("reload isSuccess:" + caResponse.isSuccess());
         } catch (SolrServerException sse) {
             logger.error("Got a SolrServerException:", sse);
             throw sse;
@@ -365,12 +365,11 @@ public final class CreateSolrSchemaRegistry extends SolrSchemaBase {
             createSolrSchemaRegistry.installSchema(
                     baseURL, client, collectionName, zkHost);
         } catch (SolrServerException sse) {
-            createSolrSchemaRegistry.getLogger().info(
-                    "Got a SolrServerException:");
-            sse.printStackTrace();
+            createSolrSchemaRegistry.getLogger().error(
+                    "Got a SolrServerException:", sse);
         } catch (IOException ioe) {
-            createSolrSchemaRegistry.getLogger().info("Got an IOException:");
-            ioe.printStackTrace();
+            createSolrSchemaRegistry.getLogger().error(
+                    "Got an IOException:", ioe);
         }
     }
 
