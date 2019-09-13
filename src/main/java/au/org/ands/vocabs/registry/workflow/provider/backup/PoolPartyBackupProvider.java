@@ -260,7 +260,7 @@ public class PoolPartyBackupProvider {
             new PoolPartyBackupProvider().backup(argsList.get(0));
             break;
         default:
-            System.err.println("Wrong number of arguments.");
+            rootLogger.error("Wrong number of arguments.");
             System.exit(1);
         }
     }

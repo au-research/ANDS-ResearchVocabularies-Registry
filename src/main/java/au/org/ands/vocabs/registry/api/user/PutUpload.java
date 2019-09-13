@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.invoke.MethodHandles;
 import java.net.URL;
+import java.util.Locale;
 import java.util.regex.Pattern;
 
 import javax.persistence.EntityManager;
@@ -182,7 +183,8 @@ public class PutUpload {
 
         // Now check that the extension matches the format.
         // Convert the extension to lower case before looking up.
-        String extension = FilenameUtils.getExtension(filename).toLowerCase();
+        String extension = FilenameUtils.getExtension(filename).
+                toLowerCase(Locale.ROOT);
         FileFormat formatFromExtension =
                 FileFormatUtils.getFileFormatByExtension(extension);
         if (formatFromFormat != formatFromExtension) {
