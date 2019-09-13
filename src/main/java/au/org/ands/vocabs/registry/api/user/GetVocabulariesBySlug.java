@@ -80,7 +80,7 @@ public class GetVocabulariesBySlug {
                     message = "No vocabulary with that slug",
                     response = ErrorResult.class)
             })
-    public final Response getVocabularyBySlug(
+    public Response getVocabularyBySlug(
             @Context final HttpServletRequest request,
             @Context final UriInfo uriInfo,
             @ApiParam(value = "The slug of the vocabulary to get.")

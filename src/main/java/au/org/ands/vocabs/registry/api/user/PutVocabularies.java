@@ -106,7 +106,7 @@ public class PutVocabularies {
                     message = "Internal server error",
                     response = ErrorResult.class)
             })
-    public final Response createVocabulary(
+    public Response createVocabulary(
             @Context final HttpServletRequest request,
             @Context final UriInfo uriInfo,
             @ApiParam(hidden = true) @Pac4JProfile final CommonProfile profile,
@@ -252,7 +252,7 @@ public class PutVocabularies {
                     message = "Internal server error",
                     response = ErrorResult.class)
             })
-    public final Response updateVocabulary(
+    public Response updateVocabulary(
             @Context final HttpServletRequest request,
             @Context final UriInfo uriInfo,
             @ApiParam(hidden = true) @Pac4JProfile final CommonProfile profile,

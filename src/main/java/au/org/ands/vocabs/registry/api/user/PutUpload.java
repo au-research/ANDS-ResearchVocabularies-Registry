@@ -126,7 +126,7 @@ public class PutUpload {
                     message = "Internal server error",
                     response = ErrorResult.class)
             })
-    public final Response createUpload(
+    public Response createUpload(
             @Context final HttpServletRequest request,
             @Context final UriInfo uriInfo,
             @ApiParam(hidden = true) @Pac4JProfile final CommonProfile profile,

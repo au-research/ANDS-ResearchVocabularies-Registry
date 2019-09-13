@@ -81,7 +81,7 @@ public class Search {
                     message = "Invalid input",
                     response = ErrorResult.class)
     })
-    public final Response search(
+    public Response search(
             @Context final HttpServletRequest request,
             @Context final UriInfo uriInfo,
             @ApiParam(value = "Filters that define the search parameters. "

@@ -83,7 +83,7 @@ public class GetSubscriptions {
                     message = "Internal server error",
                     response = ErrorResult.class)
             })
-    public final Response getEmailSubscriptions(
+    public Response getEmailSubscriptions(
             @Context final HttpServletRequest request,
             @Context final UriInfo uriInfo,
             @ApiParam(hidden = true) @Pac4JProfile final CommonProfile profile,

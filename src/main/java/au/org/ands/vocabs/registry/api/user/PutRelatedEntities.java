@@ -122,7 +122,7 @@ public class PutRelatedEntities {
                             + "constraintViolations for conflicting entities.",
                     response = ErrorResult.class)
             })
-    public final Response createRelatedEntity(
+    public Response createRelatedEntity(
             @Context final HttpServletRequest request,
             @Context final UriInfo uriInfo,
             @ApiParam(hidden = true) @Pac4JProfile final CommonProfile profile,
@@ -300,7 +300,7 @@ public class PutRelatedEntities {
                     message = "Internal server error",
                     response = ErrorResult.class)
             })
-    public final Response updateRelatedEntity(
+    public Response updateRelatedEntity(
             @Context final HttpServletRequest request,
             @Context final UriInfo uriInfo,
             @ApiParam(hidden = true) @Pac4JProfile final CommonProfile profile,
