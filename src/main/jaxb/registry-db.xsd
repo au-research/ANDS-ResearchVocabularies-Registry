@@ -152,6 +152,7 @@
             <xs:choice>
                 <xs:element name="va-concept-list" type="va-concept-list"/>
                 <xs:element name="va-concept-tree" type="va-concept-tree"/>
+                <xs:element name="va-harvest-poolparty" type="va-harvest-poolparty"/>
             </xs:choice>
         </xs:complexType>
     </xs:element>
