@@ -153,6 +153,7 @@
                 <xs:element name="va-concept-list" type="va-concept-list"/>
                 <xs:element name="va-concept-tree" type="va-concept-tree"/>
                 <xs:element name="va-harvest-poolparty" type="va-harvest-poolparty"/>
+                <xs:element name="va-resource-docs" type="va-resource-docs"/>
             </xs:choice>
         </xs:complexType>
     </xs:element>
@@ -172,6 +173,13 @@
         </xs:complexContent>
     </xs:complexType>
     <xs:complexType name="va-harvest-poolparty">
+        <xs:complexContent>
+            <xs:extension base="va-common">
+                <xs:attribute name="path" type="xs:string"/>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+    <xs:complexType name="va-resource-docs">
         <xs:complexContent>
             <xs:extension base="va-common">
                 <xs:attribute name="path" type="xs:string"/>

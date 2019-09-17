@@ -700,6 +700,22 @@
     </java>
   </target>
 
+  <target name="create-solr-schema-resources"
+          depends="compile-main">
+    <property file="conf/registry.properties" />
+    <java
+        fork="true"
+        failonerror="true"
+        classname="au.org.ands.vocabs.registry.solr.admin.CreateSolrSchemaResources"
+        classpathref="create-solr-schema.classpath"
+      >
+      <arg value="${Registry.Solr.baseURL}" />
+      <arg value="${Registry.Solr.resources.collection}" />
+      <arg value="${Registry.Solr.resources.collectionURL}" />
+      <arg value="${Registry.Solr.zkHost}" />
+    </java>
+  </target>
+
   <!-- Perform migration of existing JsonTree version artefacts
        into the new ConceptTree version artefacts! -->
   <path id="migrate-jsontree-artefacts.classpath">

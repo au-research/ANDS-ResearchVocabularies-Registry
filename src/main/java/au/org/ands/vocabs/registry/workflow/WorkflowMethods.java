@@ -43,6 +43,7 @@ import au.org.ands.vocabs.registry.workflow.provider.importer.SesameImporterProv
 import au.org.ands.vocabs.registry.workflow.provider.publish.SISSVocPublishProvider;
 import au.org.ands.vocabs.registry.workflow.provider.transform.ConceptTreeTransformProvider;
 import au.org.ands.vocabs.registry.workflow.provider.transform.JsonListTransformProvider;
+import au.org.ands.vocabs.registry.workflow.provider.transform.ResourceDocsTransformProvider;
 import au.org.ands.vocabs.registry.workflow.provider.transform.SesameInsertMetadataTransformProvider;
 import au.org.ands.vocabs.registry.workflow.tasks.AccessPointUtils;
 import au.org.ands.vocabs.registry.workflow.tasks.Subtask;
@@ -397,6 +398,12 @@ public final class WorkflowMethods {
             subtask.setOperation(SubtaskOperationType.DELETE);
             subtask.determinePriority();
             break;
+        case RESOURCE_DOCS:
+            subtask.setSubtaskProviderType(SubtaskProviderType.TRANSFORM);
+            subtask.setProvider(ResourceDocsTransformProvider.class);
+            subtask.setOperation(SubtaskOperationType.DELETE);
+            subtask.determinePriority();
+            break;
         case HARVEST_POOLPARTY:
             subtask.setSubtaskProviderType(SubtaskProviderType.HARVEST);
             subtask.setProvider(PoolPartyHarvestProvider.class);
@@ -412,7 +419,7 @@ public final class WorkflowMethods {
     }
 
     /** To a given subtask list, add subtask transform operations
-     * for the JsonList and ConceptTree transform providers.
+     * for the JsonList, ConceptTree, and ResourceDocs transform providers.
      * @param subtaskList An existing list of subtasks. It must not be null,
      *      but it may be empty.
      */
@@ -420,6 +427,7 @@ public final class WorkflowMethods {
             final List<Subtask> subtaskList) {
         subtaskList.add(newConceptExtractionSubtask());
         subtaskList.add(newConceptBrowseSubtask());
+        subtaskList.add(newResourceDocsSubtask());
     }
 
     /** Factory method to create a new subtask transform operation
@@ -443,6 +451,19 @@ public final class WorkflowMethods {
         Subtask subtask = new Subtask();
         subtask.setSubtaskProviderType(SubtaskProviderType.TRANSFORM);
         subtask.setProvider(ConceptTreeTransformProvider.class);
+        subtask.setOperation(SubtaskOperationType.INSERT);
+        subtask.determinePriority();
+        return subtask;
+    }
+
+    /** Factory method to create a subtask transform operation
+     * for the ResourceDocs transform provider.
+     * @return The new Subtask instance.
+     */
+    public static Subtask newResourceDocsSubtask() {
+        Subtask subtask = new Subtask();
+        subtask.setSubtaskProviderType(SubtaskProviderType.TRANSFORM);
+        subtask.setProvider(ResourceDocsTransformProvider.class);
         subtask.setOperation(SubtaskOperationType.INSERT);
         subtask.determinePriority();
         return subtask;

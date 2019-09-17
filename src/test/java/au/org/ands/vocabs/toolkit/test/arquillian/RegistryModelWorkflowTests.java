@@ -7,6 +7,8 @@ import static au.org.ands.vocabs.toolkit.test.utils.DatabaseSelector.ROLES;
 
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -39,6 +41,8 @@ import au.org.ands.vocabs.registry.enums.AccessPointType;
 import au.org.ands.vocabs.registry.model.ModelMethods;
 import au.org.ands.vocabs.registry.model.VocabularyModel;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.Vocabulary;
+import au.org.ands.vocabs.registry.workflow.tasks.TaskInfo;
+import au.org.ands.vocabs.registry.workflow.tasks.TaskUtils;
 
 /** Tests of the registry model that also involve workflow processing.
  * The names of some of the tests contain "codes" that explain how
@@ -123,7 +127,7 @@ public class RegistryModelWorkflowTests extends ArquillianBaseTest {
         ArquillianTestUtils.clearDatabase(REGISTRY);
         ArquillianTestUtils.loadDbUnitTestFile(REGISTRY, testName);
         ArquillianTestUtils.copyTempFilesForTest(testName);
-        ArquillianTestUtils.assertTempForTestHasFiles(testName, 4);
+        ArquillianTestUtils.assertTempForTestHasFiles(testName, 5);
         EntityManager em = null;
         try {
             em = DBContext.getEntityManager();
@@ -150,7 +154,7 @@ public class RegistryModelWorkflowTests extends ArquillianBaseTest {
         compareDatabaseCurrentAndExpectedContentsIgnoreTaskTimestamps(
                 REGISTRY,
                 "test/tests/" + testName + "/test-registry-results.xml");
-        ArquillianTestUtils.assertTempForTestHasFiles(testName, 2);
+        ArquillianTestUtils.assertTempForTestHasFiles(testName, 3);
     }
 
     /** Test of deleting the current instance of a vocabulary that has only
@@ -216,7 +220,7 @@ public class RegistryModelWorkflowTests extends ArquillianBaseTest {
         ArquillianTestUtils.clearDatabase(REGISTRY);
         ArquillianTestUtils.loadDbUnitTestFile(REGISTRY, testName);
         ArquillianTestUtils.copyTempFilesForTest(testName);
-        ArquillianTestUtils.assertTempForTestHasFiles(testName, 4);
+        ArquillianTestUtils.assertTempForTestHasFiles(testName, 5);
         EntityManager em = null;
         try {
             em = DBContext.getEntityManager();
@@ -241,7 +245,7 @@ public class RegistryModelWorkflowTests extends ArquillianBaseTest {
         compareDatabaseCurrentAndExpectedContentsIgnoreTaskTimestamps(
                 REGISTRY,
                 "test/tests/" + testName + "/test-registry-results.xml");
-        ArquillianTestUtils.assertTempForTestHasFiles(testName, 2);
+        ArquillianTestUtils.assertTempForTestHasFiles(testName, 3);
     }
 
     /** Test of deleting the draft instance of a vocabulary that also has
@@ -366,7 +370,7 @@ public class RegistryModelWorkflowTests extends ArquillianBaseTest {
         ArquillianTestUtils.loadDbUnitTestFile(REGISTRY, testName);
         ArquillianTestUtils.copyUploadsFilesForTest(testName);
         ArquillianTestUtils.copyTempFilesForTest(testName);
-        ArquillianTestUtils.assertTempForTestHasFiles(testName, 4);
+        ArquillianTestUtils.assertTempForTestHasFiles(testName, 5);
         Vocabulary vocabulary = RegistryTestUtils.
                 getValidatedVocabularyFromFile(
                 "test/tests/" + testName + "/test-vocabulary.xml",
@@ -395,7 +399,7 @@ public class RegistryModelWorkflowTests extends ArquillianBaseTest {
         compareDatabaseCurrentAndExpectedContentsIgnoreTaskTimestamps(
                 REGISTRY,
                 "test/tests/" + testName + "/test-registry-results.xml");
-        ArquillianTestUtils.assertTempForTestHasFiles(testName, 4);
+        ArquillianTestUtils.assertTempForTestHasFiles(testName, 5);
     }
 
     /** Test of starting with a vocabulary that has only a draft instance,
@@ -481,7 +485,7 @@ public class RegistryModelWorkflowTests extends ArquillianBaseTest {
         ArquillianTestUtils.loadDbUnitTestFile(REGISTRY, testName);
         ArquillianTestUtils.copyUploadsFilesForTest(testName);
         ArquillianTestUtils.copyTempFilesForTest(testName);
-        ArquillianTestUtils.assertTempForTestHasFiles(testName, 5);
+        ArquillianTestUtils.assertTempForTestHasFiles(testName, 6);
         Vocabulary vocabulary = RegistryTestUtils.
                 getValidatedVocabularyFromFile(
                 "test/tests/" + testName + "/test-vocabulary.xml",
@@ -510,7 +514,8 @@ public class RegistryModelWorkflowTests extends ArquillianBaseTest {
         compareDatabaseCurrentAndExpectedContentsIgnoreTaskTimestamps(
                 REGISTRY,
                 "test/tests/" + testName + "/test-registry-results.xml");
-        ArquillianTestUtils.assertTempForTestHasFiles(testName, 4);
+        // One fewer file: the file "1.txt" was deleted.
+        ArquillianTestUtils.assertTempForTestHasFiles(testName, 5);
     }
 
     /** Test of applying changes to the current instance of a vocabulary
@@ -654,7 +659,18 @@ public class RegistryModelWorkflowTests extends ArquillianBaseTest {
         compareDatabaseCurrentAndExpectedContentsIgnoreTaskTimestamps(
                 REGISTRY,
                 "test/tests/" + testName + "/test-registry-results-2.xml");
+        // This test is OK, but doesn't prove very much:
         ArquillianTestUtils.assertTempForTestHasFiles(testName, 3);
+        // ... we also need to check that the files for the version artefacts
+        // exist in the file system.
+        TaskInfo taskInfo = TaskUtils.getTaskInfo(1);
+        taskInfo.setNowTime(nowTime2);
+        String taskPath = TaskUtils.getTaskOutputPath(taskInfo, false, null);
+        // Use Files::isRegularFile to filter to just files, of which
+        // there should be 3. (There is also the harvest_data directory.)
+        Assert.assertEquals(Files.list(Paths.get(taskPath)).
+                filter(Files::isRegularFile).count(),
+                3, "Expected to have 3 regular files for version artefacts");
     }
 
     /** Test of updating a draft of a vocabulary
@@ -768,7 +784,7 @@ public class RegistryModelWorkflowTests extends ArquillianBaseTest {
         ArquillianTestUtils.
         compareDatabaseCurrentAndExpectedContentsIgnoreTaskTimestamps(
                 REGISTRY,
-                "test/tests/" + testName + "/test-registry-results1.xml");
+                "test/tests/" + testName + "/test-registry-results-1.xml");
         vocabulary = RegistryTestUtils.
                 getValidatedVocabularyFromFile(
                 "test/tests/" + testName + "/test-vocabulary2.xml",
@@ -807,7 +823,7 @@ public class RegistryModelWorkflowTests extends ArquillianBaseTest {
         ArquillianTestUtils.
         compareDatabaseCurrentAndExpectedContentsIgnoreTaskTimestamps(
                 REGISTRY,
-                "test/tests/" + testName + "/test-registry-results2.xml");
+                "test/tests/" + testName + "/test-registry-results-2.xml");
 
         // Now confirm that the Sesame repo still exists, and that
         // there isn't one with the _new_ slug.
@@ -846,7 +862,7 @@ public class RegistryModelWorkflowTests extends ArquillianBaseTest {
         ArquillianTestUtils.
         compareDatabaseCurrentAndExpectedContentsIgnoreTaskTimestamps(
                 REGISTRY,
-                "test/tests/" + testName + "/test-registry-results3.xml");
+                "test/tests/" + testName + "/test-registry-results-3.xml");
 
         // Now confirm that the Sesame repo _no longer_ exists.
         try {

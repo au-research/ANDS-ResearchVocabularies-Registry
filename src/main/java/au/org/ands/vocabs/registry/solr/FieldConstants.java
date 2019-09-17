@@ -87,6 +87,29 @@ public final class FieldConstants {
     /** The name of the "widgetable" Solr field. */
     public static final String WIDGETABLE = "widgetable";
 
+    // Fields used only for the resources collection.
+
+    /** The name of the "iri" Solr field. */
+    public static final String IRI = "iri";
+    /** The name of the Solr document field used for RDF types. */
+    public static final String RDF_TYPE = "rdf_type";
+    /** The name of the Solr document field used for RDFS labels. */
+    public static final String RDFS_LABEL = "rdfs_label";
+    /** The name of the Solr document field used for SKOS altLabels. */
+    public static final String SKOS_ALTLABEL = "skos_altLabel";
+    /** The name of the Solr document field used for SKOS definitions. */
+    public static final String SKOS_DEFINITION = "skos_definition";
+    /** The name of the Solr document field used for SKOS notations. */
+    public static final String SKOS_NOTATION = "skos_notation";
+    /** The name of the Solr document field used for SKOS prefLabels. */
+    public static final String SKOS_PREFLABEL = "skos_prefLabel";
+    /** The name of the "top_concept_phrase" Solr field. */
+    public static final String TOP_CONCEPT_PHRASE = "top_concept_phrase";
+    /** The name of the "version_id" Solr field. */
+    public static final String VERSION_ID = "version_id";
+    /** The name of the "vocabulary_id" Solr field. */
+    public static final String VOCABULARY_ID = "vocabulary_id";
+
     /* Names of Solr field types. Listed in alphabetical order! */
 
     /** The name of the custom "alphaOnlySort" Solr field type. */

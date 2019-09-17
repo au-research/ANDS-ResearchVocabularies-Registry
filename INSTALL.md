@@ -132,8 +132,13 @@ chown tomcat.tomcat /var/vocab-files/registry-data
 Set `Registry.Solr.baseURL` to the base URL of your Solr installation,
 and `Registry.Solr.zkHost` to the zkZost setting of your ZooKeeper.
 
-Set Registry.Solr.collection to your choice of name for the Solr
-collection. In the following, we have chosen `vocabs-registry`.
+Set `Registry.Solr.collection` to your choice of name for the Solr
+collection used for registry entities. In the following, we have
+chosen `vocabs-registry`.
+
+Set `Registry.Solr.resources.collection` to your choice of name for
+the Solr collection for vocabulary resources (SKOS concepts, etc.). In
+the following, we have chosen `vocabs-resources`.
 
 ### SMTP configuration
 
@@ -264,7 +269,7 @@ Now run:
 wget -O - http://localhost:8080/registry-context/adminApi/database/populateSubjectResolver
 ```
 
-# Create Solr collection and install schema
+# Create Solr collections and install schemas
 
 ## Add custom query plugin
 
@@ -285,26 +290,30 @@ Note: there must be only one version of the plugin in the `ardc`
 directory of your Solr installation. If you ever upgrade the plugin,
 make sure to remove any old version.
 
-## Create the collection
+## Create the Solr collections
 
-Create the Solr collection. Here, `vocabs-registry` matches the name
-chosen for the collection and assigned in `registry.properties` above.
-The output of the first command (create) recommends running the second
-command (config), which disables auto-creation of fields. (Substitute
-the correct port number, if it is not the default 8983.)
+Create the two Solr collections. Here, `vocabs-registry` and
+`vocabs-resources` match the names chosen for the collections and
+assigned in `registry.properties` above.  The output of the first
+command (create) of each pair recommends running the second command
+(config), which disables auto-creation of fields. (Substitute the
+correct port number, if it is not the default 8983.)
 
 ```
 /path-to-Solr-installation/bin/solr create -c vocabs-registry
 /path-to-Solr-installation/bin/solr config -c vocabs-registry -p 8983 -action set-user-property -property update.autoCreateFields -value false
+/path-to-Solr-installation/bin/solr create -c vocabs-resources
+/path-to-Solr-installation/bin/solr config -c vocabs-resources -p 8983 -action set-user-property -property update.autoCreateFields -value false
 ```
 
-## Install the schema
+## Install the two Solr schemas
 
 Use this build target to upload a custom `solrconfig.xml` (from the
-file `conf/solrconfig.xml`) and to create the Solr schema.
+file `conf/solrconfig.xml`) and to create the Solr schemas.
 
 ```
 ant create-solr-schema
+ant create-solr-schema-resources
 ```
 
 ## Force indexing of the vocabularies into Solr
