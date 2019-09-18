@@ -138,8 +138,6 @@ public class ResourceDocsTransformProvider implements WorkflowProvider {
                 new PredicateInfo(FieldConstants.SKOS_DEFINITION, false, true));
 //        predicatesInfo.put(,
 //                new PredicateInfo());
-//        predicatesInfo.put(,
-//                new PredicateInfo());
     }
 
     // Private convenience fields, initialized by transform(),
@@ -445,27 +443,6 @@ public class ResourceDocsTransformProvider implements WorkflowProvider {
             // Remove any existing object.
             concept.remove(field);
             concept.put(field, object.stringValue());
-
-//            if (predicate.equals(SKOS.BROADER)) {
-//                if (concept.get("broader") == null) {
-//                    concept.put("broader",
-//                            new ArrayList<String>());
-//                }
-//                @SuppressWarnings("unchecked")
-//                Set<String> broaderList =
-//                    (Set<String>) concept.get("broader");
-//                broaderList.add(object.stringValue());
-//            }
-//            if (predicate.equals(SKOS.NARROWER)) {
-//                if (concept.get("narrower") == null) {
-//                    concept.put("narrower",
-//                            new ArrayList<String>());
-//                }
-//                @SuppressWarnings("unchecked")
-//                Set<String> narrowerList =
-//                    (Set<String>) concept.get("narrower");
-//                narrowerList.add(object.stringValue());
-//            }
         }
 
         /** Getter for resource list.
