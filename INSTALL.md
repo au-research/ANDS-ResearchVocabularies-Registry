@@ -339,9 +339,17 @@ In this case, restart Solr and try again.
 
 # Create PHP Client API
 
+The PHP code of the Portal accesses the Registry using a client
+library API generated from the Registry code itself. To generate this
+PHP library:
+
 `ant php-client`
 
 # Create JavaScript Client API
+
+The browser-side JavaScript code of the Portal also accesses the
+Registry using a client library API generated from the Registry code
+itself. To generate this JavaScript library:
 
 `ant js-client`
 
