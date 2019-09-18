@@ -97,6 +97,8 @@ public final class FieldConstants {
     public static final String RDFS_LABEL = "rdfs_label";
     /** The name of the Solr document field used for SKOS altLabels. */
     public static final String SKOS_ALTLABEL = "skos_altLabel";
+    /** The name of the Solr document field used for SKOS hiddenLabels. */
+    public static final String SKOS_HIDDENLABEL = "skos_hiddenLabel";
     /** The name of the Solr document field used for SKOS definitions. */
     public static final String SKOS_DEFINITION = "skos_definition";
     /** The name of the Solr document field used for SKOS notations. */

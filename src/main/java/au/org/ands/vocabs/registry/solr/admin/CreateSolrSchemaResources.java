@@ -12,6 +12,7 @@ import static au.org.ands.vocabs.registry.solr.FieldConstants.RDF_TYPE;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.SISSVOC_ENDPOINT;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.SKOS_ALTLABEL;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.SKOS_DEFINITION;
+import static au.org.ands.vocabs.registry.solr.FieldConstants.SKOS_HIDDENLABEL;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.SKOS_NOTATION;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.SKOS_PREFLABEL;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.STATUS;
@@ -92,6 +93,7 @@ public final class CreateSolrSchemaResources extends SolrSchemaBase {
             addMultilingualFields(client, RDFS_LABEL, true, true);
             addMultilingualFields(client, SKOS_PREFLABEL, true, true);
             addMultilingualFields(client, SKOS_ALTLABEL, true, true);
+            addMultilingualFields(client, SKOS_HIDDENLABEL, true, true);
             addMultilingualFields(client, SKOS_DEFINITION, true, true);
 
             addField(client, STATUS, STRING, true, true, false);

@@ -129,6 +129,9 @@ public class ResourceDocsTransformProvider implements WorkflowProvider {
                 new PredicateInfo(FieldConstants.SKOS_PREFLABEL, false, true));
         predicatesInfo.put(SKOS.ALT_LABEL,
                 new PredicateInfo(FieldConstants.SKOS_ALTLABEL, false, true));
+        predicatesInfo.put(SKOS.HIDDEN_LABEL,
+                new PredicateInfo(FieldConstants.SKOS_HIDDENLABEL,
+                        false, true));
         predicatesInfo.put(SKOS.NOTATION,
                 new PredicateInfo(FieldConstants.SKOS_NOTATION, false, false));
         predicatesInfo.put(SKOS.DEFINITION,
