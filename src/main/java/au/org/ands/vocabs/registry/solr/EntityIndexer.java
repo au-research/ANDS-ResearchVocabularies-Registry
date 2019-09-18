@@ -118,8 +118,9 @@ public final class EntityIndexer {
         licenceGroups.put("NoLicence", "No Licence");
     }
 
-    /** Fallback value to use for licence, if the vocabulary specifies
-     * a licence value, but that value is not one of the keys of
+    /** Fallback value to use for licence, if the vocabulary does
+     * not specify a licence, or it specifies a licence value,
+     * but that value is not one of the keys of
      * {@code licenceGroups}. */
     private static final String LICENCE_UNKNOWN = "Unknown/Other";
 
@@ -219,9 +220,9 @@ public final class EntityIndexer {
         String licenceGroup = licenceGroups.get(licence);
         if (licenceGroup != null) {
             addDataToDocument(document, LICENCE, licenceGroup);
-        } else if (StringUtils.isNotBlank(licence)) {
-            // Non-blank licence, but one we don't recognize;
-            // use the fallback value.
+        } else {
+            // No licence specified, or a non-blank licence,
+            // but one we don't recognize; use the fallback value.
             addDataToDocument(document, LICENCE, LICENCE_UNKNOWN);
         }
         addDataToDocument(document, ACRONYM, vocabularyData.getAcronym());
