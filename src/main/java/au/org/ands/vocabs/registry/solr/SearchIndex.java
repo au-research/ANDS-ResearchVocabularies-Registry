@@ -111,8 +111,10 @@ public final class SearchIndex {
     private SearchIndex() {
     }
 
-    /** Optimized access to the shared SolrClient. */
-    private static final SolrClient SOLR_CLIENT = SolrUtils.getSolrClient();
+    /** Optimized access to the shared SolrClient for the registry collection.
+     */
+    private static final SolrClient SOLR_CLIENT_REGISTRY =
+            SolrUtils.getSolrClientRegistry();
 
     /** Logger for this class. */
     private static final Logger LOGGER = LoggerFactory.getLogger(
@@ -517,10 +519,10 @@ public final class SearchIndex {
             // so for the test suite, need to use the default (GET) method.
             // See https://issues.apache.org/jira/browse/SOLR-12858
             QueryResponse responseQuery;
-            if (SOLR_CLIENT instanceof EmbeddedSolrServer) {
-                responseQuery = SOLR_CLIENT.query(solrQuery);
+            if (SOLR_CLIENT_REGISTRY instanceof EmbeddedSolrServer) {
+                responseQuery = SOLR_CLIENT_REGISTRY.query(solrQuery);
             } else {
-                responseQuery = SOLR_CLIENT.query(solrQuery,
+                responseQuery = SOLR_CLIENT_REGISTRY.query(solrQuery,
                         SolrRequest.METHOD.POST);
             }
             if (logResults) {

@@ -86,8 +86,10 @@ public final class EntityIndexer {
     private EntityIndexer() {
     }
 
-    /** Optimized access to the shared SolrClient. */
-    private static final SolrClient SOLR_CLIENT = SolrUtils.getSolrClient();
+    /** Optimized access to the shared SolrClient for the registry collection.
+     */
+    private static final SolrClient SOLR_CLIENT_REGISTRY =
+            SolrUtils.getSolrClientRegistry();
 
     /** Logger for this class. */
     private static final Logger LOGGER = LoggerFactory.getLogger(
@@ -458,7 +460,7 @@ public final class EntityIndexer {
         }
         SolrInputDocument document = createSolrDocument(vocabulary);
         try {
-            SOLR_CLIENT.add(document);
+            SOLR_CLIENT_REGISTRY.add(document);
         } catch (IOException | SolrServerException | RemoteSolrException e) {
             LOGGER.error("Exception when adding document to Solr index", e);
             throw e;
@@ -482,10 +484,10 @@ public final class EntityIndexer {
         }
         try {
             // First, delete all existing documents.
-            SOLR_CLIENT.deleteByQuery("*:*");
+            SOLR_CLIENT_REGISTRY.deleteByQuery("*:*");
             // In this case, we do do a commit immediately (by specifying 0
             // as the second parameter).
-            SOLR_CLIENT.add(documents, 0);
+            SOLR_CLIENT_REGISTRY.add(documents, 0);
         } catch (IOException | SolrServerException | RemoteSolrException e) {
             LOGGER.error("Exception when adding document to Solr index", e);
             throw e;
@@ -505,7 +507,7 @@ public final class EntityIndexer {
     public static void unindexVocabulary(final int vocabularyId)
             throws IOException, SolrServerException, RemoteSolrException {
         try {
-            SOLR_CLIENT.deleteById(Integer.toString(vocabularyId));
+            SOLR_CLIENT_REGISTRY.deleteById(Integer.toString(vocabularyId));
         } catch (IOException | SolrServerException | RemoteSolrException e) {
             LOGGER.error("Exception when removing document from Solr index", e);
             throw e;
@@ -518,7 +520,7 @@ public final class EntityIndexer {
     // AdminRestMethods.indexAll() invoked first unindexAllVocabularies()
     // and then indexAllVocabularies(). That meant that you could be
     // without an index for over a minute. That would be bad.
-    // So I've copied the call to SOLR_CLIENT.deleteByQuery() into
+    // So I've copied the call to SOLR_CLIENT_REGISTRY.deleteByQuery() into
     // indexAllVocabularies(), and (for now) we no longer need this method.
     // If, in future, we decide to add an AdminRestMethods.unindexAll() method,
     // uncomment this again.
@@ -535,7 +537,7 @@ public final class EntityIndexer {
 //            // Delete by matching all documents.
 //            // In this case, we do do a commit immediately (by specifying 0
 //            // as the second parameter).
-//            SOLR_CLIENT.deleteByQuery("*:*", 0);
+//            SOLR_CLIENT_REGISTRY.deleteByQuery("*:*", 0);
 //        } catch (IOException | SolrServerException | RemoteSolrException e) {
 //            LOGGER.error("Exception when removing all documents "
 //                    + "from Solr index", e);

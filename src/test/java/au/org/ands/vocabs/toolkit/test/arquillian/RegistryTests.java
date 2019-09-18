@@ -159,7 +159,7 @@ public class RegistryTests extends ArquillianBaseTest {
         EntityIndexer.indexAllVocabularies();
         // Explicit commit is required so that we can do a search
         // immediately.
-        SolrUtils.getSolrClient().commit();
+        SolrUtils.getSolrClientRegistry().commit();
         List<Object> filtersAndResultsExtracted = new ArrayList<>();
         String searchResults = SearchIndex.query("{}",
                 filtersAndResultsExtracted, false);

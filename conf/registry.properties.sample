@@ -88,6 +88,10 @@ SISSVoc.specsPath = ${Registry.storagePath}/specs
 Registry.Solr.collectionURL = test
 # Full path to the Solr collection, to be used when creating a SolrClient.
 #Registry.Solr.collectionURL = ${Registry.Solr.baseURL}/${Registry.Solr.collection}
+# The name of the Solr collection used for indexing vocabulary resources.
+Registry.Solr.resources.collection = test
+# Full path to the Solr collection for resources, to be used when creating a SolrClient.
+#Registry.Solr.resources.collectionURL = ${Registry.Solr.baseURL}/${Registry.Solr.resources.collection}
 
 ## PoolParty
 

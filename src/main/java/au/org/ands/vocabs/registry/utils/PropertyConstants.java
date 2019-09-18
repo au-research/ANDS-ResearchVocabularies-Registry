@@ -85,10 +85,20 @@ public final class PropertyConstants {
     public static final String REGISTRY_SOLR_COLLECTION =
             "Registry.Solr.collection";
 
-    /** Solr collection URL. Full path to the Solr collection,
-     * to be used when creating a SolrClient. */
+    /** Solr registry collection URL. Full path to the Solr collection
+     * for registry entities, to be used when creating a SolrClient. */
     public static final String REGISTRY_SOLR_COLLECTION_URL =
             "Registry.Solr.collectionURL";
+
+    /** Solr collection. The name of the Solr collection used for
+     * indexing vocabulary resources. */
+    public static final String REGISTRY_SOLR_RESOURCES_COLLECTION =
+            "Registry.Solr.resources.collection";
+
+    /** Solr registry collection URL. Full path to the Solr collection
+     * for vocabulary resources, to be used when creating a SolrClient. */
+    public static final String REGISTRY_SOLR_RESOURCES_COLLECTION_URL =
+            "Registry.Solr.resources.collectionURL";
 
     /* Public-facing Sesame. */
 
