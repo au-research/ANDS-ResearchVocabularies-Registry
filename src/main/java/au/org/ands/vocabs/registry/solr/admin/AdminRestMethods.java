@@ -90,7 +90,6 @@ public class AdminRestMethods {
             return ResponseUtils.generateForbiddenResponseNotSuperuser();
         }
         try {
-            EntityIndexer.unindexAllVocabularies();
             EntityIndexer.indexAllVocabularies();
         } catch (IOException | SolrServerException | RemoteSolrException e) {
             logger.error("indexAll: got exception",  e);

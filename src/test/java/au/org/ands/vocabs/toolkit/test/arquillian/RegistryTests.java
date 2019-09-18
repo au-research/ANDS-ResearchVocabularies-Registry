@@ -156,7 +156,6 @@ public class RegistryTests extends ArquillianBaseTest {
         ArquillianTestUtils.clearDatabase(REGISTRY);
         ArquillianTestUtils.loadDbUnitTestFile(REGISTRY,
                 CLASS_NAME_PREFIX + "testSolrIndexing1");
-        EntityIndexer.unindexAllVocabularies();
         EntityIndexer.indexAllVocabularies();
         // Explicit commit is required so that we can do a search
         // immediately.

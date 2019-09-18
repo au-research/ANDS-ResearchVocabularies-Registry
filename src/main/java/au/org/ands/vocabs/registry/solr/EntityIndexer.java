@@ -481,6 +481,8 @@ public final class EntityIndexer {
             documents.add(createSolrDocument(vocabulary));
         }
         try {
+            // First, delete all existing documents.
+            SOLR_CLIENT.deleteByQuery("*:*");
             // In this case, we do do a commit immediately (by specifying 0
             // as the second parameter).
             SOLR_CLIENT.add(documents, 0);
@@ -510,25 +512,35 @@ public final class EntityIndexer {
         }
     }
 
-    /** Remove all documents from the Solr index.
-     * @throws IOException If the Solr API generated an IOException.
-     * @throws SolrServerException If the Solr API generated a
-     *      SolrServerException.
-     * @throws RemoteSolrException If there is a problem communicating with
-     *      Zookeeper.
-     */
-    public static void unindexAllVocabularies()
-            throws IOException, SolrServerException, RemoteSolrException {
-        try {
-            // Delete by matching all documents.
-            // In this case, we do do a commit immediately (by specifying 0
-            // as the second parameter).
-            SOLR_CLIENT.deleteByQuery("*:*", 0);
-        } catch (IOException | SolrServerException | RemoteSolrException e) {
-            LOGGER.error("Exception when removing all documents "
-                    + "from Solr index", e);
-            throw e;
-        }
-    }
+    // In testing with a very large number (> 9000) of vocabularies,
+    // creating the Solr documents for all vocabularies can take over
+    // a minute. It used to be that
+    // AdminRestMethods.indexAll() invoked first unindexAllVocabularies()
+    // and then indexAllVocabularies(). That meant that you could be
+    // without an index for over a minute. That would be bad.
+    // So I've copied the call to SOLR_CLIENT.deleteByQuery() into
+    // indexAllVocabularies(), and (for now) we no longer need this method.
+    // If, in future, we decide to add an AdminRestMethods.unindexAll() method,
+    // uncomment this again.
+//    /** Remove all documents from the Solr index.
+//     * @throws IOException If the Solr API generated an IOException.
+//     * @throws SolrServerException If the Solr API generated a
+//     *      SolrServerException.
+//     * @throws RemoteSolrException If there is a problem communicating with
+//     *      Zookeeper.
+//     */
+//    public static void unindexAllVocabularies()
+//            throws IOException, SolrServerException, RemoteSolrException {
+//        try {
+//            // Delete by matching all documents.
+//            // In this case, we do do a commit immediately (by specifying 0
+//            // as the second parameter).
+//            SOLR_CLIENT.deleteByQuery("*:*", 0);
+//        } catch (IOException | SolrServerException | RemoteSolrException e) {
+//            LOGGER.error("Exception when removing all documents "
+//                    + "from Solr index", e);
+//            throw e;
+//        }
+//    }
 
 }
