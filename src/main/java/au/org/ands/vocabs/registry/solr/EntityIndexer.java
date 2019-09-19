@@ -37,12 +37,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.BaseHttpSolrClient.RemoteSolrException;
+import org.apache.solr.client.solrj.request.ContentStreamUpdateRequest;
 import org.apache.solr.common.SolrInputDocument;
 import org.jsoup.Jsoup;
 import org.slf4j.Logger;
@@ -67,6 +69,7 @@ import au.org.ands.vocabs.registry.db.entity.VocabularyRelatedEntity;
 import au.org.ands.vocabs.registry.db.internal.ApFile;
 import au.org.ands.vocabs.registry.db.internal.ApSissvoc;
 import au.org.ands.vocabs.registry.db.internal.VaConceptList;
+import au.org.ands.vocabs.registry.db.internal.VaResourceDocs;
 import au.org.ands.vocabs.registry.db.internal.VocabularyJson;
 import au.org.ands.vocabs.registry.db.internal.VocabularyJson.PoolpartyProject;
 import au.org.ands.vocabs.registry.db.internal.VocabularyJson.Subjects;
@@ -90,6 +93,14 @@ public final class EntityIndexer {
      */
     private static final SolrClient SOLR_CLIENT_REGISTRY =
             SolrUtils.getSolrClientRegistry();
+
+    /** Optimized access to the shared SolrClient for the resources collection.
+     */
+    private static final SolrClient SOLR_CLIENT_RESOURCES =
+            SolrUtils.getSolrClientResources();
+
+    /** The Solr endpoint for sending updates. */
+    private static final String UPDATE_ENDPOINT = "/update";
 
     /** Logger for this class. */
     private static final Logger LOGGER = LoggerFactory.getLogger(
@@ -442,7 +453,7 @@ public final class EntityIndexer {
 
     /** Index a current vocabulary in Solr.
      * @param vocabularyId The vocabulary ID of the vocabulary to be
-     *      added to the Solr index.
+     *      added to the Solr indexes.
      * @throws IOException If the Solr API generated an IOException.
      * @throws SolrServerException If the Solr API generated a
      *      SolrServerException.
@@ -465,9 +476,10 @@ public final class EntityIndexer {
             LOGGER.error("Exception when adding document to Solr index", e);
             throw e;
         }
+        indexResourceDocsForVocabulary(vocabularyId);
     }
 
-    /** Index all current vocabularies of a vocabulary in Solr.
+    /** Index all current vocabularies into Solr.
      * @throws IOException If the Solr API generated an IOException.
      * @throws SolrServerException If the Solr API generated a
      *      SolrServerException.
@@ -479,7 +491,11 @@ public final class EntityIndexer {
         List<Vocabulary> allVocabularies =
                 VocabularyDAO.getAllCurrentVocabulary();
         List<SolrInputDocument> documents = new ArrayList<>();
+        // Populate vocabularyIdList with vocabulary Ids, so we can
+        // invoke indexResourceDocsForVocabulary on each one.
+        List<Integer> vocabularyIdList = new ArrayList<>();
         for (Vocabulary vocabulary : allVocabularies) {
+            vocabularyIdList.add(vocabulary.getVocabularyId());
             documents.add(createSolrDocument(vocabulary));
         }
         try {
@@ -488,14 +504,24 @@ public final class EntityIndexer {
             // In this case, we do do a commit immediately (by specifying 0
             // as the second parameter).
             SOLR_CLIENT_REGISTRY.add(documents, 0);
+            // Clear out the entire resources index here, as there
+            // "might" be deleted vocabularies for which resources
+            // still need to be cleaned out. (Of course, that
+            // "shouldn't happen", but if you're using this method,
+            // you may well be dealing with an exceptional circumstance.)
+            SOLR_CLIENT_RESOURCES.deleteByQuery("*:*");
         } catch (IOException | SolrServerException | RemoteSolrException e) {
-            LOGGER.error("Exception when adding document to Solr index", e);
+            LOGGER.error("Exception when adding documents to Solr index", e);
             throw e;
+        }
+        // Now put all of the resource docs into the resource Solr collection.
+        for (Integer vocabularyId : vocabularyIdList) {
+            indexResourceDocsForVocabulary(vocabularyId);
         }
     }
 
-
-    /** Remove the current version of a vocabulary from the Solr index.
+    /** Remove a current vocabulary from the Solr registry index,
+     *      and remove its resource docs from the resources Solr index.
      * @param vocabularyId The vocabulary ID of the vocabulary to be
      *      removed from the Solr index.
      * @throws IOException If the Solr API generated an IOException.
@@ -508,8 +534,11 @@ public final class EntityIndexer {
             throws IOException, SolrServerException, RemoteSolrException {
         try {
             SOLR_CLIENT_REGISTRY.deleteById(Integer.toString(vocabularyId));
+            SOLR_CLIENT_RESOURCES.deleteByQuery("vocabulary_id:"
+                    + vocabularyId);
         } catch (IOException | SolrServerException | RemoteSolrException e) {
-            LOGGER.error("Exception when removing document from Solr index", e);
+            LOGGER.error("Exception when removing documents from Solr indexes",
+                    e);
             throw e;
         }
     }
@@ -538,11 +567,58 @@ public final class EntityIndexer {
 //            // In this case, we do do a commit immediately (by specifying 0
 //            // as the second parameter).
 //            SOLR_CLIENT_REGISTRY.deleteByQuery("*:*", 0);
+//            SOLR_CLIENT_RESOURCES.deleteByQuery("*:*", 0);
 //        } catch (IOException | SolrServerException | RemoteSolrException e) {
 //            LOGGER.error("Exception when removing all documents "
 //                    + "from Solr index", e);
 //            throw e;
 //        }
 //    }
+
+    /** Add all of the current resource docs for a vocabulary to the resources
+     * Solr collection.
+     * Here, "current" means non-historical, non-draft.
+     * We index all such versions, irrespective of
+     * whether they have version status "current" or "superseded".
+     * @param vocabularyId The vocabulary ID of the vocabulary for which
+     *      resource docs are to be added to the Solr index.
+     */
+    private static void indexResourceDocsForVocabulary(final int vocabularyId) {
+        // Get all "current" versions, which here means non-historical,
+        // non-draft. We index all such versions, irrespective of
+        // whether they have version status "current" or "superseded".
+        List<Version> versions =
+                VersionDAO.getCurrentVersionListForVocabulary(vocabularyId);
+        try {
+            SOLR_CLIENT_RESOURCES.deleteByQuery("vocabulary_id:"
+                    + vocabularyId);
+        } catch (SolrServerException | IOException e) {
+            LOGGER.error("Unable to delete existing resource docs "
+                    + "from Solr collection", e);
+        }
+        for (Version version : versions) {
+            Integer versionId = version.getVersionId();
+            List<VersionArtefact> resourceDocs = VersionArtefactDAO.
+                    getCurrentVersionArtefactListForVersionByType(
+                            versionId, VersionArtefactType.RESOURCE_DOCS);
+            if (resourceDocs != null && resourceDocs.size() == 1) {
+                String vaData = resourceDocs.get(0).getData();
+                VaResourceDocs vaResourceDocs =
+                        JSONSerialization.deserializeStringAsJson(
+                                vaData, VaResourceDocs.class);
+                File resourceDocsFile = new File(vaResourceDocs.getPath());
+                try {
+                    ContentStreamUpdateRequest request =
+                            new ContentStreamUpdateRequest(UPDATE_ENDPOINT);
+                    request.addFile(resourceDocsFile,
+                            MediaType.APPLICATION_JSON);
+                    request.process(SOLR_CLIENT_RESOURCES);
+                } catch (IOException | SolrServerException e) {
+                    LOGGER.error("Unable to process update to add resource "
+                            + "docs for vocabulary: " + vocabularyId, e);
+                }
+            }
+        }
+    }
 
 }
