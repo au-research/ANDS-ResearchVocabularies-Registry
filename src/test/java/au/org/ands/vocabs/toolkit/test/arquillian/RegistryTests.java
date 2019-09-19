@@ -28,7 +28,7 @@ import au.org.ands.vocabs.registry.db.dao.VocabularyDAO;
 import au.org.ands.vocabs.registry.db.entity.ResourceOwnerHost;
 import au.org.ands.vocabs.registry.enums.VersionStatus;
 import au.org.ands.vocabs.registry.solr.EntityIndexer;
-import au.org.ands.vocabs.registry.solr.SearchIndex;
+import au.org.ands.vocabs.registry.solr.SearchRegistryIndex;
 import au.org.ands.vocabs.registry.solr.SolrUtils;
 import au.org.ands.vocabs.toolkit.db.TaskUtils;
 
@@ -161,7 +161,7 @@ public class RegistryTests extends ArquillianBaseTest {
         // immediately.
         SolrUtils.getSolrClientRegistry().commit();
         List<Object> filtersAndResultsExtracted = new ArrayList<>();
-        String searchResults = SearchIndex.query("{}",
+        String searchResults = SearchRegistryIndex.query("{}",
                 filtersAndResultsExtracted, false);
         logger.info("Result: " + searchResults);
         JsonNode resultsJson = TaskUtils.jsonStringToTree(searchResults);

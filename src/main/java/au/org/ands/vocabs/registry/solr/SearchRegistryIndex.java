@@ -76,8 +76,8 @@ import au.org.ands.vocabs.registry.db.converter.JSONSerialization;
 import au.org.ands.vocabs.registry.enums.SearchSortOrder;
 import au.org.ands.vocabs.registry.log.Analytics;
 
-/** Methods for Solr searching. */
-public final class SearchIndex {
+/** Methods for Solr searching of the registry collection. */
+public final class SearchRegistryIndex {
 
     /** Map of incoming filter keys to the field names used for logging. */
     private static Map<String, String> filterArrays = new HashMap<>();
@@ -108,7 +108,7 @@ public final class SearchIndex {
     }
 
     /** Private constructor for a utility class. */
-    private SearchIndex() {
+    private SearchRegistryIndex() {
     }
 
     /** Optimized access to the shared SolrClient for the registry collection.

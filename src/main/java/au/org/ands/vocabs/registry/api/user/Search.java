@@ -30,7 +30,7 @@ import au.org.ands.vocabs.registry.api.context.ResponseUtils;
 import au.org.ands.vocabs.registry.api.context.SwaggerInterface;
 import au.org.ands.vocabs.registry.log.Analytics;
 import au.org.ands.vocabs.registry.log.Logging;
-import au.org.ands.vocabs.registry.solr.SearchIndex;
+import au.org.ands.vocabs.registry.solr.SearchRegistryIndex;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -104,7 +104,7 @@ public class Search {
                 request.getHeader(Analytics.PORTAL_ID));
         try {
             List<Object> filtersAndResultsExtracted = new ArrayList<>();
-            String queryResponse = SearchIndex.query(filtersJson,
+            String queryResponse = SearchRegistryIndex.query(filtersJson,
                     filtersAndResultsExtracted, logResults);
             Logging.logRequest(true, request, uriInfo, null,
                     Analytics.EVENT_SEARCH,
