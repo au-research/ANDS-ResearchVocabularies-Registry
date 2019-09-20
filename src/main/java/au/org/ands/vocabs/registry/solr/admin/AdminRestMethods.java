@@ -80,7 +80,7 @@ public class AdminRestMethods {
                     message = "Not authenticated, or not authorized",
                     response = ErrorResult.class)
             })
-    public final Response indexAll(
+    public Response indexAll(
             @Context final HttpServletRequest request,
             @Context final UriInfo uriInfo,
             @ApiParam(hidden = true) @Pac4JProfile
@@ -128,7 +128,7 @@ public class AdminRestMethods {
                     message = "Not authenticated, or not authorized",
                     response = ErrorResult.class)
             })
-    public final Response indexOne(
+    public Response indexOne(
             @Context final HttpServletRequest request,
             @Context final UriInfo uriInfo,
             @ApiParam(hidden = true) @Pac4JProfile

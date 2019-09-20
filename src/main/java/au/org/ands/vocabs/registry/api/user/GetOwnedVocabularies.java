@@ -86,7 +86,7 @@ public class GetOwnedVocabularies {
                                     response = String.class)
                             })
             })
-    public final OwnedVocabularyList getOwnedVocabularies(
+    public OwnedVocabularyList getOwnedVocabularies(
             @Context final HttpServletRequest request,
             @Context final UriInfo uriInfo,
             @ApiParam(hidden = true) @Pac4JProfile

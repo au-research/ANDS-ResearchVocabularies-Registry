@@ -83,7 +83,7 @@ public class AdminRestMethods {
                     message = "Not authenticated, or not authorized",
                     response = ErrorResult.class)
             })
-    public final Response generateNotificationEmails(
+    public Response generateNotificationEmails(
             @Context final HttpServletRequest request,
             @Context final UriInfo uriInfo,
             @ApiParam(hidden = true) @Pac4JProfile

@@ -97,7 +97,7 @@ public class DeleteVocabularies {
                     message = "Internal server error",
                     response = ErrorResult.class)
             })
-    public final Response deleteVocabulary(
+    public Response deleteVocabulary(
             @Context final HttpServletRequest request,
             @Context final UriInfo uriInfo,
             @ApiParam(hidden = true) @Pac4JProfile final CommonProfile profile,

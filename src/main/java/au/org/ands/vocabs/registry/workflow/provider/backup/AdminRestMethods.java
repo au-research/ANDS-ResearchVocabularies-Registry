@@ -72,7 +72,7 @@ public class AdminRestMethods {
                     message = "Not authenticated, or not authorized",
                     response = ErrorResult.class)
             })
-    public final Response backupPoolPartyProject(
+    public Response backupPoolPartyProject(
             @ApiParam(hidden = true) @Pac4JProfile
             final CommonProfile profile,
             @PathParam(PROJECT_ID)
@@ -109,7 +109,7 @@ public class AdminRestMethods {
                     message = "Not authenticated, or not authorized",
                     response = ErrorResult.class)
             })
-    public final Response backupAllPoolPartyProjects(
+    public Response backupAllPoolPartyProjects(
             @ApiParam(hidden = true) @Pac4JProfile
             final CommonProfile profile) {
         if (!AuthUtils.profileIsSuperuser(profile)) {

@@ -157,7 +157,7 @@ public class Download {
             @ApiResponse(code = HttpStatus.SC_NOT_FOUND,
                     message = "No such download.",
                     response = String.class)})
-    public final void download(
+    public void download(
             @Suspended final AsyncResponse response,
             @ApiParam(value = "The Id of the download.")
             @PathParam("downloadId")
@@ -253,7 +253,7 @@ public class Download {
             @ApiResponse(code = HttpStatus.SC_NOT_FOUND,
                     message = "No such download.",
                     response = String.class)})
-    public final void downloadWithFilename(
+    public void downloadWithFilename(
             @Suspended final AsyncResponse response,
             @ApiParam(value = "The Id of the download.")
             @PathParam("downloadId")

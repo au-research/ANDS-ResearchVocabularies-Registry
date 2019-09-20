@@ -101,7 +101,7 @@ public class DeleteRelatedEntities {
                             + "vocabulary IDs of vocabularies that use it.",
                     response = ErrorResult.class)
             })
-    public final Response deleteRelatedEntity(
+    public Response deleteRelatedEntity(
             @Context final HttpServletRequest request,
             @Context final UriInfo uriInfo,
             @ApiParam(hidden = true) @Pac4JProfile final CommonProfile profile,
