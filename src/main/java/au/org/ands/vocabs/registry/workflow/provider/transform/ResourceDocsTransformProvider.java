@@ -432,8 +432,9 @@ public class ResourceDocsTransformProvider implements WorkflowProvider {
                     }
                 } else {
                     LOGGER.info("Predicate of interest has "
-                            + "non-literal object: p: "
-                            + predicate.stringValue()
+                            + "non-literal object: "
+                            + "s: " + subject.stringValue()
+                            + "; p: " + predicate.stringValue()
                             + "; o: " + object.stringValue());
                 }
                 // And we're done.
