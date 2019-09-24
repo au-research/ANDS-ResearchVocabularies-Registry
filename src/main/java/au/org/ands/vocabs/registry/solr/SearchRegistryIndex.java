@@ -52,13 +52,10 @@ import org.apache.solr.client.solrj.SolrQuery.ORDER;
 import org.apache.solr.client.solrj.SolrRequest;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
-import org.apache.solr.client.solrj.impl.NoOpResponseParser;
-import org.apache.solr.client.solrj.request.QueryRequest;
 import org.apache.solr.client.solrj.request.json.TermsFacetMap;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
-import org.apache.solr.common.params.CommonParams;
 import org.apache.solr.common.params.DisMaxParams;
 import org.apache.solr.common.params.FacetParams;
 import org.apache.solr.common.params.HighlightParams;
@@ -204,15 +201,6 @@ public final class SearchRegistryIndex {
         // in filtersJson.
         Map<String, TermsFacetMap> jsonFacets = new HashMap<>();
         prepareJsonFacets(jsonFacets);
-
-        // Specify that we want the raw JSON that Solr produces.
-        // See one of the non-accepted answers at:
-        // https://stackoverflow.com/questions/28374428/
-        //             return-solr-response-in-json-format
-        QueryRequest request = new QueryRequest(solrQuery);
-        NoOpResponseParser rawJsonResponseParser = new NoOpResponseParser();
-        rawJsonResponseParser.setWriterType(CommonParams.JSON);
-        request.setResponseParser(rawJsonResponseParser);
 
         // Always add these facet fields. These are the "traditional"
         // Solr facets mentioned above, that give facet counts that are
