@@ -9,8 +9,11 @@ package au.org.ands.vocabs.registry.solr;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.util.List;
 
+import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.util.FastWriter;
+import org.apache.solr.search.ReturnFields;
 
 /** Customized SolrJSONWriter that produces results that closely match
  * what comes back from Solr server.
@@ -128,6 +131,101 @@ public class ServerSolrJSONWriter implements ServerJsonTextWriter {
     @Override
     public Writer getWriter() {
         return writer;
+    }
+
+    // This method has been copied from
+    // org.apache.solr.response.writeStartDocumentList().
+    /** {@inheritDoc} */
+    @Override
+    @SuppressWarnings("checkstyle:MagicNumber")
+    public void writeStartDocumentList(final String name,
+            final long start, final int size, final long numFound,
+            final Float maxScore) throws IOException {
+        if (maxScore == null) {
+            writeMapOpener(3);
+        } else {
+            writeMapOpener(4);
+        }
+        incLevel();
+        writeKey("numFound", false);
+        writeLong(null, numFound);
+        writeMapSeparator();
+        writeKey("start", false);
+        writeLong(null, start);
+
+        if (maxScore != null) {
+            writeMapSeparator();
+            writeKey("maxScore", false);
+            writeFloat(null, maxScore);
+        }
+        writeMapSeparator();
+        // indent();
+        writeKey("docs", false);
+        writeArrayOpener(size);
+
+        incLevel();
+    }
+
+    // This method has been copied from
+    // org.apache.solr.response.writeSolrDocument() and
+    // adapted: the returnFields parameter is ignored.
+    /** {@inheritDoc} */
+    @Override
+    public void writeSolrDocument(final String name, final SolrDocument doc,
+            final ReturnFields returnFields, final int idx)
+                    throws IOException {
+        if (idx > 0) {
+            writeArraySeparator();
+        }
+
+        indent();
+        writeMapOpener(doc.size());
+        incLevel();
+
+        boolean first = true;
+        for (String fname : doc.getFieldNames()) {
+
+            if (first) {
+                first = false;
+            } else {
+                writeMapSeparator();
+            }
+
+            indent();
+            writeKey(fname, true);
+            Object val = doc.getFieldValue(fname);
+            writeVal(fname, val);
+        }
+
+        if (doc.hasChildDocuments()) {
+            if (!first) {
+                writeMapSeparator();
+                indent();
+            }
+            writeKey("_childDocuments_", true);
+            writeArrayOpener(doc.getChildDocumentCount());
+            List<SolrDocument> childDocs = doc.getChildDocuments();
+            for (int i = 0; i < childDocs.size(); i++) {
+                writeSolrDocument(null, childDocs.get(i), null, i);
+            }
+            writeArrayCloser();
+        }
+
+        decLevel();
+        writeMapCloser();
+    }
+
+    // This method has been copied from
+    // org.apache.solr.response.writeEndDocumentList().
+    /** {@inheritDoc} */
+    @Override
+    public void writeEndDocumentList() throws IOException {
+        decLevel();
+        writeArrayCloser();
+
+        decLevel();
+        indent();
+        writeMapCloser();
     }
 
 }
