@@ -294,16 +294,15 @@ make sure to remove any old version.
 
 Create the two Solr collections. Here, `vocabs-registry` and
 `vocabs-resources` match the names chosen for the collections and
-assigned in `registry.properties` above.  The output of the first
-command (create) of each pair recommends running the second command
-(config), which disables auto-creation of fields. (Substitute the
-correct port number, if it is not the default 8983.)
+assigned in `registry.properties` above.  The output of the create
+command includes a recommendation to run another command to disable
+auto-creation of fields. You don't need to run that command, as the
+installation of the Solr schemas in the next step makes that setting
+for you.
 
 ```
 /path-to-Solr-installation/bin/solr create -c vocabs-registry
-/path-to-Solr-installation/bin/solr config -c vocabs-registry -p 8983 -action set-user-property -property update.autoCreateFields -value false
 /path-to-Solr-installation/bin/solr create -c vocabs-resources
-/path-to-Solr-installation/bin/solr config -c vocabs-resources -p 8983 -action set-user-property -property update.autoCreateFields -value false
 ```
 
 ## Install the two Solr schemas

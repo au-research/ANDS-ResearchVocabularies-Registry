@@ -90,7 +90,7 @@ public abstract class SolrSchemaBase {
      *      the Solr server.
      * @throws SolrServerException If the Solr server returns an error.
      */
-    private void setUserProperty(final SolrClient solrClient,
+    protected void setUserProperty(final SolrClient solrClient,
             final String name,
             final String value) throws SolrServerException, IOException {
         getLogger().info("Setting config property: " + name + " ... ");

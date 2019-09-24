@@ -291,6 +291,10 @@ public final class CreateSolrSchemaRegistry extends SolrSchemaBase {
                     + installedSchemaVersion);
             if (installedSchemaVersion < SCHEMA_DEFINITION) {
                 if (!(client instanceof EmbeddedSolrServer)) {
+                    // The value of "update.autoCreateFields" is used only in
+                    // solrconfig.xml. Because it _is_ used in solrconfig.xml,
+                    // we need to set its value here.
+                    setUserProperty(client, "update.autoCreateFields", "false");
                     uploadSolrconfig(collectionName, zkHost);
                     reloadCollection(baseURL, collectionName);
                 }
