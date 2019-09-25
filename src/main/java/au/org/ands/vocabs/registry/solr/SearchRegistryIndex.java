@@ -407,8 +407,8 @@ public final class SearchRegistryIndex {
                         String filterStringValues = ((ArrayList<String>) value).
                                 stream().
                                 map(v -> "\""
-                                        + StringEscapeUtils.escapeEcmaScript(
-                                                v.toString()) + "\"").
+                                        + StringEscapeUtils.escapeEcmaScript(v)
+                                        + "\"").
                                 collect(Collectors.joining(" "));
                         filterStringValue = filterStringValues;
                         filtersAndResultsExtracted.add(logFieldName);
