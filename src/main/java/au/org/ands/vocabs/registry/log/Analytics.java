@@ -211,6 +211,9 @@ public final class Analytics {
     public static final String SEARCH_FORMAT_FIELD = "format";
     /** The name of the search language field inserted into log entries. */
     public static final String SEARCH_LANGUAGE_FIELD = "language";
+    // Possible future work: support faceting by last_updated values.
+//  /** The name of the search last updated field inserted into log entries. */
+//  public static final String SEARCH_LAST_UPDATED_FIELD = "last_updated";
     /** The name of the search licence field inserted into log entries. */
     public static final String SEARCH_LICENCE_FIELD = "licence";
     /** The name of the search p field inserted into log entries. */
@@ -221,6 +224,8 @@ public final class Analytics {
     public static final String SEARCH_PUBLISHER_FIELD = "publisher";
     /** The name of the search q field inserted into log entries. */
     public static final String SEARCH_Q_FIELD = "q";
+    /** The name of the search RDF type field inserted into log entries. */
+    public static final String SEARCH_RDF_TYPE_FIELD = "rdf_type";
     /** The name of the search result Id field inserted into log entries. */
     public static final String SEARCH_RESULT_ID_FIELD = "result_ids";
     /** The name of the search result num_found field
@@ -233,6 +238,9 @@ public final class Analytics {
     /** The name of the search subject labels field inserted into
      * log entries. */
     public static final String SEARCH_SUBJECT_LABELS_FIELD = "subject";
+    /** The name of the search version status field inserted into
+     * log entries. */
+    public static final String SEARCH_VERSION_STATUS_FIELD = "version_status";
     /** The name of the search widgetable field inserted into log entries. */
     public static final String SEARCH_WIDGETABLE_FIELD = "widgetable";
     /** The name of the success field inserted into log entries. */
@@ -298,8 +306,11 @@ public final class Analytics {
     public static final String EVENT_DELETE_RELATED_ENTITY =
             "delete_relatedEntity";
     /** The value of the "message" field to use for log entries
-     * for search. */
+     * for searching the vocabulary metadata. */
     public static final String EVENT_SEARCH = "search";
+    /** The value of the "message" field to use for log entries
+     * for searching the vocabulary resources. */
+    public static final String EVENT_SEARCH_RESOURCES = "search_resources";
 
     /** The value of the "message" field to use for log entries
      * for creating a subscription. */
