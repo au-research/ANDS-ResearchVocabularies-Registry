@@ -25,6 +25,7 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
+import org.openrdf.model.vocabulary.DCTERMS;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.RDFS;
 import org.openrdf.model.vocabulary.SKOS;
@@ -125,6 +126,11 @@ public class ResourceDocsTransformProvider implements WorkflowProvider {
                 new PredicateInfo(FieldConstants.RDF_TYPE, true, false));
         predicatesInfo.put(RDFS.LABEL,
                 new PredicateInfo(FieldConstants.RDFS_LABEL, false, true));
+        predicatesInfo.put(DCTERMS.TITLE,
+                new PredicateInfo(FieldConstants.DCTERMS_TITLE, false, true));
+        predicatesInfo.put(DCTERMS.DESCRIPTION,
+                new PredicateInfo(FieldConstants.DCTERMS_DESCRIPTION,
+                        false, true));
         predicatesInfo.put(SKOS.PREF_LABEL,
                 new PredicateInfo(FieldConstants.SKOS_PREFLABEL, false, true));
         predicatesInfo.put(SKOS.ALT_LABEL,
@@ -153,6 +159,9 @@ public class ResourceDocsTransformProvider implements WorkflowProvider {
      * to a String. */
     private String vocabularyIdString;
 
+    /** The owner of the vocabulary being transformed. */
+    private String owner;
+
     /** The timestamp of the last update of the vocabulary being
      * transformed, expressed in the format expected by Solr. */
     private String lastUpdated;
@@ -166,6 +175,9 @@ public class ResourceDocsTransformProvider implements WorkflowProvider {
     /** The publishers of the vocabulary being transformed. */
     private ArrayList<String> publishers = new ArrayList<>();
 
+    /** The primary language of the vocabulary being transformed. */
+    private String primaryLanguage;
+
     /** The Version entity of the TaskInfo for the transform task. */
     private Version version;
 
@@ -178,6 +190,11 @@ public class ResourceDocsTransformProvider implements WorkflowProvider {
 
     /** The version status of the version being transformed. */
     private String versionStatus;
+
+    /** A list of keys to use to select a title for a resource.
+     * Based on primary language.
+     */
+    private ArrayList<String> titleKeys = new ArrayList<>();
 
     /** Create/update the ResourceDocs version artefact for the version.
      * @param taskInfo The top-level TaskInfo for the subtask.
@@ -258,6 +275,7 @@ public class ResourceDocsTransformProvider implements WorkflowProvider {
         vocabulary = taskInfo.getVocabulary();
         vocabularyId = vocabulary.getVocabularyId();
         vocabularyIdString = Integer.toString(vocabularyId);
+        owner = vocabulary.getOwner();
         lastUpdated = EntityIndexer.localDateTimeToString(
                 vocabulary.getStartDate());
         vocabularyJson = JSONSerialization.deserializeStringAsJson(
@@ -294,10 +312,33 @@ public class ResourceDocsTransformProvider implements WorkflowProvider {
                 publishers.add(re.getTitle());
             }
         }
+        primaryLanguage = vocabularyJson.getPrimaryLanguage();
         version = taskInfo.getVersion();
         versionId = version.getVersionId();
         versionIdString = Integer.toString(versionId);
         versionStatus = version.getStatus().toString();
+        // Create list of keys to use from which to pick out
+        // the value to be used as the title for each resource.
+        // The values of the list are used in sequence. If a value
+        // is found for the key, stop, and use that value as the title.
+        // We fall back to TOP_CONCEPT and IRI: every resource is
+        // guaranteed to have exactly one of those keys!
+        titleKeys.add(FieldConstants.SKOS_PREFLABEL + "-" + primaryLanguage);
+        titleKeys.add(FieldConstants.SKOS_ALTLABEL + "-" + primaryLanguage);
+        titleKeys.add(FieldConstants.SKOS_PREFLABEL);
+        titleKeys.add(FieldConstants.SKOS_ALTLABEL);
+        titleKeys.add(FieldConstants.SKOS_PREFLABEL + "-en");
+        titleKeys.add(FieldConstants.SKOS_ALTLABEL + "-");
+        // Possible future work: at this point, can we handle a fallback to
+        // skos_prefLabel-*, etc., i.e., a value for _any_ language?
+        titleKeys.add(FieldConstants.RDFS_LABEL + "-" + primaryLanguage);
+        titleKeys.add(FieldConstants.RDFS_LABEL);
+        titleKeys.add(FieldConstants.RDFS_LABEL + "-en");
+        titleKeys.add(FieldConstants.DCTERMS_TITLE + "-" + primaryLanguage);
+        titleKeys.add(FieldConstants.DCTERMS_TITLE);
+        titleKeys.add(FieldConstants.DCTERMS_TITLE + "-en");
+        titleKeys.add(FieldConstants.TOP_CONCEPT);
+        titleKeys.add(FieldConstants.IRI);
     }
 
     /** Add entries into the resource map for the vocabulary's
@@ -326,6 +367,7 @@ public class ResourceDocsTransformProvider implements WorkflowProvider {
                 concept.put(FieldConstants.RDF_TYPE, NO_RDF_TYPE);
                 concept.put(FieldConstants.VERSION_ID, versionIdString);
                 concept.put(FieldConstants.VOCABULARY_ID, vocabularyIdString);
+                concept.put(FieldConstants.OWNER, owner);
                 concept.put(FieldConstants.LAST_UPDATED, lastUpdated);
                 concept.put(FieldConstants.SUBJECT_LABELS, subjectLabels);
                 concept.put(FieldConstants.PUBLISHER, publishers);
@@ -360,6 +402,28 @@ public class ResourceDocsTransformProvider implements WorkflowProvider {
                         mappedResource.put(key, values);
                     }
                 }
+                // Now assign a value for TITLE, the "one true" title
+                // of the concept, so that we can sort on it,
+                // and which we present as the "header" of search results.
+                // Take into account SKOS_PREFLABEL, SKOS_ALTLABEL,
+                // RDFS_LABEL, TOP_CONCEPT. For each multilingual field,
+                // try the vocabulary's primary language, then fall back
+                // to a value without a language tag, then to English.
+                // Fall back to IRI in the last instance.
+                // We initialize title to null to keep Java happy,
+                // but we have constructed titleKeys to ensure that
+                // there always _will_ be a value assigned to title
+                // in the loop.
+                String title = null;
+                // The value of titleKeys
+                for (String titleKey : titleKeys) {
+                    String value = (String) mappedResource.get(titleKey);
+                    if (value != null) {
+                        title = value;
+                        break;
+                    }
+                }
+                mappedResource.put(FieldConstants.TITLE, title);
                 resources.add(mappedResource);
             }
         }
@@ -392,6 +456,7 @@ public class ResourceDocsTransformProvider implements WorkflowProvider {
                 concept.put(FieldConstants.VERSION_ID, versionIdString);
                 concept.put(FieldConstants.IRI, subject.stringValue());
                 concept.put(FieldConstants.VOCABULARY_ID, vocabularyIdString);
+                concept.put(FieldConstants.OWNER, owner);
                 concept.put(FieldConstants.SUBJECT_LABELS, subjectLabels);
                 concept.put(FieldConstants.PUBLISHER, publishers);
                 concept.put(FieldConstants.STATUS, versionStatus);

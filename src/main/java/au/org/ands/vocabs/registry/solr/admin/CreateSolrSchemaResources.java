@@ -3,9 +3,12 @@
 package au.org.ands.vocabs.registry.solr.admin;
 
 import static au.org.ands.vocabs.registry.solr.FieldConstants.DATE_POINT;
+import static au.org.ands.vocabs.registry.solr.FieldConstants.DCTERMS_DESCRIPTION;
+import static au.org.ands.vocabs.registry.solr.FieldConstants.DCTERMS_TITLE;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.IRI;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.LAST_UPDATED;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.LOWER_EXACT_WORDS;
+import static au.org.ands.vocabs.registry.solr.FieldConstants.OWNER;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.PUBLISHER;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.RDFS_LABEL;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.RDF_TYPE;
@@ -19,6 +22,7 @@ import static au.org.ands.vocabs.registry.solr.FieldConstants.STATUS;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.STRING;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.SUBJECT_LABELS;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.TEXT_EN_SPLITTING;
+import static au.org.ands.vocabs.registry.solr.FieldConstants.TITLE;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.TOP_CONCEPT;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.TOP_CONCEPT_PHRASE;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.VERSION_ID;
@@ -84,13 +88,17 @@ public final class CreateSolrSchemaResources extends SolrSchemaBase {
             // and in case we want to do a "join" of
             // this vocabulary_id field with those values.
             addField(client, VERSION_ID, STRING, true, true, false);
-            addField(client, VOCABULARY_ID, STRING, true, true, false);
             addField(client, IRI, STRING, true, true, false);
+            addField(client, VOCABULARY_ID, STRING, true, true, false);
+            addField(client, OWNER, STRING, true, true, false);
+            addField(client, TITLE, STRING, true, true, false);
             addField(client, TOP_CONCEPT, TEXT_EN_SPLITTING,
                     true, true, false);
             addField(client, SKOS_NOTATION, STRING, true, true, false);
 
             addMultilingualFields(client, RDFS_LABEL, true, true);
+            addMultilingualFields(client, DCTERMS_TITLE, true, true);
+            addMultilingualFields(client, DCTERMS_DESCRIPTION, true, true);
             addMultilingualFields(client, SKOS_PREFLABEL, true, true);
             addMultilingualFields(client, SKOS_ALTLABEL, true, true);
             addMultilingualFields(client, SKOS_HIDDENLABEL, true, true);

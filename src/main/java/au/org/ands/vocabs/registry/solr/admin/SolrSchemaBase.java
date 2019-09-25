@@ -2,9 +2,12 @@
 
 package au.org.ands.vocabs.registry.solr.admin;
 
+import static au.org.ands.vocabs.registry.solr.FieldConstants.ALL_SUFFIX;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.ALPHA_ONLY_SORT;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.LOWER_EXACT_WORDS;
+import static au.org.ands.vocabs.registry.solr.FieldConstants.PHRASE_SUFFIX;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.SCHEMA_VERSION;
+import static au.org.ands.vocabs.registry.solr.FieldConstants.SEARCH_SUFFIX;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.STRING;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.TEXT_EN_SPLITTING;
 
@@ -485,45 +488,50 @@ public abstract class SolrSchemaBase {
         addDynamicField(solrClient, fieldName + "-*", STRING,
                 stored, indexed, false);
         // e.g., skos_prefLabel_search (prefLabels without a language tag)
-        addField(solrClient, fieldName + "_search", TEXT_EN_SPLITTING,
+        addField(solrClient, fieldName + SEARCH_SUFFIX, TEXT_EN_SPLITTING,
                 stored, indexed, false);
         // e.g., skos_prefLabel_search-* (prefLabels with a language tag)
-        addDynamicField(solrClient, fieldName + "_search-*", TEXT_EN_SPLITTING,
-                stored, indexed, false);
+        addDynamicField(solrClient, fieldName + SEARCH_SUFFIX + "-*",
+                TEXT_EN_SPLITTING, stored, indexed, false);
         // e.g., skos_prefLabel_phrase (prefLabels without a language tag)
-        addField(solrClient, fieldName + "_phrase", LOWER_EXACT_WORDS,
+        addField(solrClient, fieldName + PHRASE_SUFFIX, LOWER_EXACT_WORDS,
                 stored, indexed, false);
         // e.g., skos_prefLabel_phrase-en (prefLabels with a language tag)
-        addDynamicField(solrClient, fieldName + "_phrase-*", LOWER_EXACT_WORDS,
-                stored, indexed, false);
+        addDynamicField(solrClient, fieldName + PHRASE_SUFFIX + "-*",
+                LOWER_EXACT_WORDS, stored, indexed, false);
         // Multivalued fields for all languages
         // e.g., skos_prefLabel_all
         //       (all prefLabels, with or without a language tag)
-        addField(solrClient, fieldName + "_all", STRING, stored, indexed, true);
+        addField(solrClient, fieldName + ALL_SUFFIX, STRING,
+                stored, indexed, true);
         // e.g., skos_prefLabel_search_all
         //       (all prefLabels, with or without a language tag)
-        addField(solrClient, fieldName + "_search_all", TEXT_EN_SPLITTING,
-                stored, indexed, true);
+        addField(solrClient, fieldName + SEARCH_SUFFIX + ALL_SUFFIX,
+                TEXT_EN_SPLITTING, stored, indexed, true);
         // e.g., skos_prefLabel_phrase_all
         //       (all prefLabels, with or without a language tag)
-        addField(solrClient, fieldName + "_phrase_all", LOWER_EXACT_WORDS,
-                stored, indexed, true);
+        addField(solrClient, fieldName + PHRASE_SUFFIX + ALL_SUFFIX,
+                LOWER_EXACT_WORDS, stored, indexed, true);
 
         // Copy fields
         // e.g., skos_prefLabel -> skos_prefLabel_all,
         //           skos_prefLabel_search, skos_prefLabel_search_all,
         //           skos_prefLabel_phrase, skos_prefLabel_phrase_all
         addCopyField(solrClient, fieldName,
-                Arrays.asList(fieldName + "_all",
-                        fieldName + "_search", fieldName + "_search_all",
-                        fieldName + "_phrase", fieldName + "_phrase_all"));
+                Arrays.asList(fieldName + ALL_SUFFIX,
+                        fieldName + SEARCH_SUFFIX,
+                        fieldName + SEARCH_SUFFIX + ALL_SUFFIX,
+                        fieldName + PHRASE_SUFFIX,
+                        fieldName + PHRASE_SUFFIX + ALL_SUFFIX));
         // e.g., skos_prefLabel-en -> skos_prefLabel_all,
         //           skos_prefLabel_search-en, skos_prefLabel_search_all,
         //           skos_prefLabel_phrase-en, skos_prefLabel_phrase_all
         addCopyField(solrClient, fieldName + "-*",
-                Arrays.asList(fieldName + "_all",
-                        fieldName + "_search-*", fieldName + "_search_all",
-                        fieldName + "_phrase-*", fieldName + "_phrase_all"));
+                Arrays.asList(fieldName + ALL_SUFFIX,
+                        fieldName + SEARCH_SUFFIX + "-*",
+                        fieldName + SEARCH_SUFFIX + ALL_SUFFIX,
+                        fieldName + PHRASE_SUFFIX + "-*",
+                        fieldName + PHRASE_SUFFIX + ALL_SUFFIX));
     }
 
     /** Set a property of a collection.

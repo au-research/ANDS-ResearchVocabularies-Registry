@@ -9,6 +9,13 @@ public final class FieldConstants {
     private FieldConstants() {
     }
 
+    /** A suffix to use within field names to indicate that this is
+     * a tokenized field, used for phrase searches. */
+    public static final String PHRASE_SUFFIX = "_phrase";
+    /** A suffix to use within field names to indicate that this is
+     * a tokenized field, used for searches. */
+    public static final String SEARCH_SUFFIX = "_search";
+
     /* Names of Solr fields. Listed in alphabetical order! */
 
     /** The name of the "access" Solr field. */
@@ -18,13 +25,14 @@ public final class FieldConstants {
     /** The name of the "concept" Solr field. */
     public static final String CONCEPT = "concept";
     /** The name of the "concept_phrase" Solr field. */
-    public static final String CONCEPT_PHRASE = "concept_phrase";
+    public static final String CONCEPT_PHRASE = "concept" + PHRASE_SUFFIX;
     /** The name of the "concept_search" Solr field. */
-    public static final String CONCEPT_SEARCH = "concept_search";
+    public static final String CONCEPT_SEARCH = "concept" + SEARCH_SUFFIX;
     /** The name of the "description" Solr field. */
     public static final String DESCRIPTION = "description";
     /** The name of the "description_phrase" Solr field. */
-    public static final String DESCRIPTION_PHRASE = "description_phrase";
+    public static final String DESCRIPTION_PHRASE = "description"
+            + PHRASE_SUFFIX;
     /** The name of the "format" Solr field. */
     public static final String FORMAT = "format";
     /** The name of the "fulltext" Solr field. */
@@ -50,9 +58,9 @@ public final class FieldConstants {
     /** The name of the "publisher" Solr field. */
     public static final String PUBLISHER = "publisher";
     /** The name of the "publisher_phrase" Solr field. */
-    public static final String PUBLISHER_PHRASE = "publisher_phrase";
+    public static final String PUBLISHER_PHRASE = "publisher" + PHRASE_SUFFIX;
     /** The name of the "publisher_search" Solr field. */
-    public static final String PUBLISHER_SEARCH = "publisher_search";
+    public static final String PUBLISHER_SEARCH = "publisher" + SEARCH_SUFFIX;
     /** The name of the "schema_version" Solr user property. */
     public static final String SCHEMA_VERSION = "schema_version";
     /** The name of the "sissvoc_endpoint" Solr field. */
@@ -68,18 +76,18 @@ public final class FieldConstants {
     /** The name of the "subject_notations" Solr field. */
     public static final String SUBJECT_NOTATIONS = "subject_notations";
     /** The name of the "subject_phrase" Solr field. */
-    public static final String SUBJECT_PHRASE = "subject_phrase";
+    public static final String SUBJECT_PHRASE = "subject" + PHRASE_SUFFIX;
     /** The name of the "subject_search" Solr field. */
-    public static final String SUBJECT_SEARCH = "subject_search";
+    public static final String SUBJECT_SEARCH = "subject" + SEARCH_SUFFIX;
     /** The name of the "subject_sources" Solr field. This was formerly
      * known as "subject_types". */
     public static final String SUBJECT_SOURCES = "subject_sources";
     /** The name of the "title" Solr field. */
     public static final String TITLE = "title";
     /** The name of the "title_phrase" Solr field. */
-    public static final String TITLE_PHRASE = "title_phrase";
+    public static final String TITLE_PHRASE = "title" + PHRASE_SUFFIX;
     /** The name of the "title_search" Solr field. */
-    public static final String TITLE_SEARCH = "title_search";
+    public static final String TITLE_SEARCH = "title" + SEARCH_SUFFIX;
     /** The name of the "title_sort" Solr field. */
     public static final String TITLE_SORT = "title_sort";
     /** The name of the "top_concept" Solr field. */
@@ -89,6 +97,14 @@ public final class FieldConstants {
 
     // Fields used only for the resources collection.
 
+    /** A suffix to use within field names to indicate that this is
+     * a multiValued field in which values for all language are copied. */
+    public static final String ALL_SUFFIX = "_all";
+
+    /** The name of the Solr document field used for DC Terms descriptions. */
+    public static final String DCTERMS_DESCRIPTION = "dcterms_description";
+    /** The name of the Solr document field used for DC Terms titles. */
+    public static final String DCTERMS_TITLE = "dcterms_title";
     /** The name of the "iri" Solr field. */
     public static final String IRI = "iri";
     /** The name of the Solr document field used for RDF types. */
@@ -106,7 +122,8 @@ public final class FieldConstants {
     /** The name of the Solr document field used for SKOS prefLabels. */
     public static final String SKOS_PREFLABEL = "skos_prefLabel";
     /** The name of the "top_concept_phrase" Solr field. */
-    public static final String TOP_CONCEPT_PHRASE = "top_concept_phrase";
+    public static final String TOP_CONCEPT_PHRASE = "top_concept"
+    + PHRASE_SUFFIX;
     /** The name of the "version_id" Solr field. */
     public static final String VERSION_ID = "version_id";
     /** The name of the "vocabulary_id" Solr field. */
