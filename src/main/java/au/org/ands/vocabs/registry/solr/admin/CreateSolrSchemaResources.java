@@ -2,6 +2,7 @@
 
 package au.org.ands.vocabs.registry.solr.admin;
 
+import static au.org.ands.vocabs.registry.solr.FieldConstants.ALPHA_ONLY_SORT;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.DATE_POINT;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.DCTERMS_DESCRIPTION;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.DCTERMS_TITLE;
@@ -23,6 +24,7 @@ import static au.org.ands.vocabs.registry.solr.FieldConstants.STRING;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.SUBJECT_LABELS;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.TEXT_EN_SPLITTING;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.TITLE;
+import static au.org.ands.vocabs.registry.solr.FieldConstants.TITLE_SORT;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.TOP_CONCEPT;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.TOP_CONCEPT_PHRASE;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.VERSION_ID;
@@ -39,6 +41,8 @@ import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.common.cloud.SolrZkClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import au.org.ands.vocabs.registry.solr.FieldConstants;
 
 /** Create the Registry's Solr Schema for the vocabulary resources.
  * Run as:
@@ -113,6 +117,10 @@ public final class CreateSolrSchemaResources extends SolrSchemaBase {
             addField(client, PUBLISHER, STRING, true, true, true);
             addField(client, SUBJECT_LABELS, STRING, true, true, true);
 
+            // Fields with custom type alphaOnlySort, used only for
+            // sorting results.
+            addField(client, TITLE_SORT, ALPHA_ONLY_SORT, true, true, false);
+
             // Fields that are used for searching, that are "analysed".
             // They are stored, so that we get highlighting for them.
 
@@ -123,6 +131,8 @@ public final class CreateSolrSchemaResources extends SolrSchemaBase {
             addField(client, TOP_CONCEPT_PHRASE, LOWER_EXACT_WORDS,
                     true, true, false);
 
+            addCopyField(client, FieldConstants.TITLE,
+                    Arrays.asList(TITLE_SORT));
             addCopyField(client, TOP_CONCEPT,
                     Arrays.asList(TOP_CONCEPT_PHRASE));
 

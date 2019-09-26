@@ -21,6 +21,7 @@ import static au.org.ands.vocabs.registry.solr.FieldConstants.SKOS_HIDDENLABEL;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.SKOS_PREFLABEL;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.STATUS;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.SUBJECT_LABELS;
+import static au.org.ands.vocabs.registry.solr.FieldConstants.TITLE;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.TITLE_SORT;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.VERSION_ID;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.VOCABULARY_ID;
@@ -68,6 +69,7 @@ import com.ifactory.press.db.solr.search.SafariQueryParser;
 import au.org.ands.vocabs.registry.db.converter.JSONSerialization;
 import au.org.ands.vocabs.registry.enums.SearchSortOrder;
 import au.org.ands.vocabs.registry.log.Analytics;
+import net.logstash.logback.encoder.org.apache.commons.lang.BooleanUtils;
 
 /** Methods for Solr searching of the resources collection. */
 public final class SearchResourcesIndex {
@@ -168,6 +170,7 @@ public final class SearchResourcesIndex {
         BASIC_FIELDS.add(IRI);
         BASIC_FIELDS.add(LAST_UPDATED);
         BASIC_FIELDS.add(VOCABULARY_ID);
+        BASIC_FIELDS.add(TITLE);
         BASIC_FIELDS.add(OWNER);
         BASIC_FIELDS.add(VERSION_ID);
         BASIC_FIELDS.add(STATUS);
@@ -263,6 +266,9 @@ public final class SearchResourcesIndex {
         // Keep track of any search sort order specified.
         SearchSortOrder searchSortOrder = null;
 
+        // We will do collapsing/expanding unless the client says not to.
+        boolean collapseExpandValue = true;
+
         // See if there are filters; if so, apply them.
         if (filtersJson != null) {
             Map<String, Object> filters =
@@ -300,10 +306,6 @@ public final class SearchResourcesIndex {
             }
 
             solrQuery.set(DisMaxParams.ALTQ, "*:*");
-
-            // Collapse/expand settings
-            solrQuery.addFilterQuery(COLLAPSE);
-            solrQuery.set(ExpandParams.EXPAND, true);
 
             // Extract the languages from the filters.
             // An empty list means no languages have been specified,
@@ -362,6 +364,23 @@ public final class SearchResourcesIndex {
                     // searchSortOrder remains null if no value specified,
                     // or the value specified was not a string.
                     break;
+                case "collapse_expand":
+                    // Apply collapse/expand settings.
+                    // The default is "true"; we don't do collapse/expand
+                    // _only if_ the user says no.
+                    Object collapseExpandValueAsObject = filterEntry.getValue();
+                    if (collapseExpandValueAsObject instanceof Boolean) {
+                        collapseExpandValue = BooleanUtils.isNotFalse(
+                                (Boolean) collapseExpandValueAsObject);
+                    } else if (collapseExpandValueAsObject instanceof String) {
+                        collapseExpandValue = BooleanUtils.isNotFalse(
+                                BooleanUtils.toBooleanObject(
+                                        (String) collapseExpandValueAsObject));
+                    } else {
+                        throw new IllegalArgumentException("collapse_expand "
+                                + "parameter must be either a boolean "
+                                + "or a string");
+                    }
                 case LANGUAGE:
                     // Can filter on language, but it's not a _facet_.
                     // Language setting affects which _fields_ are
@@ -578,6 +597,14 @@ public final class SearchResourcesIndex {
                 LOGGER.error("Unknown search sort order: " + searchSortOrder);
             }
         }
+
+        // Apply the collapse/expand setting.
+        if (collapseExpandValue) {
+            // Collapse/expand settings
+            solrQuery.addFilterQuery(COLLAPSE);
+            solrQuery.set(ExpandParams.EXPAND, true);
+        }
+
         // Always log the value of searchSortOrder that we use,
         // whether or not the user provided a value for it.
         filtersAndResultsExtracted.add(Analytics.SEARCH_SORT_ORDER_FIELD);

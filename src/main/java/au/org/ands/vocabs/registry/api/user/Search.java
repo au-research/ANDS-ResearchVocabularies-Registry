@@ -156,6 +156,8 @@ public class Search {
                     + "'\"pp\":10' number of results per page;"
                     + "'\"p\":3' page number of results; "
                     + "'\"sort\":\"zToA\"': sort order of results; "
+                    + "'\"collapse_expand\":false' disable collapse/expand "
+                    + "results with the same IRI; "
                     + "'\"language\":\"[\""
                     + SearchResourcesIndex.NO_LANGUAGE
                     + "\",\"en\"]\"': limit to "
