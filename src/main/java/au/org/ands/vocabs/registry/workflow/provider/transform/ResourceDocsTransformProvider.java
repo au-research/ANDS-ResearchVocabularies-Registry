@@ -393,6 +393,9 @@ public class ResourceDocsTransformProvider implements WorkflowProvider {
             Set<Object> types = resource.get(FieldConstants.RDF_TYPE);
             if (types != null
                     && CollectionUtils.containsAny(types, resourceTypes)) {
+                // Intersect the types we got with the types we care about.
+                // This strips out, e.g., rdfs:Resource.
+                types.retainAll(resourceTypes);
                 HashMap<String, Object> mappedResource = new HashMap<>();
                 for (String key : resource.keySet()) {
                     Object[] values = resource.get(key).toArray();
