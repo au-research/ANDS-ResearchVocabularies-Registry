@@ -126,8 +126,14 @@ public final class FieldConstants {
     + PHRASE_SUFFIX;
     /** The name of the "version_id" Solr field. */
     public static final String VERSION_ID = "version_id";
+    /** The name of the "version_release_date" Solr field. */
+    public static final String VERSION_RELEASE_DATE = "version_release_date";
+    /** The name of the "version_title" Solr field. */
+    public static final String VERSION_TITLE = "version_title";
     /** The name of the "vocabulary_id" Solr field. */
     public static final String VOCABULARY_ID = "vocabulary_id";
+    /** The name of the "vocabulary_title" Solr field. */
+    public static final String VOCABULARY_TITLE = "vocabulary_title";
 
     /* Names of Solr field types. Listed in alphabetical order! */
 

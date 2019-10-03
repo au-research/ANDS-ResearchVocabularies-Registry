@@ -49,6 +49,7 @@ import au.org.ands.vocabs.registry.db.entity.Version;
 import au.org.ands.vocabs.registry.db.entity.VersionArtefact;
 import au.org.ands.vocabs.registry.db.entity.Vocabulary;
 import au.org.ands.vocabs.registry.db.entity.VocabularyRelatedEntity;
+import au.org.ands.vocabs.registry.db.internal.VersionJson;
 import au.org.ands.vocabs.registry.db.internal.VocabularyJson;
 import au.org.ands.vocabs.registry.db.internal.VocabularyJson.Subjects;
 import au.org.ands.vocabs.registry.enums.RelatedEntityRelation;
@@ -169,6 +170,9 @@ public class ResourceDocsTransformProvider implements WorkflowProvider {
     /** The contents of the data field of the vocabulary being transformed. */
     private VocabularyJson vocabularyJson;
 
+    /** The vocabulary title of the vocabulary being transformed. */
+    private String vocabularyTitle;
+
     /** The subject labels defined in the vocabulary being transformed. */
     private List<String> subjectLabels = new ArrayList<>();
 
@@ -190,6 +194,15 @@ public class ResourceDocsTransformProvider implements WorkflowProvider {
 
     /** The version status of the version being transformed. */
     private String versionStatus;
+
+    /** The version release date of the version being transformed. */
+    private String versionReleaseDate;
+
+    /** The contents of the data field of the version being transformed. */
+    private VersionJson versionJson;
+
+    /** The version title of the version being transformed. */
+    private String versionTitle;
 
     /** A list of keys to use to select a title for a resource.
      * Based on primary language.
@@ -280,6 +293,7 @@ public class ResourceDocsTransformProvider implements WorkflowProvider {
                 vocabulary.getStartDate());
         vocabularyJson = JSONSerialization.deserializeStringAsJson(
                 vocabulary.getData(), VocabularyJson.class);
+        vocabularyTitle = vocabularyJson.getTitle();
         // Subjects
         List<Subjects> subjects = vocabularyJson.getSubjects();
         if (!subjects.isEmpty()) {
@@ -317,6 +331,10 @@ public class ResourceDocsTransformProvider implements WorkflowProvider {
         versionId = version.getVersionId();
         versionIdString = Integer.toString(versionId);
         versionStatus = version.getStatus().toString();
+        versionReleaseDate = version.getReleaseDate();
+        versionJson = JSONSerialization.deserializeStringAsJson(
+                version.getData(), VersionJson.class);
+        versionTitle = versionJson.getTitle();
         // Create list of keys to use from which to pick out
         // the value to be used as the title for each resource.
         // The values of the list are used in sequence. If a value
@@ -366,7 +384,11 @@ public class ResourceDocsTransformProvider implements WorkflowProvider {
                 concept.put(FieldConstants.TOP_CONCEPT, topConcept);
                 concept.put(FieldConstants.RDF_TYPE, NO_RDF_TYPE);
                 concept.put(FieldConstants.VERSION_ID, versionIdString);
+                concept.put(FieldConstants.VERSION_TITLE, versionTitle);
+                concept.put(FieldConstants.VERSION_RELEASE_DATE,
+                        versionReleaseDate);
                 concept.put(FieldConstants.VOCABULARY_ID, vocabularyIdString);
+                concept.put(FieldConstants.VOCABULARY_TITLE, vocabularyTitle);
                 concept.put(FieldConstants.OWNER, owner);
                 concept.put(FieldConstants.LAST_UPDATED, lastUpdated);
                 concept.put(FieldConstants.SUBJECT_LABELS, subjectLabels);
@@ -457,8 +479,12 @@ public class ResourceDocsTransformProvider implements WorkflowProvider {
                         + subject.stringValue());
                 concept.put(FieldConstants.LAST_UPDATED, lastUpdated);
                 concept.put(FieldConstants.VERSION_ID, versionIdString);
+                concept.put(FieldConstants.VERSION_TITLE, versionTitle);
+                concept.put(FieldConstants.VERSION_RELEASE_DATE,
+                        versionReleaseDate);
                 concept.put(FieldConstants.IRI, subject.stringValue());
                 concept.put(FieldConstants.VOCABULARY_ID, vocabularyIdString);
+                concept.put(FieldConstants.VOCABULARY_TITLE, vocabularyTitle);
                 concept.put(FieldConstants.OWNER, owner);
                 concept.put(FieldConstants.SUBJECT_LABELS, subjectLabels);
                 concept.put(FieldConstants.PUBLISHER, publishers);

@@ -28,7 +28,10 @@ import static au.org.ands.vocabs.registry.solr.FieldConstants.TITLE_SORT;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.TOP_CONCEPT;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.TOP_CONCEPT_PHRASE;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.VERSION_ID;
+import static au.org.ands.vocabs.registry.solr.FieldConstants.VERSION_RELEASE_DATE;
+import static au.org.ands.vocabs.registry.solr.FieldConstants.VERSION_TITLE;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.VOCABULARY_ID;
+import static au.org.ands.vocabs.registry.solr.FieldConstants.VOCABULARY_TITLE;
 
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
@@ -92,8 +95,11 @@ public final class CreateSolrSchemaResources extends SolrSchemaBase {
             // and in case we want to do a "join" of
             // this vocabulary_id field with those values.
             addField(client, VERSION_ID, STRING, true, true, false);
+            addField(client, VERSION_RELEASE_DATE, STRING, true, true, false);
+            addField(client, VERSION_TITLE, STRING, true, true, false);
             addField(client, IRI, STRING, true, true, false);
             addField(client, VOCABULARY_ID, STRING, true, true, false);
+            addField(client, VOCABULARY_TITLE, STRING, true, true, false);
             addField(client, OWNER, STRING, true, true, false);
             addField(client, TITLE, STRING, true, true, false);
             addField(client, TOP_CONCEPT, TEXT_EN_SPLITTING,

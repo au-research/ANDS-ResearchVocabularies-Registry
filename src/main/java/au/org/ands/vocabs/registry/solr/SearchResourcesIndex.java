@@ -24,7 +24,10 @@ import static au.org.ands.vocabs.registry.solr.FieldConstants.SUBJECT_LABELS;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.TITLE;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.TITLE_SORT;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.VERSION_ID;
+import static au.org.ands.vocabs.registry.solr.FieldConstants.VERSION_RELEASE_DATE;
+import static au.org.ands.vocabs.registry.solr.FieldConstants.VERSION_TITLE;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.VOCABULARY_ID;
+import static au.org.ands.vocabs.registry.solr.FieldConstants.VOCABULARY_TITLE;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -170,9 +173,12 @@ public final class SearchResourcesIndex {
         BASIC_FIELDS.add(IRI);
         BASIC_FIELDS.add(LAST_UPDATED);
         BASIC_FIELDS.add(VOCABULARY_ID);
+        BASIC_FIELDS.add(VOCABULARY_TITLE);
         BASIC_FIELDS.add(TITLE);
         BASIC_FIELDS.add(OWNER);
         BASIC_FIELDS.add(VERSION_ID);
+        BASIC_FIELDS.add(VERSION_RELEASE_DATE);
+        BASIC_FIELDS.add(VERSION_TITLE);
         BASIC_FIELDS.add(STATUS);
         BASIC_FIELDS.add(RDF_TYPE);
     }
