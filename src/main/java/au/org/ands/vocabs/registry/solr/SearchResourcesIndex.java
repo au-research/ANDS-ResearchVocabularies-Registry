@@ -163,6 +163,21 @@ public final class SearchResourcesIndex {
             + "'"
             +  "}";
 
+    /** Setting to sort expanded results for one IRI. We "group"
+     * by vocabulary, then give the "most recently-released"
+     * (as far as we can tell) first. */
+    private static final String EXPAND_SORT =
+            VOCABULARY_ID + " asc,"
+            + VERSION_RELEASE_DATE + " desc,"
+            + VERSION_ID + " desc";
+
+    /** Limit on the number of additional results for each IRI
+     * included in the "expanded" section of results.
+     * The value has been chosen somewhat arbitrarily; revisit
+     * if/when necessary.
+     */
+    private static final String EXPAND_ROWS = "100";
+
     /** Basic list of fields to be returned from queries. Supplement this
      * list with language-specific fields. */
     private static final ArrayList<String> BASIC_FIELDS;
@@ -609,6 +624,15 @@ public final class SearchResourcesIndex {
             // Collapse/expand settings
             solrQuery.addFilterQuery(COLLAPSE);
             solrQuery.set(ExpandParams.EXPAND, true);
+            // We now expand the expansion, so as to get _all_ instances
+            // of this IRI, not just ones that match the top-level
+            // query term and filters. We sort by vocabulary_id
+            // in order to _group_ results with the same vocabulary_id
+            // together.
+            solrQuery.set(ExpandParams.EXPAND_Q, "*:*");
+            solrQuery.set(ExpandParams.EXPAND_FQ, "*:*");
+            solrQuery.set(ExpandParams.EXPAND_SORT, EXPAND_SORT);
+            solrQuery.set(ExpandParams.EXPAND_ROWS, EXPAND_ROWS);
         }
 
         // Always log the value of searchSortOrder that we use,
