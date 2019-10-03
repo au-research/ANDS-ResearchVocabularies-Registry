@@ -165,7 +165,16 @@ public final class SearchResourcesIndex {
 
     /** Setting to sort expanded results for one IRI. We "group"
      * by vocabulary, then give the "most recently-released"
-     * (as far as we can tell) first. */
+     * (as far as we can tell) first. Note that given the field
+     * types, the answer is, in general, not "sorted" by vocabulary Id:
+     * the vocabulary_id field has string type,
+     * and their values are sorted _as strings_, rather than
+     * as numeric values. This means that, for example, "100" < "99".
+     * In this case, we don't really mind about the vocabulary_ids,
+     * as we're just grouping identical vocabulary_ids together.
+     * We have made version_id of type pint, and therefore its values
+     * _are_ sorted "correctly" as numeric values.
+     */
     private static final String EXPAND_SORT =
             VOCABULARY_ID + " asc,"
             + VERSION_RELEASE_DATE + " desc,"

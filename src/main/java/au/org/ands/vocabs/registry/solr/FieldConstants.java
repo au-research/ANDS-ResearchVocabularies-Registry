@@ -146,6 +146,8 @@ public final class FieldConstants {
     public static final String DATE_POINT = "pdate";
     /** The name of the custom "lower_exact_words" Solr field type. */
     public static final String LOWER_EXACT_WORDS = "lower_exact_words";
+    /** The name of the "pint" Solr field type. */
+    public static final String PINT = "pint";
     /** The name of the "string" Solr field type. */
     public static final String STRING = "string";
     /** The name of the "text_en_splitting" Solr field type. */

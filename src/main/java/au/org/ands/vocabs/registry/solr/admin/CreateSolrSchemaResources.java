@@ -10,6 +10,7 @@ import static au.org.ands.vocabs.registry.solr.FieldConstants.IRI;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.LAST_UPDATED;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.LOWER_EXACT_WORDS;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.OWNER;
+import static au.org.ands.vocabs.registry.solr.FieldConstants.PINT;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.PUBLISHER;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.RDFS_LABEL;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.RDF_TYPE;
@@ -89,17 +90,19 @@ public final class CreateSolrSchemaResources extends SolrSchemaBase {
             addField(client, LAST_UPDATED, DATE_POINT, true, true, false);
 
             // Basic fields that are stored, and not multiValued.
-            // Why STRING, not PINT for ID fields?
+            // Why STRING, not PINT for the vocabulary Id field?
             // Sigh, for "consistency" with the use of a STRING
             // for the "id" field of the Registry collection,
             // and in case we want to do a "join" of
             // this vocabulary_id field with those values.
-            addField(client, VERSION_ID, STRING, true, true, false);
-            addField(client, VERSION_RELEASE_DATE, STRING, true, true, false);
-            addField(client, VERSION_TITLE, STRING, true, true, false);
             addField(client, IRI, STRING, true, true, false);
             addField(client, VOCABULARY_ID, STRING, true, true, false);
             addField(client, VOCABULARY_TITLE, STRING, true, true, false);
+            // But we do use PINT for the version Id, because we don't
+            // need to match on it, and it helps us to do sorting.
+            addField(client, VERSION_ID, PINT, true, true, false);
+            addField(client, VERSION_RELEASE_DATE, STRING, true, true, false);
+            addField(client, VERSION_TITLE, STRING, true, true, false);
             addField(client, OWNER, STRING, true, true, false);
             addField(client, TITLE, STRING, true, true, false);
             addField(client, TOP_CONCEPT, TEXT_EN_SPLITTING,

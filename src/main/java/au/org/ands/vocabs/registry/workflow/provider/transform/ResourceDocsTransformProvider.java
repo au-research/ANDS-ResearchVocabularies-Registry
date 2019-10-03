@@ -383,7 +383,8 @@ public class ResourceDocsTransformProvider implements WorkflowProvider {
                         versionIdString + "__" + topConcept);
                 concept.put(FieldConstants.TOP_CONCEPT, topConcept);
                 concept.put(FieldConstants.RDF_TYPE, NO_RDF_TYPE);
-                concept.put(FieldConstants.VERSION_ID, versionIdString);
+                // NB: use integer value for version_id, to allow sorting.
+                concept.put(FieldConstants.VERSION_ID, versionId);
                 concept.put(FieldConstants.VERSION_TITLE, versionTitle);
                 concept.put(FieldConstants.VERSION_RELEASE_DATE,
                         versionReleaseDate);
@@ -478,7 +479,8 @@ public class ResourceDocsTransformProvider implements WorkflowProvider {
                         versionIdString + "_"
                         + subject.stringValue());
                 concept.put(FieldConstants.LAST_UPDATED, lastUpdated);
-                concept.put(FieldConstants.VERSION_ID, versionIdString);
+                // NB: use integer value for version_id, to allow sorting.
+                concept.put(FieldConstants.VERSION_ID, versionId);
                 concept.put(FieldConstants.VERSION_TITLE, versionTitle);
                 concept.put(FieldConstants.VERSION_RELEASE_DATE,
                         versionReleaseDate);
