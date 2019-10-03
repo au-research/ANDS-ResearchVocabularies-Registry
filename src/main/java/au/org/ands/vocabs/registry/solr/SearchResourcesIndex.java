@@ -169,7 +169,7 @@ public final class SearchResourcesIndex {
      * types, the answer is, in general, not "sorted" by vocabulary Id:
      * the vocabulary_id field has string type,
      * and their values are sorted _as strings_, rather than
-     * as numeric values. This means that, for example, "100" < "99".
+     * as numeric values. This means that, for example, "100" &lt; "99".
      * In this case, we don't really mind about the vocabulary_ids,
      * as we're just grouping identical vocabulary_ids together.
      * We have made version_id of type pint, and therefore its values
