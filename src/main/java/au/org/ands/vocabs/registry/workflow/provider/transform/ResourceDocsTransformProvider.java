@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.persistence.EntityManager;
 import javax.ws.rs.core.MultivaluedMap;
 
 import org.apache.commons.collections4.CollectionUtils;
@@ -41,17 +42,21 @@ import org.slf4j.LoggerFactory;
 
 import au.org.ands.vocabs.registry.db.context.TemporalUtils;
 import au.org.ands.vocabs.registry.db.converter.JSONSerialization;
+import au.org.ands.vocabs.registry.db.dao.AccessPointDAO;
 import au.org.ands.vocabs.registry.db.dao.RelatedEntityDAO;
 import au.org.ands.vocabs.registry.db.dao.VersionArtefactDAO;
 import au.org.ands.vocabs.registry.db.dao.VocabularyRelatedEntityDAO;
+import au.org.ands.vocabs.registry.db.entity.AccessPoint;
 import au.org.ands.vocabs.registry.db.entity.RelatedEntity;
 import au.org.ands.vocabs.registry.db.entity.Version;
 import au.org.ands.vocabs.registry.db.entity.VersionArtefact;
 import au.org.ands.vocabs.registry.db.entity.Vocabulary;
 import au.org.ands.vocabs.registry.db.entity.VocabularyRelatedEntity;
+import au.org.ands.vocabs.registry.db.internal.ApSissvoc;
 import au.org.ands.vocabs.registry.db.internal.VersionJson;
 import au.org.ands.vocabs.registry.db.internal.VocabularyJson;
 import au.org.ands.vocabs.registry.db.internal.VocabularyJson.Subjects;
+import au.org.ands.vocabs.registry.enums.AccessPointType;
 import au.org.ands.vocabs.registry.enums.RelatedEntityRelation;
 import au.org.ands.vocabs.registry.enums.SubtaskOperationType;
 import au.org.ands.vocabs.registry.enums.TaskStatus;
@@ -209,6 +214,10 @@ public class ResourceDocsTransformProvider implements WorkflowProvider {
      */
     private ArrayList<String> titleKeys = new ArrayList<>();
 
+    /** The SISSVoc endpoint of the version being transformed, or null,
+     * if there isn't one. */
+    private String sissvocEndpoint = null;
+
     /** Create/update the ResourceDocs version artefact for the version.
      * @param taskInfo The top-level TaskInfo for the subtask.
      * @param subtask The subtask to be performed.
@@ -285,6 +294,7 @@ public class ResourceDocsTransformProvider implements WorkflowProvider {
      * @param taskInfo The top-level TaskInfo for the subtask.
      */
     public void initializeConvenienceFields(final TaskInfo taskInfo) {
+        EntityManager em = taskInfo.getEm();
         vocabulary = taskInfo.getVocabulary();
         vocabularyId = vocabulary.getVocabularyId();
         vocabularyIdString = Integer.toString(vocabularyId);
@@ -305,7 +315,7 @@ public class ResourceDocsTransformProvider implements WorkflowProvider {
         // First get VocabularyRelatedEntity objects.
         MultivaluedMap<Integer, VocabularyRelatedEntity> vreMap =
                 VocabularyRelatedEntityDAO.
-                getCurrentVocabularyRelatedEntitiesForVocabulary(
+                getCurrentVocabularyRelatedEntitiesForVocabulary(em,
                         vocabularyId);
         // Now fetch the related entities that are publishers of this
         // vocabulary.
@@ -316,7 +326,7 @@ public class ResourceDocsTransformProvider implements WorkflowProvider {
                 if (RelatedEntityRelation.PUBLISHED_BY.equals(
                         vre.getRelation())) {
                     relatedEntities.add(RelatedEntityDAO.
-                            getCurrentRelatedEntityByRelatedEntityId(
+                            getCurrentRelatedEntityByRelatedEntityId(em,
                                     vre.getRelatedEntityId()));
                 }
             }
@@ -357,6 +367,17 @@ public class ResourceDocsTransformProvider implements WorkflowProvider {
         titleKeys.add(FieldConstants.DCTERMS_TITLE + "-en");
         titleKeys.add(FieldConstants.TOP_CONCEPT);
         titleKeys.add(FieldConstants.IRI);
+
+        // Now get the value we want to use for the sissvoc_endpoint field.
+        List<AccessPoint> accessPoints = AccessPointDAO.
+                getCurrentAccessPointListForVersionByType(versionId,
+                        AccessPointType.SISSVOC, em);
+        if (accessPoints != null && accessPoints.size() > 0) {
+            ApSissvoc apSissvoc = JSONSerialization.
+                    deserializeStringAsJson(
+                            accessPoints.get(0).getData(), ApSissvoc.class);
+            sissvocEndpoint = apSissvoc.getUrlPrefix();
+        }
     }
 
     /** Add entries into the resource map for the vocabulary's
@@ -395,6 +416,7 @@ public class ResourceDocsTransformProvider implements WorkflowProvider {
                 concept.put(FieldConstants.SUBJECT_LABELS, subjectLabels);
                 concept.put(FieldConstants.PUBLISHER, publishers);
                 concept.put(FieldConstants.STATUS, versionStatus);
+                // No SISSVoc endpoint in this case.
             }
         }
     }
@@ -491,6 +513,10 @@ public class ResourceDocsTransformProvider implements WorkflowProvider {
                 concept.put(FieldConstants.SUBJECT_LABELS, subjectLabels);
                 concept.put(FieldConstants.PUBLISHER, publishers);
                 concept.put(FieldConstants.STATUS, versionStatus);
+                if (sissvocEndpoint != null) {
+                    concept.put(FieldConstants.SISSVOC_ENDPOINT,
+                            sissvocEndpoint);
+                }
             }
             PredicateInfo predicateInfo = predicatesInfo.get(predicate);
             if (predicateInfo == null) {

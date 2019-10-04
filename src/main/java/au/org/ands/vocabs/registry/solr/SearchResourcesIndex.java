@@ -15,6 +15,7 @@ import static au.org.ands.vocabs.registry.solr.FieldConstants.PUBLISHER;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.RDFS_LABEL;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.RDF_TYPE;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.SEARCH_SUFFIX;
+import static au.org.ands.vocabs.registry.solr.FieldConstants.SISSVOC_ENDPOINT;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.SKOS_ALTLABEL;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.SKOS_DEFINITION;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.SKOS_HIDDENLABEL;
@@ -206,6 +207,7 @@ public final class SearchResourcesIndex {
         BASIC_FIELDS.add(VERSION_TITLE);
         BASIC_FIELDS.add(STATUS);
         BASIC_FIELDS.add(RDF_TYPE);
+        BASIC_FIELDS.add(SISSVOC_ENDPOINT);
     }
 
     /* Things to pay attention to, when performing maintenance on
