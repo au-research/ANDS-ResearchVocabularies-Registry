@@ -200,6 +200,7 @@ public final class SearchResourcesIndex {
         BASIC_FIELDS.add(VOCABULARY_TITLE);
         BASIC_FIELDS.add(TITLE);
         BASIC_FIELDS.add(OWNER);
+        BASIC_FIELDS.add(PUBLISHER);
         BASIC_FIELDS.add(VERSION_ID);
         BASIC_FIELDS.add(VERSION_RELEASE_DATE);
         BASIC_FIELDS.add(VERSION_TITLE);
