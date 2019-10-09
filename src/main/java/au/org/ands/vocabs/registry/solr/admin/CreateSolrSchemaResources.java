@@ -107,15 +107,18 @@ public final class CreateSolrSchemaResources extends SolrSchemaBase {
             addField(client, TITLE, STRING, true, true, false);
             addField(client, TOP_CONCEPT, TEXT_EN_SPLITTING,
                     true, true, false);
-            addField(client, SKOS_NOTATION, STRING, true, true, false);
+            addField(client, SKOS_NOTATION, STRING, true, true, true);
 
-            addMultilingualFields(client, RDFS_LABEL, true, true);
-            addMultilingualFields(client, DCTERMS_TITLE, true, true);
-            addMultilingualFields(client, DCTERMS_DESCRIPTION, true, true);
-            addMultilingualFields(client, SKOS_PREFLABEL, true, true);
-            addMultilingualFields(client, SKOS_ALTLABEL, true, true);
-            addMultilingualFields(client, SKOS_HIDDENLABEL, true, true);
-            addMultilingualFields(client, SKOS_DEFINITION, true, true);
+            addMultilingualFields(client, RDFS_LABEL, true, true, true);
+            addMultilingualFields(client, DCTERMS_TITLE, true, true, true);
+            addMultilingualFields(client, DCTERMS_DESCRIPTION, true, true,
+                    true);
+            // SKOS prefLabel has an integrity constraint limiting
+            // to one per language. Allow multiple instances anyway ...
+            addMultilingualFields(client, SKOS_PREFLABEL, true, true, true);
+            addMultilingualFields(client, SKOS_ALTLABEL, true, true, true);
+            addMultilingualFields(client, SKOS_HIDDENLABEL, true, true, true);
+            addMultilingualFields(client, SKOS_DEFINITION, true, true, true);
 
             addField(client, STATUS, STRING, true, true, false);
             addField(client, SISSVOC_ENDPOINT, STRING,

@@ -473,6 +473,7 @@ public abstract class SolrSchemaBase {
      * @param fieldName The name of the new field.
      * @param stored Whether the values of the field are to be stored.
      * @param indexed Whether the values of the field are to be indexed.
+     * @param multivalued Whether the field is multivalued.
      * @throws IOException If there is an error communicating with
      *      the Solr server.
      * @throws SolrServerException If the Solr server returns an error.
@@ -480,25 +481,26 @@ public abstract class SolrSchemaBase {
     protected void addMultilingualFields(final SolrClient solrClient,
             final String fieldName,
             final boolean stored,
-            final boolean indexed)
+            final boolean indexed,
+            final boolean multivalued)
                     throws SolrServerException, IOException {
         // e.g., skos_prefLabel (prefLabels without a language tag)
-        addField(solrClient, fieldName, STRING, stored, indexed, false);
+        addField(solrClient, fieldName, STRING, stored, indexed, multivalued);
         // e.g., skos_prefLabel-en (prefLabels with a language tag)
         addDynamicField(solrClient, fieldName + "-*", STRING,
-                stored, indexed, false);
+                stored, indexed, multivalued);
         // e.g., skos_prefLabel_search (prefLabels without a language tag)
         addField(solrClient, fieldName + SEARCH_SUFFIX, TEXT_EN_SPLITTING,
-                stored, indexed, false);
+                stored, indexed, multivalued);
         // e.g., skos_prefLabel_search-* (prefLabels with a language tag)
         addDynamicField(solrClient, fieldName + SEARCH_SUFFIX + "-*",
-                TEXT_EN_SPLITTING, stored, indexed, false);
+                TEXT_EN_SPLITTING, stored, indexed, multivalued);
         // e.g., skos_prefLabel_phrase (prefLabels without a language tag)
         addField(solrClient, fieldName + PHRASE_SUFFIX, LOWER_EXACT_WORDS,
-                stored, indexed, false);
+                stored, indexed, multivalued);
         // e.g., skos_prefLabel_phrase-en (prefLabels with a language tag)
         addDynamicField(solrClient, fieldName + PHRASE_SUFFIX + "-*",
-                LOWER_EXACT_WORDS, stored, indexed, false);
+                LOWER_EXACT_WORDS, stored, indexed, multivalued);
         // Multivalued fields for all languages
         // e.g., skos_prefLabel_all
         //       (all prefLabels, with or without a language tag)

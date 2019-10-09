@@ -131,21 +131,21 @@ public class ResourceDocsTransformProvider implements WorkflowProvider {
         predicatesInfo.put(RDF.TYPE,
                 new PredicateInfo(FieldConstants.RDF_TYPE, true, false));
         predicatesInfo.put(RDFS.LABEL,
-                new PredicateInfo(FieldConstants.RDFS_LABEL, false, true));
+                new PredicateInfo(FieldConstants.RDFS_LABEL, true, true));
         predicatesInfo.put(DCTERMS.TITLE,
                 new PredicateInfo(FieldConstants.DCTERMS_TITLE, false, true));
         predicatesInfo.put(DCTERMS.DESCRIPTION,
                 new PredicateInfo(FieldConstants.DCTERMS_DESCRIPTION,
                         false, true));
         predicatesInfo.put(SKOS.PREF_LABEL,
-                new PredicateInfo(FieldConstants.SKOS_PREFLABEL, false, true));
+                new PredicateInfo(FieldConstants.SKOS_PREFLABEL, true, true));
         predicatesInfo.put(SKOS.ALT_LABEL,
-                new PredicateInfo(FieldConstants.SKOS_ALTLABEL, false, true));
+                new PredicateInfo(FieldConstants.SKOS_ALTLABEL, true, true));
         predicatesInfo.put(SKOS.HIDDEN_LABEL,
                 new PredicateInfo(FieldConstants.SKOS_HIDDENLABEL,
-                        false, true));
+                        true, true));
         predicatesInfo.put(SKOS.NOTATION,
-                new PredicateInfo(FieldConstants.SKOS_NOTATION, false, false));
+                new PredicateInfo(FieldConstants.SKOS_NOTATION, true, false));
         predicatesInfo.put(SKOS.DEFINITION,
                 new PredicateInfo(FieldConstants.SKOS_DEFINITION, false, true));
 //        predicatesInfo.put(,
@@ -380,6 +380,27 @@ public class ResourceDocsTransformProvider implements WorkflowProvider {
         }
     }
 
+    /** Fill in the basic fields for a resource: version Id, version title,
+     * owner, subject, etc.; the fields filled in are those common
+     * to RDF resources and to manually-added top concepts.
+     * @param resource The representation of one resource of the version.
+     */
+    private void addBasicFields(
+            final HashSetValuedHashMap<String, Object> resource) {
+        // NB: use integer value for version_id, to allow sorting.
+        resource.put(FieldConstants.VERSION_ID, versionId);
+        resource.put(FieldConstants.VERSION_TITLE, versionTitle);
+        resource.put(FieldConstants.VERSION_RELEASE_DATE,
+                versionReleaseDate);
+        resource.put(FieldConstants.VOCABULARY_ID, vocabularyIdString);
+        resource.put(FieldConstants.VOCABULARY_TITLE, vocabularyTitle);
+        resource.put(FieldConstants.OWNER, owner);
+        resource.put(FieldConstants.LAST_UPDATED, lastUpdated);
+        resource.put(FieldConstants.SUBJECT_LABELS, subjectLabels);
+        resource.put(FieldConstants.PUBLISHER, publishers);
+        resource.put(FieldConstants.STATUS, versionStatus);
+    }
+
     /** Add entries into the resource map for the vocabulary's
      * top concept metadata. But only do this if this version
      * has status "current".
@@ -404,22 +425,12 @@ public class ResourceDocsTransformProvider implements WorkflowProvider {
                         versionIdString + "__" + topConcept);
                 concept.put(FieldConstants.TOP_CONCEPT, topConcept);
                 concept.put(FieldConstants.RDF_TYPE, NO_RDF_TYPE);
-                // NB: use integer value for version_id, to allow sorting.
-                concept.put(FieldConstants.VERSION_ID, versionId);
-                concept.put(FieldConstants.VERSION_TITLE, versionTitle);
-                concept.put(FieldConstants.VERSION_RELEASE_DATE,
-                        versionReleaseDate);
-                concept.put(FieldConstants.VOCABULARY_ID, vocabularyIdString);
-                concept.put(FieldConstants.VOCABULARY_TITLE, vocabularyTitle);
-                concept.put(FieldConstants.OWNER, owner);
-                concept.put(FieldConstants.LAST_UPDATED, lastUpdated);
-                concept.put(FieldConstants.SUBJECT_LABELS, subjectLabels);
-                concept.put(FieldConstants.PUBLISHER, publishers);
-                concept.put(FieldConstants.STATUS, versionStatus);
+                addBasicFields(concept);
                 // No SISSVoc endpoint in this case.
             }
         }
     }
+
 
     /** Transform the computed resource map into a format that can
      * be serialized. Filtering is applied, so that the result only
@@ -465,9 +476,17 @@ public class ResourceDocsTransformProvider implements WorkflowProvider {
                 String title = null;
                 // The value of titleKeys
                 for (String titleKey : titleKeys) {
-                    String value = (String) mappedResource.get(titleKey);
-                    if (value != null) {
-                        title = value;
+                    Object valueAsObject = mappedResource.get(titleKey);
+                    if (valueAsObject == null) {
+                        continue;
+                    }
+                    // It's either a String, or an array of Strings.
+                    if (valueAsObject.getClass().isArray()) {
+                        Object[] valueAsArray = (Object[]) valueAsObject;
+                        title = (String) valueAsArray[0];
+                        break;
+                    } else {
+                        title = (String) valueAsObject;
                         break;
                     }
                 }
@@ -478,8 +497,8 @@ public class ResourceDocsTransformProvider implements WorkflowProvider {
         return resources;
     }
 
-    /** RDF Handler to extract prefLabels, notation, and use broader
-     * and narrow properties to construct a list-like structure. */
+    /** RDF Handler to extract properties of interest of resources
+     * of interest. */
     class ResourceHandler extends RDFHandlerBase {
 
         /** Map from resource IRI to a map that maps
@@ -492,29 +511,18 @@ public class ResourceDocsTransformProvider implements WorkflowProvider {
             Resource subject = st.getSubject();
             URI predicate = st.getPredicate();
             Value object = st.getObject();
-            HashSetValuedHashMap<String, Object> concept =
+            HashSetValuedHashMap<String, Object> resource =
                     resourceMap.get(subject.stringValue());
-            if (concept == null) {
-                concept = new HashSetValuedHashMap<>();
-                resourceMap.put(subject.stringValue(), concept);
-                concept.put(FieldConstants.ID,
+            if (resource == null) {
+                resource = new HashSetValuedHashMap<>();
+                resourceMap.put(subject.stringValue(), resource);
+                resource.put(FieldConstants.ID,
                         versionIdString + "_"
                         + subject.stringValue());
-                concept.put(FieldConstants.LAST_UPDATED, lastUpdated);
-                // NB: use integer value for version_id, to allow sorting.
-                concept.put(FieldConstants.VERSION_ID, versionId);
-                concept.put(FieldConstants.VERSION_TITLE, versionTitle);
-                concept.put(FieldConstants.VERSION_RELEASE_DATE,
-                        versionReleaseDate);
-                concept.put(FieldConstants.IRI, subject.stringValue());
-                concept.put(FieldConstants.VOCABULARY_ID, vocabularyIdString);
-                concept.put(FieldConstants.VOCABULARY_TITLE, vocabularyTitle);
-                concept.put(FieldConstants.OWNER, owner);
-                concept.put(FieldConstants.SUBJECT_LABELS, subjectLabels);
-                concept.put(FieldConstants.PUBLISHER, publishers);
-                concept.put(FieldConstants.STATUS, versionStatus);
+                resource.put(FieldConstants.IRI, subject.stringValue());
+                addBasicFields(resource);
                 if (sissvocEndpoint != null) {
-                    concept.put(FieldConstants.SISSVOC_ENDPOINT,
+                    resource.put(FieldConstants.SISSVOC_ENDPOINT,
                             sissvocEndpoint);
                 }
             }
@@ -523,34 +531,26 @@ public class ResourceDocsTransformProvider implements WorkflowProvider {
                 // We're not interested in this predicate at all.
                 return;
             }
+            // Get the field name. We start with the base field name;
+            // if the object is allowed to have a language tag, and
+            // it has one, the tag will be appended to field.
             String field = predicateInfo.getFieldName();
-            if (predicateInfo.isMayHaveMultipleObjects()) {
-                // Add the object; there may already be one for this field.
-                concept.put(field, object.stringValue());
-                // And we're done.
-                return;
-            }
+            // Check first if we need to direct the value into a
+            // language-specific field.
             if (predicateInfo.isMayHaveLanguageSpecificObjects()) {
                 if (object instanceof Literal) {
                     Literal objectLiteral = (Literal) object;
                     String lang = objectLiteral.getLanguage();
-                    if (lang == null) {
-                        // No language tag.
-                        // Remove any existing object.
-                        concept.remove(field);
-                        concept.put(field, object.stringValue());
-                    } else {
-                        // There is a language tag. Separate using
-                        // "-". NB: very important that "-" not otherwise
+                    if (lang != null) {
+                        // There is a language tag. Separate from the
+                        // base field name using "-".
+                        // NB: very important that "-" not otherwise
                         // occur in the field names, so that you can
                         // use wildcards in field names without worrying
                         // about inadvertently matching fields you don't
                         // want. E.g., "prefLabel-*" won't match
                         // against "prefLabel_phrase-en".
-                        String fieldWithLang = field + "-" + lang;
-                        // Remove any existing object.
-                        concept.remove(fieldWithLang);
-                        concept.put(fieldWithLang, object.stringValue());
+                        field = field + "-" + lang;
                     }
                 } else {
                     LOGGER.info("Predicate of interest has "
@@ -558,17 +558,25 @@ public class ResourceDocsTransformProvider implements WorkflowProvider {
                             + "s: " + subject.stringValue()
                             + "; p: " + predicate.stringValue()
                             + "; o: " + object.stringValue());
+                    return;
                 }
-                // And we're done.
-                return;
+                // We don't store the object here; we fall through
+                // to the next test.
             }
-            // Fall-through: there may be only one.
-            // Remove any existing object.
-            concept.remove(field);
-            concept.put(field, object.stringValue());
+            // Now, field stores the field name we're going to use.
+            // We still need to check if there can there be multiple instances.
+            if (predicateInfo.isMayHaveMultipleObjects()) {
+                // Add the object; there may already be one for this field.
+                resource.put(field, object.stringValue());
+                // And we're done.
+            } else {
+                // There may be only one. Remove any existing object.
+                resource.remove(field);
+                resource.put(field, object.stringValue());
+            }
         }
 
-        /** Getter for resource list.
+        /** Getter for the resource map.
          * @return The completed resource map. */
         public HashMap<String, HashSetValuedHashMap<String, Object>>
         getResourceMap() {
