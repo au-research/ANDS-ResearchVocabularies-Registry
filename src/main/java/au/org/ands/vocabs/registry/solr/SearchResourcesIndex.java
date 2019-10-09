@@ -512,6 +512,7 @@ public final class SearchResourcesIndex {
             for (String language : languages) {
                 fieldsList.add(SKOS_PREFLABEL + language);
                 fieldsList.add(SKOS_ALTLABEL + language);
+                fieldsList.add(SKOS_HIDDENLABEL + language);
                 fieldsList.add(SKOS_DEFINITION + language);
                 fieldsList.add(RDFS_LABEL + language);
                 fieldsList.add(DCTERMS_TITLE + language);
@@ -519,6 +520,7 @@ public final class SearchResourcesIndex {
 
                 fieldsList.add(SKOS_PREFLABEL + SEARCH_SUFFIX + language);
                 fieldsList.add(SKOS_ALTLABEL + SEARCH_SUFFIX + language);
+                fieldsList.add(SKOS_HIDDENLABEL + SEARCH_SUFFIX + language);
                 fieldsList.add(SKOS_DEFINITION + SEARCH_SUFFIX + language);
                 fieldsList.add(RDFS_LABEL + SEARCH_SUFFIX + language);
                 fieldsList.add(DCTERMS_TITLE + SEARCH_SUFFIX + language);
@@ -526,6 +528,7 @@ public final class SearchResourcesIndex {
 
                 fieldsList.add(SKOS_PREFLABEL + PHRASE_SUFFIX + language);
                 fieldsList.add(SKOS_ALTLABEL + PHRASE_SUFFIX + language);
+                fieldsList.add(SKOS_HIDDENLABEL + PHRASE_SUFFIX + language);
                 fieldsList.add(SKOS_DEFINITION + PHRASE_SUFFIX + language);
                 fieldsList.add(RDFS_LABEL + PHRASE_SUFFIX + language);
                 fieldsList.add(DCTERMS_TITLE + PHRASE_SUFFIX + language);
