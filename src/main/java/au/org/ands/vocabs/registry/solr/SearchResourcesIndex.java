@@ -463,6 +463,7 @@ public final class SearchResourcesIndex {
                         throw new IllegalArgumentException("collapse_expand "
                                 + "parameter must be a string");
                     }
+                    break;
                 case LANGUAGE:
                     // Can filter on language, but it's not a _facet_.
                     // Language setting affects which _fields_ are
