@@ -369,6 +369,12 @@ public class ResourceDocsTransformProvider implements WorkflowProvider {
         titleKeys.add(FieldConstants.IRI);
 
         // Now get the value we want to use for the sissvoc_endpoint field.
+        // Note: so as to get the "right answer" for the endpoint,
+        // it's necessary that (a) this transform provider be called
+        // _after_ the publish provider, (b) we use the EntityManager
+        // of the transaction. If one or either of these conditions
+        // is not met, we will not "see" a SISSVOC access point
+        // that is being created as part of the same task.
         List<AccessPoint> accessPoints = AccessPointDAO.
                 getCurrentAccessPointListForVersionByType(versionId,
                         AccessPointType.SISSVOC, em);
@@ -614,17 +620,24 @@ public class ResourceDocsTransformProvider implements WorkflowProvider {
         subtask.setStatus(TaskStatus.SUCCESS);
     }
 
-    /** {@inheritDoc} */
+    /** {@inheritDoc}
+     * In order to be able to get the "right answer" for the
+     * generated {@code sissvoc_endpoint} fields,
+     * it's necessary that for inserts/performs, this transform provider
+     * be called <i>after</i> the publish provider;
+     * otherwise, this transform would not "see" a SISSVOC access point
+     * that is being created as part of the same task.
+     */
     @Override
     public Integer defaultPriority(final SubtaskOperationType operationType) {
         switch (operationType) {
         case INSERT:
         case PERFORM:
             return DefaultPriorities.
-                    DEFAULT_TRANSFORM_BEFORE_IMPORTER_INSERT_PRIORITY;
+                    DEFAULT_TRANSFORM_AFTER_PUBLISH_INSERT_PRIORITY;
         case DELETE:
             return DefaultPriorities.
-                    DEFAULT_TRANSFORM_BEFORE_IMPORTER_DELETE_PRIORITY;
+                    DEFAULT_TRANSFORM_AFTER_PUBLISH_DELETE_PRIORITY;
         default:
             // Unknown operation type!
             return null;

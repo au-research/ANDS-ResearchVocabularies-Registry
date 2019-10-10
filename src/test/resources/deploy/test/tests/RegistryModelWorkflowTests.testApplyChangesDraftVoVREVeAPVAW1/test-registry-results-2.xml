@@ -84,7 +84,7 @@
             DATA="{''path'':''{VOCABS}/ands-curated/1/2/20171001T1020/resource_docs.json''}" />
 
   <TASKS ID="1" VOCABULARY_ID="1" VERSION_ID="2"
-         PARAMS="[{''operation'':''insert'',''priority'':20,''provider'':''ConceptTree'',''results'':{''timestamp'':''2018-02-16T05:13:12.467''},''status'':''success'',''subtaskProviderType'':''transform''},{''operation'':''insert'',''priority'':20,''provider'':''JsonList'',''results'':{''timestamp'':''2018-02-16T05:13:12.458''},''status'':''success'',''subtaskProviderType'':''transform''},{''operation'':''insert'',''priority'':20,''provider'':''ResourceDocs'',''results'':{''timestamp'':''2019-09-17T01:35:39.772''},''status'':''success'',''subtaskProviderType'':''transform''}]" RESPONSE="{''response'':''All subtasks completed successfully.'',''timestamp'':''2018-02-16T05:13:12.467''}"
+         PARAMS="[{''operation'':''insert'',''priority'':20,''provider'':''ConceptTree'',''results'':{''timestamp'':''2018-02-16T05:13:12.467''},''status'':''success'',''subtaskProviderType'':''transform''},{''operation'':''insert'',''priority'':20,''provider'':''JsonList'',''results'':{''timestamp'':''2018-02-16T05:13:12.458''},''status'':''success'',''subtaskProviderType'':''transform''},{''operation'':''insert'',''priority'':50,''provider'':''ResourceDocs'',''results'':{''timestamp'':''2019-09-17T01:35:39.772''},''status'':''success'',''subtaskProviderType'':''transform''}]" RESPONSE="{''response'':''All subtasks completed successfully.'',''timestamp'':''2018-02-16T05:13:12.467''}"
          STATUS="SUCCESS" />
 
   <REGISTRY_EVENTS ID="1" ELEMENT_TYPE="VOCABULARIES" ELEMENT_ID="1" EVENT_DATE="2017-10-01 10:10:00.0" EVENT_TYPE="CREATED" EVENT_USER="TEST" EVENT_DETAILS="{''id'':2,''status'':''draft''}" />

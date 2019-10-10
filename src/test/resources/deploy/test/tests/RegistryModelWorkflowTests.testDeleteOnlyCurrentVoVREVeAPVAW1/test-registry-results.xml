@@ -78,7 +78,7 @@
          STATUS="SUCCESS"/>
 
   <TASKS ID="2" VOCABULARY_ID="1" VERSION_ID="2"
-         PARAMS="[{''operation'':''delete'',''priority'':-20,''provider'':''ConceptTree'',''results'':{''timestamp'':''2018-02-14T02:00:37.546''},''status'':''success'',''subtaskProviderType'':''transform''},{''operation'':''delete'',''priority'':-20,''provider'':''ResourceDocs'',''results'':{''timestamp'':''2019-09-17T06:23:18.962''},''status'':''success'',''subtaskProviderType'':''transform''}]" RESPONSE="{''response'':''All subtasks completed successfully.'',''timestamp'':''2018-02-14T02:00:37.546''}"
+         PARAMS="[{''operation'':''delete'',''priority'':-50,''provider'':''ResourceDocs'',''results'':{''timestamp'':''2019-09-17T06:23:18.962''},''status'':''success'',''subtaskProviderType'':''transform''},{''operation'':''delete'',''priority'':-20,''provider'':''ConceptTree'',''results'':{''timestamp'':''2018-02-14T02:00:37.546''},''status'':''success'',''subtaskProviderType'':''transform''}]" RESPONSE="{''response'':''All subtasks completed successfully.'',''timestamp'':''2018-02-14T02:00:37.546''}"
          STATUS="SUCCESS"/>
 
   <REGISTRY_EVENTS ID="1" ELEMENT_TYPE="ACCESS_POINTS" ELEMENT_ID="1" EVENT_DATE="2017-10-01 10:10:00.0" EVENT_TYPE="DELETED" EVENT_USER="TEST" EVENT_DETAILS="{''draft'':false,''id'':1}" />
