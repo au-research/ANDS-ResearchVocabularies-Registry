@@ -389,4 +389,14 @@ http://viaf.org/</xs:documentation>
             </xs:enumeration>
         </xs:restriction>
     </xs:simpleType>
+    <xs:simpleType name="search-resources-collapse">
+        <xs:annotation>
+            <xs:documentation>Enumerated type of possible collapse options for the resource search results.</xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="none"/>
+            <xs:enumeration value="vocabularyIdIri"/>
+            <xs:enumeration value="iri"/>
+        </xs:restriction>
+    </xs:simpleType>
 </xs:schema>

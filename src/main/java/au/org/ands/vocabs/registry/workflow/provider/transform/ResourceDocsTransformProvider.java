@@ -525,6 +525,9 @@ public class ResourceDocsTransformProvider implements WorkflowProvider {
                 resource.put(FieldConstants.ID,
                         versionIdString + "_"
                         + subject.stringValue());
+                resource.put(FieldConstants.VOCABULARY_ID_IRI,
+                        vocabularyIdString + "_"
+                        + subject.stringValue());
                 resource.put(FieldConstants.IRI, subject.stringValue());
                 addBasicFields(resource);
                 if (sissvocEndpoint != null) {

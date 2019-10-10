@@ -132,6 +132,8 @@ public final class FieldConstants {
     public static final String VERSION_TITLE = "version_title";
     /** The name of the "vocabulary_id" Solr field. */
     public static final String VOCABULARY_ID = "vocabulary_id";
+    /** The name of the "vocabulary_id_iri" Solr field. */
+    public static final String VOCABULARY_ID_IRI = "vocabulary_id_iri";
     /** The name of the "vocabulary_title" Solr field. */
     public static final String VOCABULARY_TITLE = "vocabulary_title";
 

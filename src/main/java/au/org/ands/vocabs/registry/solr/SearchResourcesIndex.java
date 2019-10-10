@@ -28,6 +28,7 @@ import static au.org.ands.vocabs.registry.solr.FieldConstants.VERSION_ID;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.VERSION_RELEASE_DATE;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.VERSION_TITLE;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.VOCABULARY_ID;
+import static au.org.ands.vocabs.registry.solr.FieldConstants.VOCABULARY_ID_IRI;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.VOCABULARY_TITLE;
 
 import java.io.IOException;
@@ -71,9 +72,9 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.ifactory.press.db.solr.search.SafariQueryParser;
 
 import au.org.ands.vocabs.registry.db.converter.JSONSerialization;
+import au.org.ands.vocabs.registry.enums.SearchResourcesCollapse;
 import au.org.ands.vocabs.registry.enums.SearchSortOrder;
 import au.org.ands.vocabs.registry.log.Analytics;
-import net.logstash.logback.encoder.org.apache.commons.lang.BooleanUtils;
 
 /** Methods for Solr searching of the resources collection. */
 public final class SearchResourcesIndex {
@@ -152,7 +153,7 @@ public final class SearchResourcesIndex {
      * preference to the result that is the result with
      * the most recent last_updated value of a current version
      * as each group's representative. */
-    private static final String COLLAPSE =
+    private static final String COLLAPSE_IRI =
             "{!" + CollapsingQParserPlugin.NAME
             + " field=" + IRI
             + " nullPolicy=" + CollapsingQParserPlugin.NULL_EXPAND
@@ -164,10 +165,28 @@ public final class SearchResourcesIndex {
             + "'"
             +  "}";
 
-    /** Setting to sort expanded results for one IRI. We "group"
-     * by vocabulary, then give the "most recently-released"
-     * (as far as we can tell) first. Note that given the field
-     * types, the answer is, in general, not "sorted" by vocabulary Id:
+    /** Setting to collapse results that have the same IRI <i>and</i>
+     * the same vocabulary Id, giving
+     * preference to the result that is the result with
+     * the most recent last_updated value of a current version
+     * as each group's representative. */
+    private static final String COLLAPSE_VOCABULARY_ID_IRI =
+            "{!" + CollapsingQParserPlugin.NAME
+            + " field=" + VOCABULARY_ID_IRI
+            + " nullPolicy=" + CollapsingQParserPlugin.NULL_EXPAND
+            + " " + CommonParams.SORT
+            + "='"
+            + STATUS + " asc"
+            + ","
+            + LAST_UPDATED + " desc"
+            + "'"
+            +  "}";
+
+    /** Setting to sort expanded results, where there was collapsing
+     * by IRI. We "group" by vocabulary, then give the
+     * "most recently-released" (as far as we can tell) first.
+     * Note that given the field types, the answer is, in general,
+     * not "sorted" by vocabulary Id:
      * the vocabulary_id field has string type,
      * and their values are sorted _as strings_, rather than
      * as numeric values. This means that, for example, "100" &lt; "99".
@@ -176,9 +195,26 @@ public final class SearchResourcesIndex {
      * We have made version_id of type pint, and therefore its values
      * _are_ sorted "correctly" as numeric values.
      */
-    private static final String EXPAND_SORT =
+    private static final String EXPAND_SORT_IRI =
             VOCABULARY_ID + " asc,"
             + VERSION_RELEASE_DATE + " desc,"
+            + VERSION_ID + " desc";
+
+    /** Setting to sort expanded results, where there was collapsing
+     * by IRI <i>and</i> vocabulary Id. We "group" by the
+     * "most recently-released" (as far as we can tell) version first.
+     * Note that given the field types, the answer is, in general,
+     * not "sorted" by vocabulary Id:
+     * the vocabulary_id field has string type,
+     * and their values are sorted _as strings_, rather than
+     * as numeric values. This means that, for example, "100" &lt; "99".
+     * In this case, we don't really mind about the vocabulary_ids,
+     * as we're just grouping identical vocabulary_ids together.
+     * We have made version_id of type pint, and therefore its values
+     * _are_ sorted "correctly" as numeric values.
+     */
+    private static final String EXPAND_SORT_VOCABULARY_ID_IRI =
+            VERSION_RELEASE_DATE + " desc,"
             + VERSION_ID + " desc";
 
     /** Limit on the number of additional results for each IRI
@@ -300,7 +336,8 @@ public final class SearchResourcesIndex {
         SearchSortOrder searchSortOrder = null;
 
         // We will do collapsing/expanding unless the client says not to.
-        boolean collapseExpandValue = true;
+        SearchResourcesCollapse collapseExpandValue =
+                SearchResourcesCollapse.VOCABULARY_ID_IRI;
 
         // See if there are filters; if so, apply them.
         if (filtersJson != null) {
@@ -399,20 +436,22 @@ public final class SearchResourcesIndex {
                     break;
                 case "collapse_expand":
                     // Apply collapse/expand settings.
-                    // The default is "true"; we don't do collapse/expand
-                    // _only if_ the user says no.
+                    // The default is "vocabularyIdIri"; we do something
+                    // different _only if_ the user provides a value
+                    // that's different and valid.
                     Object collapseExpandValueAsObject = filterEntry.getValue();
-                    if (collapseExpandValueAsObject instanceof Boolean) {
-                        collapseExpandValue = BooleanUtils.isNotFalse(
-                                (Boolean) collapseExpandValueAsObject);
-                    } else if (collapseExpandValueAsObject instanceof String) {
-                        collapseExpandValue = BooleanUtils.isNotFalse(
-                                BooleanUtils.toBooleanObject(
-                                        (String) collapseExpandValueAsObject));
+                    if (collapseExpandValueAsObject instanceof String) {
+                        try {
+                            collapseExpandValue = SearchResourcesCollapse.
+                                    fromValue((String)
+                                            collapseExpandValueAsObject);
+                        } catch (IllegalArgumentException e) {
+                            throw new IllegalArgumentException(
+                                    "collapse_expand parameter invalid");
+                        }
                     } else {
                         throw new IllegalArgumentException("collapse_expand "
-                                + "parameter must be either a boolean "
-                                + "or a string");
+                                + "parameter must be a string");
                     }
                 case LANGUAGE:
                     // Can filter on language, but it's not a _facet_.
@@ -635,9 +674,12 @@ public final class SearchResourcesIndex {
         }
 
         // Apply the collapse/expand setting.
-        if (collapseExpandValue) {
+        switch (collapseExpandValue) {
+        case NONE:
+            break;
+        case IRI:
             // Collapse/expand settings
-            solrQuery.addFilterQuery(COLLAPSE);
+            solrQuery.addFilterQuery(COLLAPSE_IRI);
             solrQuery.set(ExpandParams.EXPAND, true);
             // We now expand the expansion, so as to get _all_ instances
             // of this IRI, not just ones that match the top-level
@@ -646,8 +688,25 @@ public final class SearchResourcesIndex {
             // together.
             solrQuery.set(ExpandParams.EXPAND_Q, "*:*");
             solrQuery.set(ExpandParams.EXPAND_FQ, "*:*");
-            solrQuery.set(ExpandParams.EXPAND_SORT, EXPAND_SORT);
+            solrQuery.set(ExpandParams.EXPAND_SORT, EXPAND_SORT_IRI);
             solrQuery.set(ExpandParams.EXPAND_ROWS, EXPAND_ROWS);
+            break;
+        case VOCABULARY_ID_IRI:
+            // Collapse/expand settings
+            solrQuery.addFilterQuery(COLLAPSE_VOCABULARY_ID_IRI);
+            solrQuery.set(ExpandParams.EXPAND, true);
+            // We now expand the expansion, so as to get _all_ instances
+            // of this IRI, not just ones that match the top-level
+            // query term and filters.
+            solrQuery.set(ExpandParams.EXPAND_Q, "*:*");
+            solrQuery.set(ExpandParams.EXPAND_FQ, "*:*");
+            solrQuery.set(ExpandParams.EXPAND_SORT,
+                    EXPAND_SORT_VOCABULARY_ID_IRI);
+            solrQuery.set(ExpandParams.EXPAND_ROWS, EXPAND_ROWS);
+            break;
+        default:
+            // Oops
+            break;
         }
 
         // Always log the value of searchSortOrder that we use,

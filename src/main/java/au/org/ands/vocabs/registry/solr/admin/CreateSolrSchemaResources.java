@@ -32,6 +32,7 @@ import static au.org.ands.vocabs.registry.solr.FieldConstants.VERSION_ID;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.VERSION_RELEASE_DATE;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.VERSION_TITLE;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.VOCABULARY_ID;
+import static au.org.ands.vocabs.registry.solr.FieldConstants.VOCABULARY_ID_IRI;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.VOCABULARY_TITLE;
 
 import java.io.IOException;
@@ -97,6 +98,7 @@ public final class CreateSolrSchemaResources extends SolrSchemaBase {
             // this vocabulary_id field with those values.
             addField(client, IRI, STRING, true, true, false);
             addField(client, VOCABULARY_ID, STRING, true, true, false);
+            addField(client, VOCABULARY_ID_IRI, STRING, true, true, false);
             addField(client, VOCABULARY_TITLE, STRING, true, true, false);
             // But we do use PINT for the version Id, because we don't
             // need to match on it, and it helps us to do sorting.
