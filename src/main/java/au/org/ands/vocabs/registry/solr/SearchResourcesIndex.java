@@ -234,6 +234,7 @@ public final class SearchResourcesIndex {
         BASIC_FIELDS.add(IRI);
         BASIC_FIELDS.add(LAST_UPDATED);
         BASIC_FIELDS.add(VOCABULARY_ID);
+        BASIC_FIELDS.add(VOCABULARY_ID_IRI);
         BASIC_FIELDS.add(VOCABULARY_TITLE);
         BASIC_FIELDS.add(TITLE);
         BASIC_FIELDS.add(OWNER);
