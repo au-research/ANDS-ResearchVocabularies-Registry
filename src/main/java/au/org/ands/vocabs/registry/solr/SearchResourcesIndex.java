@@ -149,6 +149,15 @@ public final class SearchResourcesIndex {
      */
     public static final String NO_LANGUAGE = "NONE";
 
+    /** When collapse/expand has been applied, each main result
+     * will include a field/value with this field name alias,
+     * whose value is a copy of the value used to do the collapsing, and which
+     * can be used as an index into the expanded section. The point is
+     * to avoid extra client-side conditionals and other code otherwise
+     * needed to determine the key to use for each result.
+     */
+    private static final String COLLAPSE_ID = "collapse_id";
+
     /** Setting to collapse results that have the same IRI, giving
      * preference to the result that is the result with
      * the most recent last_updated value of a current version
@@ -681,6 +690,7 @@ public final class SearchResourcesIndex {
         case IRI:
             // Collapse/expand settings
             solrQuery.addFilterQuery(COLLAPSE_IRI);
+            solrQuery.addField(COLLAPSE_ID + ":" + IRI);
             solrQuery.set(ExpandParams.EXPAND, true);
             // We now expand the expansion, so as to get _all_ instances
             // of this IRI, not just ones that match the top-level
@@ -695,6 +705,7 @@ public final class SearchResourcesIndex {
         case VOCABULARY_ID_IRI:
             // Collapse/expand settings
             solrQuery.addFilterQuery(COLLAPSE_VOCABULARY_ID_IRI);
+            solrQuery.addField(COLLAPSE_ID + ":" + VOCABULARY_ID_IRI);
             solrQuery.set(ExpandParams.EXPAND, true);
             // We now expand the expansion, so as to get _all_ instances
             // of this IRI, not just ones that match the top-level
