@@ -207,6 +207,9 @@ public final class Analytics {
     public static final String OWNER_FIELD = "owner";
     /** The name of the search access field inserted into log entries. */
     public static final String SEARCH_ACCESS_FIELD = "access";
+    /** The name of the search collapse/expand field inserted into
+     * log entries. */
+    public static final String SEARCH_COLLAPSE_EXPAND_FIELD = "collapse_expand";
     /** The name of the search format field inserted into log entries. */
     public static final String SEARCH_FORMAT_FIELD = "format";
     /** The name of the search language field inserted into log entries. */

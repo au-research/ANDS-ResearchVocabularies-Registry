@@ -346,7 +346,7 @@ public final class SearchResourcesIndex {
         SearchSortOrder searchSortOrder = null;
 
         // We will do collapsing/expanding unless the client says not to.
-        SearchResourcesCollapse collapseExpandValue =
+        SearchResourcesCollapse collapseExpand =
                 SearchResourcesCollapse.VOCABULARY_ID_IRI;
 
         // See if there are filters; if so, apply them.
@@ -452,7 +452,7 @@ public final class SearchResourcesIndex {
                     Object collapseExpandValueAsObject = filterEntry.getValue();
                     if (collapseExpandValueAsObject instanceof String) {
                         try {
-                            collapseExpandValue = SearchResourcesCollapse.
+                            collapseExpand = SearchResourcesCollapse.
                                     fromValue((String)
                                             collapseExpandValueAsObject);
                         } catch (IllegalArgumentException e) {
@@ -684,8 +684,13 @@ public final class SearchResourcesIndex {
             }
         }
 
+        // Always log the value of searchSortOrder that we use,
+        // whether or not the user provided a value for it.
+        filtersAndResultsExtracted.add(Analytics.SEARCH_SORT_ORDER_FIELD);
+        filtersAndResultsExtracted.add(searchSortOrder.value());
+
         // Apply the collapse/expand setting.
-        switch (collapseExpandValue) {
+        switch (collapseExpand) {
         case NONE:
             break;
         case IRI:
@@ -718,14 +723,13 @@ public final class SearchResourcesIndex {
             solrQuery.set(ExpandParams.EXPAND_ROWS, EXPAND_ROWS);
             break;
         default:
-            // Oops
+            // Oops!
             break;
         }
-
-        // Always log the value of searchSortOrder that we use,
+        // Always log the value of collapseExpand that we use,
         // whether or not the user provided a value for it.
-        filtersAndResultsExtracted.add(Analytics.SEARCH_SORT_ORDER_FIELD);
-        filtersAndResultsExtracted.add(searchSortOrder.value());
+        filtersAndResultsExtracted.add(Analytics.SEARCH_COLLAPSE_EXPAND_FIELD);
+        filtersAndResultsExtracted.add(collapseExpand.value());
 
         trimSolrFacets(jsonFacets, facetsActive);
         if (!jsonFacets.isEmpty()) {
