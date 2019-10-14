@@ -179,6 +179,13 @@ public final class Analytics {
     /** The name of the vocabulary or related entity ID field
      * inserted into log entries. */
     public static final String ID_FIELD = "id";
+    /** The name of the notification element id field
+     * inserted into log entries. */
+    public static final String NOTIFICATION_ELEMENT_ID_FIELD = "element_id";
+    /** The name of the notification element owner field
+     * inserted into log entries. */
+    public static final String NOTIFICATION_ELEMENT_OWNER_FIELD =
+            "element_owner";
     /** The name of the notification element type field
      * inserted into log entries. */
     public static final String NOTIFICATION_ELEMENT_TYPE_FIELD = "element_type";
@@ -196,13 +203,6 @@ public final class Analytics {
      * field to indicate that this is a subscription for a vocabulary. */
     public static final String NOTIFICATION_ELEMENT_TYPE_VOCABULARY =
             "vocabulary";
-    /** The name of the notification element id field
-     * inserted into log entries. */
-    public static final String NOTIFICATION_ELEMENT_ID_FIELD = "element_id";
-    /** The name of the notification element owner field
-     * inserted into log entries. */
-    public static final String NOTIFICATION_ELEMENT_OWNER_FIELD =
-            "element_owner";
     /** The name of the owner field inserted into log entries. */
     public static final String OWNER_FIELD = "owner";
     /** The name of the search access field inserted into log entries. */
@@ -243,10 +243,10 @@ public final class Analytics {
     public static final String SEARCH_VERSION_STATUS_FIELD = "version_status";
     /** The name of the search widgetable field inserted into log entries. */
     public static final String SEARCH_WIDGETABLE_FIELD = "widgetable";
-    /** The name of the success field inserted into log entries. */
-    public static final String SUCCESS_FIELD = "success";
     /** The name of the slug field inserted into log entries. */
     public static final String SLUG_FIELD = "slug";
+    /** The name of the success field inserted into log entries. */
+    public static final String SUCCESS_FIELD = "success";
     /** The name of the subscriber email field inserted into log entries. */
     public static final String SUBSCRIBER_EMAIL_FIELD = "subscriber_email";
     /** The name of the subscriber id field inserted into log entries. */
