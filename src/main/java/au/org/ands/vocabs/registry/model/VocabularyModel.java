@@ -9,6 +9,7 @@ import java.util.List;
 
 import javax.persistence.EntityManager;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -226,6 +227,26 @@ public class VocabularyModel extends ModelBase {
      */
     protected boolean isPrimaryLanguageChanged() {
         return primaryLanguageChanged;
+    }
+
+    /** Flag for use by {@link VersionsModel} to see if the top concepts
+     * of the current instance have changed.
+     */
+    private boolean topConceptsChanged = false;
+
+    /** Set the {@link #topConceptsChanged} flag.
+     * @param changed The value of {@code topConceptsChanged} to set.
+     */
+    private void setTopConceptsChanged(final boolean changed) {
+        topConceptsChanged = changed;
+    }
+
+    /** Are the top concepts of the current instance being changed?
+     * @return true, if the top concepts of the current instance
+     *      are being changed.
+     */
+    protected boolean isTopConceptsChanged() {
+        return topConceptsChanged;
     }
 
     /** Get the current instance of the vocabulary, in registry schema
@@ -595,9 +616,11 @@ public class VocabularyModel extends ModelBase {
             VocabularyDAO.saveVocabulary(em(), currentVocabulary);
         }
 
-        // See if we need to set primaryLanguageChanged.
+        // See if we need to set primaryLanguageChanged and/or
+        // topConceptsChanged.
         // That is: if there was already an existing (old) current vocabulary,
-        // and its primary language is different from updatedVocabulary's.
+        // and its primary language and/or top concepts are different
+        // from updatedVocabulary's.
         if (oldCurrentVocabulary != null) {
             VocabularyJson oldCurrentVocabularyJson =
                     JSONSerialization.deserializeStringAsJson(
@@ -606,6 +629,15 @@ public class VocabularyModel extends ModelBase {
             if (!oldCurrentVocabularyJson.getPrimaryLanguage().equals(
                     updatedVocabulary.getPrimaryLanguage())) {
                 setPrimaryLanguageChanged(true);
+            }
+            // NB: the generated implementations of both
+            // VocabularyJson.getTopConcepts() and
+            // Vocabulary.getTopConcept() always return a non-null
+            // value, as required by CollectionUtils.isEqualCollection().
+            if (!CollectionUtils.isEqualCollection(
+                    oldCurrentVocabularyJson.getTopConcepts(),
+                    updatedVocabulary.getTopConcept())) {
+                setTopConceptsChanged(true);
             }
         }
 

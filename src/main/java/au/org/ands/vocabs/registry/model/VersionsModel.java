@@ -673,7 +673,8 @@ public class VersionsModel extends ModelBase {
                 new SequencesComparator<>(
                         currentSequence, updatedSequence);
         // Apply the changes.
-        comparator.getScript().visit(new UpdateCurrentVisitor(updatedVersions));
+        comparator.getScript().visit(new UpdateCurrentVisitor(
+                updatedVocabulary, updatedVersions));
         // Delete any remaining draft rows.
         deleteDraftDatabaseRows();
     }
@@ -683,18 +684,28 @@ public class VersionsModel extends ModelBase {
     private class UpdateCurrentVisitor
         implements CommandVisitor<VersionElement> {
 
+        /** The updated vocabulary, in registry schema format. */
+        private au.org.ands.vocabs.registry.schema.vocabulary201701.Vocabulary
+        updatedVocabulary;
+
         /** The map of updated versions. Keys are version Ids; values
          * are the versions in registry schema format. */
         private Map<Integer,
         au.org.ands.vocabs.registry.schema.vocabulary201701.Version>
         updatedVersions;
 
-        /** Constructor that accepts the map of updated versions.
+        /** Constructor that accepts the updated vocabulary and the
+         * map of updated versions.
+         * @param anUpdatedVocabulary The updated vocabulary.
          * @param anUpdatedVersions The map of updated versions.
          */
-        UpdateCurrentVisitor(final Map<Integer,
+        UpdateCurrentVisitor(
+                final au.org.ands.vocabs.registry.schema.vocabulary201701.
+                Vocabulary anUpdatedVocabulary,
+                final Map<Integer,
                 au.org.ands.vocabs.registry.schema.vocabulary201701.Version>
                 anUpdatedVersions) {
+            updatedVocabulary = anUpdatedVocabulary;
             updatedVersions = anUpdatedVersions;
         }
 
@@ -724,11 +735,34 @@ public class VersionsModel extends ModelBase {
                 doConceptBrowseSubtask = true;
             }
 
+            // Handle the rules:
+            // * If the vocabulary's top concepts are being changed,
+            //   we update the Resource Docs version artefact.
+            // * If the version's status is being changed,
+            //   run the ResourceDocs transform to update the record of
+            //   top concepts. (We should also test if the exising
+            //   vocabulary _had_ any top concepts, but for now we don't have
+            //   that information to test.)
+            // NB: the ResourceDocs provider has its own logic about
+            // whether to include top concepts. (At time of writing,
+            // it only includes top concepts when version status = current.)
+            boolean doResourceDocsSubtask = false;
+            if (vocabularyModel.isTopConceptsChanged()) {
+                logger.info("Top concepts were changed; ResourceDocs will "
+                        + "be run for this version");
+                doResourceDocsSubtask = true;
+            }
+            if (existingVersion.getStatus() != schemaVersion.getStatus()) {
+                logger.info("Version status was changed; "
+                        + "ResourceDocs will be run for this version");
+                doResourceDocsSubtask = true;
+            }
+
             // We'll make a new Version instance if either:
             // * doConceptBrowseSubtask, or
             // * the version metadata has changed, or
             // * force-workflow is true
-            if (doConceptBrowseSubtask
+            if (doConceptBrowseSubtask || doResourceDocsSubtask
                     || !ComparisonUtils.isEqualVersion(existingVersion,
                             schemaVersion)
                     || BooleanUtils.isTrue(schemaVersion.isForceWorkflow())) {
@@ -855,10 +889,15 @@ public class VersionsModel extends ModelBase {
                                         SubtaskOperationType.DELETE));
                     }
                 }
-                // And last, if doConceptBrowseSubtask is true, we schedule
+                // If doConceptBrowseSubtask is true, we schedule
                 // that transform. (It may already have been added above.)
                 if (doConceptBrowseSubtask) {
                     task.addSubtask(WorkflowMethods.newConceptBrowseSubtask());
+                }
+                // And last, if doResourceDocsSubtask is true, we schedule
+                // that transform.
+                if (doResourceDocsSubtask) {
+                    task.addSubtask(WorkflowMethods.newResourceDocsSubtask());
                 }
             }
         }
@@ -1001,6 +1040,11 @@ public class VersionsModel extends ModelBase {
             if (BooleanUtils.isTrue(ve.getSchemaVersion().isDoPublish())) {
                 task.addSubtask(WorkflowMethods.createPublishSissvocSubtask(
                         SubtaskOperationType.INSERT));
+            }
+            // If there are top concepts, the ResourceDocs transform
+            // must be run.
+            if (updatedVocabulary.getTopConcept().size() > 0) {
+                task.addSubtask(WorkflowMethods.newResourceDocsSubtask());
             }
         }
     }

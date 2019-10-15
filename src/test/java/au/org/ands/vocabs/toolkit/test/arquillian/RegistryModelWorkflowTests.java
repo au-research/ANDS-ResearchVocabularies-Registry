@@ -663,7 +663,7 @@ public class RegistryModelWorkflowTests extends ArquillianBaseTest {
         ArquillianTestUtils.assertTempForTestHasFiles(testName, 3);
         // ... we also need to check that the files for the version artefacts
         // exist in the file system.
-        TaskInfo taskInfo = TaskUtils.getTaskInfo(1);
+        TaskInfo taskInfo = TaskUtils.getTaskInfo(2);
         taskInfo.setNowTime(nowTime2);
         String taskPath = TaskUtils.getTaskOutputPath(taskInfo, false, null);
         // Use Files::isRegularFile to filter to just files, of which

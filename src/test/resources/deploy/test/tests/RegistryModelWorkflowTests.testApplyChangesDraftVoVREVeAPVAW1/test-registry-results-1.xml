@@ -62,12 +62,12 @@
   <ACCESS_POINTS ID="1" ACCESS_POINT_ID="1" VERSION_ID="1"
             START_DATE="2014-10-01 10:10:00.0" END_DATE="9999-12-01 00:00:00.0"
             MODIFIED_BY="SYSTEM" SOURCE="USER" TYPE="FILE"
-            DATA="{''format'':''TXT'',''upload-id'':1}"
+            DATA="{''format'':''TXT'',''upload-id'':1,''path'':''{TEMP}/RegistryModelWorkflowTests.testApplyChangesDraftVoVREVeAPVAW1/1.txt'',''upload-id'':1,''url'':''{DOWNLOADPREFIX}1/test1.txt''}"
             />
   <ACCESS_POINTS ID="2" ACCESS_POINT_ID="1" VERSION_ID="1"
             START_DATE="9999-12-02 00:00:00.0" END_DATE="9999-12-03 00:00:00.0"
             MODIFIED_BY="TEST" SOURCE="USER" TYPE="FILE"
-            DATA="{''format'':''TXT'',''upload-id'':1}"
+            DATA="{''format'':''TXT'',''upload-id'':1,''path'':''{TEMP}/RegistryModelWorkflowTests.testApplyChangesDraftVoVREVeAPVAW1/1.txt'',''upload-id'':1,''url'':''{DOWNLOADPREFIX}1/test1.txt''}"
             />
   <ACCESS_POINTS ID="3" ACCESS_POINT_ID="2" VERSION_ID="2"
             START_DATE="9999-12-02 00:00:00.0" END_DATE="9999-12-03 00:00:00.0"

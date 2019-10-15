@@ -52,6 +52,11 @@ import au.org.ands.vocabs.registry.schema.vocabulary201701.Vocabulary;
  * and
  * {@link au.org.ands.vocabs.registry.model.VocabularyRelatedEntitiesModel},
  * and it is the first test of that combination.
+ *
+ * There used to be a strict distinction between tests in this class
+ * and those in RegistryModelWorkflowTests, namely: the tests in this class
+ * did not use the workflow, i.e., they did not use any tasks.
+ * However, that distinction no longer applies.
  */
 @Test
 public class RegistryModelTests extends ArquillianBaseTest {
@@ -1143,7 +1148,8 @@ public class RegistryModelTests extends ArquillianBaseTest {
 
 //        ArquillianTestUtils.exportFullDbUnitData(REGISTRY,
 //                testName + "-2-out.xml");
-        ArquillianTestUtils.compareDatabaseCurrentAndExpectedContents(
+        ArquillianTestUtils.
+        compareDatabaseCurrentAndExpectedContentsIgnoreTaskTimestamps(
                 REGISTRY,
                 "test/tests/"
                 + CLASS_NAME_PREFIX
