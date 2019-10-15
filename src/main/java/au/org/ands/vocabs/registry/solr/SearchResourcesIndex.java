@@ -24,6 +24,8 @@ import static au.org.ands.vocabs.registry.solr.FieldConstants.STATUS;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.SUBJECT_LABELS;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.TITLE;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.TITLE_SORT;
+import static au.org.ands.vocabs.registry.solr.FieldConstants.TOP_CONCEPT;
+import static au.org.ands.vocabs.registry.solr.FieldConstants.TOP_CONCEPT_PHRASE;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.VERSION_ID;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.VERSION_RELEASE_DATE;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.VERSION_TITLE;
@@ -246,6 +248,8 @@ public final class SearchResourcesIndex {
         BASIC_FIELDS.add(VOCABULARY_ID_IRI);
         BASIC_FIELDS.add(VOCABULARY_TITLE);
         BASIC_FIELDS.add(TITLE);
+        BASIC_FIELDS.add(TOP_CONCEPT);
+        BASIC_FIELDS.add(TOP_CONCEPT_PHRASE);
         BASIC_FIELDS.add(OWNER);
         BASIC_FIELDS.add(PUBLISHER);
         BASIC_FIELDS.add(VERSION_ID);
@@ -600,6 +604,8 @@ public final class SearchResourcesIndex {
 //            solrQuery.addHighlightField(PUBLISHER);
 //            solrQuery.addHighlightField(RDF_TYPE);
 //            solrQuery.addHighlightField(SUBJECT_LABELS);
+            solrQuery.addHighlightField(TOP_CONCEPT);
+            solrQuery.addHighlightField(TOP_CONCEPT_PHRASE);
             addMultilingualHighlightFields(solrQuery, languages);
             // Use the "unified" highlight method, as it's significantly
             // faster than the "original" method.
@@ -857,7 +863,7 @@ public final class SearchResourcesIndex {
             final ArrayList<String> languages) {
         // NB: ensure that the highlight fields are set above, corresponding
         // to the fields listed in the QF and PQF parameters.
-        String langQueryFields = "";
+        String langQueryFields = TOP_CONCEPT + " ";
         for (String language : languages) {
             langQueryFields = langQueryFields
                     + SKOS_PREFLABEL + SEARCH_SUFFIX + language + " "
@@ -872,7 +878,7 @@ public final class SearchResourcesIndex {
         query.set(DisMaxParams.QF, langQueryFields);
         // Default (1) boosting for phrases: phrase matches should
         // be considered (much) more important than non-phrase matches.
-        String langPhraseQueryFields = "";
+        String langPhraseQueryFields = TOP_CONCEPT_PHRASE + " ";
         for (String language : languages) {
             langPhraseQueryFields = langPhraseQueryFields
                     + SKOS_PREFLABEL + PHRASE_SUFFIX + language + " "
