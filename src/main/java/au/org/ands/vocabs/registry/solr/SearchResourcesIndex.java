@@ -495,8 +495,6 @@ public final class SearchResourcesIndex {
                             languages.add(mapLanguage(stringValue));
                         }
                     }
-                    filtersAndResultsExtracted.add(LANGUAGE);
-                    filtersAndResultsExtracted.add(languages);
                     break;
                 // Possible future work: support faceting by last_updated.
 //                case LAST_UPDATED:
@@ -549,6 +547,9 @@ public final class SearchResourcesIndex {
                 // special suffix "_all".
                 languages.add(ALL_SUFFIX);
             }
+            // Now we know the value of languages to put into the analytics.
+            filtersAndResultsExtracted.add(LANGUAGE);
+            filtersAndResultsExtracted.add(languages);
 
             // see Portal views/includes/search-view.blade.php for the
             // fields that must be returned for the "main" search function.
@@ -798,14 +799,18 @@ public final class SearchResourcesIndex {
 
     /** Map a language specified in the language filter into a
      * suffix to use against multilingual fields.
-     * @param language A language tag, or the special value of
-     *      {@code NO_LANGUAGE}.
+     * @param language A language tag, or either of the special values of
+     *      {@code NO_LANGUAGE} or {@code ALL_SUFFIX}.
      * @return The suffix to use, or an empty string, if {@code language}
-     *      equals the value of {@code NO_LANGUAGE}.
+     *      equals the value of {@code NO_LANGUAGE}, or {@code ALL_SUFFIX},
+     *      if {@code language} equals the value of {@code ALL_SUFFIX}.
      */
     private static String mapLanguage(final String language) {
         if (NO_LANGUAGE.equals(language)) {
             return "";
+        }
+        if (ALL_SUFFIX.equals(language)) {
+            return ALL_SUFFIX;
         }
         return "-" + language;
     }
@@ -820,6 +825,9 @@ public final class SearchResourcesIndex {
             final SolrQuery solrQuery,
             final ArrayList<String> languages) {
         for (String language : languages) {
+            // Because we set HighlightParams.FIELD_MATCH to true,
+            // we have to request highlighting for the _search
+            // and _phrase fields.
             solrQuery.addHighlightField(SKOS_PREFLABEL
                     + SEARCH_SUFFIX + language);
             solrQuery.addHighlightField(SKOS_ALTLABEL
