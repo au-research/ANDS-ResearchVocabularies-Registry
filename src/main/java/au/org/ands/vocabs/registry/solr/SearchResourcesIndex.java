@@ -43,6 +43,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang.StringUtils;
@@ -259,6 +260,22 @@ public final class SearchResourcesIndex {
         BASIC_FIELDS.add(RDF_TYPE);
         BASIC_FIELDS.add(SISSVOC_ENDPOINT);
     }
+
+    /** String containing the regular expression for validating
+     * language tags. For now, that means either (a) the special
+     * value of {@code ALL_SUFFIX}, or (b) a value that contains
+     * only Latin alphabetic characters. */
+    private static final String LANGUAGE_REGEX =
+            "^("
+            + ALL_SUFFIX
+            + "|"
+            + "\\p{Alpha}+"
+            + ")$";
+
+    /** The compiled pattern containing the regular expression for
+     *  validating language tags. */
+    private static final Pattern LANGUAGE_PATTERN =
+            Pattern.compile(LANGUAGE_REGEX);
 
     /* Things to pay attention to, when performing maintenance on
      * this method:
@@ -485,6 +502,7 @@ public final class SearchResourcesIndex {
                             (ArrayList<String>) value;
                         for (String v : stringValues) {
                             stringValue = StringUtils.trimToNull(v);
+                            validateLanguage(stringValue);
                             if (stringValue != null) {
                                 languages.add(mapLanguage(stringValue));
                             }
@@ -492,6 +510,7 @@ public final class SearchResourcesIndex {
                     } else {
                         stringValue = StringUtils.trimToNull(value.toString());
                         if (stringValue != null) {
+                            validateLanguage(stringValue);
                             languages.add(mapLanguage(stringValue));
                         }
                     }
@@ -794,6 +813,19 @@ public final class SearchResourcesIndex {
         } catch (IOException | SolrServerException e) {
             LOGGER.error("Exception while performing Solr query", e);
             throw e;
+        }
+    }
+
+    /** Validate a language tag. Returns without throwing an exception,
+     * if the tag is valid, otherwise, throws an
+     * {@code IllegalArgumentException}.
+     * @param language A language tag to be validated.
+     * @throws IllegalArgumentException If the language tag is invalid.
+     */
+    private static void validateLanguage(final String language)
+            throws IllegalArgumentException {
+        if (!LANGUAGE_PATTERN.matcher(language).matches()) {
+            throw new IllegalArgumentException("Invalid language value");
         }
     }
 
