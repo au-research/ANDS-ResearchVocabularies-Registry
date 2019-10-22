@@ -19,6 +19,7 @@ import static au.org.ands.vocabs.registry.solr.FieldConstants.SISSVOC_ENDPOINT;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.SKOS_ALTLABEL;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.SKOS_DEFINITION;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.SKOS_HIDDENLABEL;
+import static au.org.ands.vocabs.registry.solr.FieldConstants.SKOS_NOTATION;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.SKOS_PREFLABEL;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.STATUS;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.SUBJECT_LABELS;
@@ -259,6 +260,7 @@ public final class SearchResourcesIndex {
         BASIC_FIELDS.add(STATUS);
         BASIC_FIELDS.add(RDF_TYPE);
         BASIC_FIELDS.add(SISSVOC_ENDPOINT);
+        BASIC_FIELDS.add(SKOS_NOTATION);
     }
 
     /** String containing the regular expression for validating
