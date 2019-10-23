@@ -896,6 +896,8 @@ public final class SearchResourcesIndex {
 
     /** Set the query fields. This sets the "qf" parameter, and
      * the "pqf" parameter provided by the Safari custom query parser.
+     * For now, boosting is done directly in the code; there aren't
+     * (yet) any constants for boosts, or ways to change the boosts.
      * @param query The Solr query being constructed.
      * @param languages The list of languages to be used to select
      *      query fields.
@@ -911,10 +913,12 @@ public final class SearchResourcesIndex {
                     + SKOS_PREFLABEL + SEARCH_SUFFIX + language + " "
                     + SKOS_ALTLABEL + SEARCH_SUFFIX + language + " "
                     + SKOS_HIDDENLABEL + SEARCH_SUFFIX + language + " "
-                    + SKOS_DEFINITION + SEARCH_SUFFIX + language + " "
+                    + SKOS_DEFINITION + SEARCH_SUFFIX + language
+                    + "^0.05 "
                     + RDFS_LABEL + SEARCH_SUFFIX + language + " "
                     + DCTERMS_TITLE + SEARCH_SUFFIX + language + " "
-                    + DCTERMS_DESCRIPTION + SEARCH_SUFFIX + language + " ";
+                    + DCTERMS_DESCRIPTION + SEARCH_SUFFIX + language
+                    + "^0.05 ";
         }
 
         query.set(DisMaxParams.QF, langQueryFields);
@@ -926,10 +930,12 @@ public final class SearchResourcesIndex {
                     + SKOS_PREFLABEL + PHRASE_SUFFIX + language + " "
                     + SKOS_ALTLABEL + PHRASE_SUFFIX + language + " "
                     + SKOS_HIDDENLABEL + PHRASE_SUFFIX + language + " "
-                    + SKOS_DEFINITION + PHRASE_SUFFIX + language + " "
+                    + SKOS_DEFINITION + PHRASE_SUFFIX + language
+                    + "^0.05 "
                     + RDFS_LABEL + PHRASE_SUFFIX + language + " "
                     + DCTERMS_TITLE + PHRASE_SUFFIX + language + " "
-                    + DCTERMS_DESCRIPTION + PHRASE_SUFFIX + language + " ";
+                    + DCTERMS_DESCRIPTION + PHRASE_SUFFIX + language
+                    + "^0.05 ";
         }
         query.set(SafariQueryParser.PQF, langPhraseQueryFields);
     }
