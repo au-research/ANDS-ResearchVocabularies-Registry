@@ -21,6 +21,7 @@ import javax.ws.rs.core.MultivaluedMap;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.multimap.HashSetValuedHashMap;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
@@ -352,10 +353,10 @@ public class ResourceDocsTransformProvider implements WorkflowProvider {
         // We fall back to TOP_CONCEPT and IRI: every resource is
         // guaranteed to have exactly one of those keys!
         titleKeys.add(FieldConstants.SKOS_PREFLABEL + "-" + primaryLanguage);
-        titleKeys.add(FieldConstants.SKOS_ALTLABEL + "-" + primaryLanguage);
         titleKeys.add(FieldConstants.SKOS_PREFLABEL);
-        titleKeys.add(FieldConstants.SKOS_ALTLABEL);
         titleKeys.add(FieldConstants.SKOS_PREFLABEL + "-en");
+        titleKeys.add(FieldConstants.SKOS_ALTLABEL + "-" + primaryLanguage);
+        titleKeys.add(FieldConstants.SKOS_ALTLABEL);
         titleKeys.add(FieldConstants.SKOS_ALTLABEL + "-");
         // Possible future work: at this point, can we handle a fallback to
         // skos_prefLabel-*, etc., i.e., a value for _any_ language?
@@ -517,6 +518,10 @@ public class ResourceDocsTransformProvider implements WorkflowProvider {
             Resource subject = st.getSubject();
             URI predicate = st.getPredicate();
             Value object = st.getObject();
+            if (StringUtils.isBlank(object.stringValue())) {
+                // We're not interested in empty/whitespace-only object values.
+                return;
+            }
             HashSetValuedHashMap<String, Object> resource =
                     resourceMap.get(subject.stringValue());
             if (resource == null) {
