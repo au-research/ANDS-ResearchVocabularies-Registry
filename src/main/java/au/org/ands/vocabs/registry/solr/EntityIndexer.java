@@ -24,6 +24,11 @@ import static au.org.ands.vocabs.registry.solr.FieldConstants.SUBJECT_NOTATIONS;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.SUBJECT_SOURCES;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.TITLE;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.TOP_CONCEPT;
+import static au.org.ands.vocabs.registry.solr.FieldConstants.VERSION_ID;
+import static au.org.ands.vocabs.registry.solr.FieldConstants.VERSION_RELEASE_DATE;
+import static au.org.ands.vocabs.registry.solr.FieldConstants.VERSION_TITLE;
+import static au.org.ands.vocabs.registry.solr.FieldConstants.VOCABULARY_ID;
+import static au.org.ands.vocabs.registry.solr.FieldConstants.VOCABULARY_TITLE;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.WIDGETABLE;
 
 import java.io.File;
@@ -46,11 +51,15 @@ import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.BaseHttpSolrClient.RemoteSolrException;
 import org.apache.solr.client.solrj.request.ContentStreamUpdateRequest;
 import org.apache.solr.common.SolrInputDocument;
+import org.apache.solr.common.util.ContentStreamBase;
 import org.jsoup.Jsoup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.ibm.icu.util.ULocale;
 
 import au.org.ands.vocabs.registry.db.converter.JSONSerialization;
@@ -70,6 +79,7 @@ import au.org.ands.vocabs.registry.db.internal.ApFile;
 import au.org.ands.vocabs.registry.db.internal.ApSissvoc;
 import au.org.ands.vocabs.registry.db.internal.VaConceptList;
 import au.org.ands.vocabs.registry.db.internal.VaResourceDocs;
+import au.org.ands.vocabs.registry.db.internal.VersionJson;
 import au.org.ands.vocabs.registry.db.internal.VocabularyJson;
 import au.org.ands.vocabs.registry.db.internal.VocabularyJson.PoolpartyProject;
 import au.org.ands.vocabs.registry.db.internal.VocabularyJson.Subjects;
@@ -476,7 +486,7 @@ public final class EntityIndexer {
             LOGGER.error("Exception when adding document to Solr index", e);
             throw e;
         }
-        indexResourceDocsForVocabulary(vocabularyId);
+        indexResourceDocsForVocabulary(vocabularyId, vocabulary, document);
     }
 
     /** Index all current vocabularies into Solr.
@@ -515,8 +525,9 @@ public final class EntityIndexer {
             throw e;
         }
         // Now put all of the resource docs into the resource Solr collection.
-        for (Integer vocabularyId : vocabularyIdList) {
-            indexResourceDocsForVocabulary(vocabularyId);
+        for (int i = 0; i < vocabularyIdList.size(); i++) {
+            indexResourceDocsForVocabulary(vocabularyIdList.get(i),
+                    allVocabularies.get(i), documents.get(i));
         }
     }
 
@@ -580,10 +591,42 @@ public final class EntityIndexer {
      * Here, "current" means non-historical, non-draft.
      * We index all such versions, irrespective of
      * whether they have version status "current" or "superseded".
+     * Note: the Resource Docs version artefacts contain Solr documents
+     * that don't have values for the fields for vocabulary and version
+     * metadata, e.g., vocabulary title and owner, and version status.
+     * This method fills in all of the missing data before sending it
+     * to Solr for indexing.
      * @param vocabularyId The vocabulary ID of the vocabulary for which
      *      resource docs are to be added to the Solr index.
+     * @param vocabulary The current Vocabulary instance of the vocabulary
+     *      for which resource docs are to be added to the Solr index.
+     * @param document The Solr document already constructed from the
+     *      vocabulary metadata, that went into the registry collection.
+     *      Used as a quick way to get some of the vocabulary-level metadata,
+     *      rather than re-computing it.
      */
-    private static void indexResourceDocsForVocabulary(final int vocabularyId) {
+    private static void indexResourceDocsForVocabulary(final int vocabularyId,
+            final Vocabulary vocabulary,
+            final SolrInputDocument document) {
+        // Extract the fields that we need to add to each Solr document,
+        // that come from the vocabulary-level metadata.
+        VocabularyJson vocabularyJson =
+                JSONSerialization.deserializeStringAsJson(
+                        vocabulary.getData(), VocabularyJson.class);
+
+        String vocabularyTitle = vocabularyJson.getTitle();
+        String vocabularyIdString = Integer.toString(vocabularyId);
+        String owner = vocabulary.getOwner();
+        String lastUpdated = localDateTimeToString(vocabulary.getStartDate());
+        // Don't re-compute subject labels and publishers, but reuse
+        // the values we already have.
+        @SuppressWarnings("unchecked")
+        ArrayList<String> subjectLabels = (ArrayList<String>)
+                document.getField(SUBJECT_LABELS).getRawValue();
+        @SuppressWarnings("unchecked")
+        ArrayList<String> publishers = (ArrayList<String>)
+                document.getField(PUBLISHER).getRawValue();
+
         // Get all "current" versions, which here means non-historical,
         // non-draft. We index all such versions, irrespective of
         // whether they have version status "current" or "superseded".
@@ -596,8 +639,17 @@ public final class EntityIndexer {
             LOGGER.error("Unable to delete existing resource docs "
                     + "from Solr collection", e);
         }
+        ObjectMapper mapper = new ObjectMapper();
         for (Version version : versions) {
+            // Extract the fields that we need to add to each Solr document,
+            // that come from the version-level metadata.
             Integer versionId = version.getVersionId();
+            VersionJson versionJson = JSONSerialization.deserializeStringAsJson(
+                    version.getData(), VersionJson.class);
+            String versionTitle = versionJson.getTitle();
+            String versionReleaseDate = version.getReleaseDate();
+            String versionStatus = version.getStatus().toString();
+
             List<VersionArtefact> resourceDocs = VersionArtefactDAO.
                     getCurrentVersionArtefactListForVersionByType(
                             versionId, VersionArtefactType.RESOURCE_DOCS);
@@ -607,17 +659,73 @@ public final class EntityIndexer {
                         JSONSerialization.deserializeStringAsJson(
                                 vaData, VaResourceDocs.class);
                 File resourceDocsFile = new File(vaResourceDocs.getPath());
+                JsonNode jsonNode = jsonFileToJsonNode(mapper,
+                        resourceDocsFile);
+                if (jsonNode == null) {
+                    LOGGER.error("JSON file parsed as null; skipping");
+                    continue;
+                }
+                // jsonNode is an array of objects. Iterate over it, adding
+                // the basic fields to each object.
+                for (JsonNode node : jsonNode) {
+                    ObjectNode objectNode = (ObjectNode) node;
+                    objectNode.put(VERSION_ID, versionId);
+                    objectNode.put(VERSION_TITLE, versionTitle);
+                    objectNode.put(VERSION_RELEASE_DATE, versionReleaseDate);
+                    objectNode.put(VOCABULARY_ID, vocabularyIdString);
+                    objectNode.put(VOCABULARY_TITLE, vocabularyTitle);
+                    objectNode.put(OWNER, owner);
+                    objectNode.put(LAST_UPDATED, lastUpdated);
+                    objectNode.putPOJO(SUBJECT_LABELS, subjectLabels);
+                    objectNode.putPOJO(PUBLISHER, publishers);
+                    objectNode.put(STATUS, versionStatus);
+                }
                 try {
                     ContentStreamUpdateRequest request =
                             new ContentStreamUpdateRequest(UPDATE_ENDPOINT);
-                    request.addFile(resourceDocsFile,
-                            MediaType.APPLICATION_JSON);
+                    ContentStreamBase cs =
+                            new ContentStreamBase.StringStream(
+                                    jsonNodeToString(mapper, jsonNode),
+                                    MediaType.APPLICATION_JSON);
+                    request.addContentStream(cs);
                     request.process(SOLR_CLIENT_RESOURCES);
                 } catch (IOException | SolrServerException e) {
                     LOGGER.error("Unable to process update to add resource "
                             + "docs for vocabulary: " + vocabularyId, e);
                 }
             }
+        }
+    }
+
+    /** Parse a file containing JSON into a JsonNode.
+     * @param mapper The Jackson ObjectMapper to use.
+     * @param jsonFile The File in JSON format to be converted.
+     * @return The resulting JSON structure, or null, if there was
+     *      an Exception.
+     */
+    private static JsonNode jsonFileToJsonNode(final ObjectMapper mapper,
+            final File jsonFile) {
+        try {
+            return mapper.readTree(jsonFile);
+        } catch (IOException e) {
+            LOGGER.error("Exception in jsonFileToJsonNode", e);
+            return null;
+        }
+    }
+
+    /** Convert a JsonNode into a String representation.
+     * @param mapper The Jackson ObjectMapper to use.
+     * @param jsonNode The JsonNode to be converted to a String.
+     * @return The resulting String, or null, if there was
+     *      an Exception.
+     */
+    private static String jsonNodeToString(final ObjectMapper mapper,
+            final JsonNode jsonNode) {
+        try {
+            return mapper.writeValueAsString(jsonNode);
+        } catch (IOException e) {
+            LOGGER.error("Exception in jsonNodeToString", e);
+            return null;
         }
     }
 

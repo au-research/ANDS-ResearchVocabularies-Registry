@@ -12,16 +12,15 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import javax.persistence.EntityManager;
-import javax.ws.rs.core.MultivaluedMap;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.multimap.HashSetValuedHashMap;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.solr.common.SolrInputDocument;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
@@ -44,21 +43,14 @@ import org.slf4j.LoggerFactory;
 import au.org.ands.vocabs.registry.db.context.TemporalUtils;
 import au.org.ands.vocabs.registry.db.converter.JSONSerialization;
 import au.org.ands.vocabs.registry.db.dao.AccessPointDAO;
-import au.org.ands.vocabs.registry.db.dao.RelatedEntityDAO;
 import au.org.ands.vocabs.registry.db.dao.VersionArtefactDAO;
-import au.org.ands.vocabs.registry.db.dao.VocabularyRelatedEntityDAO;
 import au.org.ands.vocabs.registry.db.entity.AccessPoint;
-import au.org.ands.vocabs.registry.db.entity.RelatedEntity;
 import au.org.ands.vocabs.registry.db.entity.Version;
 import au.org.ands.vocabs.registry.db.entity.VersionArtefact;
 import au.org.ands.vocabs.registry.db.entity.Vocabulary;
-import au.org.ands.vocabs.registry.db.entity.VocabularyRelatedEntity;
 import au.org.ands.vocabs.registry.db.internal.ApSissvoc;
-import au.org.ands.vocabs.registry.db.internal.VersionJson;
 import au.org.ands.vocabs.registry.db.internal.VocabularyJson;
-import au.org.ands.vocabs.registry.db.internal.VocabularyJson.Subjects;
 import au.org.ands.vocabs.registry.enums.AccessPointType;
-import au.org.ands.vocabs.registry.enums.RelatedEntityRelation;
 import au.org.ands.vocabs.registry.enums.SubtaskOperationType;
 import au.org.ands.vocabs.registry.enums.TaskStatus;
 import au.org.ands.vocabs.registry.enums.VersionArtefactType;
@@ -79,7 +71,16 @@ import au.org.ands.vocabs.registry.workflow.tasks.VersionArtefactUtils;
  * of which represents an RDF resource. (If the version has status
  * current, any vocabulary-level top concepts are also included
  * in the array.)
- * For now, this assumes a vocabulary encoded using SKOS. */
+ * For now, this assumes a vocabulary encoded using SKOS.
+ * Note: the generated Solr documents do not contain fields that
+ * are copies of vocabulary and version metadata, e.g.,
+ * vocabulary title and owner, and version status. The values of those
+ * fields must be filled in elsewhere. Indeed, see the method
+ * {@link EntityIndexer#indexResourceDocsForVocabulary(int, Vocabulary,
+ * SolrInputDocument)}, which inserts fields for those values into
+ * each document at indexing time.
+ * @see EntityIndexer
+ *  */
 public class ResourceDocsTransformProvider implements WorkflowProvider {
 
     /** Logger for this class. */
@@ -156,59 +157,19 @@ public class ResourceDocsTransformProvider implements WorkflowProvider {
     // Private convenience fields, initialized by transform(),
     // and used by methods that it invokes.
 
-    /** The Vocabulary entity of the TaskInfo for the transform task. */
-    private Vocabulary vocabulary;
-
-    /** The vocabulary Id of the vocabulary being transformed. */
-    private int vocabularyId;
-
     /** The vocabulary Id of the vocabulary being transformed, converted
      * to a String. */
     private String vocabularyIdString;
 
-    /** The owner of the vocabulary being transformed. */
-    private String owner;
-
-    /** The timestamp of the last update of the vocabulary being
-     * transformed, expressed in the format expected by Solr. */
-    private String lastUpdated;
-
     /** The contents of the data field of the vocabulary being transformed. */
     private VocabularyJson vocabularyJson;
-
-    /** The vocabulary title of the vocabulary being transformed. */
-    private String vocabularyTitle;
-
-    /** The subject labels defined in the vocabulary being transformed. */
-    private List<String> subjectLabels = new ArrayList<>();
-
-    /** The publishers of the vocabulary being transformed. */
-    private ArrayList<String> publishers = new ArrayList<>();
-
-    /** The primary language of the vocabulary being transformed. */
-    private String primaryLanguage;
 
     /** The Version entity of the TaskInfo for the transform task. */
     private Version version;
 
-    /** The version Id of the vocabulary being transformed. */
-    private int versionId;
-
     /** The version Id of the vocabulary being transformed, converted
      * to a String. */
     private String versionIdString;
-
-    /** The version status of the version being transformed. */
-    private String versionStatus;
-
-    /** The version release date of the version being transformed. */
-    private String versionReleaseDate;
-
-    /** The contents of the data field of the version being transformed. */
-    private VersionJson versionJson;
-
-    /** The version title of the version being transformed. */
-    private String versionTitle;
 
     /** A list of keys to use to select a title for a resource.
      * Based on primary language.
@@ -296,56 +257,15 @@ public class ResourceDocsTransformProvider implements WorkflowProvider {
      */
     public void initializeConvenienceFields(final TaskInfo taskInfo) {
         EntityManager em = taskInfo.getEm();
-        vocabulary = taskInfo.getVocabulary();
-        vocabularyId = vocabulary.getVocabularyId();
+        Vocabulary vocabulary = taskInfo.getVocabulary();
+        int vocabularyId = vocabulary.getVocabularyId();
         vocabularyIdString = Integer.toString(vocabularyId);
-        owner = vocabulary.getOwner();
-        lastUpdated = EntityIndexer.localDateTimeToString(
-                vocabulary.getStartDate());
         vocabularyJson = JSONSerialization.deserializeStringAsJson(
                 vocabulary.getData(), VocabularyJson.class);
-        vocabularyTitle = vocabularyJson.getTitle();
-        // Subjects
-        List<Subjects> subjects = vocabularyJson.getSubjects();
-        if (!subjects.isEmpty()) {
-            for (Subjects subject : subjects) {
-                subjectLabels.add(subject.getLabel());
-            }
-        }
-        // Publishers
-        // First get VocabularyRelatedEntity objects.
-        MultivaluedMap<Integer, VocabularyRelatedEntity> vreMap =
-                VocabularyRelatedEntityDAO.
-                getCurrentVocabularyRelatedEntitiesForVocabulary(em,
-                        vocabularyId);
-        // Now fetch the related entities that are publishers of this
-        // vocabulary.
-        ArrayList<RelatedEntity> relatedEntities = new ArrayList<>();
-        for (Map.Entry<Integer, List<VocabularyRelatedEntity>>
-            vreMapElement : vreMap.entrySet()) {
-            for (VocabularyRelatedEntity vre : vreMapElement.getValue()) {
-                if (RelatedEntityRelation.PUBLISHED_BY.equals(
-                        vre.getRelation())) {
-                    relatedEntities.add(RelatedEntityDAO.
-                            getCurrentRelatedEntityByRelatedEntityId(em,
-                                    vre.getRelatedEntityId()));
-                }
-            }
-        }
-        if (!relatedEntities.isEmpty()) {
-            for (RelatedEntity re : relatedEntities) {
-                publishers.add(re.getTitle());
-            }
-        }
-        primaryLanguage = vocabularyJson.getPrimaryLanguage();
+        String primaryLanguage = vocabularyJson.getPrimaryLanguage();
         version = taskInfo.getVersion();
-        versionId = version.getVersionId();
+        int versionId = version.getVersionId();
         versionIdString = Integer.toString(versionId);
-        versionStatus = version.getStatus().toString();
-        versionReleaseDate = version.getReleaseDate();
-        versionJson = JSONSerialization.deserializeStringAsJson(
-                version.getData(), VersionJson.class);
-        versionTitle = versionJson.getTitle();
         // Create list of keys to use from which to pick out
         // the value to be used as the title for each resource.
         // The values of the list are used in sequence. If a value
@@ -387,27 +307,6 @@ public class ResourceDocsTransformProvider implements WorkflowProvider {
         }
     }
 
-    /** Fill in the basic fields for a resource: version Id, version title,
-     * owner, subject, etc.; the fields filled in are those common
-     * to RDF resources and to manually-added top concepts.
-     * @param resource The representation of one resource of the version.
-     */
-    private void addBasicFields(
-            final HashSetValuedHashMap<String, Object> resource) {
-        // NB: use integer value for version_id, to allow sorting.
-        resource.put(FieldConstants.VERSION_ID, versionId);
-        resource.put(FieldConstants.VERSION_TITLE, versionTitle);
-        resource.put(FieldConstants.VERSION_RELEASE_DATE,
-                versionReleaseDate);
-        resource.put(FieldConstants.VOCABULARY_ID, vocabularyIdString);
-        resource.put(FieldConstants.VOCABULARY_TITLE, vocabularyTitle);
-        resource.put(FieldConstants.OWNER, owner);
-        resource.put(FieldConstants.LAST_UPDATED, lastUpdated);
-        resource.put(FieldConstants.SUBJECT_LABELS, subjectLabels);
-        resource.put(FieldConstants.PUBLISHER, publishers);
-        resource.put(FieldConstants.STATUS, versionStatus);
-    }
-
     /** Add entries into the resource map for the vocabulary's
      * top concept metadata. But only do this if this version
      * has status "current".
@@ -432,12 +331,10 @@ public class ResourceDocsTransformProvider implements WorkflowProvider {
                         versionIdString + "__" + topConcept);
                 concept.put(FieldConstants.TOP_CONCEPT, topConcept);
                 concept.put(FieldConstants.RDF_TYPE, NO_RDF_TYPE);
-                addBasicFields(concept);
                 // No SISSVoc endpoint in this case.
             }
         }
     }
-
 
     /** Transform the computed resource map into a format that can
      * be serialized. Filtering is applied, so that the result only
@@ -534,7 +431,6 @@ public class ResourceDocsTransformProvider implements WorkflowProvider {
                         vocabularyIdString + "_"
                         + subject.stringValue());
                 resource.put(FieldConstants.IRI, subject.stringValue());
-                addBasicFields(resource);
                 if (sissvocEndpoint != null) {
                     resource.put(FieldConstants.SISSVOC_ENDPOINT,
                             sissvocEndpoint);
