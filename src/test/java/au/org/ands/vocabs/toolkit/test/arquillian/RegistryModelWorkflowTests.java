@@ -7,13 +7,23 @@ import static au.org.ands.vocabs.toolkit.test.utils.DatabaseSelector.ROLES;
 
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import javax.persistence.EntityManager;
+import javax.persistence.EntityTransaction;
 import javax.xml.bind.JAXBException;
 
 import org.dbunit.DatabaseUnitException;
+import org.openrdf.OpenRDFException;
+import org.openrdf.repository.Repository;
+import org.openrdf.repository.RepositoryException;
+import org.openrdf.repository.config.RepositoryConfigException;
+import org.openrdf.repository.manager.RepositoryManager;
+import org.openrdf.repository.manager.RepositoryProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.Assert;
@@ -21,9 +31,18 @@ import org.testng.annotations.Test;
 
 import au.org.ands.vocabs.registry.api.validation.ValidationMode;
 import au.org.ands.vocabs.registry.db.context.DBContext;
+import au.org.ands.vocabs.registry.db.converter.JSONSerialization;
+import au.org.ands.vocabs.registry.db.dao.AccessPointDAO;
+import au.org.ands.vocabs.registry.db.dao.VocabularyIdDAO;
+import au.org.ands.vocabs.registry.db.entity.AccessPoint;
+import au.org.ands.vocabs.registry.db.entity.VocabularyId;
+import au.org.ands.vocabs.registry.db.internal.ApSesameDownload;
+import au.org.ands.vocabs.registry.enums.AccessPointType;
 import au.org.ands.vocabs.registry.model.ModelMethods;
 import au.org.ands.vocabs.registry.model.VocabularyModel;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.Vocabulary;
+import au.org.ands.vocabs.registry.workflow.tasks.TaskInfo;
+import au.org.ands.vocabs.registry.workflow.tasks.TaskUtils;
 
 /** Tests of the registry model that also involve workflow processing.
  * The names of some of the tests contain "codes" that explain how
@@ -74,17 +93,20 @@ public class RegistryModelWorkflowTests extends ArquillianBaseTest {
     private static final String CLASS_NAME_PREFIX =
             "RegistryModelWorkflowTests.";
 
-    /** A convenient value to use for endDate properties when
-     * deleting. */
+    /** A convenient value to use for endDate properties. */
     @SuppressWarnings("checkstyle:MagicNumber")
     private static LocalDateTime nowTime1 =
             LocalDateTime.of(2017, 10, 1, 10, 10);
 
-    /** A convenient value to use for endDate properties when
-     * deleting. */
+    /** A convenient value to use for endDate properties. */
     @SuppressWarnings("checkstyle:MagicNumber")
     private static LocalDateTime nowTime2 =
             LocalDateTime.of(2017, 10, 1, 10, 20);
+
+    /** A convenient value to use for endDate properties. */
+    @SuppressWarnings("checkstyle:MagicNumber")
+    private static LocalDateTime nowTime3 =
+            LocalDateTime.of(2017, 10, 1, 10, 30);
 
     /** Test of deleting the current instance of a vocabulary that has only
      * a current instance, with Vocabulary, VocabularyRelatedEntity,
@@ -105,7 +127,7 @@ public class RegistryModelWorkflowTests extends ArquillianBaseTest {
         ArquillianTestUtils.clearDatabase(REGISTRY);
         ArquillianTestUtils.loadDbUnitTestFile(REGISTRY, testName);
         ArquillianTestUtils.copyTempFilesForTest(testName);
-        ArquillianTestUtils.assertTempForTestHasFiles(testName, 4);
+        ArquillianTestUtils.assertTempForTestHasFiles(testName, 5);
         EntityManager em = null;
         try {
             em = DBContext.getEntityManager();
@@ -132,7 +154,7 @@ public class RegistryModelWorkflowTests extends ArquillianBaseTest {
         compareDatabaseCurrentAndExpectedContentsIgnoreTaskTimestamps(
                 REGISTRY,
                 "test/tests/" + testName + "/test-registry-results.xml");
-        ArquillianTestUtils.assertTempForTestHasFiles(testName, 2);
+        ArquillianTestUtils.assertTempForTestHasFiles(testName, 3);
     }
 
     /** Test of deleting the current instance of a vocabulary that has only
@@ -198,7 +220,7 @@ public class RegistryModelWorkflowTests extends ArquillianBaseTest {
         ArquillianTestUtils.clearDatabase(REGISTRY);
         ArquillianTestUtils.loadDbUnitTestFile(REGISTRY, testName);
         ArquillianTestUtils.copyTempFilesForTest(testName);
-        ArquillianTestUtils.assertTempForTestHasFiles(testName, 4);
+        ArquillianTestUtils.assertTempForTestHasFiles(testName, 5);
         EntityManager em = null;
         try {
             em = DBContext.getEntityManager();
@@ -223,7 +245,7 @@ public class RegistryModelWorkflowTests extends ArquillianBaseTest {
         compareDatabaseCurrentAndExpectedContentsIgnoreTaskTimestamps(
                 REGISTRY,
                 "test/tests/" + testName + "/test-registry-results.xml");
-        ArquillianTestUtils.assertTempForTestHasFiles(testName, 2);
+        ArquillianTestUtils.assertTempForTestHasFiles(testName, 3);
     }
 
     /** Test of deleting the draft instance of a vocabulary that also has
@@ -348,7 +370,7 @@ public class RegistryModelWorkflowTests extends ArquillianBaseTest {
         ArquillianTestUtils.loadDbUnitTestFile(REGISTRY, testName);
         ArquillianTestUtils.copyUploadsFilesForTest(testName);
         ArquillianTestUtils.copyTempFilesForTest(testName);
-        ArquillianTestUtils.assertTempForTestHasFiles(testName, 4);
+        ArquillianTestUtils.assertTempForTestHasFiles(testName, 5);
         Vocabulary vocabulary = RegistryTestUtils.
                 getValidatedVocabularyFromFile(
                 "test/tests/" + testName + "/test-vocabulary.xml",
@@ -377,7 +399,7 @@ public class RegistryModelWorkflowTests extends ArquillianBaseTest {
         compareDatabaseCurrentAndExpectedContentsIgnoreTaskTimestamps(
                 REGISTRY,
                 "test/tests/" + testName + "/test-registry-results.xml");
-        ArquillianTestUtils.assertTempForTestHasFiles(testName, 4);
+        ArquillianTestUtils.assertTempForTestHasFiles(testName, 5);
     }
 
     /** Test of starting with a vocabulary that has only a draft instance,
@@ -463,7 +485,7 @@ public class RegistryModelWorkflowTests extends ArquillianBaseTest {
         ArquillianTestUtils.loadDbUnitTestFile(REGISTRY, testName);
         ArquillianTestUtils.copyUploadsFilesForTest(testName);
         ArquillianTestUtils.copyTempFilesForTest(testName);
-        ArquillianTestUtils.assertTempForTestHasFiles(testName, 5);
+        ArquillianTestUtils.assertTempForTestHasFiles(testName, 6);
         Vocabulary vocabulary = RegistryTestUtils.
                 getValidatedVocabularyFromFile(
                 "test/tests/" + testName + "/test-vocabulary.xml",
@@ -492,7 +514,8 @@ public class RegistryModelWorkflowTests extends ArquillianBaseTest {
         compareDatabaseCurrentAndExpectedContentsIgnoreTaskTimestamps(
                 REGISTRY,
                 "test/tests/" + testName + "/test-registry-results.xml");
-        ArquillianTestUtils.assertTempForTestHasFiles(testName, 4);
+        // One fewer file: the file "1.txt" was deleted.
+        ArquillianTestUtils.assertTempForTestHasFiles(testName, 5);
     }
 
     /** Test of applying changes to the current instance of a vocabulary
@@ -636,7 +659,18 @@ public class RegistryModelWorkflowTests extends ArquillianBaseTest {
         compareDatabaseCurrentAndExpectedContentsIgnoreTaskTimestamps(
                 REGISTRY,
                 "test/tests/" + testName + "/test-registry-results-2.xml");
+        // This test is OK, but doesn't prove very much:
         ArquillianTestUtils.assertTempForTestHasFiles(testName, 3);
+        // ... we also need to check that the files for the version artefacts
+        // exist in the file system.
+        TaskInfo taskInfo = TaskUtils.getTaskInfo(2);
+        taskInfo.setNowTime(nowTime2);
+        String taskPath = TaskUtils.getTaskOutputPath(taskInfo, false, null);
+        // Use Files::isRegularFile to filter to just files, of which
+        // there should be 3. (There is also the harvest_data directory.)
+        Assert.assertEquals(Files.list(Paths.get(taskPath)).
+                filter(Files::isRegularFile).count(),
+                3, "Expected to have 3 regular files for version artefacts");
     }
 
     /** Test of updating a draft of a vocabulary
@@ -693,6 +727,159 @@ public class RegistryModelWorkflowTests extends ArquillianBaseTest {
                 REGISTRY,
                 "test/tests/" + testName + "/test-registry-results.xml");
     }
+
+    /** Test of changing a version slug, when there is a Sesame
+     * repository in play. In particular, make sure that after deletion
+     * of the version, the Sesame repo is gone.
+     * @throws DatabaseUnitException If a problem with DbUnit.
+     * @throws IOException If a problem getting test data for DbUnit,
+     *          or reading JSON from the correct and test output files.
+     * @throws SQLException If DbUnit has a problem performing
+     *           performing JDBC operations.
+     * @throws JAXBException If a problem loading vocabulary data.
+     * @throws OpenRDFException If there is a problem connecting with Sesame.
+     *  */
+    @Test
+    public final void testChangeVersionSlug1() throws
+    DatabaseUnitException, IOException, SQLException, JAXBException,
+    OpenRDFException {
+        String testName = CLASS_NAME_PREFIX
+                + "testChangeVersionSlug1";
+        ArquillianTestUtils.clearDatabase(ROLES);
+        ArquillianTestUtils.loadDbUnitTestFile(ROLES, testName);
+        ArquillianTestUtils.clearDatabase(REGISTRY);
+        ArquillianTestUtils.loadDbUnitTestFile(REGISTRY, testName);
+        ArquillianTestUtils.copyUploadsFilesForTest(testName);
+        Vocabulary vocabulary = RegistryTestUtils.
+                getValidatedVocabularyFromFile(
+                "test/tests/" + testName + "/test-vocabulary1.xml",
+                ValidationMode.CREATE);
+        EntityManager em = null;
+        List<AccessPoint> aps = null;
+
+        // Create the vocabulary.
+        try {
+            em = DBContext.getEntityManager();
+            EntityTransaction txn = em.getTransaction();
+
+            txn.begin();
+            VocabularyId vocabularyId = new VocabularyId();
+            VocabularyIdDAO.saveVocabularyId(em, vocabularyId);
+
+            Integer newVocabularyId = vocabularyId.getId();
+            Assert.assertEquals(newVocabularyId.intValue(), 1,
+                    "Vocabulary ID not 1");
+
+            VocabularyModel vm = ModelMethods.createVocabularyModel(em, 1);
+            ModelMethods.applyChanges(vm, "TEST", nowTime1, vocabulary);
+            txn.commit();
+            aps = AccessPointDAO.getCurrentAccessPointListForVersionByType(1,
+                    AccessPointType.SESAME_DOWNLOAD, em);
+        } catch (Exception e) {
+            if (em != null) {
+                em.getTransaction().rollback();
+                throw e;
+            }
+        }
+        ArquillianTestUtils.
+        compareDatabaseCurrentAndExpectedContentsIgnoreTaskTimestamps(
+                REGISTRY,
+                "test/tests/" + testName + "/test-registry-results-1.xml");
+        vocabulary = RegistryTestUtils.
+                getValidatedVocabularyFromFile(
+                "test/tests/" + testName + "/test-vocabulary2.xml",
+                ValidationMode.UPDATE);
+
+        // Now confirm that the Sesame repo exists.
+        Assert.assertEquals(aps.size(), 1, "Not exactly one sesameDownload "
+                + "access point");
+        ApSesameDownload apSesameDownload = JSONSerialization.
+                deserializeStringAsJson(aps.get(0).getData(),
+                        ApSesameDownload.class);
+        String apServerBase = apSesameDownload.getServerBase();
+        String apRepositoryID = apSesameDownload.getRepository();
+        RepositoryManager manager = null;
+        try {
+            manager = RepositoryProvider.getRepositoryManager(apServerBase);
+            Repository repository = manager.getRepository(apRepositoryID);
+            Assert.assertNotNull(repository, "Repository missing");
+        } catch (RepositoryConfigException | RepositoryException e) {
+            throw e;
+        }
+
+        // Now change the version slug.
+        try {
+            EntityTransaction txn = em.getTransaction();
+            txn.begin();
+            VocabularyModel vm = ModelMethods.createVocabularyModel(em, 1);
+            ModelMethods.applyChanges(vm, "TEST", nowTime2, vocabulary);
+            txn.commit();
+        } catch (Exception e) {
+            if (em != null) {
+                em.getTransaction().rollback();
+                throw e;
+            }
+        }
+        ArquillianTestUtils.
+        compareDatabaseCurrentAndExpectedContentsIgnoreTaskTimestamps(
+                REGISTRY,
+                "test/tests/" + testName + "/test-registry-results-2.xml");
+
+        // Now confirm that the Sesame repo still exists, and that
+        // there isn't one with the _new_ slug.
+        try {
+            manager = RepositoryProvider.getRepositoryManager(apServerBase);
+            Repository repository = manager.getRepository(apRepositoryID);
+            Assert.assertNotNull(repository, "Repository no longer exists");
+            repository = manager.getRepository("ands-curated_rifcs_version-2");
+            Assert.assertNull(repository, "Repository with new version slug "
+                    + "now exists");
+        } catch (RepositoryConfigException | RepositoryException e) {
+            throw e;
+        }
+
+        // Now delete the version.
+        vocabulary = RegistryTestUtils.
+                getValidatedVocabularyFromFile(
+                "test/tests/" + testName + "/test-vocabulary3.xml",
+                ValidationMode.UPDATE);
+        try {
+            EntityTransaction txn = em.getTransaction();
+            txn.begin();
+            VocabularyModel vm = ModelMethods.createVocabularyModel(em, 1);
+            ModelMethods.applyChanges(vm, "TEST", nowTime3, vocabulary);
+            txn.commit();
+        } catch (Exception e) {
+            if (em != null) {
+                em.getTransaction().rollback();
+                throw e;
+            }
+        } finally {
+            if (em != null) {
+                em.close();
+            }
+        }
+        ArquillianTestUtils.
+        compareDatabaseCurrentAndExpectedContentsIgnoreTaskTimestamps(
+                REGISTRY,
+                "test/tests/" + testName + "/test-registry-results-3.xml");
+
+        // Now confirm that the Sesame repo _no longer_ exists.
+        try {
+            manager = RepositoryProvider.getRepositoryManager(apServerBase);
+            Repository repository = manager.getRepository(apRepositoryID);
+            // CC-2596: There _was_ a defect in SesameImporterProvider
+            // that has been fixed in the same commit that adds this
+            // very test. Before the fix, the following assertion
+            // failed. The unimport recalculated the repository name
+            // from the slugs, rather than using the repository name
+            // stored in the access point database row.
+            Assert.assertNull(repository, "Repository still exists");
+        } catch (RepositoryConfigException | RepositoryException e) {
+            throw e;
+        }
+    }
+
 
     // Code to do a database dump; copy/paste and use as required
     // during development of a test.

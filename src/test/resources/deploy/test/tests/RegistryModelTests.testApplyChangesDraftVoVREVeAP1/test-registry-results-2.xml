@@ -61,6 +61,11 @@
       TYPE="WEB_PAGE"
       DATA="{''url'':''http://www.researchdata.ands.org.au/''}"/>
 
+  <TASKS ID="1"
+         PARAMS="[{''operation'':''insert'',''priority'':50,''provider'':''ResourceDocs'',''results'':{''timestamp'':''2019-10-15T03:34:35.846''},''status'':''success'',''subtaskProviderType'':''transform''}]"
+         RESPONSE="{''response'':''All subtasks completed successfully.'',''timestamp'':''2019-10-15T03:34:35.846''}"
+         STATUS="SUCCESS" VERSION_ID="1" VOCABULARY_ID="1"/>
+
   <REGISTRY_EVENTS ID="1" ELEMENT_TYPE="VOCABULARIES" ELEMENT_ID="1" EVENT_DATE="2017-10-01 10:10:00.0" EVENT_TYPE="CREATED" EVENT_USER="TEST" EVENT_DETAILS="{''id'':2,''status'':''draft''}" />
   <REGISTRY_EVENTS ID="2" ELEMENT_TYPE="VERSIONS" ELEMENT_ID="1" EVENT_DATE="2017-10-01 10:10:00.0" EVENT_TYPE="CREATED" EVENT_USER="TEST" EVENT_DETAILS="{''draft'':true,''id'':2,''status'':''superseded''}" />
   <REGISTRY_EVENTS ID="3" ELEMENT_TYPE="VERSIONS" ELEMENT_ID="2" EVENT_DATE="2017-10-01 10:10:00.0" EVENT_TYPE="CREATED" EVENT_USER="TEST" EVENT_DETAILS="{''draft'':true,''id'':3,''status'':''current''}" />
@@ -85,7 +90,6 @@
   <RESOURCE_OWNER_HOSTS/>
   <SUBJECT_RESOLVER/>
   <SUBJECT_RESOLVER_SOURCES/>
-  <TASKS/>
   <UPLOADS/>
   <VERSION_ARTEFACTS/>
   <VERSION_ARTEFACT_IDS/>

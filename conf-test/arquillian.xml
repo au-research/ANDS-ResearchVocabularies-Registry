@@ -5,6 +5,12 @@
   xsi:schemaLocation="http://jboss.org/schema/arquillian
                       http://jboss.org/schema/arquillian/arquillian_1_0.xsd">
 
+  <!-- Need to tell the arquillian-suite-extension where to find
+       the deployment class. -->
+  <extension qualifier="suite">
+    <property name="deploymentClass">au.org.ands.vocabs.toolkit.test.arquillian.ArquillianBaseTest</property>
+  </extension>
+
   <container qualifier="tomcat" default="true">
     <configuration>
       <!-- Ports -->

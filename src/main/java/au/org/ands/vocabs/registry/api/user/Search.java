@@ -30,7 +30,8 @@ import au.org.ands.vocabs.registry.api.context.ResponseUtils;
 import au.org.ands.vocabs.registry.api.context.SwaggerInterface;
 import au.org.ands.vocabs.registry.log.Analytics;
 import au.org.ands.vocabs.registry.log.Logging;
-import au.org.ands.vocabs.registry.solr.SearchIndex;
+import au.org.ands.vocabs.registry.solr.SearchRegistryIndex;
+import au.org.ands.vocabs.registry.solr.SearchResourcesIndex;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -63,7 +64,7 @@ public class Search {
      * ServletProperties.QUERY_PARAMS_AS_FORM_PARAMS_DISABLED
      * (= "jersey.config.servlet.form.queryParams.disabled").
      */
-    /** Perform a search against the Solr index.
+    /** Perform a search against the registry Solr index.
      * @param request The HTTP request.
      * @param uriInfo The UriInfo of the request.
      * @param filtersJson Search filters to be passed on to Solr,
@@ -75,13 +76,14 @@ public class Search {
     @Consumes({MediaType.APPLICATION_FORM_URLENCODED})
     @Produces({MediaType.APPLICATION_JSON})
     @POST
-    @ApiOperation(value = "Perform a search.", response = Object.class)
+    @ApiOperation(value = "Perform a search of vocabulary metadata.",
+        response = Object.class)
     @ApiResponses(value = {
             @ApiResponse(code = HttpStatus.SC_BAD_REQUEST,
                     message = "Invalid input",
                     response = ErrorResult.class)
     })
-    public final Response search(
+    public Response search(
             @Context final HttpServletRequest request,
             @Context final UriInfo uriInfo,
             @ApiParam(value = "Filters that define the search parameters. "
@@ -104,7 +106,7 @@ public class Search {
                 request.getHeader(Analytics.PORTAL_ID));
         try {
             List<Object> filtersAndResultsExtracted = new ArrayList<>();
-            String queryResponse = SearchIndex.query(filtersJson,
+            String queryResponse = SearchRegistryIndex.query(filtersJson,
                     filtersAndResultsExtracted, logResults);
             Logging.logRequest(true, request, uriInfo, null,
                     Analytics.EVENT_SEARCH,
@@ -119,6 +121,75 @@ public class Search {
         } catch (IllegalArgumentException e) {
             Logging.logRequest(false, request, uriInfo, null,
                     Analytics.EVENT_SEARCH,
+                    Analytics.FAILURE_REASON, "validation");
+            return ErrorResultUtils.badRequest("Error in request: "
+                    + e.getMessage());
+        }
+    }
+
+    /** Perform a search against the resources Solr index.
+     * @param request The HTTP request.
+     * @param uriInfo The UriInfo of the request.
+     * @param filtersJson Search filters to be passed on to Solr,
+     *      in JSON format.
+     * @return The search results, as a JSON object.
+     */
+    @Path(ApiPaths.SEARCH + "/" + ApiPaths.RESOURCES)
+    @FormContentTypeFilter
+    @Consumes({MediaType.APPLICATION_FORM_URLENCODED})
+    @Produces({MediaType.APPLICATION_JSON})
+    @POST
+    @ApiOperation(value = "Perform a search of vocabulary resources.",
+        response = Object.class)
+    @ApiResponses(value = {
+            @ApiResponse(code = HttpStatus.SC_BAD_REQUEST,
+                    message = "Invalid input",
+                    response = ErrorResult.class)
+    })
+    public Response searchResources(
+            @Context final HttpServletRequest request,
+            @Context final UriInfo uriInfo,
+            @ApiParam(value = "Filters that define the search parameters. "
+                    + "The filters are specified "
+                    + "as a JSON object. Examples of keys/values supported: "
+                    + "'\"q\":\"query term\"': query term; "
+                    + "'\"pp\":10' number of results per page;"
+                    + "'\"p\":3' page number of results; "
+                    + "'\"sort\":\"zToA\"': sort order of results; "
+                    + "'\"collapse_expand\":false' disable collapse/expand "
+                    + "results with the same IRI; "
+                    + "'\"language\":\"[\""
+                    + SearchResourcesIndex.NO_LANGUAGE
+                    + "\",\"en\"]\"': limit to "
+                    + "specified languages (to include results for all "
+                    + "languages, don't specify a value for this filter). "
+                    + "Facets are also specified with filters: "
+                    + "e.g., '\"publisher\":\"CSIRO\"'. Supported facets: "
+                    + "\"publisher\", \"rdf_type\", \"status\", "
+                    + "\"subject_labels\".")
+            @NotNull(message = "The filtersJson parameter must not be null")
+            @FormParam("filtersJson") final String filtersJson
+            ) {
+        logger.debug("called searchResources");
+        boolean logResults = !PORTAL_JS_WIDGET.equals(
+                request.getHeader(Analytics.PORTAL_ID));
+        try {
+            List<Object> filtersAndResultsExtracted = new ArrayList<>();
+            String queryResponse = SearchResourcesIndex.query(filtersJson,
+                    filtersAndResultsExtracted, logResults);
+            Logging.logRequest(true, request, uriInfo, null,
+                    Analytics.EVENT_SEARCH_RESOURCES,
+                    filtersAndResultsExtracted.toArray());
+            return Response.ok(queryResponse).build();
+        } catch (IOException | SolrServerException e) {
+            Logging.logRequest(false, request, uriInfo, null,
+                    Analytics.EVENT_SEARCH_RESOURCES,
+                    Analytics.FAILURE_REASON, "internal error");
+            return ResponseUtils.generateInternalServerError(
+                    "Error response from Solr");
+        } catch (IllegalArgumentException e) {
+            Logging.logRequest(false, request, uriInfo, null,
+                    Analytics.EVENT_SEARCH_RESOURCES,
                     Analytics.FAILURE_REASON, "validation");
             return ErrorResultUtils.badRequest("Error in request: "
                     + e.getMessage());

@@ -68,7 +68,7 @@ public class GetVersionArtefacts {
 //                    message = "Invalid input",
 //                    response = ErrorResult.class)
 //            })
-    public final VersionArtefactList getVersionArtefacts(
+    public VersionArtefactList getVersionArtefacts(
             @Context final HttpServletRequest request,
             @Context final UriInfo uriInfo,
             @ApiParam(hidden = true) @Pac4JProfile final CommonProfile profile,
@@ -122,7 +122,7 @@ public class GetVersionArtefacts {
                     message = "No current concept tree for that version.",
                     response = String.class)
             })
-    public final Response getVersionArtefactConceptTree(
+    public Response getVersionArtefactConceptTree(
             @Context final HttpServletRequest request,
             @Context final UriInfo uriInfo,
             @ApiParam(hidden = true) @Pac4JProfile final CommonProfile profile,

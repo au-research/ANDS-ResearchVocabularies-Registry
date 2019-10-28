@@ -97,7 +97,7 @@ public class PutSubscriptions {
                     message = "Internal server error",
                     response = ErrorResult.class)
             })
-    public final Response createEmailSubscriptionVocabulary(
+    public Response createEmailSubscriptionVocabulary(
             @Context final HttpServletRequest request,
             @Context final UriInfo uriInfo,
             @ApiParam(hidden = true) @Pac4JProfile final CommonProfile profile,
@@ -214,7 +214,7 @@ public class PutSubscriptions {
                     message = "Internal server error",
                     response = ErrorResult.class)
             })
-    public final Response createEmailSubscriptionOwner(
+    public Response createEmailSubscriptionOwner(
             @Context final HttpServletRequest request,
             @Context final UriInfo uriInfo,
             @ApiParam(hidden = true) @Pac4JProfile final CommonProfile profile,
@@ -335,7 +335,7 @@ public class PutSubscriptions {
                     message = "Internal server error",
                     response = ErrorResult.class)
             })
-    public final Response createEmailSubscriptionSystem(
+    public Response createEmailSubscriptionSystem(
             @Context final HttpServletRequest request,
             @Context final UriInfo uriInfo,
             @ApiParam(hidden = true) @Pac4JProfile final CommonProfile profile,

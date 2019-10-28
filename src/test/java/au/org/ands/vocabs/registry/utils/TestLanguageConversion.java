@@ -5,45 +5,36 @@ package au.org.ands.vocabs.registry.utils;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import com.ibm.icu.util.ULocale;
+import au.org.ands.vocabs.registry.solr.EntityIndexer;
 
 /** Unit tests of the conversion between ISO 639 and human-readable
- * forms of languages. */
+ * forms of language names. */
 public class TestLanguageConversion {
 
     /** Run tests of the language conversion. */
     @Test
-    public void testSlugGenerator() {
-        ULocale displayLocale = new ULocale("en_NZ");
-        ULocale loc;
-        loc = new ULocale("de");
-        Assert.assertEquals(loc.getDisplayName(displayLocale),
-                "German");
-        loc = new ULocale("en");
-        Assert.assertEquals(loc.getDisplayName(displayLocale),
+    public void testLanguageConversion() {
+        // Check resolution of some valid ISO 639 tags.
+        Assert.assertEquals(EntityIndexer.resolveLanguage("de"), "German");
+        Assert.assertEquals(EntityIndexer.resolveLanguage("en"), "English");
+        Assert.assertEquals(EntityIndexer.resolveLanguage("es"), "Spanish");
+        Assert.assertEquals(EntityIndexer.resolveLanguage("fr"), "French");
+        Assert.assertEquals(EntityIndexer.resolveLanguage("it"), "Italian");
+        Assert.assertEquals(EntityIndexer.resolveLanguage("ja"), "Japanese");
+        // We currently rely on the use of the en_NZ locale to get the
+        // correct value for this case.
+        Assert.assertEquals(EntityIndexer.resolveLanguage("mi"), "Māori");
+        Assert.assertEquals(EntityIndexer.resolveLanguage("ru"), "Russian");
+        Assert.assertEquals(EntityIndexer.resolveLanguage("zh"), "Chinese");
+
+        // Check resolution of values that aren't valid language tags.
+        Assert.assertEquals(EntityIndexer.resolveLanguage("English"),
                 "English");
-        loc = new ULocale("es");
-        Assert.assertEquals(loc.getDisplayName(displayLocale),
-                "Spanish");
-        loc = new ULocale("fr");
-        Assert.assertEquals(loc.getDisplayName(displayLocale),
-                "French");
-        loc = new ULocale("it");
-        Assert.assertEquals(loc.getDisplayName(displayLocale),
-                "Italian");
-        loc = new ULocale("ja");
-        Assert.assertEquals(loc.getDisplayName(displayLocale),
-                "Japanese");
-        loc = new ULocale("mi");
-        Assert.assertEquals(loc.getDisplayName(displayLocale),
-                "Māori");
-        loc = new ULocale("ru");
-        Assert.assertEquals(loc.getDisplayName(displayLocale),
-                "Russian");
-        loc = new ULocale("zh");
-        Assert.assertEquals(loc.getDisplayName(displayLocale),
-                "Chinese");
-//        Assert.assertEquals(SlugGenerator.generateSlug(""),
+        Assert.assertEquals(EntityIndexer.resolveLanguage("Turkish"),
+                "Turkish");
+
+        //        loc = new ULocale("");
+//        Assert.assertEquals(EntityIndexer.resolveLanguage(),
 //                "");
     }
 }

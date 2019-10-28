@@ -220,7 +220,7 @@ public final class RolesProperties {
             // load a properties file
             props.load(input);
         } catch (IOException ex) {
-            ex.printStackTrace();
+            logger.error("initProperties got an IOException", ex);
         } finally {
             if (input != null) {
                 try {

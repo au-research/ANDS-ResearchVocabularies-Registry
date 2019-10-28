@@ -95,7 +95,7 @@ public class GetVocabularies {
     @GET
     @ApiOperation(value = "Get all the current vocabularies. This includes "
             + "both published and deprecated vocabularies.")
-    public final VocabularyList getVocabularies(
+    public VocabularyList getVocabularies(
             @Context final HttpServletRequest request,
             @Context final UriInfo uriInfo) {
         logger.debug("called getVocabularies");
@@ -140,7 +140,7 @@ public class GetVocabularies {
                     message = "No vocabulary with that id",
                     response = ErrorResult.class)
             })
-    public final Response getVocabularyById(
+    public Response getVocabularyById(
             @Context final HttpServletRequest request,
             @Context final UriInfo uriInfo,
             @ApiParam(value = "The ID of the vocabulary to get.")
@@ -339,7 +339,7 @@ public class GetVocabularies {
                     message = "Not authenticated, or not authorized",
                     response = ErrorResult.class)
             })
-    public final Response getVocabularyByIdEdit(
+    public Response getVocabularyByIdEdit(
             @Context final HttpServletRequest request,
             @Context final UriInfo uriInfo,
             @ApiParam(hidden = true) @Pac4JProfile final CommonProfile profile,
@@ -461,7 +461,7 @@ public class GetVocabularies {
                                     response = String.class)
                     })
             })
-    public final Response ownsVocabularyById(
+    public Response ownsVocabularyById(
             @SuppressWarnings("unused")
             @Context final HttpServletRequest request,
             @SuppressWarnings("unused")
@@ -514,7 +514,7 @@ public class GetVocabularies {
                     @Authorization(value = SwaggerInterface.BASIC_AUTH),
                     @Authorization(value = SwaggerInterface.API_KEY_AUTH)},
             response = SimpleResult.class)
-    public final Response hasDraftVocabularyById(
+    public Response hasDraftVocabularyById(
             @ApiParam(hidden = true) @Pac4JProfile final CommonProfile profile,
             @ApiParam(value = "The ID of the vocabulary to check.")
             @PathParam("vocabularyId") final Integer vocabularyId) {
@@ -544,7 +544,7 @@ public class GetVocabularies {
     @ApiOperation(value = "Get the current versions of a vocabulary, "
             + "by its vocabulary id. The results are returned in "
             + "reverse order of release date.")
-    public final VersionList getVersionsForVocabularyById(
+    public VersionList getVersionsForVocabularyById(
             @ApiParam(value = "The ID of the vocabulary from which to get "
                     + "the current versions.")
             @PathParam("vocabularyId") final Integer vocabularyId) {
@@ -579,7 +579,7 @@ public class GetVocabularies {
     @GET
     @ApiOperation(value = "Get the current related entities of a vocabulary, "
             + "by its vocabulary id.")
-    public final RelatedEntityList getRelatedEntitiesForVocabularyById(
+    public RelatedEntityList getRelatedEntitiesForVocabularyById(
             @ApiParam(value = "The ID of the vocabulary from which to get "
                     + "the current related entities.")
             @PathParam("vocabularyId") final Integer vocabularyId) {
@@ -680,7 +680,7 @@ public class GetVocabularies {
     @GET
     @ApiOperation(value = "Get all current vocabularies related to a "
             + "vocabulary, by its vocabulary id.")
-    public final ReverseRelatedVocabularyList
+    public ReverseRelatedVocabularyList
     getVocabulariesRelatedToVocabularyById(
             @Context final HttpServletRequest request,
             @Context final UriInfo uriInfo,

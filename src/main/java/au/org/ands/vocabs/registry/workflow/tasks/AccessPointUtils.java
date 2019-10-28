@@ -3,6 +3,7 @@
 package au.org.ands.vocabs.registry.workflow.tasks;
 
 import java.lang.invoke.MethodHandles;
+import java.lang.reflect.InvocationTargetException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.function.BiConsumer;
@@ -114,10 +115,10 @@ public final class AccessPointUtils {
 
         T apT;
         try {
-            apT = apClass.newInstance();
-            // errorprone says this would be better:
-//            apT = apClass.getConstructor().newInstance();
-        } catch (InstantiationException | IllegalAccessException e) {
+            apT = apClass.getConstructor().newInstance();
+        } catch (InstantiationException | IllegalAccessException
+                | IllegalArgumentException | InvocationTargetException
+                | NoSuchMethodException | SecurityException e) {
             logger.error("Error creating instance of class: " + apClass, e);
             return;
         }

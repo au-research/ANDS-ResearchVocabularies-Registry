@@ -47,7 +47,7 @@ public class GetVersions {
     @GET
     @ApiOperation(value = "Get a current version by its id.",
             response = Version.class)
-    public final Response getVersionById(
+    public Response getVersionById(
             @ApiParam(value = "The ID of the version to get.")
             @PathParam("versionId") final Integer versionId) {
         logger.debug("called getVersion: " + versionId);
@@ -78,7 +78,7 @@ public class GetVersions {
             + "Returns false, if there is no draft instance with that "
             + "version id. The result is returned in the booleanValue "
             + "property.")
-    public final SimpleResult hasDraftVersionById(
+    public SimpleResult hasDraftVersionById(
             @ApiParam(value = "The ID of the version to check.")
             @PathParam("versionId") final Integer versionId) {
         logger.debug("called hasDraftVersionById: " + versionId);
@@ -95,7 +95,7 @@ public class GetVersions {
     @GET
     @ApiOperation(value = "Get the current access points of a version, "
             + "by its version id.")
-    public final AccessPointList getAccessPointsForVersionById(
+    public AccessPointList getAccessPointsForVersionById(
             @ApiParam(value = "The ID of the version from which to get "
                     + "the current access points.")
             @PathParam("versionId") final Integer versionId) {

@@ -74,7 +74,7 @@
       classpath="libdev/forbidden-apis-2.2/forbiddenapis-2.2.jar" />
 
   <taskdef resource="testngtasks"
-    classpath="libdev/testng-6.9.10/testng-6.9.10.jar" />
+    classpath="libdev/testng-6.14.3/testng-6.14.3.jar" />
 
   <taskdef
     uri="antlib:org.jacoco.ant"
@@ -690,12 +690,28 @@
     <java
         fork="true"
         failonerror="true"
-        classname="au.org.ands.vocabs.registry.solr.admin.CreateSchema"
+        classname="au.org.ands.vocabs.registry.solr.admin.CreateSolrSchemaRegistry"
         classpathref="create-solr-schema.classpath"
       >
       <arg value="${Registry.Solr.baseURL}" />
       <arg value="${Registry.Solr.collection}" />
       <arg value="${Registry.Solr.collectionURL}" />
+      <arg value="${Registry.Solr.zkHost}" />
+    </java>
+  </target>
+
+  <target name="create-solr-schema-resources"
+          depends="compile-main">
+    <property file="conf/registry.properties" />
+    <java
+        fork="true"
+        failonerror="true"
+        classname="au.org.ands.vocabs.registry.solr.admin.CreateSolrSchemaResources"
+        classpathref="create-solr-schema.classpath"
+      >
+      <arg value="${Registry.Solr.baseURL}" />
+      <arg value="${Registry.Solr.resources.collection}" />
+      <arg value="${Registry.Solr.resources.collectionURL}" />
       <arg value="${Registry.Solr.zkHost}" />
     </java>
   </target>

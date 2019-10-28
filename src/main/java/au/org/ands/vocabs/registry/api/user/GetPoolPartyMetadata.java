@@ -69,7 +69,7 @@ public class GetPoolPartyMetadata {
                     message = "Not authenticated, or not authorized",
                     response = ErrorResult.class)
             })
-    public final Response getPoolPartyProjects(
+    public Response getPoolPartyProjects(
             @ApiParam(value = "The PoolParty server Id.",
                     defaultValue = "1")
             @PathParam("serverId") @DefaultValue("1")
@@ -111,7 +111,7 @@ public class GetPoolPartyMetadata {
                     message = "Not authenticated, or not authorized",
                     response = ErrorResult.class)
             })
-    public final Response getPoolPartyProjectMetadata(
+    public Response getPoolPartyProjectMetadata(
             @ApiParam(value = "The PoolParty server Id.",
                 defaultValue = "1")
             @PathParam("serverId") @DefaultValue("1")

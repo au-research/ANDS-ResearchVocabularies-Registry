@@ -83,7 +83,7 @@ public class AdminGetVocabularies {
                     message = "Not authenticated, or not authorized",
                     response = ErrorResult.class)
             })
-    public final Response getVocabulariesIncludingDraft(
+    public Response getVocabulariesIncludingDraft(
             @Context final HttpServletRequest request,
             @Context final UriInfo uriInfo,
             @ApiParam(hidden = true) @Pac4JProfile

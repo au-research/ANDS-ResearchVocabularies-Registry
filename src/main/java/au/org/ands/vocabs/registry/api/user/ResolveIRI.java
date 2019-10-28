@@ -112,7 +112,7 @@ public class ResolveIRI {
             @ApiResponse(code = HttpStatus.SC_NOT_FOUND,
                     message = "Not found",
                     response = String.class)})
-    public final Response lookupIRI(
+    public Response lookupIRI(
             @ApiParam(value = "The mode of resolution. For now, only "
                     + "\"current\" is supported, and this is the default. ")
             @QueryParam("mode") @DefaultValue("current") final String mode,

@@ -31,7 +31,7 @@ public class AdminRestMethods {
     @Path("logModel" + "/" + ApiPaths.VOCABULARY_ID)
     @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     @GET
-    public final Response logModel(@PathParam("vocabularyId") final Integer
+    public Response logModel(@PathParam("vocabularyId") final Integer
             vocabularyId) {
         EntityManager em = null;
         try {
@@ -56,7 +56,7 @@ public class AdminRestMethods {
     @Path("describeModel" + "/" + ApiPaths.VOCABULARY_ID)
     @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     @GET
-    public final Response describeModel(
+    public Response describeModel(
             @PathParam("vocabularyId") final Integer vocabularyId) {
         EntityManager em = null;
         try {

@@ -25,6 +25,8 @@ public class ToolkitJerseyApplication extends ResourceConfig {
         packages("io.swagger.jaxrs.listing");
 
         // Jersey support for multipart data, used for file uploads.
+        // When deploying to WildFly, comment out these two lines.
+        // Note: haven't yet tested uploads with WildFly!
         packages("org.glassfish.jersey.examples.multipart");
         register(MultiPartFeature.class);
     }

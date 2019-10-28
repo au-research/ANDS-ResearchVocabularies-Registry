@@ -113,4 +113,9 @@ public final class ApiPaths {
     /** Subpath for email subscription services, for all subscription types. */
     public static final String ALL = "all";
 
+    /* Subpaths for search services. */
+
+    /** Subpath for resource search. */
+    public static final String RESOURCES = "resources";
+
 }

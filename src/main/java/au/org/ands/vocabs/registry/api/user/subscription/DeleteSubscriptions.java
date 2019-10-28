@@ -90,7 +90,7 @@ public class DeleteSubscriptions {
                     message = "Internal server error",
                     response = ErrorResult.class)
             })
-    public final Response deleteEmailSubscriptionVocabulary(
+    public Response deleteEmailSubscriptionVocabulary(
             @Context final HttpServletRequest request,
             @Context final UriInfo uriInfo,
             @ApiParam(hidden = true) @Pac4JProfile final CommonProfile profile,
@@ -194,7 +194,7 @@ public class DeleteSubscriptions {
                     message = "Internal server error",
                     response = ErrorResult.class)
             })
-    public final Response deleteEmailSubscriptionOwner(
+    public Response deleteEmailSubscriptionOwner(
             @Context final HttpServletRequest request,
             @Context final UriInfo uriInfo,
             @ApiParam(hidden = true) @Pac4JProfile final CommonProfile profile,
@@ -305,7 +305,7 @@ public class DeleteSubscriptions {
                     message = "Internal server error",
                     response = ErrorResult.class)
             })
-    public final Response deleteEmailSubscriptionSystem(
+    public Response deleteEmailSubscriptionSystem(
             @Context final HttpServletRequest request,
             @Context final UriInfo uriInfo,
             @ApiParam(hidden = true) @Pac4JProfile final CommonProfile profile,
@@ -402,7 +402,7 @@ public class DeleteSubscriptions {
                     message = "Internal server error",
                     response = ErrorResult.class)
             })
-    public final Response deleteEmailSubscriptionAll(
+    public Response deleteEmailSubscriptionAll(
             @Context final HttpServletRequest request,
             @Context final UriInfo uriInfo,
             @ApiParam(hidden = true) @Pac4JProfile final CommonProfile profile,

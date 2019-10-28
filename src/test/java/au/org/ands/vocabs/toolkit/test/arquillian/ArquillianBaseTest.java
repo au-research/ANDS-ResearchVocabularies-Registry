@@ -253,19 +253,29 @@ public class ArquillianBaseTest extends Arquillian {
         // Directory containing the configset "_default".
         String solrConfResources = RESOURCES_DEPLOY_PATH
                 + "/solr/configsets/_default/conf/";
-        // Copy the config files from _default into the test collection.
+        // Copy the config files from _default into the test collections.
         Files.walk(Paths.get(solrConfResources))
             .filter(Files::isRegularFile)
             // Don't copy solrconfig.xml from the template ...
             .filter(p -> !p.getFileName().
                     toString().equals("solrconfig.xml"))
-            .forEach(p -> war.addAsResource(p.toFile(),
-                    "solr/" + SolrUtils.TEST_COLLECTION
-                    + "/conf/" + p.toString().substring(
-                            solrConfResources.length())));
+            .forEach(p -> {
+                war.addAsResource(p.toFile(),
+                        "solr/" + SolrUtils.TEST_COLLECTION_REGISTRY
+                        + "/conf/" + p.toString().substring(
+                                solrConfResources.length()));
+                war.addAsResource(p.toFile(),
+                        "solr/" + SolrUtils.TEST_COLLECTION_RESOURCES
+                        + "/conf/" + p.toString().substring(
+                                solrConfResources.length()));
+                });
         // ... but use our own custom version.
         war.addAsResource(new File("conf/solrconfig.xml"),
-                "solr/" + SolrUtils.TEST_COLLECTION + "/conf/solrconfig.xml");
+                "solr/" + SolrUtils.TEST_COLLECTION_REGISTRY
+                + "/conf/solrconfig.xml");
+        war.addAsResource(new File("conf/solrconfig.xml"),
+                "solr/" + SolrUtils.TEST_COLLECTION_RESOURCES
+                + "/conf/solrconfig.xml");
         // And copy in the Safari Press query plugin.
         Files.walk(Paths.get("lib"))
             .filter(Files::isRegularFile)

@@ -179,6 +179,13 @@ public final class Analytics {
     /** The name of the vocabulary or related entity ID field
      * inserted into log entries. */
     public static final String ID_FIELD = "id";
+    /** The name of the notification element id field
+     * inserted into log entries. */
+    public static final String NOTIFICATION_ELEMENT_ID_FIELD = "element_id";
+    /** The name of the notification element owner field
+     * inserted into log entries. */
+    public static final String NOTIFICATION_ELEMENT_OWNER_FIELD =
+            "element_owner";
     /** The name of the notification element type field
      * inserted into log entries. */
     public static final String NOTIFICATION_ELEMENT_TYPE_FIELD = "element_type";
@@ -196,21 +203,20 @@ public final class Analytics {
      * field to indicate that this is a subscription for a vocabulary. */
     public static final String NOTIFICATION_ELEMENT_TYPE_VOCABULARY =
             "vocabulary";
-    /** The name of the notification element id field
-     * inserted into log entries. */
-    public static final String NOTIFICATION_ELEMENT_ID_FIELD = "element_id";
-    /** The name of the notification element owner field
-     * inserted into log entries. */
-    public static final String NOTIFICATION_ELEMENT_OWNER_FIELD =
-            "element_owner";
     /** The name of the owner field inserted into log entries. */
     public static final String OWNER_FIELD = "owner";
     /** The name of the search access field inserted into log entries. */
     public static final String SEARCH_ACCESS_FIELD = "access";
+    /** The name of the search collapse/expand field inserted into
+     * log entries. */
+    public static final String SEARCH_COLLAPSE_EXPAND_FIELD = "collapse_expand";
     /** The name of the search format field inserted into log entries. */
     public static final String SEARCH_FORMAT_FIELD = "format";
     /** The name of the search language field inserted into log entries. */
     public static final String SEARCH_LANGUAGE_FIELD = "language";
+    // Possible future work: support faceting by last_updated values.
+//  /** The name of the search last updated field inserted into log entries. */
+//  public static final String SEARCH_LAST_UPDATED_FIELD = "last_updated";
     /** The name of the search licence field inserted into log entries. */
     public static final String SEARCH_LICENCE_FIELD = "licence";
     /** The name of the search p field inserted into log entries. */
@@ -221,6 +227,8 @@ public final class Analytics {
     public static final String SEARCH_PUBLISHER_FIELD = "publisher";
     /** The name of the search q field inserted into log entries. */
     public static final String SEARCH_Q_FIELD = "q";
+    /** The name of the search RDF type field inserted into log entries. */
+    public static final String SEARCH_RDF_TYPE_FIELD = "rdf_type";
     /** The name of the search result Id field inserted into log entries. */
     public static final String SEARCH_RESULT_ID_FIELD = "result_ids";
     /** The name of the search result num_found field
@@ -233,12 +241,15 @@ public final class Analytics {
     /** The name of the search subject labels field inserted into
      * log entries. */
     public static final String SEARCH_SUBJECT_LABELS_FIELD = "subject";
+    /** The name of the search version status field inserted into
+     * log entries. */
+    public static final String SEARCH_VERSION_STATUS_FIELD = "version_status";
     /** The name of the search widgetable field inserted into log entries. */
     public static final String SEARCH_WIDGETABLE_FIELD = "widgetable";
-    /** The name of the success field inserted into log entries. */
-    public static final String SUCCESS_FIELD = "success";
     /** The name of the slug field inserted into log entries. */
     public static final String SLUG_FIELD = "slug";
+    /** The name of the success field inserted into log entries. */
+    public static final String SUCCESS_FIELD = "success";
     /** The name of the subscriber email field inserted into log entries. */
     public static final String SUBSCRIBER_EMAIL_FIELD = "subscriber_email";
     /** The name of the subscriber id field inserted into log entries. */
@@ -298,8 +309,11 @@ public final class Analytics {
     public static final String EVENT_DELETE_RELATED_ENTITY =
             "delete_relatedEntity";
     /** The value of the "message" field to use for log entries
-     * for search. */
+     * for searching the vocabulary metadata. */
     public static final String EVENT_SEARCH = "search";
+    /** The value of the "message" field to use for log entries
+     * for searching the vocabulary resources. */
+    public static final String EVENT_SEARCH_RESOURCES = "search_resources";
 
     /** The value of the "message" field to use for log entries
      * for creating a subscription. */

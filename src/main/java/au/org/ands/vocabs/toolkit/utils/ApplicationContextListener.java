@@ -318,7 +318,7 @@ public class ApplicationContextListener implements ServletContextListener {
                             "au.org.ands.vocabs.registry.solr.SolrUtils");
             if (log4jContextClass != null) {
                 // The class has indeed been loaded already.
-                logger.info("Calling SolrUtils.shutdownSolrClient()");
+                logger.info("Calling SolrUtils.shutdownSolrClients()");
                 // Use SuppressWarnings because we are not
                 // importing the LogManager class, and so can't
                 // provide the generic type parameter.
@@ -328,7 +328,7 @@ public class ApplicationContextListener implements ServletContextListener {
                 // Ditto.
                 @SuppressWarnings("unchecked")
                 Method shutdown = solrUtilsClass.getMethod(
-                        "shutdownSolrClient");
+                        "shutdownSolrClients");
                 shutdown.invoke(null);
             } else {
                 logger.info("SolrUtils not loaded; no shutdown required");

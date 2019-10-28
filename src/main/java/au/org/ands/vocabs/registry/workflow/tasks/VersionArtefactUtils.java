@@ -3,6 +3,7 @@
 package au.org.ands.vocabs.registry.workflow.tasks;
 
 import java.lang.invoke.MethodHandles;
+import java.lang.reflect.InvocationTargetException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.function.Consumer;
@@ -22,6 +23,7 @@ import au.org.ands.vocabs.registry.db.internal.VaCommon;
 import au.org.ands.vocabs.registry.db.internal.VaConceptList;
 import au.org.ands.vocabs.registry.db.internal.VaConceptTree;
 import au.org.ands.vocabs.registry.db.internal.VaHarvestPoolparty;
+import au.org.ands.vocabs.registry.db.internal.VaResourceDocs;
 import au.org.ands.vocabs.registry.enums.VersionArtefactStatus;
 import au.org.ands.vocabs.registry.enums.VersionArtefactType;
 
@@ -95,10 +97,10 @@ public final class VersionArtefactUtils {
 
         T vaT;
         try {
-            vaT = vaClass.newInstance();
-            // errorprone says this would be better:
-//            vaT = vaClass.getConstructor().newInstance();
-        } catch (InstantiationException | IllegalAccessException e) {
+            vaT = vaClass.getConstructor().newInstance();
+        } catch (InstantiationException | IllegalAccessException
+                | IllegalArgumentException | InvocationTargetException
+                | NoSuchMethodException | SecurityException e) {
             logger.error("Error creating instance of class: " + vaClass, e);
             return;
         }
@@ -159,6 +161,24 @@ public final class VersionArtefactUtils {
                 VaHarvestPoolparty.class,
                 VersionArtefactType.HARVEST_POOLPARTY,
                 true,
+                vaT -> path.equals(vaT.getPath()),
+                vaT -> vaT.setPath(path));
+    }
+
+    /** Create a database entity for a system-generated resource docs
+     * version artefact for a version.
+     * Don't duplicate it, if it already exists.
+     * @param taskInfo The TaskInfo providing the context for
+     *      the creation of the version artefact.
+     * @param path The path to put into the database entity.
+     */
+    public static void createResourceDocsVersionArtefact(
+            final TaskInfo taskInfo,
+            final String path) {
+        createVersionArtefact(taskInfo,
+                VaResourceDocs.class,
+                VersionArtefactType.RESOURCE_DOCS,
+                false,
                 vaT -> path.equals(vaT.getPath()),
                 vaT -> vaT.setPath(path));
     }

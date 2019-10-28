@@ -68,6 +68,7 @@
             <xs:enumeration value="conceptList"/>
             <xs:enumeration value="conceptTree"/>
             <xs:enumeration value="harvestPoolparty"/>
+            <xs:enumeration value="resourceDocs"/>
         </xs:restriction>
     </xs:simpleType>
     <xs:simpleType name="related-entity-type">
@@ -386,6 +387,16 @@ http://viaf.org/</xs:documentation>
                     <xs:documentation>Sort in descending order of the timestamp of the last update.</xs:documentation>
                 </xs:annotation>
             </xs:enumeration>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="search-resources-collapse">
+        <xs:annotation>
+            <xs:documentation>Enumerated type of possible collapse options for the resource search results.</xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="none"/>
+            <xs:enumeration value="vocabularyIdIri"/>
+            <xs:enumeration value="iri"/>
         </xs:restriction>
     </xs:simpleType>
 </xs:schema>

@@ -24,6 +24,11 @@ import static au.org.ands.vocabs.registry.solr.FieldConstants.SUBJECT_NOTATIONS;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.SUBJECT_SOURCES;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.TITLE;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.TOP_CONCEPT;
+import static au.org.ands.vocabs.registry.solr.FieldConstants.VERSION_ID;
+import static au.org.ands.vocabs.registry.solr.FieldConstants.VERSION_RELEASE_DATE;
+import static au.org.ands.vocabs.registry.solr.FieldConstants.VERSION_TITLE;
+import static au.org.ands.vocabs.registry.solr.FieldConstants.VOCABULARY_ID;
+import static au.org.ands.vocabs.registry.solr.FieldConstants.VOCABULARY_TITLE;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.WIDGETABLE;
 
 import java.io.File;
@@ -37,18 +42,24 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.BaseHttpSolrClient.RemoteSolrException;
+import org.apache.solr.client.solrj.request.ContentStreamUpdateRequest;
 import org.apache.solr.common.SolrInputDocument;
+import org.apache.solr.common.util.ContentStreamBase;
 import org.jsoup.Jsoup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.ibm.icu.util.ULocale;
 
 import au.org.ands.vocabs.registry.db.converter.JSONSerialization;
@@ -67,6 +78,8 @@ import au.org.ands.vocabs.registry.db.entity.VocabularyRelatedEntity;
 import au.org.ands.vocabs.registry.db.internal.ApFile;
 import au.org.ands.vocabs.registry.db.internal.ApSissvoc;
 import au.org.ands.vocabs.registry.db.internal.VaConceptList;
+import au.org.ands.vocabs.registry.db.internal.VaResourceDocs;
+import au.org.ands.vocabs.registry.db.internal.VersionJson;
 import au.org.ands.vocabs.registry.db.internal.VocabularyJson;
 import au.org.ands.vocabs.registry.db.internal.VocabularyJson.PoolpartyProject;
 import au.org.ands.vocabs.registry.db.internal.VocabularyJson.Subjects;
@@ -86,8 +99,18 @@ public final class EntityIndexer {
     private EntityIndexer() {
     }
 
-    /** Optimized access to the shared SolrClient. */
-    private static final SolrClient SOLR_CLIENT = SolrUtils.getSolrClient();
+    /** Optimized access to the shared SolrClient for the registry collection.
+     */
+    private static final SolrClient SOLR_CLIENT_REGISTRY =
+            SolrUtils.getSolrClientRegistry();
+
+    /** Optimized access to the shared SolrClient for the resources collection.
+     */
+    private static final SolrClient SOLR_CLIENT_RESOURCES =
+            SolrUtils.getSolrClientResources();
+
+    /** The Solr endpoint for sending updates. */
+    private static final String UPDATE_ENDPOINT = "/update";
 
     /** Logger for this class. */
     private static final Logger LOGGER = LoggerFactory.getLogger(
@@ -98,8 +121,12 @@ public final class EntityIndexer {
     // Long term solution should use a vocabulary service (such as ANDS's)
     */
 
-    /** Map of licence keys to a generic description. */
-    private static Map<String, String> licenceGroups = new HashMap<>();
+    /** Map of licence keys to a generic description.
+     * Defined as a {@link HashMap} rather than as a {@link Map},
+     * as the code relies on the ability to pass in the value
+     * {@code null} to the {@link HashMap#get(Object)} method
+     * without getting a {@code NullPointerException}. */
+    private static HashMap<String, String> licenceGroups = new HashMap<>();
 
     static {
         licenceGroups.put("GPL", "Open Licence");
@@ -114,15 +141,24 @@ public final class EntityIndexer {
         licenceGroups.put("NoLicence", "No Licence");
     }
 
+    /** Fallback value to use for licence, if the vocabulary does
+     * not specify a licence, or it specifies a licence value,
+     * but that value is not one of the keys of
+     * {@code licenceGroups}. */
+    private static final String LICENCE_UNKNOWN = "Unknown/Other";
+
     /** Map of access point types to a human-readable description. */
     private static Map<AccessPointType, String> accessPointName =
             new HashMap<>();
 
     static {
         accessPointName.put(AccessPointType.API_SPARQL, "API/SPARQL");
-        accessPointName.put(AccessPointType.FILE, "Direct Download");
-        accessPointName.put(AccessPointType.SESAME_DOWNLOAD,
-                "Repository Download");
+        // No longer distinguish FILE and SESAME_DOWNLOAD access points.
+        // accessPointName.put(AccessPointType.FILE, "Direct Download");
+        accessPointName.put(AccessPointType.FILE, "Download");
+        // accessPointName.put(AccessPointType.SESAME_DOWNLOAD,
+        //         "Repository Download");
+        accessPointName.put(AccessPointType.SESAME_DOWNLOAD, "Download");
         accessPointName.put(AccessPointType.SISSVOC, "Linked Data API");
         accessPointName.put(AccessPointType.WEB_PAGE, "Online");
     }
@@ -151,6 +187,16 @@ public final class EntityIndexer {
         }
     }
 
+    /** Convert a {@link LocalDateTime} to a String, in the format
+     * expected by Solr.
+     * @param timestamp The LocalDateTime value to be converted.
+     * @return The timestamp converted into a String.
+     */
+    public static String localDateTimeToString(final LocalDateTime timestamp) {
+        return timestamp.atZone(ZoneOffset.UTC).
+            format(DateTimeFormatter.ISO_INSTANT);
+    }
+
     /** Add a key/value pair to the Solr document, if the value
      * is non-null and non-empty. The value is specified as a LocalDateTime.
      * @param document The Solr document.
@@ -160,9 +206,7 @@ public final class EntityIndexer {
     private static void addDataToDocument(final SolrInputDocument document,
             final String key, final LocalDateTime value) {
         if (value != null) {
-            document.addField(key,
-                    value.atZone(ZoneOffset.UTC).
-                        format(DateTimeFormatter.ISO_INSTANT));
+            document.addField(key, localDateTimeToString(value));
         }
     }
 
@@ -182,10 +226,8 @@ public final class EntityIndexer {
         // The order of the fields matches:
         // https://intranet.ands.org.au/display/PROJ/
         //         Vocabulary+Solr+documents+and+queries
-        addDataToDocument(document, LAST_UPDATED,
-                vocabulary.getStartDate());
-        addDataToDocument(document, ID,
-                Integer.toString(vocabularyId));
+        addDataToDocument(document, LAST_UPDATED, vocabulary.getStartDate());
+        addDataToDocument(document, ID, Integer.toString(vocabularyId));
         addDataToDocument(document, TITLE, vocabularyData.getTitle());
         addDataToDocument(document, SLUG, vocabulary.getSlug());
         PoolpartyProject ppProject = vocabularyData.getPoolpartyProject();
@@ -195,8 +237,17 @@ public final class EntityIndexer {
         }
         addDataToDocument(document, STATUS,
                 vocabulary.getStatus().toString());
-        addDataToDocument(document, LICENCE,
-                licenceGroups.get(vocabularyData.getLicence()));
+        // Licence values are grouped together into categories.
+        // Map the licence value to its category for indexing.
+        String licence = vocabularyData.getLicence();
+        String licenceGroup = licenceGroups.get(licence);
+        if (licenceGroup != null) {
+            addDataToDocument(document, LICENCE, licenceGroup);
+        } else {
+            // No licence specified, or a non-blank licence,
+            // but one we don't recognize; use the fallback value.
+            addDataToDocument(document, LICENCE, LICENCE_UNKNOWN);
+        }
         addDataToDocument(document, ACRONYM, vocabularyData.getAcronym());
         // Strip HTML tags, and convert HTML elements into their
         // corresponding Unicode characters.
@@ -211,11 +262,9 @@ public final class EntityIndexer {
         }
         // languages
         ArrayList<String> languages = new ArrayList<>();
-        ULocale loc = new ULocale(vocabularyData.getPrimaryLanguage());
-        languages.add(loc.getDisplayName(LANGUAGE_LOCALE));
+        languages.add(resolveLanguage(vocabularyData.getPrimaryLanguage()));
         for (String otherLanguage : vocabularyData.getOtherLanguages()) {
-            loc = new ULocale(otherLanguage);
-            languages.add(loc.getDisplayName(LANGUAGE_LOCALE));
+            languages.add(resolveLanguage(otherLanguage));
         }
         // Use addField() directly, as we know that languages is non-empty.
         document.addField(LANGUAGE, languages);
@@ -388,15 +437,33 @@ public final class EntityIndexer {
         document.addField(WIDGETABLE, widgetable);
     }
 
+    /** Resolve a language tag into its full name.
+     * If the result is the same (except for case), we take that to
+     * mean that the language name is unknown, so we return the original
+     * value: this means a tag such as "English" is left alone.
+     * @param lang The language tag to be resolved.
+     * @return The resolved language name, or lang, if resolution
+     *      fails.
+     */
+    public static String resolveLanguage(final String lang) {
+        ULocale loc = new ULocale(lang);
+        String displayName = loc.getDisplayName(LANGUAGE_LOCALE);
+        if (lang.equalsIgnoreCase(displayName)) {
+            return lang;
+        } else {
+            return displayName;
+        }
+    }
+
     /* Methods for communicating with Solr.
      * Note: for single additions/deletions, there are no explicit commits.
      * We rely on the updateHandler.autoSoftCommit.maxTime setting
-     * made by CreateSchema.
+     * made by CreateSolrSchemaRegistry.
      */
 
     /** Index a current vocabulary in Solr.
      * @param vocabularyId The vocabulary ID of the vocabulary to be
-     *      added to the Solr index.
+     *      added to the Solr indexes.
      * @throws IOException If the Solr API generated an IOException.
      * @throws SolrServerException If the Solr API generated a
      *      SolrServerException.
@@ -414,14 +481,15 @@ public final class EntityIndexer {
         }
         SolrInputDocument document = createSolrDocument(vocabulary);
         try {
-            SOLR_CLIENT.add(document);
+            SOLR_CLIENT_REGISTRY.add(document);
         } catch (IOException | SolrServerException | RemoteSolrException e) {
             LOGGER.error("Exception when adding document to Solr index", e);
             throw e;
         }
+        indexResourceDocsForVocabulary(vocabularyId, vocabulary, document);
     }
 
-    /** Index all current vocabularies of a vocabulary in Solr.
+    /** Index all current vocabularies into Solr.
      * @throws IOException If the Solr API generated an IOException.
      * @throws SolrServerException If the Solr API generated a
      *      SolrServerException.
@@ -433,21 +501,38 @@ public final class EntityIndexer {
         List<Vocabulary> allVocabularies =
                 VocabularyDAO.getAllCurrentVocabulary();
         List<SolrInputDocument> documents = new ArrayList<>();
+        // Populate vocabularyIdList with vocabulary Ids, so we can
+        // invoke indexResourceDocsForVocabulary on each one.
+        List<Integer> vocabularyIdList = new ArrayList<>();
         for (Vocabulary vocabulary : allVocabularies) {
+            vocabularyIdList.add(vocabulary.getVocabularyId());
             documents.add(createSolrDocument(vocabulary));
         }
         try {
+            // First, delete all existing documents.
+            SOLR_CLIENT_REGISTRY.deleteByQuery("*:*");
             // In this case, we do do a commit immediately (by specifying 0
             // as the second parameter).
-            SOLR_CLIENT.add(documents, 0);
+            SOLR_CLIENT_REGISTRY.add(documents, 0);
+            // Clear out the entire resources index here, as there
+            // "might" be deleted vocabularies for which resources
+            // still need to be cleaned out. (Of course, that
+            // "shouldn't happen", but if you're using this method,
+            // you may well be dealing with an exceptional circumstance.)
+            SOLR_CLIENT_RESOURCES.deleteByQuery("*:*");
         } catch (IOException | SolrServerException | RemoteSolrException e) {
-            LOGGER.error("Exception when adding document to Solr index", e);
+            LOGGER.error("Exception when adding documents to Solr index", e);
             throw e;
+        }
+        // Now put all of the resource docs into the resource Solr collection.
+        for (int i = 0; i < vocabularyIdList.size(); i++) {
+            indexResourceDocsForVocabulary(vocabularyIdList.get(i),
+                    allVocabularies.get(i), documents.get(i));
         }
     }
 
-
-    /** Remove the current version of a vocabulary from the Solr index.
+    /** Remove a current vocabulary from the Solr registry index,
+     *      and remove its resource docs from the resources Solr index.
      * @param vocabularyId The vocabulary ID of the vocabulary to be
      *      removed from the Solr index.
      * @throws IOException If the Solr API generated an IOException.
@@ -459,31 +544,188 @@ public final class EntityIndexer {
     public static void unindexVocabulary(final int vocabularyId)
             throws IOException, SolrServerException, RemoteSolrException {
         try {
-            SOLR_CLIENT.deleteById(Integer.toString(vocabularyId));
+            SOLR_CLIENT_REGISTRY.deleteById(Integer.toString(vocabularyId));
+            SOLR_CLIENT_RESOURCES.deleteByQuery("vocabulary_id:"
+                    + vocabularyId);
         } catch (IOException | SolrServerException | RemoteSolrException e) {
-            LOGGER.error("Exception when removing document from Solr index", e);
+            LOGGER.error("Exception when removing documents from Solr indexes",
+                    e);
             throw e;
         }
     }
 
-    /** Remove all documents from the Solr index.
-     * @throws IOException If the Solr API generated an IOException.
-     * @throws SolrServerException If the Solr API generated a
-     *      SolrServerException.
-     * @throws RemoteSolrException If there is a problem communicating with
-     *      Zookeeper.
+    // In testing with a very large number (> 9000) of vocabularies,
+    // creating the Solr documents for all vocabularies can take over
+    // a minute. It used to be that
+    // AdminRestMethods.indexAll() invoked first unindexAllVocabularies()
+    // and then indexAllVocabularies(). That meant that you could be
+    // without an index for over a minute. That would be bad.
+    // So I've copied the call to SOLR_CLIENT_REGISTRY.deleteByQuery() into
+    // indexAllVocabularies(), and (for now) we no longer need this method.
+    // If, in future, we decide to add an AdminRestMethods.unindexAll() method,
+    // uncomment this again.
+//    /** Remove all documents from the Solr index.
+//     * @throws IOException If the Solr API generated an IOException.
+//     * @throws SolrServerException If the Solr API generated a
+//     *      SolrServerException.
+//     * @throws RemoteSolrException If there is a problem communicating with
+//     *      Zookeeper.
+//     */
+//    public static void unindexAllVocabularies()
+//            throws IOException, SolrServerException, RemoteSolrException {
+//        try {
+//            // Delete by matching all documents.
+//            // In this case, we do do a commit immediately (by specifying 0
+//            // as the second parameter).
+//            SOLR_CLIENT_REGISTRY.deleteByQuery("*:*", 0);
+//            SOLR_CLIENT_RESOURCES.deleteByQuery("*:*", 0);
+//        } catch (IOException | SolrServerException | RemoteSolrException e) {
+//            LOGGER.error("Exception when removing all documents "
+//                    + "from Solr index", e);
+//            throw e;
+//        }
+//    }
+
+    /** Add all of the current resource docs for a vocabulary to the resources
+     * Solr collection.
+     * Here, "current" means non-historical, non-draft.
+     * We index all such versions, irrespective of
+     * whether they have version status "current" or "superseded".
+     * Note: the Resource Docs version artefacts contain Solr documents
+     * that don't have values for the fields for vocabulary and version
+     * metadata, e.g., vocabulary title and owner, and version status.
+     * This method fills in all of the missing data before sending it
+     * to Solr for indexing.
+     * @param vocabularyId The vocabulary ID of the vocabulary for which
+     *      resource docs are to be added to the Solr index.
+     * @param vocabulary The current Vocabulary instance of the vocabulary
+     *      for which resource docs are to be added to the Solr index.
+     * @param document The Solr document already constructed from the
+     *      vocabulary metadata, that went into the registry collection.
+     *      Used as a quick way to get some of the vocabulary-level metadata,
+     *      rather than re-computing it.
      */
-    public static void unindexAllVocabularies()
-            throws IOException, SolrServerException, RemoteSolrException {
+    private static void indexResourceDocsForVocabulary(final int vocabularyId,
+            final Vocabulary vocabulary,
+            final SolrInputDocument document) {
+        // Extract the fields that we need to add to each Solr document,
+        // that come from the vocabulary-level metadata.
+        VocabularyJson vocabularyJson =
+                JSONSerialization.deserializeStringAsJson(
+                        vocabulary.getData(), VocabularyJson.class);
+
+        String vocabularyTitle = vocabularyJson.getTitle();
+        String vocabularyIdString = Integer.toString(vocabularyId);
+        String owner = vocabulary.getOwner();
+        String lastUpdated = localDateTimeToString(vocabulary.getStartDate());
+        // Don't re-compute subject labels and publishers, but reuse
+        // the values we already have.
+        @SuppressWarnings("unchecked")
+        ArrayList<String> subjectLabels = (ArrayList<String>)
+                document.getField(SUBJECT_LABELS).getRawValue();
+        @SuppressWarnings("unchecked")
+        ArrayList<String> publishers = (ArrayList<String>)
+                document.getField(PUBLISHER).getRawValue();
+
+        // Get all "current" versions, which here means non-historical,
+        // non-draft. We index all such versions, irrespective of
+        // whether they have version status "current" or "superseded".
+        List<Version> versions =
+                VersionDAO.getCurrentVersionListForVocabulary(vocabularyId);
         try {
-            // Delete by matching all documents.
-            // In this case, we do do a commit immediately (by specifying 0
-            // as the second parameter).
-            SOLR_CLIENT.deleteByQuery("*:*", 0);
-        } catch (IOException | SolrServerException | RemoteSolrException e) {
-            LOGGER.error("Exception when removing all documents "
-                    + "from Solr index", e);
-            throw e;
+            SOLR_CLIENT_RESOURCES.deleteByQuery("vocabulary_id:"
+                    + vocabularyId);
+        } catch (SolrServerException | IOException e) {
+            LOGGER.error("Unable to delete existing resource docs "
+                    + "from Solr collection", e);
+        }
+        ObjectMapper mapper = new ObjectMapper();
+        for (Version version : versions) {
+            // Extract the fields that we need to add to each Solr document,
+            // that come from the version-level metadata.
+            Integer versionId = version.getVersionId();
+            VersionJson versionJson = JSONSerialization.deserializeStringAsJson(
+                    version.getData(), VersionJson.class);
+            String versionTitle = versionJson.getTitle();
+            String versionReleaseDate = version.getReleaseDate();
+            String versionStatus = version.getStatus().toString();
+
+            List<VersionArtefact> resourceDocs = VersionArtefactDAO.
+                    getCurrentVersionArtefactListForVersionByType(
+                            versionId, VersionArtefactType.RESOURCE_DOCS);
+            if (resourceDocs != null && resourceDocs.size() == 1) {
+                String vaData = resourceDocs.get(0).getData();
+                VaResourceDocs vaResourceDocs =
+                        JSONSerialization.deserializeStringAsJson(
+                                vaData, VaResourceDocs.class);
+                File resourceDocsFile = new File(vaResourceDocs.getPath());
+                JsonNode jsonNode = jsonFileToJsonNode(mapper,
+                        resourceDocsFile);
+                if (jsonNode == null) {
+                    LOGGER.error("JSON file parsed as null; skipping");
+                    continue;
+                }
+                // jsonNode is an array of objects. Iterate over it, adding
+                // the basic fields to each object.
+                for (JsonNode node : jsonNode) {
+                    ObjectNode objectNode = (ObjectNode) node;
+                    objectNode.put(VERSION_ID, versionId);
+                    objectNode.put(VERSION_TITLE, versionTitle);
+                    objectNode.put(VERSION_RELEASE_DATE, versionReleaseDate);
+                    objectNode.put(VOCABULARY_ID, vocabularyIdString);
+                    objectNode.put(VOCABULARY_TITLE, vocabularyTitle);
+                    objectNode.put(OWNER, owner);
+                    objectNode.put(LAST_UPDATED, lastUpdated);
+                    objectNode.putPOJO(SUBJECT_LABELS, subjectLabels);
+                    objectNode.putPOJO(PUBLISHER, publishers);
+                    objectNode.put(STATUS, versionStatus);
+                }
+                try {
+                    ContentStreamUpdateRequest request =
+                            new ContentStreamUpdateRequest(UPDATE_ENDPOINT);
+                    ContentStreamBase cs =
+                            new ContentStreamBase.StringStream(
+                                    jsonNodeToString(mapper, jsonNode),
+                                    MediaType.APPLICATION_JSON);
+                    request.addContentStream(cs);
+                    request.process(SOLR_CLIENT_RESOURCES);
+                } catch (IOException | SolrServerException e) {
+                    LOGGER.error("Unable to process update to add resource "
+                            + "docs for vocabulary: " + vocabularyId, e);
+                }
+            }
+        }
+    }
+
+    /** Parse a file containing JSON into a JsonNode.
+     * @param mapper The Jackson ObjectMapper to use.
+     * @param jsonFile The File in JSON format to be converted.
+     * @return The resulting JSON structure, or null, if there was
+     *      an Exception.
+     */
+    private static JsonNode jsonFileToJsonNode(final ObjectMapper mapper,
+            final File jsonFile) {
+        try {
+            return mapper.readTree(jsonFile);
+        } catch (IOException e) {
+            LOGGER.error("Exception in jsonFileToJsonNode", e);
+            return null;
+        }
+    }
+
+    /** Convert a JsonNode into a String representation.
+     * @param mapper The Jackson ObjectMapper to use.
+     * @param jsonNode The JsonNode to be converted to a String.
+     * @return The resulting String, or null, if there was
+     *      an Exception.
+     */
+    private static String jsonNodeToString(final ObjectMapper mapper,
+            final JsonNode jsonNode) {
+        try {
+            return mapper.writeValueAsString(jsonNode);
+        } catch (IOException e) {
+            LOGGER.error("Exception in jsonNodeToString", e);
+            return null;
         }
     }
 

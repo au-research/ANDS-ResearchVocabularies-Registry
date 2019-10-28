@@ -18,7 +18,10 @@ to the .xsd files ....)
   -->
 
   <service>
-    <jsr107:defaults default-template="smallCache">
+    <jsr107:defaults
+        default-template="smallCache"
+        enable-management="true"
+        enable-statistics="true">
     </jsr107:defaults>
   </service>
 

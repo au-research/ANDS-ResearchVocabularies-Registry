@@ -75,7 +75,7 @@ public class GetRelatedEntities {
                     message = "No related entity with that id",
                     response = ErrorResult.class)
             })
-    public final Response getRelatedEntityById(
+    public Response getRelatedEntityById(
             @Context final HttpServletRequest request,
             @Context final UriInfo uriInfo,
             @ApiParam(value = "The ID of the related entity to get.")
@@ -134,7 +134,7 @@ public class GetRelatedEntities {
                     message = "No related entity with that id",
                     response = ErrorResult.class)
             })
-    public final RelatedEntityList getRelatedEntities(
+    public RelatedEntityList getRelatedEntities(
             @Context final HttpServletRequest request,
             @Context final UriInfo uriInfo,
             @ApiParam(value = "The type of the related entities to get.")
@@ -182,7 +182,7 @@ public class GetRelatedEntities {
     @GET
     @ApiOperation(value = "Get all current vocabularies related to a "
             + "related entity, by the related entity's id.")
-    public final ReverseRelatedVocabularyList
+    public ReverseRelatedVocabularyList
     getVocabulariesRelatedToRelatedEntityById(
             @Context final HttpServletRequest request,
             @Context final UriInfo uriInfo,

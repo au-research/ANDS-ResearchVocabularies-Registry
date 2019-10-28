@@ -91,6 +91,7 @@ SISSVoc.specsPath = ${Registry.storagePath}/specs
 
 # Specify that an embedded Solr instance will be used.
 Registry.Solr.collectionURL = test
+Registry.Solr.resources.collectionURL = test
 
 ## PoolParty
 

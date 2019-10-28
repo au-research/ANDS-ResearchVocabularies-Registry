@@ -28,7 +28,7 @@ public class GenerateSlug {
     @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     @GET
     @ApiOperation(value = "Generate a slug.")
-    public final SimpleResult generateSlug(
+    public SimpleResult generateSlug(
             @ApiParam(value = "String from which the slug is generated.",
                 required = true)
             @NotNull(message = "The input string must not be null")
