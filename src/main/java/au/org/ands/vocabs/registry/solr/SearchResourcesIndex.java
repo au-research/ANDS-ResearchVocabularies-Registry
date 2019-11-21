@@ -179,10 +179,10 @@ public final class SearchResourcesIndex {
             +  "}";
 
     /** Setting to collapse results that have the same IRI <i>and</i>
-     * the same vocabulary Id, giving
-     * preference to the result that is the result with
-     * the most recent last_updated value of a current version
-     * as each group's representative. */
+     * the same vocabulary Id. When selecting each group's representative,
+     * give preference to a result that is a current version, but if
+     * there are only superseded versions, choose a result with
+     * the most recent release date value. */
     private static final String COLLAPSE_VOCABULARY_ID_IRI =
             "{!" + CollapsingQParserPlugin.NAME
             + " field=" + VOCABULARY_ID_IRI
@@ -191,7 +191,7 @@ public final class SearchResourcesIndex {
             + "='"
             + STATUS + " asc"
             + ","
-            + LAST_UPDATED + " desc"
+            + VERSION_RELEASE_DATE + " desc"
             + "'"
             +  "}";
 
