@@ -538,6 +538,18 @@ public final class Analytics {
             return;
         }
 
+        if (ipAddress.isLoopbackAddress()) {
+            // We won't get any information for a loopback address.
+            // Substitute the publicly-visible IP address instead.
+            try {
+                ipAddress = InetAddress.getLocalHost();
+            } catch (UnknownHostException e) {
+                logger.error("Unable to get publicly-visible IP "
+                        + "for localhost", e);
+                // Don't return, but keep going with what we already have.
+            }
+        }
+
         CityResponse response;
         try {
             response = geoDbReader.city(ipAddress);
