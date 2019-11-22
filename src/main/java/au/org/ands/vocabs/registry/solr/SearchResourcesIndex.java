@@ -128,15 +128,12 @@ public final class SearchResourcesIndex {
     /** Default number of rows to be returned. */
     private static final int DEFAULT_ROWS = 10;
 
-    /** Number of rows to use, if the filters include a negative
-     * value for rows. The name "ridiculously large value" comes
-     * from the Solr documentation for the rows parameter at
-     * <a
-     *  href="https://wiki.apache.org/solr/CommonQueryParameters">https://wiki.apache.org/solr/CommonQueryParameters</a>
-     * (archived at <a
-     *  href="https://web.archive.org/web/20190405125211/https://wiki.apache.org/solr/CommonQueryParameters">https://web.archive.org/web/20190405125211/https://wiki.apache.org/solr/CommonQueryParameters</a>).
+    /** Maximum number of rows that can be requested, and the
+     * number of rows requested if the filters include a negative
+     * value for the "pp" filter. Made public so this value can
+     * be used in automated tests.
      */
-    private static final int RIDICULOUSLY_LARGE_VALUE = 10000000;
+    public static final int MAX_ROWS = 500;
 
     /** Value to use for "hl.maxAnalyzedChars". */
     private static final String HIGHLIGHT_MAX_CHARS = "10000000";
@@ -400,11 +397,11 @@ public final class SearchResourcesIndex {
                             + "be specified as either an integer or a "
                             + "string");
                 }
-                if (rows < 0) {
-                    /* If a negative value specified, the caller really
-                     * wants "all" rows. Unfortunately, Solr does not
-                     * directly support that. See the Solr doc. */
-                    rows = RIDICULOUSLY_LARGE_VALUE;
+                // We have a limit on the number of rows that the client
+                // may request. That limit (whatever it is) may also be
+                // explicitly requested by passing in a negative value.
+                if (rows < 0 || rows > MAX_ROWS) {
+                    rows = MAX_ROWS;
                 }
             }
 

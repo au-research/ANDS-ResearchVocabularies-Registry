@@ -29,6 +29,7 @@ import au.org.ands.vocabs.registry.db.entity.ResourceOwnerHost;
 import au.org.ands.vocabs.registry.enums.VersionStatus;
 import au.org.ands.vocabs.registry.solr.EntityIndexer;
 import au.org.ands.vocabs.registry.solr.SearchRegistryIndex;
+import au.org.ands.vocabs.registry.solr.SearchResourcesIndex;
 import au.org.ands.vocabs.registry.solr.SolrUtils;
 import au.org.ands.vocabs.toolkit.db.TaskUtils;
 
@@ -172,6 +173,69 @@ public class RegistryTests extends ArquillianBaseTest {
         Assert.assertEquals(doc.get("slug").asText(), "rifcs", "slug");
         // And so on, for the rest of the fields.
 
+    }
+
+    /** Tests of interpreting the "pp" parameter to the resource search,
+     * in particular, when the maximum number of rows is requested.
+     * (Jira RVA-5)
+     * @throws DatabaseUnitException If a problem with DbUnit.
+     * @throws HibernateException If a problem getting the underlying
+     *          JDBC connection.
+     * @throws IOException If a problem getting test data for DbUnit,
+     *          or reading JSON from the correct and test output files.
+     * @throws SQLException If DbUnit has a problem performing
+     *           performing JDBC operations.
+     * @throws SolrServerException If an error during Solr indexing.
+     */
+    @Test
+    public final void testSolrResourceSearchRows()
+            throws HibernateException, DatabaseUnitException,
+            IOException, SQLException, SolrServerException {
+        ArquillianTestUtils.clearDatabase(REGISTRY);
+        ArquillianTestUtils.loadDbUnitTestFile(REGISTRY,
+                CLASS_NAME_PREFIX + "testSolrResourceSearchRows");
+        EntityIndexer.indexAllVocabularies();
+        // Explicit commit is required so that we can do a search
+        // immediately.
+        SolrUtils.getSolrClientRegistry().commit();
+
+        // pp: -1 -> MAX_ROWS
+        List<Object> filtersAndResultsExtracted = new ArrayList<>();
+        String searchResults = SearchResourcesIndex.query(
+                "{\"pp\":-1}",
+                filtersAndResultsExtracted, false);
+        logger.info("Result: " + searchResults);
+        JsonNode resultsJson = TaskUtils.jsonStringToTree(searchResults);
+        JsonNode responseHeader = resultsJson.get("responseHeader");
+        JsonNode params = responseHeader.get("params");
+        Assert.assertEquals(params.get("rows").asInt(),
+                SearchResourcesIndex.MAX_ROWS, "rows requested: -1");
+
+        // pp: 0 -> 0
+        filtersAndResultsExtracted = new ArrayList<>();
+        searchResults = SearchResourcesIndex.query(
+                "{\"pp\":0}",
+                filtersAndResultsExtracted, false);
+        logger.info("Result: " + searchResults);
+        resultsJson = TaskUtils.jsonStringToTree(searchResults);
+        responseHeader = resultsJson.get("responseHeader");
+        params = responseHeader.get("params");
+        Assert.assertEquals(params.get("rows").asInt(),
+                0, "rows requested: 0");
+
+        // pp: MAX_ROWS + 1 -> MAX_ROWS
+        filtersAndResultsExtracted = new ArrayList<>();
+        searchResults = SearchResourcesIndex.query(
+                "{\"pp\":"
+                + SearchResourcesIndex.MAX_ROWS + 1
+                + "}",
+                filtersAndResultsExtracted, false);
+        logger.info("Result: " + searchResults);
+        resultsJson = TaskUtils.jsonStringToTree(searchResults);
+        responseHeader = resultsJson.get("responseHeader");
+        params = responseHeader.get("params");
+        Assert.assertEquals(params.get("rows").asInt(),
+                SearchResourcesIndex.MAX_ROWS, "rows requested: MAX_ROWS + 1");
     }
 
     /** Test of date/time conversion at the time of the
