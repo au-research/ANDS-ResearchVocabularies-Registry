@@ -245,14 +245,12 @@ public class CollectEvents {
                 ownerFullNames.put(ownerId, roles.get(0).getFullName());
             } else {
                 // Oops! Fall back to the short name.
-                logger.error("Didn't find role in the roles database: "
+                logger.warn("Didn't find role in the roles database: "
                         + "role Id = " + owner);
                 ownerFullNames.put(ownerId, owner);
             }
         }
         vocabularySet.add(vocabularyId);
     }
-
-
 
 }
