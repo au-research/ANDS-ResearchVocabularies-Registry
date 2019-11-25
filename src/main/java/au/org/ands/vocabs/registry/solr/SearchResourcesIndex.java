@@ -404,6 +404,8 @@ public final class SearchResourcesIndex {
                     rows = MAX_ROWS;
                 }
             }
+            // Can't set the rows search param at this point; do it after the
+            // end of the surrounding conditional statement.
 
             solrQuery.set(DisMaxParams.ALTQ, "*:*");
 
@@ -440,6 +442,8 @@ public final class SearchResourcesIndex {
                                 + "string");
                     }
                     if (page > 1) {
+                        // Because we have special treatment for the "pp"
+                        // filter above, we can use the value of rows here.
                         int start = rows * (page - 1);
                         solrQuery.setStart(start);
                     }
