@@ -540,6 +540,11 @@
         <fileset dir="${conf}" />
         <globmapper from="*" to="WEB-INF/classes/*" />
       </mappedresources>
+      <!-- Include Hibernate Validator properties. -->
+      <mappedresources>
+        <fileset dir="src/main/java/META-INF" />
+        <globmapper from="*" to="WEB-INF/classes/META-INF/*" />
+      </mappedresources>
     </war>
   </target>
 
