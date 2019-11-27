@@ -683,6 +683,7 @@ public final class Analytics {
             useREMap = true;
             break;
         case EVENT_SEARCH:
+        case EVENT_SEARCH_RESOURCES:
             useSearchMaps = true;
             break;
         case EVENT_GET_SUBSCRIPTION:
@@ -739,6 +740,7 @@ public final class Analytics {
                     }
                     break;
                 case SEARCH_ACCESS_FIELD:
+                case SEARCH_COLLAPSE_EXPAND_FIELD:
                 case SEARCH_FORMAT_FIELD:
                 case SEARCH_LANGUAGE_FIELD:
                 case SEARCH_LICENCE_FIELD:
@@ -746,8 +748,10 @@ public final class Analytics {
                 case SEARCH_PP_FIELD:
                 case SEARCH_PUBLISHER_FIELD:
                 case SEARCH_Q_FIELD:
+                case SEARCH_RDF_TYPE_FIELD:
                 case SEARCH_SORT_ORDER_FIELD:
                 case SEARCH_SUBJECT_LABELS_FIELD:
+                case SEARCH_VERSION_STATUS_FIELD:
                 case SEARCH_WIDGETABLE_FIELD:
                     if (useSearchMaps) {
                         searchFiltersMap.put(key, otherFields[i + 1]);
