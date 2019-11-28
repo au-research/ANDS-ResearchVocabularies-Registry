@@ -234,7 +234,7 @@ public final class Analytics {
     /** The name of the search result num_found field
      * inserted into log entries. */
     public static final String SEARCH_RESULT_NUM_FOUND_FIELD = "num_found";
-    /** The name of the search result Id field inserted into log entries. */
+    /** The name of the search result owner field inserted into log entries. */
     public static final String SEARCH_RESULT_OWNER_FIELD = "result_owners";
     /** The name of the search sort field inserted into log entries. */
     public static final String SEARCH_SORT_ORDER_FIELD = "sort";
