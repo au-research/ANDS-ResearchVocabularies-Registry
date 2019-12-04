@@ -79,6 +79,7 @@ import au.org.ands.vocabs.registry.db.converter.JSONSerialization;
 import au.org.ands.vocabs.registry.enums.SearchResourcesCollapse;
 import au.org.ands.vocabs.registry.enums.SearchSortOrder;
 import au.org.ands.vocabs.registry.log.Analytics;
+import net.logstash.logback.encoder.org.apache.commons.lang.BooleanUtils;
 
 /** Methods for Solr searching of the resources collection. */
 public final class SearchResourcesIndex {
@@ -329,6 +330,21 @@ public final class SearchResourcesIndex {
                     + "not valid JSON");
         }
 
+        // Does the client only want a count of the number of results?
+        // The Portal uses this functionality to get a count for the
+        // tab that is _not_ currently active.
+        Object countOnlyObject = filters.get("count_only");
+        boolean countOnly = false;
+        if (countOnlyObject != null) {
+            if (countOnlyObject instanceof Boolean) {
+                countOnly = BooleanUtils.isTrue((Boolean) countOnlyObject);
+            } else {
+                countOnly = BooleanUtils.toBoolean(countOnlyObject.toString());
+            }
+        }
+        filtersAndResultsExtracted.add(Analytics.SEARCH_COUNT_ONLY_FIELD);
+        filtersAndResultsExtracted.add(countOnly);
+
         SolrQuery solrQuery = new SolrQuery();
 
         // We specify two sets of facets in two different ways in
@@ -355,13 +371,16 @@ public final class SearchResourcesIndex {
         Map<String, TermsFacetMap> jsonFacets = new HashMap<>();
         prepareJsonFacets(jsonFacets);
 
-        // Always add these facet fields. These are the "traditional"
+        // Always add these facet fields ... as long as we are not
+        // in countOnly mode. These are the "traditional"
         // Solr facets mentioned above, that give facet counts that are
         // the number of search results that match each facet value.
-        solrQuery.addFacetField(facets.toArray(new String[0]));
-        solrQuery.setFacetSort(FacetParams.FACET_SORT_INDEX);
-        solrQuery.setFacetMinCount(1);
-        solrQuery.setFacetLimit(-1);
+        if (!countOnly) {
+            solrQuery.addFacetField(facets.toArray(new String[0]));
+            solrQuery.setFacetSort(FacetParams.FACET_SORT_INDEX);
+            solrQuery.setFacetMinCount(1);
+            solrQuery.setFacetLimit(-1);
+        }
 
         // Possible future work: support year ranges for last_updated facet.
 //        solrQuery.set("facet.range", LAST_UPDATED);
@@ -411,7 +430,13 @@ public final class SearchResourcesIndex {
             }
         }
         // We can now set the rows param.
-        solrQuery.setRows(rows);
+        if (countOnly) {
+            // We don't want any results; ignore any user-specified
+            // or default value.
+            solrQuery.setRows(0);
+        } else {
+            solrQuery.setRows(rows);
+        }
         // Always log the value of rows that we use, whether or not
         // the user provided a value for it.
         filtersAndResultsExtracted.add(Analytics.SEARCH_PP_FIELD);
@@ -623,7 +648,8 @@ public final class SearchResourcesIndex {
         }
         solrQuery.setFields(fieldsList.toArray(new String[0]));
 
-        // Always apply highlighting.
+        // Always apply highlighting ... as long as we are not in
+        // countOnly mode.
         // addHighlightField() does solrQuery.setHighlight(true) for us.
         // Rather than using a wildcard:
         //   solrQuery.addHighlightField("*");
@@ -633,35 +659,37 @@ public final class SearchResourcesIndex {
         // All of these fields have stored="true".
         // All of this means that _if_ there is a query term,
         // _every_ search result also has highlighting.
+        if (!countOnly) {
 //        solrQuery.addHighlightField(IRI);
 //        solrQuery.addHighlightField(PUBLISHER);
 //        solrQuery.addHighlightField(RDF_TYPE);
 //        solrQuery.addHighlightField(SUBJECT_LABELS);
-        solrQuery.addHighlightField(TOP_CONCEPT);
-        solrQuery.addHighlightField(TOP_CONCEPT_PHRASE);
-        addMultilingualHighlightFields(solrQuery, languages);
-        // Use the "unified" highlight method, as it's significantly
-        // faster than the "original" method.
-        solrQuery.setParam(HighlightParams.METHOD,
-                HighlightMethod.UNIFIED.getMethodName());
-        // By default, highlighting stops after 51200 characters
-        // of content. To get highlighting of all concept data,
-        // need to say explicitly to keep looking.
-        solrQuery.setParam(HighlightParams.MAX_CHARS, HIGHLIGHT_MAX_CHARS);
-        // With the "unified" highlight method (but not with the "original"
-        // highlight method!), it seems we need
-        // to set hl.requireFieldMatch=true to avoid some cases
-        // of missing highlighting: e.g., where the
-        // query is abc AND def, but no single field has _both_ terms.
-        // See mailing list thread at:
-        // http://mail-archives.apache.org/mod_mbox/lucene-solr-user/
-        //        201907.mbox/%3cB5D715AC-C028-4081-BA7B-CFDE27CD6B0D@
-        //        ardc.edu.au%3e
-        solrQuery.setParam(HighlightParams.FIELD_MATCH, true);
-        // Put markers around the highlighted content.
-        solrQuery.setHighlightSimplePre(HIGHLIGHT_PRE);
-        solrQuery.setHighlightSimplePost(HIGHLIGHT_POST);
-        solrQuery.setHighlightSnippets(2);
+            solrQuery.addHighlightField(TOP_CONCEPT);
+            solrQuery.addHighlightField(TOP_CONCEPT_PHRASE);
+            addMultilingualHighlightFields(solrQuery, languages);
+            // Use the "unified" highlight method, as it's significantly
+            // faster than the "original" method.
+            solrQuery.setParam(HighlightParams.METHOD,
+                    HighlightMethod.UNIFIED.getMethodName());
+            // By default, highlighting stops after 51200 characters
+            // of content. To get highlighting of all concept data,
+            // need to say explicitly to keep looking.
+            solrQuery.setParam(HighlightParams.MAX_CHARS, HIGHLIGHT_MAX_CHARS);
+            // With the "unified" highlight method (but not with the "original"
+            // highlight method!), it seems we need
+            // to set hl.requireFieldMatch=true to avoid some cases
+            // of missing highlighting: e.g., where the
+            // query is abc AND def, but no single field has _both_ terms.
+            // See mailing list thread at:
+            // http://mail-archives.apache.org/mod_mbox/lucene-solr-user/
+            //        201907.mbox/%3cB5D715AC-C028-4081-BA7B-CFDE27CD6B0D@
+            //        ardc.edu.au%3e
+            solrQuery.setParam(HighlightParams.FIELD_MATCH, true);
+            // Put markers around the highlighted content.
+            solrQuery.setHighlightSimplePre(HIGHLIGHT_PRE);
+            solrQuery.setHighlightSimplePost(HIGHLIGHT_POST);
+            solrQuery.setHighlightSnippets(2);
+        }
 
         // If there was no query specified, get all documents,
         // and sort by title_sort.
@@ -726,31 +754,35 @@ public final class SearchResourcesIndex {
         case IRI:
             // Collapse/expand settings
             solrQuery.addFilterQuery(COLLAPSE_IRI);
-            solrQuery.addField(COLLAPSE_ID + ":" + IRI);
-            solrQuery.set(ExpandParams.EXPAND, true);
-            // We now expand the expansion, so as to get _all_ instances
-            // of this IRI, not just ones that match the top-level
-            // query term and filters. We sort by vocabulary_id
-            // in order to _group_ results with the same vocabulary_id
-            // together.
-            solrQuery.set(ExpandParams.EXPAND_Q, "*:*");
-            solrQuery.set(ExpandParams.EXPAND_FQ, "*:*");
-            solrQuery.set(ExpandParams.EXPAND_SORT, EXPAND_SORT_IRI);
-            solrQuery.set(ExpandParams.EXPAND_ROWS, EXPAND_ROWS);
+            if (!countOnly) {
+                solrQuery.addField(COLLAPSE_ID + ":" + IRI);
+                solrQuery.set(ExpandParams.EXPAND, true);
+                // We now expand the expansion, so as to get _all_ instances
+                // of this IRI, not just ones that match the top-level
+                // query term and filters. We sort by vocabulary_id
+                // in order to _group_ results with the same vocabulary_id
+                // together.
+                solrQuery.set(ExpandParams.EXPAND_Q, "*:*");
+                solrQuery.set(ExpandParams.EXPAND_FQ, "*:*");
+                solrQuery.set(ExpandParams.EXPAND_SORT, EXPAND_SORT_IRI);
+                solrQuery.set(ExpandParams.EXPAND_ROWS, EXPAND_ROWS);
+            }
             break;
         case VOCABULARY_ID_IRI:
             // Collapse/expand settings
             solrQuery.addFilterQuery(COLLAPSE_VOCABULARY_ID_IRI);
-            solrQuery.addField(COLLAPSE_ID + ":" + VOCABULARY_ID_IRI);
-            solrQuery.set(ExpandParams.EXPAND, true);
-            // We now expand the expansion, so as to get _all_ instances
-            // of this IRI, not just ones that match the top-level
-            // query term and filters.
-            solrQuery.set(ExpandParams.EXPAND_Q, "*:*");
-            solrQuery.set(ExpandParams.EXPAND_FQ, "*:*");
-            solrQuery.set(ExpandParams.EXPAND_SORT,
-                    EXPAND_SORT_VOCABULARY_ID_IRI);
-            solrQuery.set(ExpandParams.EXPAND_ROWS, EXPAND_ROWS);
+            if (!countOnly) {
+                solrQuery.addField(COLLAPSE_ID + ":" + VOCABULARY_ID_IRI);
+                solrQuery.set(ExpandParams.EXPAND, true);
+                // We now expand the expansion, so as to get _all_ instances
+                // of this IRI, not just ones that match the top-level
+                // query term and filters.
+                solrQuery.set(ExpandParams.EXPAND_Q, "*:*");
+                solrQuery.set(ExpandParams.EXPAND_FQ, "*:*");
+                solrQuery.set(ExpandParams.EXPAND_SORT,
+                        EXPAND_SORT_VOCABULARY_ID_IRI);
+                solrQuery.set(ExpandParams.EXPAND_ROWS, EXPAND_ROWS);
+            }
             break;
         default:
             // Oops!
@@ -762,7 +794,7 @@ public final class SearchResourcesIndex {
         filtersAndResultsExtracted.add(collapseExpand.value());
 
         trimSolrFacets(jsonFacets, facetsActive);
-        if (!jsonFacets.isEmpty()) {
+        if (!countOnly && !jsonFacets.isEmpty()) {
             solrQuery.add("json.facet", Utils.toJSONString(jsonFacets));
         }
 

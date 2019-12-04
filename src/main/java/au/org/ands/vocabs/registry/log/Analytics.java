@@ -210,6 +210,9 @@ public final class Analytics {
     /** The name of the search collapse/expand field inserted into
      * log entries. */
     public static final String SEARCH_COLLAPSE_EXPAND_FIELD = "collapse_expand";
+    /** The name of the search count_only field inserted into
+     * log entries. */
+    public static final String SEARCH_COUNT_ONLY_FIELD = "count_only";
     /** The name of the search result expanded Id field inserted into
      * log entries. */
     public static final String SEARCH_EXPANDED_RESULT_ID_FIELD =
@@ -749,6 +752,7 @@ public final class Analytics {
                     break;
                 case SEARCH_ACCESS_FIELD:
                 case SEARCH_COLLAPSE_EXPAND_FIELD:
+                case SEARCH_COUNT_ONLY_FIELD:
                 case SEARCH_FORMAT_FIELD:
                 case SEARCH_LANGUAGE_FIELD:
                 case SEARCH_LICENCE_FIELD:

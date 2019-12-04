@@ -195,6 +195,21 @@ public final class SearchRegistryIndex {
                     + "not valid JSON");
         }
 
+        // Does the client only want a count of the number of results?
+        // The Portal uses this functionality to get a count for the
+        // tab that is _not_ currently active.
+        Object countOnlyObject = filters.get("count_only");
+        boolean countOnly = false;
+        if (countOnlyObject != null) {
+            if (countOnlyObject instanceof Boolean) {
+                countOnly = BooleanUtils.isTrue((Boolean) countOnlyObject);
+            } else {
+                countOnly = BooleanUtils.toBoolean(countOnlyObject.toString());
+            }
+        }
+        filtersAndResultsExtracted.add(Analytics.SEARCH_COUNT_ONLY_FIELD);
+        filtersAndResultsExtracted.add(countOnly);
+
         SolrQuery solrQuery = new SolrQuery();
 
         // We specify two sets of facets in two different ways in
@@ -221,13 +236,16 @@ public final class SearchRegistryIndex {
         Map<String, TermsFacetMap> jsonFacets = new HashMap<>();
         prepareJsonFacets(jsonFacets);
 
-        // Always add these facet fields. These are the "traditional"
+        // Always add these facet fields ... as long as we are not
+        // in countOnly mode. These are the "traditional"
         // Solr facets mentioned above, that give facet counts that are
         // the number of search results that match each facet value.
-        solrQuery.addFacetField(facets.toArray(new String[0]));
-        solrQuery.setFacetSort(FacetParams.FACET_SORT_INDEX);
-        solrQuery.setFacetMinCount(1);
-        solrQuery.setFacetLimit(-1);
+        if (!countOnly) {
+            solrQuery.addFacetField(facets.toArray(new String[0]));
+            solrQuery.setFacetSort(FacetParams.FACET_SORT_INDEX);
+            solrQuery.setFacetMinCount(1);
+            solrQuery.setFacetLimit(-1);
+        }
 
         // Keep track if we have seen a query term (i.e., the "q" parameter).
         boolean queryIsSet = false;
@@ -238,7 +256,8 @@ public final class SearchRegistryIndex {
         // Keep track of any search sort order specified.
         SearchSortOrder searchSortOrder = null;
 
-        // Always apply highlighting.
+        // Always apply highlighting  ... as long as we are not in
+        // countOnly mode.
         // addHighlightField() does solrQuery.setHighlight(true) for us.
         // Rather than using a wildcard:
         //   solrQuery.addHighlightField("*");
@@ -248,40 +267,42 @@ public final class SearchRegistryIndex {
         // All of these fields have stored="true".
         // All of this means that _if_ there is a query term,
         // _every_ search result also has highlighting.
-        solrQuery.addHighlightField(TITLE_SEARCH);
-        solrQuery.addHighlightField(SUBJECT_SEARCH);
-        solrQuery.addHighlightField(DESCRIPTION);
-        solrQuery.addHighlightField(NOTE);
-        solrQuery.addHighlightField(CONCEPT_SEARCH);
-        solrQuery.addHighlightField(PUBLISHER_SEARCH);
-        solrQuery.addHighlightField(TITLE_PHRASE);
-        solrQuery.addHighlightField(SUBJECT_PHRASE);
-        solrQuery.addHighlightField(DESCRIPTION_PHRASE);
-        solrQuery.addHighlightField(NOTE_PHRASE);
-        solrQuery.addHighlightField(CONCEPT_PHRASE);
-        solrQuery.addHighlightField(PUBLISHER_PHRASE);
-        // Use the "unified" highlight method, as it's significantly
-        // faster than the "original" method.
-        solrQuery.setParam(HighlightParams.METHOD,
-                HighlightMethod.UNIFIED.getMethodName());
-        // By default, highlighting stops after 51200 characters
-        // of content. To get highlighting of all concept data,
-        // need to say explicitly to keep looking.
-        solrQuery.setParam(HighlightParams.MAX_CHARS, HIGHLIGHT_MAX_CHARS);
-        // With the "unified" highlight method (but not with the "original"
-        // highlight method!), it seems we need
-        // to set hl.requireFieldMatch=true to avoid some cases
-        // of missing highlighting: e.g., where the
-        // query is abc AND def, but no single field has _both_ terms.
-        // See mailing list thread at:
-        // http://mail-archives.apache.org/mod_mbox/lucene-solr-user/
-        //        201907.mbox/%3cB5D715AC-C028-4081-BA7B-CFDE27CD6B0D@
-        //        ardc.edu.au%3e
-        solrQuery.setParam(HighlightParams.FIELD_MATCH, true);
-        // Put markers around the highlighted content.
-        solrQuery.setHighlightSimplePre(HIGHLIGHT_PRE);
-        solrQuery.setHighlightSimplePost(HIGHLIGHT_POST);
-        solrQuery.setHighlightSnippets(2);
+        if (!countOnly) {
+            solrQuery.addHighlightField(TITLE_SEARCH);
+            solrQuery.addHighlightField(SUBJECT_SEARCH);
+            solrQuery.addHighlightField(DESCRIPTION);
+            solrQuery.addHighlightField(NOTE);
+            solrQuery.addHighlightField(CONCEPT_SEARCH);
+            solrQuery.addHighlightField(PUBLISHER_SEARCH);
+            solrQuery.addHighlightField(TITLE_PHRASE);
+            solrQuery.addHighlightField(SUBJECT_PHRASE);
+            solrQuery.addHighlightField(DESCRIPTION_PHRASE);
+            solrQuery.addHighlightField(NOTE_PHRASE);
+            solrQuery.addHighlightField(CONCEPT_PHRASE);
+            solrQuery.addHighlightField(PUBLISHER_PHRASE);
+            // Use the "unified" highlight method, as it's significantly
+            // faster than the "original" method.
+            solrQuery.setParam(HighlightParams.METHOD,
+                    HighlightMethod.UNIFIED.getMethodName());
+            // By default, highlighting stops after 51200 characters
+            // of content. To get highlighting of all concept data,
+            // need to say explicitly to keep looking.
+            solrQuery.setParam(HighlightParams.MAX_CHARS, HIGHLIGHT_MAX_CHARS);
+            // With the "unified" highlight method (but not with the "original"
+            // highlight method!), it seems we need
+            // to set hl.requireFieldMatch=true to avoid some cases
+            // of missing highlighting: e.g., where the
+            // query is abc AND def, but no single field has _both_ terms.
+            // See mailing list thread at:
+            // http://mail-archives.apache.org/mod_mbox/lucene-solr-user/
+            //        201907.mbox/%3cB5D715AC-C028-4081-BA7B-CFDE27CD6B0D@
+            //        ardc.edu.au%3e
+            solrQuery.setParam(HighlightParams.FIELD_MATCH, true);
+            // Put markers around the highlighted content.
+            solrQuery.setHighlightSimplePre(HIGHLIGHT_PRE);
+            solrQuery.setHighlightSimplePost(HIGHLIGHT_POST);
+            solrQuery.setHighlightSnippets(2);
+        }
         solrQuery.set(QueryParsing.DEFTYPE, QUERY_PARSER);
         // Check for a "pp" setting, now, as we might need it later
         // if we find a "p" filter.
@@ -305,7 +326,13 @@ public final class SearchRegistryIndex {
             }
         }
         // We can now set the rows param.
-        solrQuery.setRows(rows);
+        if (countOnly) {
+            // We don't want any results; ignore any user-specified
+            // or default value.
+            solrQuery.setRows(0);
+        } else {
+            solrQuery.setRows(rows);
+        }
         // Always log the value of rows that we use, whether or not
         // the user provided a value for it.
         filtersAndResultsExtracted.add(Analytics.SEARCH_PP_FIELD);
@@ -498,7 +525,7 @@ public final class SearchRegistryIndex {
         filtersAndResultsExtracted.add(searchSortOrder.value());
 
         trimSolrFacets(jsonFacets, facetsActive);
-        if (!jsonFacets.isEmpty()) {
+        if (!countOnly && !jsonFacets.isEmpty()) {
             solrQuery.add("json.facet", Utils.toJSONString(jsonFacets));
         }
 
