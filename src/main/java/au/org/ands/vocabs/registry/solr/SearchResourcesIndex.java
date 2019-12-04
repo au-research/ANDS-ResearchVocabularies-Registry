@@ -785,15 +785,14 @@ public final class SearchResourcesIndex {
             if (logResults) {
                 SolrDocumentList solrDocumentList =
                         responseQuery.getResults();
-                List<Integer> resultIds = new ArrayList<>();
                 // Note the difference between resultIds/resultOwners
                 // and expandedResultIds/expandedResultOwners:
                 // The former are _lists_, they will always have the same
                 // length, and the values of the two lists match up ...
+                List<String> resultIds = new ArrayList<>();
                 List<String> resultOwners = new ArrayList<>();
                 for (SolrDocument sd : solrDocumentList) {
-                    resultIds.add(Integer.valueOf(
-                            (String) sd.getFieldValue(VOCABULARY_ID)));
+                    resultIds.add((String) sd.getFieldValue(ID));
                     resultOwners.add((String) sd.getFieldValue(OWNER));
                 }
                 LOGGER.debug("resultIds: " + resultIds);
