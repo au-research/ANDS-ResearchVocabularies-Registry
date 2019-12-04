@@ -786,6 +786,10 @@ public final class SearchResourcesIndex {
                 SolrDocumentList solrDocumentList =
                         responseQuery.getResults();
                 List<Integer> resultIds = new ArrayList<>();
+                // Note the difference between resultIds/resultOwners
+                // and expandedResultIds/expandedResultOwners:
+                // The former are _lists_, they will always have the same
+                // length, and the values of the two lists match up ...
                 List<String> resultOwners = new ArrayList<>();
                 for (SolrDocument sd : solrDocumentList) {
                     resultIds.add(Integer.valueOf(
@@ -803,6 +807,29 @@ public final class SearchResourcesIndex {
                 filtersAndResultsExtracted.add(
                         Analytics.SEARCH_RESULT_NUM_FOUND_FIELD);
                 filtersAndResultsExtracted.add(solrDocumentList.getNumFound());
+                // ... whereas, these are _sets_, and the two sets may well
+                // have different cardinalities, and there's no way to
+                // match up the values of the two sets.
+                Set<String> expandedResultIds = new HashSet<>();
+                Set<String> expandedResultOwners = new HashSet<>();
+                Map<String, SolrDocumentList> expandedResults =
+                        responseQuery.getExpandedResults();
+                if (expandedResults != null) {
+                    for (SolrDocumentList sdl : expandedResults.values()) {
+                        for (SolrDocument sd : sdl) {
+                            expandedResultIds.add((String)
+                                    sd.getFieldValue(ID));
+                            expandedResultOwners.add((String)
+                                    sd.getFieldValue(OWNER));
+                        }
+                    }
+                }
+                filtersAndResultsExtracted.add(
+                        Analytics.SEARCH_EXPANDED_RESULT_ID_FIELD);
+                filtersAndResultsExtracted.add(expandedResultIds);
+                filtersAndResultsExtracted.add(
+                        Analytics.SEARCH_EXPANDED_RESULT_OWNER_FIELD);
+                filtersAndResultsExtracted.add(expandedResultOwners);
             }
 
             StringWriter stringWriter = new StringWriter();

@@ -210,6 +210,14 @@ public final class Analytics {
     /** The name of the search collapse/expand field inserted into
      * log entries. */
     public static final String SEARCH_COLLAPSE_EXPAND_FIELD = "collapse_expand";
+    /** The name of the search result expanded Id field inserted into
+     * log entries. */
+    public static final String SEARCH_EXPANDED_RESULT_ID_FIELD =
+            "expanded_result_ids";
+    /** The name of the search result expanded owner field inserted into
+     * log entries. */
+    public static final String SEARCH_EXPANDED_RESULT_OWNER_FIELD =
+            "expanded_result_owners";
     /** The name of the search format field inserted into log entries. */
     public static final String SEARCH_FORMAT_FIELD = "format";
     /** The name of the search language field inserted into log entries. */
@@ -758,6 +766,8 @@ public final class Analytics {
                         moved = true;
                     }
                     break;
+                case SEARCH_EXPANDED_RESULT_ID_FIELD:
+                case SEARCH_EXPANDED_RESULT_OWNER_FIELD:
                 case SEARCH_RESULT_ID_FIELD:
                 case SEARCH_RESULT_NUM_FOUND_FIELD:
                 case SEARCH_RESULT_OWNER_FIELD:
