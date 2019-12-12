@@ -548,11 +548,10 @@ public final class SearchRegistryIndex {
             if (logResults) {
                 SolrDocumentList solrDocumentList =
                         responseQuery.getResults();
-                List<Integer> resultIds = new ArrayList<>();
+                List<String> resultIds = new ArrayList<>();
                 List<String> resultOwners = new ArrayList<>();
                 for (SolrDocument sd : solrDocumentList) {
-                    resultIds.add(Integer.valueOf(
-                            (String) sd.getFieldValue(ID)));
+                    resultIds.add((String) sd.getFieldValue(ID));
                     resultOwners.add((String) sd.getFieldValue(OWNER));
                 }
                 LOGGER.debug("resultIds: " + resultIds);
