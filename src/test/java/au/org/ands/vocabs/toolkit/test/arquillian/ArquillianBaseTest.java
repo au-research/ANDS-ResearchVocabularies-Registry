@@ -131,6 +131,13 @@ public class ArquillianBaseTest extends Arquillian {
                 .filter(Files::isRegularFile)
                 .forEach(p -> war.addAsWebInfResource(p.toFile(),
                         webInfPath.relativize(p).toString()));
+            // Add src/main/java/META-INF content to WEB-INF/classes
+            Path srcMetaInfPath = Paths.get("src/main/java/META-INF");
+            Files.walk(srcMetaInfPath)
+                .filter(Files::isRegularFile)
+                .forEach(p -> war.addAsWebInfResource(p.toFile(),
+                        Paths.get("classes/META-INF").resolve(
+                                srcMetaInfPath.relativize(p)).toString()));
             // Add test data
             Files.walk(Paths.get(RESOURCES_DEPLOY_PATH))
                 .filter(Files::isRegularFile)

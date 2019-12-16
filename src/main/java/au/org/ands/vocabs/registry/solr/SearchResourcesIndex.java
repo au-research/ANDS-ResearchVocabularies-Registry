@@ -79,6 +79,7 @@ import au.org.ands.vocabs.registry.db.converter.JSONSerialization;
 import au.org.ands.vocabs.registry.enums.SearchResourcesCollapse;
 import au.org.ands.vocabs.registry.enums.SearchSortOrder;
 import au.org.ands.vocabs.registry.log.Analytics;
+import net.logstash.logback.encoder.org.apache.commons.lang.BooleanUtils;
 
 /** Methods for Solr searching of the resources collection. */
 public final class SearchResourcesIndex {
@@ -128,15 +129,12 @@ public final class SearchResourcesIndex {
     /** Default number of rows to be returned. */
     private static final int DEFAULT_ROWS = 10;
 
-    /** Number of rows to use, if the filters include a negative
-     * value for rows. The name "ridiculously large value" comes
-     * from the Solr documentation for the rows parameter at
-     * <a
-     *  href="https://wiki.apache.org/solr/CommonQueryParameters">https://wiki.apache.org/solr/CommonQueryParameters</a>
-     * (archived at <a
-     *  href="https://web.archive.org/web/20190405125211/https://wiki.apache.org/solr/CommonQueryParameters">https://web.archive.org/web/20190405125211/https://wiki.apache.org/solr/CommonQueryParameters</a>).
+    /** Maximum number of rows that can be requested, and the
+     * number of rows requested if the filters include a negative
+     * value for the "pp" filter. Made public so this value can
+     * be used in automated tests.
      */
-    private static final int RIDICULOUSLY_LARGE_VALUE = 10000000;
+    public static final int MAX_ROWS = 500;
 
     /** Value to use for "hl.maxAnalyzedChars". */
     private static final String HIGHLIGHT_MAX_CHARS = "10000000";
@@ -179,10 +177,10 @@ public final class SearchResourcesIndex {
             +  "}";
 
     /** Setting to collapse results that have the same IRI <i>and</i>
-     * the same vocabulary Id, giving
-     * preference to the result that is the result with
-     * the most recent last_updated value of a current version
-     * as each group's representative. */
+     * the same vocabulary Id. When selecting each group's representative,
+     * give preference to a result that is a current version, but if
+     * there are only superseded versions, choose a result with
+     * the most recent release date value. */
     private static final String COLLAPSE_VOCABULARY_ID_IRI =
             "{!" + CollapsingQParserPlugin.NAME
             + " field=" + VOCABULARY_ID_IRI
@@ -191,7 +189,7 @@ public final class SearchResourcesIndex {
             + "='"
             + STATUS + " asc"
             + ","
-            + LAST_UPDATED + " desc"
+            + VERSION_RELEASE_DATE + " desc"
             + "'"
             +  "}";
 
@@ -290,7 +288,8 @@ public final class SearchResourcesIndex {
 
     /** Perform a Solr search.
      * @param filtersJson The query parameters, specified as a String
-     *      in JSON format.
+     *      in JSON format. The value must not be null, and must be
+     *      parsable as a JSON object.
      * @param filtersAndResultsExtracted A list into which the extracted
      *      query parameters and some of the fields of the results are stored,
      *      for later use in analytics logging.
@@ -313,6 +312,39 @@ public final class SearchResourcesIndex {
             final List<Object> filtersAndResultsExtracted,
             final boolean logResults)
             throws IOException, SolrServerException {
+        // Require filtersJson to be non-null.
+        // In practice, this is already done for us by the
+        // @NotNull annotation on the Search.searchResources() method.
+        if (filtersJson == null) {
+            throw new IllegalArgumentException(
+                    "Missing filter specification");
+        }
+        // Parse JSON to confirm that it's an object.
+        Map<String, Object> filters =
+                JSONSerialization.deserializeStringAsJson(filtersJson,
+                        new TypeReference<Map<String, Object>>() { });
+        if (filters == null) {
+            // NB: If invalid JSON, the previous deserializeStringAsJson()
+            // will have logged an exception, but returned null.
+            throw new IllegalArgumentException("Filter specification is "
+                    + "not valid JSON");
+        }
+
+        // Does the client only want a count of the number of results?
+        // The Portal uses this functionality to get a count for the
+        // tab that is _not_ currently active.
+        Object countOnlyObject = filters.get("count_only");
+        boolean countOnly = false;
+        if (countOnlyObject != null) {
+            if (countOnlyObject instanceof Boolean) {
+                countOnly = BooleanUtils.isTrue((Boolean) countOnlyObject);
+            } else {
+                countOnly = BooleanUtils.toBoolean(countOnlyObject.toString());
+            }
+        }
+        filtersAndResultsExtracted.add(Analytics.SEARCH_COUNT_ONLY_FIELD);
+        filtersAndResultsExtracted.add(countOnly);
+
         SolrQuery solrQuery = new SolrQuery();
 
         // We specify two sets of facets in two different ways in
@@ -339,13 +371,16 @@ public final class SearchResourcesIndex {
         Map<String, TermsFacetMap> jsonFacets = new HashMap<>();
         prepareJsonFacets(jsonFacets);
 
-        // Always add these facet fields. These are the "traditional"
+        // Always add these facet fields ... as long as we are not
+        // in countOnly mode. These are the "traditional"
         // Solr facets mentioned above, that give facet counts that are
         // the number of search results that match each facet value.
-        solrQuery.addFacetField(facets.toArray(new String[0]));
-        solrQuery.setFacetSort(FacetParams.FACET_SORT_INDEX);
-        solrQuery.setFacetMinCount(1);
-        solrQuery.setFacetLimit(-1);
+        if (!countOnly) {
+            solrQuery.addFacetField(facets.toArray(new String[0]));
+            solrQuery.setFacetSort(FacetParams.FACET_SORT_INDEX);
+            solrQuery.setFacetMinCount(1);
+            solrQuery.setFacetLimit(-1);
+        }
 
         // Possible future work: support year ranges for last_updated facet.
 //        solrQuery.set("facet.range", LAST_UPDATED);
@@ -372,260 +407,263 @@ public final class SearchResourcesIndex {
         SearchResourcesCollapse collapseExpand =
                 SearchResourcesCollapse.VOCABULARY_ID_IRI;
 
-        // See if there are filters; if so, apply them.
-        if (filtersJson != null) {
-            Map<String, Object> filters =
-                    JSONSerialization.deserializeStringAsJson(filtersJson,
-                            new TypeReference<Map<String, Object>>() { });
-
-            if (filters == null) {
-                // NB: If invalid JSON, the previous deserializeStringAsJson()
-                // will have logged an exception, but returned null.
-                throw new IllegalArgumentException("Filter specification is "
-                        + "not valid JSON");
+        solrQuery.set(QueryParsing.DEFTYPE, QUERY_PARSER);
+        // Check for a "pp" setting, now, as we might need it later
+        // if we find a "p" filter.
+        if (filters.containsKey("pp")) {
+            // Support both "pp":2 and "pp":"2".
+            Object rowsValueAsObject = filters.get("pp");
+            if (rowsValueAsObject instanceof Integer) {
+                rows = (Integer) (rowsValueAsObject);
+            } else if (rowsValueAsObject instanceof String) {
+                rows = Integer.parseInt((String) rowsValueAsObject);
+            } else {
+                throw new IllegalArgumentException("pp parameter must "
+                        + "be specified as either an integer or a "
+                        + "string");
             }
+            // We have a limit on the number of rows that the client
+            // may request. That limit (whatever it is) may also be
+            // explicitly requested by passing in a negative value.
+            if (rows < 0 || rows > MAX_ROWS) {
+                rows = MAX_ROWS;
+            }
+        }
+        // We can now set the rows param.
+        if (countOnly) {
+            // We don't want any results; ignore any user-specified
+            // or default value.
+            solrQuery.setRows(0);
+        } else {
+            solrQuery.setRows(rows);
+        }
+        // Always log the value of rows that we use, whether or not
+        // the user provided a value for it.
+        filtersAndResultsExtracted.add(Analytics.SEARCH_PP_FIELD);
+        filtersAndResultsExtracted.add(rows);
 
-            solrQuery.set(QueryParsing.DEFTYPE, QUERY_PARSER);
-            // Check for a "pp" setting, now, as we might need it later
-            // if we find a "p" filter.
-            if (filters.containsKey("pp")) {
-                // Support both "pp":2 and "pp":"2".
-                Object rowsValueAsObject = filters.get("pp");
-                if (rowsValueAsObject instanceof Integer) {
-                    rows = (Integer) (rowsValueAsObject);
-                } else if (rowsValueAsObject instanceof String) {
-                    rows = Integer.parseInt((String) rowsValueAsObject);
+        solrQuery.set(DisMaxParams.ALTQ, "*:*");
+
+        // Extract the languages from the filters.
+        // An empty list means no languages have been specified,
+        // which will mean that we will use the "_all" fields.
+        ArrayList<String> languages = new ArrayList<>();
+
+        for (Entry<String, Object> filterEntry : filters.entrySet()) {
+            Object value = filterEntry.getValue();
+            String filterKey = filterEntry.getKey();
+            switch (filterKey) {
+            case "q":
+                String stringValue = (String) value;
+                if (StringUtils.isNotBlank(stringValue)) {
+                    solrQuery.setQuery(stringValue);
+                    queryIsSet = true;
+                    filtersAndResultsExtracted.add(
+                            Analytics.SEARCH_Q_FIELD);
+                    filtersAndResultsExtracted.add(stringValue);
+                }
+                break;
+            case "p":
+                // Support both "p":2 and "p":"2".
+                int page;
+                Object pValueAsObject = filterEntry.getValue();
+                if (pValueAsObject instanceof Integer) {
+                    page = (Integer) (pValueAsObject);
+                } else if (pValueAsObject instanceof String) {
+                    page = Integer.parseInt((String) pValueAsObject);
                 } else {
-                    throw new IllegalArgumentException("pp parameter must "
+                    throw new IllegalArgumentException("p parameter must "
                             + "be specified as either an integer or a "
                             + "string");
                 }
-                if (rows < 0) {
-                    /* If a negative value specified, the caller really
-                     * wants "all" rows. Unfortunately, Solr does not
-                     * directly support that. See the Solr doc. */
-                    rows = RIDICULOUSLY_LARGE_VALUE;
+                if (page > 1) {
+                    // Because we have special treatment for the "pp"
+                    // filter above, we can use the value of rows here.
+                    int start = rows * (page - 1);
+                    solrQuery.setStart(start);
                 }
-            }
-
-            solrQuery.set(DisMaxParams.ALTQ, "*:*");
-
-            // Extract the languages from the filters.
-            // An empty list means no languages have been specified,
-            // which will mean that we will use the "_all" fields.
-            ArrayList<String> languages = new ArrayList<>();
-
-            for (Entry<String, Object> filterEntry : filters.entrySet()) {
-                Object value = filterEntry.getValue();
-                String filterKey = filterEntry.getKey();
-                switch (filterKey) {
-                case "q":
-                    String stringValue = (String) value;
-                    if (StringUtils.isNotBlank(stringValue)) {
-                        solrQuery.setQuery(stringValue);
-                        queryIsSet = true;
-                        filtersAndResultsExtracted.add(
-                                Analytics.SEARCH_Q_FIELD);
-                        filtersAndResultsExtracted.add(stringValue);
+                filtersAndResultsExtracted.add(Analytics.SEARCH_P_FIELD);
+                filtersAndResultsExtracted.add(page);
+                break;
+            case "pp":
+                // We've already seen this, above.
+                break;
+            case "sort":
+                Object ssoValueAsObject = filterEntry.getValue();
+                if (ssoValueAsObject instanceof String) {
+                    try {
+                        searchSortOrder = SearchSortOrder.fromValue(
+                                (String) ssoValueAsObject);
+                    } catch (IllegalArgumentException e) {
+                        throw new IllegalArgumentException("sort "
+                                + "parameter must be one of the "
+                                + "supported values");
                     }
-                    break;
-                case "p":
-                    // Support both "p":2 and "p":"2".
-                    int page;
-                    Object pValueAsObject = filterEntry.getValue();
-                    if (pValueAsObject instanceof Integer) {
-                        page = (Integer) (pValueAsObject);
-                    } else if (pValueAsObject instanceof String) {
-                        page = Integer.parseInt((String) pValueAsObject);
-                    } else {
-                        throw new IllegalArgumentException("p parameter must "
-                                + "be specified as either an integer or a "
-                                + "string");
+                }
+                // searchSortOrder remains null if no value specified,
+                // or the value specified was not a string.
+                break;
+            case "collapse_expand":
+                // Apply collapse/expand settings.
+                // The default is "vocabularyIdIri"; we do something
+                // different _only if_ the user provides a value
+                // that's different and valid.
+                Object collapseExpandValueAsObject = filterEntry.getValue();
+                if (collapseExpandValueAsObject instanceof String) {
+                    try {
+                        collapseExpand = SearchResourcesCollapse.
+                                fromValue((String)
+                                        collapseExpandValueAsObject);
+                    } catch (IllegalArgumentException e) {
+                        throw new IllegalArgumentException(
+                                "collapse_expand parameter invalid");
                     }
-                    if (page > 1) {
-                        int start = rows * (page - 1);
-                        solrQuery.setStart(start);
+                } else {
+                    throw new IllegalArgumentException("collapse_expand "
+                            + "parameter must be a string");
+                }
+                break;
+            case LANGUAGE:
+                // Can filter on language, but it's not a _facet_.
+                // Language setting affects which _fields_ are
+                // searched and highlighted.
+                // In the following, support values that are _either_
+                // just a string, or an _array_ of strings.
+                if (value instanceof ArrayList) {
+                    if (((ArrayList<?>) value).isEmpty()) {
+                        // The portal does send empty lists. In this case,
+                        // don't add anything to the query.
+                        break;
                     }
-                    filtersAndResultsExtracted.add(Analytics.SEARCH_P_FIELD);
-                    filtersAndResultsExtracted.add(page);
-                    break;
-                case "pp":
-                    // We've already seen this, above.
-                    break;
-                case "sort":
-                    Object ssoValueAsObject = filterEntry.getValue();
-                    if (ssoValueAsObject instanceof String) {
-                        try {
-                            searchSortOrder = SearchSortOrder.fromValue(
-                                    (String) ssoValueAsObject);
-                        } catch (IllegalArgumentException e) {
-                            throw new IllegalArgumentException("sort "
-                                    + "parameter must be one of the "
-                                    + "supported values");
-                        }
-                    }
-                    // searchSortOrder remains null if no value specified,
-                    // or the value specified was not a string.
-                    break;
-                case "collapse_expand":
-                    // Apply collapse/expand settings.
-                    // The default is "vocabularyIdIri"; we do something
-                    // different _only if_ the user provides a value
-                    // that's different and valid.
-                    Object collapseExpandValueAsObject = filterEntry.getValue();
-                    if (collapseExpandValueAsObject instanceof String) {
-                        try {
-                            collapseExpand = SearchResourcesCollapse.
-                                    fromValue((String)
-                                            collapseExpandValueAsObject);
-                        } catch (IllegalArgumentException e) {
-                            throw new IllegalArgumentException(
-                                    "collapse_expand parameter invalid");
-                        }
-                    } else {
-                        throw new IllegalArgumentException("collapse_expand "
-                                + "parameter must be a string");
-                    }
-                    break;
-                case LANGUAGE:
-                    // Can filter on language, but it's not a _facet_.
-                    // Language setting affects which _fields_ are
-                    // searched and highlighted.
-                    // In the following, support values that are _either_
-                    // just a string, or an _array_ of strings.
-                    if (value instanceof ArrayList) {
-                        if (((ArrayList<?>) value).isEmpty()) {
-                            // The portal does send empty lists. In this case,
-                            // don't add anything to the query.
-                            break;
-                        }
-                        @SuppressWarnings("unchecked")
-                        ArrayList<String> stringValues =
-                            (ArrayList<String>) value;
-                        for (String v : stringValues) {
-                            stringValue = StringUtils.trimToNull(v);
-                            validateLanguage(stringValue);
-                            if (stringValue != null) {
-                                languages.add(mapLanguage(stringValue));
-                            }
-                        }
-                    } else {
-                        stringValue = StringUtils.trimToNull(value.toString());
+                    @SuppressWarnings("unchecked")
+                    ArrayList<String> stringValues =
+                        (ArrayList<String>) value;
+                    for (String v : stringValues) {
+                        stringValue = StringUtils.trimToNull(v);
+                        validateLanguage(stringValue);
                         if (stringValue != null) {
-                            validateLanguage(stringValue);
                             languages.add(mapLanguage(stringValue));
                         }
                     }
-                    break;
-                // Possible future work: support faceting by last_updated.
-//                case LAST_UPDATED:
-                case PUBLISHER:
-                case RDF_TYPE:
-                case STATUS:
-                case SUBJECT_LABELS:
-                    // In the following, support values that are _either_
-                    // just a string, or an _array_ of strings.
-                    String filterStringValue;
-                    String logFieldName = filterArrays.get(filterKey);
-                    if (value instanceof ArrayList) {
-                        if (((ArrayList<?>) value).isEmpty()) {
-                            // The portal does send empty lists. In this case,
-                            // don't add anything to the query.
-                            break;
-                        }
-                        @SuppressWarnings("unchecked")
-                        String filterStringValues = ((ArrayList<String>) value).
-                                stream().
-                                map(v -> "\""
-                                        + StringEscapeUtils.escapeEcmaScript(v)
-                                        + "\"").
-                                collect(Collectors.joining(" "));
-                        filterStringValue = filterStringValues;
-                        filtersAndResultsExtracted.add(logFieldName);
-                        filtersAndResultsExtracted.add(value);
-                    } else {
-                        filterStringValue = "\""
-                                + StringEscapeUtils.escapeEcmaScript(
-                                        value.toString()) + "\"";
-                        filtersAndResultsExtracted.add(logFieldName);
-                        filtersAndResultsExtracted.add(
-                                new String[] {value.toString()});
+                } else {
+                    stringValue = StringUtils.trimToNull(value.toString());
+                    if (stringValue != null) {
+                        validateLanguage(stringValue);
+                        languages.add(mapLanguage(stringValue));
                     }
-                    addFilterQuery(solrQuery, jsonFacets, facetsActive,
-                            filterKey, filterStringValue);
-                    break;
-                default:
-                    // For now, ignore it.
-                    break;
                 }
+                break;
+            // Possible future work: support faceting by last_updated.
+//            case LAST_UPDATED:
+            case PUBLISHER:
+            case RDF_TYPE:
+            case STATUS:
+            case SUBJECT_LABELS:
+                // In the following, support values that are _either_
+                // just a string, or an _array_ of strings.
+                String filterStringValue;
+                String logFieldName = filterArrays.get(filterKey);
+                if (value instanceof ArrayList) {
+                    if (((ArrayList<?>) value).isEmpty()) {
+                        // The portal does send empty lists. In this case,
+                        // don't add anything to the query.
+                        break;
+                    }
+                    @SuppressWarnings("unchecked")
+                    String filterStringValues = ((ArrayList<String>) value).
+                            stream().
+                            map(v -> "\""
+                                    + StringEscapeUtils.escapeEcmaScript(v)
+                                    + "\"").
+                            collect(Collectors.joining(" "));
+                    filterStringValue = filterStringValues;
+                    filtersAndResultsExtracted.add(logFieldName);
+                    filtersAndResultsExtracted.add(value);
+                } else {
+                    filterStringValue = "\""
+                            + StringEscapeUtils.escapeEcmaScript(
+                                    value.toString()) + "\"";
+                    filtersAndResultsExtracted.add(logFieldName);
+                    filtersAndResultsExtracted.add(
+                            new String[] {value.toString()});
+                }
+                addFilterQuery(solrQuery, jsonFacets, facetsActive,
+                        filterKey, filterStringValue);
+                break;
+            default:
+                // For now, ignore it.
+                break;
             }
+        }
 
-            // At this point, we now know about any specified
-            // language filters. Only now can we set query fields
-            // and highlight fields.
-            if (languages.size() == 0) {
-                // No languages specified as filters, so use the
-                // special suffix "_all".
-                languages.add(ALL_SUFFIX);
-            }
-            // Now we know the value of languages to put into the analytics.
-            filtersAndResultsExtracted.add(LANGUAGE);
-            filtersAndResultsExtracted.add(languages);
+        // At this point, we now know about any specified
+        // language filters. Only now can we set query fields
+        // and highlight fields.
+        if (languages.size() == 0) {
+            // No languages specified as filters, so use the
+            // special suffix "_all".
+            languages.add(ALL_SUFFIX);
+        }
+        // Now we know the value of languages to put into the analytics.
+        filtersAndResultsExtracted.add(LANGUAGE);
+        filtersAndResultsExtracted.add(languages);
 
-            // see Portal views/includes/search-view.blade.php for the
-            // fields that must be returned for the "main" search function.
-            // NB: highlighting can/does also return snippets
-            // from other fields not listed in fl (which is good!).
-            setQueryFields(solrQuery, languages);
-            // Ensure that the highlight fields are set corresponding
-            // to the fields listed in the QF and PQF parameters.
-            // We could use solrQuery.setFields(ID, IRI, etc.)
-            // follows by lots of solrQuery.addField(...),
-            // but let's make it more efficient by making our own list.
-            @SuppressWarnings("unchecked")
-            ArrayList<String> fieldsList = (ArrayList<String>)
-                    BASIC_FIELDS.clone();
-            for (String language : languages) {
-                fieldsList.add(SKOS_PREFLABEL + language);
-                fieldsList.add(SKOS_ALTLABEL + language);
-                fieldsList.add(SKOS_HIDDENLABEL + language);
-                fieldsList.add(SKOS_DEFINITION + language);
-                fieldsList.add(RDFS_LABEL + language);
-                fieldsList.add(DCTERMS_TITLE + language);
-                fieldsList.add(DCTERMS_DESCRIPTION + language);
+        // see Portal views/includes/search-view.blade.php for the
+        // fields that must be returned for the "main" search function.
+        // NB: highlighting can/does also return snippets
+        // from other fields not listed in fl (which is good!).
+        setQueryFields(solrQuery, languages);
+        // Ensure that the highlight fields are set corresponding
+        // to the fields listed in the QF and PQF parameters.
+        // We could use solrQuery.setFields(ID, IRI, etc.)
+        // follows by lots of solrQuery.addField(...),
+        // but let's make it more efficient by making our own list.
+        @SuppressWarnings("unchecked")
+        ArrayList<String> fieldsList = (ArrayList<String>)
+                BASIC_FIELDS.clone();
+        for (String language : languages) {
+            fieldsList.add(SKOS_PREFLABEL + language);
+            fieldsList.add(SKOS_ALTLABEL + language);
+            fieldsList.add(SKOS_HIDDENLABEL + language);
+            fieldsList.add(SKOS_DEFINITION + language);
+            fieldsList.add(RDFS_LABEL + language);
+            fieldsList.add(DCTERMS_TITLE + language);
+            fieldsList.add(DCTERMS_DESCRIPTION + language);
 
-                fieldsList.add(SKOS_PREFLABEL + SEARCH_SUFFIX + language);
-                fieldsList.add(SKOS_ALTLABEL + SEARCH_SUFFIX + language);
-                fieldsList.add(SKOS_HIDDENLABEL + SEARCH_SUFFIX + language);
-                fieldsList.add(SKOS_DEFINITION + SEARCH_SUFFIX + language);
-                fieldsList.add(RDFS_LABEL + SEARCH_SUFFIX + language);
-                fieldsList.add(DCTERMS_TITLE + SEARCH_SUFFIX + language);
-                fieldsList.add(DCTERMS_DESCRIPTION + SEARCH_SUFFIX + language);
+            fieldsList.add(SKOS_PREFLABEL + SEARCH_SUFFIX + language);
+            fieldsList.add(SKOS_ALTLABEL + SEARCH_SUFFIX + language);
+            fieldsList.add(SKOS_HIDDENLABEL + SEARCH_SUFFIX + language);
+            fieldsList.add(SKOS_DEFINITION + SEARCH_SUFFIX + language);
+            fieldsList.add(RDFS_LABEL + SEARCH_SUFFIX + language);
+            fieldsList.add(DCTERMS_TITLE + SEARCH_SUFFIX + language);
+            fieldsList.add(DCTERMS_DESCRIPTION + SEARCH_SUFFIX + language);
 
-                fieldsList.add(SKOS_PREFLABEL + PHRASE_SUFFIX + language);
-                fieldsList.add(SKOS_ALTLABEL + PHRASE_SUFFIX + language);
-                fieldsList.add(SKOS_HIDDENLABEL + PHRASE_SUFFIX + language);
-                fieldsList.add(SKOS_DEFINITION + PHRASE_SUFFIX + language);
-                fieldsList.add(RDFS_LABEL + PHRASE_SUFFIX + language);
-                fieldsList.add(DCTERMS_TITLE + PHRASE_SUFFIX + language);
-                fieldsList.add(DCTERMS_DESCRIPTION + PHRASE_SUFFIX + language);
-            }
-            solrQuery.setFields(fieldsList.toArray(new String[0]));
+            fieldsList.add(SKOS_PREFLABEL + PHRASE_SUFFIX + language);
+            fieldsList.add(SKOS_ALTLABEL + PHRASE_SUFFIX + language);
+            fieldsList.add(SKOS_HIDDENLABEL + PHRASE_SUFFIX + language);
+            fieldsList.add(SKOS_DEFINITION + PHRASE_SUFFIX + language);
+            fieldsList.add(RDFS_LABEL + PHRASE_SUFFIX + language);
+            fieldsList.add(DCTERMS_TITLE + PHRASE_SUFFIX + language);
+            fieldsList.add(DCTERMS_DESCRIPTION + PHRASE_SUFFIX + language);
+        }
+        solrQuery.setFields(fieldsList.toArray(new String[0]));
 
-            // Since there are filters, always apply highlighting.
-            // addHighlightField() does solrQuery.setHighlight(true) for us.
-            // Rather than using a wildcard:
-            //   solrQuery.addHighlightField("*");
-            // add highlight fields for precisely the fields that
-            // are searched. See the setting of the DisMaxParams.QF
-            // and SafariQueryParser.PQF parameters in setQueryFields() below.
-            // All of these fields have stored="true".
-            // All of this means you never get a search result that doesn't
-            // also have highlighting.
-//            solrQuery.addHighlightField(IRI);
-//            solrQuery.addHighlightField(PUBLISHER);
-//            solrQuery.addHighlightField(RDF_TYPE);
-//            solrQuery.addHighlightField(SUBJECT_LABELS);
+        // Always apply highlighting ... as long as we are not in
+        // countOnly mode.
+        // addHighlightField() does solrQuery.setHighlight(true) for us.
+        // Rather than using a wildcard:
+        //   solrQuery.addHighlightField("*");
+        // add highlight fields for precisely the fields that
+        // are searched. See the setting of the DisMaxParams.QF
+        // and SafariQueryParser.PQF parameters in setQueryFields() below.
+        // All of these fields have stored="true".
+        // All of this means that _if_ there is a query term,
+        // _every_ search result also has highlighting.
+        if (!countOnly) {
+//        solrQuery.addHighlightField(IRI);
+//        solrQuery.addHighlightField(PUBLISHER);
+//        solrQuery.addHighlightField(RDF_TYPE);
+//        solrQuery.addHighlightField(SUBJECT_LABELS);
             solrQuery.addHighlightField(TOP_CONCEPT);
             solrQuery.addHighlightField(TOP_CONCEPT_PHRASE);
             addMultilingualHighlightFields(solrQuery, languages);
@@ -652,15 +690,7 @@ public final class SearchResourcesIndex {
             solrQuery.setHighlightSimplePost(HIGHLIGHT_POST);
             solrQuery.setHighlightSnippets(2);
         }
-        // That was the end of the body of the condition
-        // "if (filtersJson != null)".
 
-        // We can now set rows.
-        solrQuery.setRows(rows);
-        // Always log the value of rows that we use, whether or not
-        // the user provided a value for it.
-        filtersAndResultsExtracted.add(Analytics.SEARCH_PP_FIELD);
-        filtersAndResultsExtracted.add(rows);
         // If there was no query specified, get all documents,
         // and sort by title_sort.
         if (!queryIsSet) {
@@ -724,31 +754,35 @@ public final class SearchResourcesIndex {
         case IRI:
             // Collapse/expand settings
             solrQuery.addFilterQuery(COLLAPSE_IRI);
-            solrQuery.addField(COLLAPSE_ID + ":" + IRI);
-            solrQuery.set(ExpandParams.EXPAND, true);
-            // We now expand the expansion, so as to get _all_ instances
-            // of this IRI, not just ones that match the top-level
-            // query term and filters. We sort by vocabulary_id
-            // in order to _group_ results with the same vocabulary_id
-            // together.
-            solrQuery.set(ExpandParams.EXPAND_Q, "*:*");
-            solrQuery.set(ExpandParams.EXPAND_FQ, "*:*");
-            solrQuery.set(ExpandParams.EXPAND_SORT, EXPAND_SORT_IRI);
-            solrQuery.set(ExpandParams.EXPAND_ROWS, EXPAND_ROWS);
+            if (!countOnly) {
+                solrQuery.addField(COLLAPSE_ID + ":" + IRI);
+                solrQuery.set(ExpandParams.EXPAND, true);
+                // We now expand the expansion, so as to get _all_ instances
+                // of this IRI, not just ones that match the top-level
+                // query term and filters. We sort by vocabulary_id
+                // in order to _group_ results with the same vocabulary_id
+                // together.
+                solrQuery.set(ExpandParams.EXPAND_Q, "*:*");
+                solrQuery.set(ExpandParams.EXPAND_FQ, "*:*");
+                solrQuery.set(ExpandParams.EXPAND_SORT, EXPAND_SORT_IRI);
+                solrQuery.set(ExpandParams.EXPAND_ROWS, EXPAND_ROWS);
+            }
             break;
         case VOCABULARY_ID_IRI:
             // Collapse/expand settings
             solrQuery.addFilterQuery(COLLAPSE_VOCABULARY_ID_IRI);
-            solrQuery.addField(COLLAPSE_ID + ":" + VOCABULARY_ID_IRI);
-            solrQuery.set(ExpandParams.EXPAND, true);
-            // We now expand the expansion, so as to get _all_ instances
-            // of this IRI, not just ones that match the top-level
-            // query term and filters.
-            solrQuery.set(ExpandParams.EXPAND_Q, "*:*");
-            solrQuery.set(ExpandParams.EXPAND_FQ, "*:*");
-            solrQuery.set(ExpandParams.EXPAND_SORT,
-                    EXPAND_SORT_VOCABULARY_ID_IRI);
-            solrQuery.set(ExpandParams.EXPAND_ROWS, EXPAND_ROWS);
+            if (!countOnly) {
+                solrQuery.addField(COLLAPSE_ID + ":" + VOCABULARY_ID_IRI);
+                solrQuery.set(ExpandParams.EXPAND, true);
+                // We now expand the expansion, so as to get _all_ instances
+                // of this IRI, not just ones that match the top-level
+                // query term and filters.
+                solrQuery.set(ExpandParams.EXPAND_Q, "*:*");
+                solrQuery.set(ExpandParams.EXPAND_FQ, "*:*");
+                solrQuery.set(ExpandParams.EXPAND_SORT,
+                        EXPAND_SORT_VOCABULARY_ID_IRI);
+                solrQuery.set(ExpandParams.EXPAND_ROWS, EXPAND_ROWS);
+            }
             break;
         default:
             // Oops!
@@ -760,7 +794,7 @@ public final class SearchResourcesIndex {
         filtersAndResultsExtracted.add(collapseExpand.value());
 
         trimSolrFacets(jsonFacets, facetsActive);
-        if (!jsonFacets.isEmpty()) {
+        if (!countOnly && !jsonFacets.isEmpty()) {
             solrQuery.add("json.facet", Utils.toJSONString(jsonFacets));
         }
 
@@ -783,11 +817,14 @@ public final class SearchResourcesIndex {
             if (logResults) {
                 SolrDocumentList solrDocumentList =
                         responseQuery.getResults();
-                List<Integer> resultIds = new ArrayList<>();
+                // Note the difference between resultIds/resultOwners
+                // and expandedResultIds/expandedResultOwners:
+                // The former are _lists_, they will always have the same
+                // length, and the values of the two lists match up ...
+                List<String> resultIds = new ArrayList<>();
                 List<String> resultOwners = new ArrayList<>();
                 for (SolrDocument sd : solrDocumentList) {
-                    resultIds.add(Integer.valueOf(
-                            (String) sd.getFieldValue(VOCABULARY_ID)));
+                    resultIds.add((String) sd.getFieldValue(ID));
                     resultOwners.add((String) sd.getFieldValue(OWNER));
                 }
                 LOGGER.debug("resultIds: " + resultIds);
@@ -801,6 +838,29 @@ public final class SearchResourcesIndex {
                 filtersAndResultsExtracted.add(
                         Analytics.SEARCH_RESULT_NUM_FOUND_FIELD);
                 filtersAndResultsExtracted.add(solrDocumentList.getNumFound());
+                // ... whereas, these are _sets_, and the two sets may well
+                // have different cardinalities, and there's no way to
+                // match up the values of the two sets.
+                Set<String> expandedResultIds = new HashSet<>();
+                Set<String> expandedResultOwners = new HashSet<>();
+                Map<String, SolrDocumentList> expandedResults =
+                        responseQuery.getExpandedResults();
+                if (expandedResults != null) {
+                    for (SolrDocumentList sdl : expandedResults.values()) {
+                        for (SolrDocument sd : sdl) {
+                            expandedResultIds.add((String)
+                                    sd.getFieldValue(ID));
+                            expandedResultOwners.add((String)
+                                    sd.getFieldValue(OWNER));
+                        }
+                    }
+                }
+                filtersAndResultsExtracted.add(
+                        Analytics.SEARCH_EXPANDED_RESULT_ID_FIELD);
+                filtersAndResultsExtracted.add(expandedResultIds);
+                filtersAndResultsExtracted.add(
+                        Analytics.SEARCH_EXPANDED_RESULT_OWNER_FIELD);
+                filtersAndResultsExtracted.add(expandedResultOwners);
             }
 
             StringWriter stringWriter = new StringWriter();

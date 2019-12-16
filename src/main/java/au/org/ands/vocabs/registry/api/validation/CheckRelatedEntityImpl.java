@@ -4,7 +4,6 @@ package au.org.ands.vocabs.registry.api.validation;
 
 import static au.org.ands.vocabs.registry.api.validation.CheckRelatedEntity.INTERFACE_NAME;
 
-import java.io.StringWriter;
 import java.lang.invoke.MethodHandles;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -80,7 +79,8 @@ public class CheckRelatedEntityImpl
         Marshaller jaxbMarshaller = reJaxbContext.createMarshaller();
         // Make it pretty, for easier reading.
         jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-        StringWriter stringWriter = new StringWriter();
+        LimitedSizeStringWriter stringWriter =
+                new LimitedSizeStringWriter();
         jaxbMarshaller.marshal(relatedEntity, stringWriter);
         return stringWriter.toString();
     }

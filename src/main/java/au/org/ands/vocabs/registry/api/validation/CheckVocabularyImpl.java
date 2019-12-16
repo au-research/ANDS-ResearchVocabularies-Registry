@@ -4,7 +4,6 @@ package au.org.ands.vocabs.registry.api.validation;
 
 import static au.org.ands.vocabs.registry.api.validation.CheckVocabulary.INTERFACE_NAME;
 
-import java.io.StringWriter;
 import java.lang.invoke.MethodHandles;
 import java.util.Collections;
 import java.util.HashSet;
@@ -100,7 +99,8 @@ public class CheckVocabularyImpl
         Marshaller jaxbMarshaller = vocabularyJaxbContext.createMarshaller();
         // Make it pretty, for easier reading.
         jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-        StringWriter stringWriter = new StringWriter();
+        LimitedSizeStringWriter stringWriter =
+                new LimitedSizeStringWriter();
         jaxbMarshaller.marshal(vocabulary, stringWriter);
         return stringWriter.toString();
     }

@@ -210,6 +210,17 @@ public final class Analytics {
     /** The name of the search collapse/expand field inserted into
      * log entries. */
     public static final String SEARCH_COLLAPSE_EXPAND_FIELD = "collapse_expand";
+    /** The name of the search count_only field inserted into
+     * log entries. */
+    public static final String SEARCH_COUNT_ONLY_FIELD = "count_only";
+    /** The name of the search result expanded Id field inserted into
+     * log entries. */
+    public static final String SEARCH_EXPANDED_RESULT_ID_FIELD =
+            "expanded_result_ids";
+    /** The name of the search result expanded owner field inserted into
+     * log entries. */
+    public static final String SEARCH_EXPANDED_RESULT_OWNER_FIELD =
+            "expanded_result_owners";
     /** The name of the search format field inserted into log entries. */
     public static final String SEARCH_FORMAT_FIELD = "format";
     /** The name of the search language field inserted into log entries. */
@@ -234,7 +245,7 @@ public final class Analytics {
     /** The name of the search result num_found field
      * inserted into log entries. */
     public static final String SEARCH_RESULT_NUM_FOUND_FIELD = "num_found";
-    /** The name of the search result Id field inserted into log entries. */
+    /** The name of the search result owner field inserted into log entries. */
     public static final String SEARCH_RESULT_OWNER_FIELD = "result_owners";
     /** The name of the search sort field inserted into log entries. */
     public static final String SEARCH_SORT_ORDER_FIELD = "sort";
@@ -538,6 +549,18 @@ public final class Analytics {
             return;
         }
 
+        if (ipAddress.isLoopbackAddress()) {
+            // We won't get any information for a loopback address.
+            // Substitute the publicly-visible IP address instead.
+            try {
+                ipAddress = InetAddress.getLocalHost();
+            } catch (UnknownHostException e) {
+                logger.error("Unable to get publicly-visible IP "
+                        + "for localhost", e);
+                // Don't return, but keep going with what we already have.
+            }
+        }
+
         CityResponse response;
         try {
             response = geoDbReader.city(ipAddress);
@@ -671,6 +694,7 @@ public final class Analytics {
             useREMap = true;
             break;
         case EVENT_SEARCH:
+        case EVENT_SEARCH_RESOURCES:
             useSearchMaps = true;
             break;
         case EVENT_GET_SUBSCRIPTION:
@@ -727,6 +751,8 @@ public final class Analytics {
                     }
                     break;
                 case SEARCH_ACCESS_FIELD:
+                case SEARCH_COLLAPSE_EXPAND_FIELD:
+                case SEARCH_COUNT_ONLY_FIELD:
                 case SEARCH_FORMAT_FIELD:
                 case SEARCH_LANGUAGE_FIELD:
                 case SEARCH_LICENCE_FIELD:
@@ -734,14 +760,18 @@ public final class Analytics {
                 case SEARCH_PP_FIELD:
                 case SEARCH_PUBLISHER_FIELD:
                 case SEARCH_Q_FIELD:
+                case SEARCH_RDF_TYPE_FIELD:
                 case SEARCH_SORT_ORDER_FIELD:
                 case SEARCH_SUBJECT_LABELS_FIELD:
+                case SEARCH_VERSION_STATUS_FIELD:
                 case SEARCH_WIDGETABLE_FIELD:
                     if (useSearchMaps) {
                         searchFiltersMap.put(key, otherFields[i + 1]);
                         moved = true;
                     }
                     break;
+                case SEARCH_EXPANDED_RESULT_ID_FIELD:
+                case SEARCH_EXPANDED_RESULT_OWNER_FIELD:
                 case SEARCH_RESULT_ID_FIELD:
                 case SEARCH_RESULT_NUM_FOUND_FIELD:
                 case SEARCH_RESULT_OWNER_FIELD:

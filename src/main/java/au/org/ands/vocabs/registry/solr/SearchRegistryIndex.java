@@ -153,7 +153,8 @@ public final class SearchRegistryIndex {
 
     /** Perform a Solr search.
      * @param filtersJson The query parameters, specified as a String
-     *      in JSON format.
+     *      in JSON format. The value must not be null, and must be
+     *      parsable as a JSON object.
      * @param filtersAndResultsExtracted A list into which the extracted
      *      query parameters and some of the fields of the results are stored,
      *      for later use in analytics logging.
@@ -176,6 +177,39 @@ public final class SearchRegistryIndex {
             final List<Object> filtersAndResultsExtracted,
             final boolean logResults)
             throws IOException, SolrServerException {
+        // Require filtersJson to be non-null.
+        // In practice, this is already done for us by the
+        // @NotNull annotation on the Search.search() method.
+        if (filtersJson == null) {
+            throw new IllegalArgumentException(
+                    "Missing filter specification");
+        }
+        // Parse JSON to confirm that it's an object.
+        Map<String, Object> filters =
+                JSONSerialization.deserializeStringAsJson(filtersJson,
+                        new TypeReference<Map<String, Object>>() { });
+        if (filters == null) {
+            // NB: If invalid JSON, the previous deserializeStringAsJson()
+            // will have logged an exception, but returned null.
+            throw new IllegalArgumentException("Filter specification is "
+                    + "not valid JSON");
+        }
+
+        // Does the client only want a count of the number of results?
+        // The Portal uses this functionality to get a count for the
+        // tab that is _not_ currently active.
+        Object countOnlyObject = filters.get("count_only");
+        boolean countOnly = false;
+        if (countOnlyObject != null) {
+            if (countOnlyObject instanceof Boolean) {
+                countOnly = BooleanUtils.isTrue((Boolean) countOnlyObject);
+            } else {
+                countOnly = BooleanUtils.toBoolean(countOnlyObject.toString());
+            }
+        }
+        filtersAndResultsExtracted.add(Analytics.SEARCH_COUNT_ONLY_FIELD);
+        filtersAndResultsExtracted.add(countOnly);
+
         SolrQuery solrQuery = new SolrQuery();
 
         // We specify two sets of facets in two different ways in
@@ -202,13 +236,16 @@ public final class SearchRegistryIndex {
         Map<String, TermsFacetMap> jsonFacets = new HashMap<>();
         prepareJsonFacets(jsonFacets);
 
-        // Always add these facet fields. These are the "traditional"
+        // Always add these facet fields ... as long as we are not
+        // in countOnly mode. These are the "traditional"
         // Solr facets mentioned above, that give facet counts that are
         // the number of search results that match each facet value.
-        solrQuery.addFacetField(facets.toArray(new String[0]));
-        solrQuery.setFacetSort(FacetParams.FACET_SORT_INDEX);
-        solrQuery.setFacetMinCount(1);
-        solrQuery.setFacetLimit(-1);
+        if (!countOnly) {
+            solrQuery.addFacetField(facets.toArray(new String[0]));
+            solrQuery.setFacetSort(FacetParams.FACET_SORT_INDEX);
+            solrQuery.setFacetMinCount(1);
+            solrQuery.setFacetLimit(-1);
+        }
 
         // Keep track if we have seen a query term (i.e., the "q" parameter).
         boolean queryIsSet = false;
@@ -219,29 +256,18 @@ public final class SearchRegistryIndex {
         // Keep track of any search sort order specified.
         SearchSortOrder searchSortOrder = null;
 
-        // See if there are filters; if so, apply them.
-        if (filtersJson != null) {
-            Map<String, Object> filters =
-                    JSONSerialization.deserializeStringAsJson(filtersJson,
-                            new TypeReference<Map<String, Object>>() { });
-
-            if (filters == null) {
-                // NB: If invalid JSON, the previous deserializeStringAsJson()
-                // will have logged an exception, but returned null.
-                throw new IllegalArgumentException("Filter specification is "
-                        + "not valid JSON");
-            }
-
-            // Since there are filters, always apply highlighting.
-            // addHighlightField() does solrQuery.setHighlight(true) for us.
-            // Rather than using a wildcard:
-            //   solrQuery.addHighlightField("*");
-            // add highlight fields for precisely the fields that
-            // are searched. See the setting of the DisMaxParams.QF
-            // and SafariQueryParser.PQF parameters in setQueryFields() below.
-            // All of these fields have stored="true".
-            // All of this means you never get a search result that doesn't
-            // also have highlighting.
+        // Always apply highlighting  ... as long as we are not in
+        // countOnly mode.
+        // addHighlightField() does solrQuery.setHighlight(true) for us.
+        // Rather than using a wildcard:
+        //   solrQuery.addHighlightField("*");
+        // add highlight fields for precisely the fields that
+        // are searched. See the setting of the DisMaxParams.QF
+        // and SafariQueryParser.PQF parameters in setQueryFields() below.
+        // All of these fields have stored="true".
+        // All of this means that _if_ there is a query term,
+        // _every_ search result also has highlighting.
+        if (!countOnly) {
             solrQuery.addHighlightField(TITLE_SEARCH);
             solrQuery.addHighlightField(SUBJECT_SEARCH);
             solrQuery.addHighlightField(DESCRIPTION);
@@ -276,167 +302,173 @@ public final class SearchRegistryIndex {
             solrQuery.setHighlightSimplePre(HIGHLIGHT_PRE);
             solrQuery.setHighlightSimplePost(HIGHLIGHT_POST);
             solrQuery.setHighlightSnippets(2);
-            solrQuery.set(QueryParsing.DEFTYPE, QUERY_PARSER);
-            // Check for a "pp" setting, now, as we might need it later
-            // if we find a "p" filter.
-            if (filters.containsKey("pp")) {
-                // Support both "pp":2 and "pp":"2".
-                Object rowsValueAsObject = filters.get("pp");
-                if (rowsValueAsObject instanceof Integer) {
-                    rows = (Integer) (rowsValueAsObject);
-                } else if (rowsValueAsObject instanceof String) {
-                    rows = Integer.parseInt((String) rowsValueAsObject);
-                } else {
-                    throw new IllegalArgumentException("pp parameter must "
-                            + "be specified as either an integer or a "
-                            + "string");
-                }
-                if (rows < 0) {
-                    /* If a negative value specified, the caller really
-                     * wants "all" rows. Unfortunately, Solr does not
-                     * directly support that. See the Solr doc. */
-                    rows = RIDICULOUSLY_LARGE_VALUE;
-                }
+        }
+        solrQuery.set(QueryParsing.DEFTYPE, QUERY_PARSER);
+        // Check for a "pp" setting, now, as we might need it later
+        // if we find a "p" filter.
+        if (filters.containsKey("pp")) {
+            // Support both "pp":2 and "pp":"2".
+            Object rowsValueAsObject = filters.get("pp");
+            if (rowsValueAsObject instanceof Integer) {
+                rows = (Integer) (rowsValueAsObject);
+            } else if (rowsValueAsObject instanceof String) {
+                rows = Integer.parseInt((String) rowsValueAsObject);
+            } else {
+                throw new IllegalArgumentException("pp parameter must "
+                        + "be specified as either an integer or a "
+                        + "string");
             }
-
-            solrQuery.set(DisMaxParams.ALTQ, "*:*");
-
-            // see Portal (1) views/includes/search-view.blade.php for the
-            // fields that must be returned for the "main" search function,
-            // (2) assets/templates/widgetDirective.html and
-            // assets/js/vocabDisplayDirective.js for the fields needed
-            // for the Widget Explorer. The Widget Explorer needs
-            // "sissvoc_endpoint" added to the list required by the "main"
-            // search. NB: highlighting can/does also return snippets
-            // from other fields not listed in fl (which is good!).
-            // OWNER field is required (so far, only) by this method,
-            // to include in analytics logging.
-            solrQuery.setFields(
-                    ID, LAST_UPDATED, SLUG, STATUS, TITLE, ACRONYM,
-                    PUBLISHER, DESCRIPTION, WIDGETABLE,
-                    SISSVOC_ENDPOINT, OWNER);
-            // Ensure that the highlight fields are set above, corresponding
-            // to the fields listed in the QF and PQF parameters.
-            setQueryFields(solrQuery);
-
-            for (Entry<String, Object> filterEntry : filters.entrySet()) {
-                Object value = filterEntry.getValue();
-                String filterKey = filterEntry.getKey();
-                switch (filterKey) {
-                case "q":
-                    String stringValue = (String) value;
-                    if (StringUtils.isNotBlank(stringValue)) {
-                        solrQuery.setQuery(stringValue);
-                        queryIsSet = true;
-                        filtersAndResultsExtracted.add(
-                                Analytics.SEARCH_Q_FIELD);
-                        filtersAndResultsExtracted.add(stringValue);
-                    }
-                    break;
-                case "p":
-                    // Support both "p":2 and "p":"2".
-                    int page;
-                    Object pValueAsObject = filterEntry.getValue();
-                    if (pValueAsObject instanceof Integer) {
-                        page = (Integer) (pValueAsObject);
-                    } else if (pValueAsObject instanceof String) {
-                        page = Integer.parseInt((String) pValueAsObject);
-                    } else {
-                        throw new IllegalArgumentException("p parameter must "
-                                + "be specified as either an integer or a "
-                                + "string");
-                    }
-                    if (page > 1) {
-                        int start = rows * (page - 1);
-                        solrQuery.setStart(start);
-                    }
-                    filtersAndResultsExtracted.add(Analytics.SEARCH_P_FIELD);
-                    filtersAndResultsExtracted.add(page);
-                    break;
-                case "pp":
-                    // We've already seen this, above.
-                    break;
-                case "sort":
-                    Object ssoValueAsObject = filterEntry.getValue();
-                    if (ssoValueAsObject instanceof String) {
-                        try {
-                            searchSortOrder = SearchSortOrder.fromValue(
-                                    (String) ssoValueAsObject);
-                        } catch (IllegalArgumentException e) {
-                            throw new IllegalArgumentException("sort "
-                                    + "parameter must be one of the "
-                                    + "supported values");
-                        }
-                    }
-                    // searchSortOrder remains null if no value specified,
-                    // or the value specified was not a string.
-                    break;
-                case WIDGETABLE:
-                    String widgetableValue;
-                    widgetableValue = "+\""
-                            + StringEscapeUtils.escapeEcmaScript(
-                                    value.toString()) + "\"";
-                    solrQuery.addFilterQuery(WIDGETABLE
-                            + ":(" + widgetableValue + ")");
-                    filtersAndResultsExtracted.add(
-                            Analytics.SEARCH_WIDGETABLE_FIELD);
-                    if (value instanceof Boolean) {
-                        filtersAndResultsExtracted.add(value);
-                    } else {
-                        filtersAndResultsExtracted.add(BooleanUtils.toBoolean(
-                                value.toString()));
-                    }
-                    break;
-                case ACCESS:
-                case FORMAT:
-                case LANGUAGE:
-                case LICENCE:
-                case PUBLISHER:
-                case SUBJECT_LABELS:
-                    // In the following, support values that are _either_
-                    // just a string, or an _array_ of strings.
-                    String filterStringValue;
-                    String logFieldName = filterArrays.get(filterKey);
-                    if (value instanceof ArrayList) {
-                        if (((ArrayList<?>) value).isEmpty()) {
-                            // The portal does send empty lists. In this case,
-                            // don't add anything to the query.
-                            break;
-                        }
-                        @SuppressWarnings("unchecked")
-                        String filterStringValues = ((ArrayList<String>) value).
-                                stream().
-                                map(v -> "\""
-                                        + StringEscapeUtils.escapeEcmaScript(v)
-                                        + "\"").
-                                collect(Collectors.joining(" "));
-                        filterStringValue = filterStringValues;
-                        filtersAndResultsExtracted.add(logFieldName);
-                        filtersAndResultsExtracted.add(value);
-                    } else {
-                        filterStringValue = "\""
-                                + StringEscapeUtils.escapeEcmaScript(
-                                        value.toString()) + "\"";
-                        filtersAndResultsExtracted.add(logFieldName);
-                        filtersAndResultsExtracted.add(
-                                new String[] {value.toString()});
-                    }
-                    addFilterQuery(solrQuery, jsonFacets, facetsActive,
-                            filterKey, filterStringValue);
-                    break;
-                default:
-                    // For now, ignore it.
-                    break;
-                }
+            if (rows < 0) {
+                /* If a negative value specified, the caller really
+                 * wants "all" rows. Unfortunately, Solr does not
+                 * directly support that. See the Solr doc. */
+                rows = RIDICULOUSLY_LARGE_VALUE;
             }
         }
-
-        // We can now set rows.
-        solrQuery.setRows(rows);
+        // We can now set the rows param.
+        if (countOnly) {
+            // We don't want any results; ignore any user-specified
+            // or default value.
+            solrQuery.setRows(0);
+        } else {
+            solrQuery.setRows(rows);
+        }
         // Always log the value of rows that we use, whether or not
         // the user provided a value for it.
         filtersAndResultsExtracted.add(Analytics.SEARCH_PP_FIELD);
         filtersAndResultsExtracted.add(rows);
+
+        solrQuery.set(DisMaxParams.ALTQ, "*:*");
+
+        // see Portal (1) views/includes/search-view.blade.php for the
+        // fields that must be returned for the "main" search function,
+        // (2) assets/templates/widgetDirective.html and
+        // assets/js/vocabDisplayDirective.js for the fields needed
+        // for the Widget Explorer. The Widget Explorer needs
+        // "sissvoc_endpoint" added to the list required by the "main"
+        // search. NB: highlighting can/does also return snippets
+        // from other fields not listed in fl (which is good!).
+        // OWNER field is required (so far, only) by this method,
+        // to include in analytics logging.
+        solrQuery.setFields(
+                ID, LAST_UPDATED, SLUG, STATUS, TITLE, ACRONYM,
+                PUBLISHER, DESCRIPTION, WIDGETABLE,
+                SISSVOC_ENDPOINT, OWNER);
+        // Ensure that the highlight fields are set above, corresponding
+        // to the fields listed in the QF and PQF parameters.
+        setQueryFields(solrQuery);
+
+        for (Entry<String, Object> filterEntry : filters.entrySet()) {
+            Object value = filterEntry.getValue();
+            String filterKey = filterEntry.getKey();
+            switch (filterKey) {
+            case "q":
+                String stringValue = (String) value;
+                if (StringUtils.isNotBlank(stringValue)) {
+                    solrQuery.setQuery(stringValue);
+                    queryIsSet = true;
+                    filtersAndResultsExtracted.add(
+                            Analytics.SEARCH_Q_FIELD);
+                    filtersAndResultsExtracted.add(stringValue);
+                }
+                break;
+            case "p":
+                // Support both "p":2 and "p":"2".
+                int page;
+                Object pValueAsObject = filterEntry.getValue();
+                if (pValueAsObject instanceof Integer) {
+                    page = (Integer) (pValueAsObject);
+                } else if (pValueAsObject instanceof String) {
+                    page = Integer.parseInt((String) pValueAsObject);
+                } else {
+                    throw new IllegalArgumentException("p parameter must "
+                            + "be specified as either an integer or a "
+                            + "string");
+                }
+                if (page > 1) {
+                    int start = rows * (page - 1);
+                    solrQuery.setStart(start);
+                }
+                filtersAndResultsExtracted.add(Analytics.SEARCH_P_FIELD);
+                filtersAndResultsExtracted.add(page);
+                break;
+            case "pp":
+                // We've already seen this, above.
+                break;
+            case "sort":
+                Object ssoValueAsObject = filterEntry.getValue();
+                if (ssoValueAsObject instanceof String) {
+                    try {
+                        searchSortOrder = SearchSortOrder.fromValue(
+                                (String) ssoValueAsObject);
+                    } catch (IllegalArgumentException e) {
+                        throw new IllegalArgumentException("sort "
+                                + "parameter must be one of the "
+                                + "supported values");
+                    }
+                }
+                // searchSortOrder remains null if no value specified,
+                // or the value specified was not a string.
+                break;
+            case WIDGETABLE:
+                String widgetableValue;
+                widgetableValue = "+\""
+                        + StringEscapeUtils.escapeEcmaScript(
+                                value.toString()) + "\"";
+                solrQuery.addFilterQuery(WIDGETABLE
+                        + ":(" + widgetableValue + ")");
+                filtersAndResultsExtracted.add(
+                        Analytics.SEARCH_WIDGETABLE_FIELD);
+                if (value instanceof Boolean) {
+                    filtersAndResultsExtracted.add(value);
+                } else {
+                    filtersAndResultsExtracted.add(BooleanUtils.toBoolean(
+                            value.toString()));
+                }
+                break;
+            case ACCESS:
+            case FORMAT:
+            case LANGUAGE:
+            case LICENCE:
+            case PUBLISHER:
+            case SUBJECT_LABELS:
+                // In the following, support values that are _either_
+                // just a string, or an _array_ of strings.
+                String filterStringValue;
+                String logFieldName = filterArrays.get(filterKey);
+                if (value instanceof ArrayList) {
+                    if (((ArrayList<?>) value).isEmpty()) {
+                        // The portal does send empty lists. In this case,
+                        // don't add anything to the query.
+                        break;
+                    }
+                    @SuppressWarnings("unchecked")
+                    String filterStringValues = ((ArrayList<String>) value).
+                            stream().
+                            map(v -> "\""
+                                    + StringEscapeUtils.escapeEcmaScript(v)
+                                    + "\"").
+                            collect(Collectors.joining(" "));
+                    filterStringValue = filterStringValues;
+                    filtersAndResultsExtracted.add(logFieldName);
+                    filtersAndResultsExtracted.add(value);
+                } else {
+                    filterStringValue = "\""
+                            + StringEscapeUtils.escapeEcmaScript(
+                                    value.toString()) + "\"";
+                    filtersAndResultsExtracted.add(logFieldName);
+                    filtersAndResultsExtracted.add(
+                            new String[] {value.toString()});
+                }
+                addFilterQuery(solrQuery, jsonFacets, facetsActive,
+                        filterKey, filterStringValue);
+                break;
+            default:
+                // For now, ignore it.
+                break;
+            }
+        }
+
         // If there was no query specified, get all documents,
         // and sort by title_sort.
         if (!queryIsSet) {
@@ -493,7 +525,7 @@ public final class SearchRegistryIndex {
         filtersAndResultsExtracted.add(searchSortOrder.value());
 
         trimSolrFacets(jsonFacets, facetsActive);
-        if (!jsonFacets.isEmpty()) {
+        if (!countOnly && !jsonFacets.isEmpty()) {
             solrQuery.add("json.facet", Utils.toJSONString(jsonFacets));
         }
 
@@ -516,11 +548,10 @@ public final class SearchRegistryIndex {
             if (logResults) {
                 SolrDocumentList solrDocumentList =
                         responseQuery.getResults();
-                List<Integer> resultIds = new ArrayList<>();
+                List<String> resultIds = new ArrayList<>();
                 List<String> resultOwners = new ArrayList<>();
                 for (SolrDocument sd : solrDocumentList) {
-                    resultIds.add(Integer.valueOf(
-                            (String) sd.getFieldValue(ID)));
+                    resultIds.add((String) sd.getFieldValue(ID));
                     resultOwners.add((String) sd.getFieldValue(OWNER));
                 }
                 LOGGER.debug("resultIds: " + resultIds);
