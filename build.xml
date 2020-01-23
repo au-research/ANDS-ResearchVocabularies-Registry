@@ -747,6 +747,40 @@
     </java>
   </target>
 
+  <!-- Perform migration of access point hostnames.
+       Change the parameters to suit, before running! -->
+  <path id="migrate-accesspoint-hostname.classpath">
+    <pathelement path="${build}" />
+    <fileset dir="lib">
+      <include name="**/*.jar" />
+      <exclude name="**/*javadoc*.jar" />
+      <exclude name="**/*sources*.jar" />
+    </fileset>
+    <fileset dir="build-jar">
+      <include name="*.jar" />
+    </fileset>
+  </path>
+  <target name="migrate-accesspoint-hostname"
+          depends="compile-main,registry-db-model-jar">
+    <java
+        fork="true"
+        failonerror="true"
+        classname="au.org.ands.vocabs.registry.db.utils.migration.MigrateAccessPointHostname"
+        classpathref="migrate-accesspoint-hostname.classpath"
+      >
+      <arg value="demo.ands.org.au/repository/openrdf-sesame/"/>
+      <arg value="demo.vocabs.ardc.edu.au/repository/openrdf-sesame/"/>
+      <arg value="demo.ands.org.au/vocabs-registry/api/resource/downloads/"/>
+      <arg value="demo.vocabs.ardc.edu.au/registry/api/resource/downloads/"/>
+      <arg value="demo.ands.org.au/repository/api/sparql"/>
+      <arg value="demo.vocabs.ardc.edu.au/repository/api/sparql"/>
+      <arg value="demo.ands.org.au/repository/api/lda"/>
+      <arg value="demo.vocabs.ardc.edu.au/repository/api/lda"/>
+      <sysproperty key="REGISTRY_PROPS_FILE"
+                   value="conf/registry.properties" />
+    </java>
+  </target>
+
   <!-- Coding conventions, style, static analysis -->
 
   <target name="checkstyle"
