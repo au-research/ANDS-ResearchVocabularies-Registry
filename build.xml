@@ -432,6 +432,10 @@
            includeantruntime="false" source="${source}" target="${target}">
       <src path="src/test/java" />
       <classpath refid="compile-test.classpath" />
+      <!-- Add -parameters for use by Hibernate Validator's
+           ReflectionParameterNameProvider, which we mention
+           in validation.xml. -->
+      <compilerarg line="-parameters" />
     </javac>
   </target>
 
