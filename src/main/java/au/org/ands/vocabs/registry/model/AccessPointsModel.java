@@ -261,9 +261,11 @@ public class AccessPointsModel extends ModelBase {
     protected void deleteOnlyCurrent() {
         for (Integer vId : currentAPs.keySet()) {
             for (AccessPoint ap : ListUtils.emptyIfNull(currentAPs.get(vId))) {
-                List<Subtask> subtaskList =
-                        WorkflowMethods.deleteAccessPoint(ap);
-                if (subtaskList == null) {
+                Pair<Boolean, List<Subtask>> deleteResult =
+                        WorkflowMethods.deleteAccessPoint(ap, true);
+                boolean doDatabaseDeletion = deleteResult.getLeft();
+                List<Subtask> subtaskList = deleteResult.getRight();
+                if (doDatabaseDeletion) {
                     TemporalUtils.makeHistorical(ap, nowTime());
                     ap.setModifiedBy(modifiedBy());
                     AccessPointDAO.updateAccessPoint(em(), ap);
@@ -273,10 +275,9 @@ public class AccessPointsModel extends ModelBase {
                             ap.getAccessPointId(), nowTime(),
                             RegistryEventEventType.DELETED, modifiedBy(),
                             ap, null);
-                } else {
-                    accumulateSubtasks(vocabularyModel.getCurrentVocabulary(),
-                            currentVersions.get(vId), subtaskList);
                 }
+                accumulateSubtasks(vocabularyModel.getCurrentVocabulary(),
+                        currentVersions.get(vId), subtaskList);
             }
         }
         currentAPs.clear();
@@ -352,9 +353,11 @@ public class AccessPointsModel extends ModelBase {
             List<AccessPoint> apsToRemove = new ArrayList<>();
             if (currentAPList != null) {
                 for (AccessPoint ap : currentAPList) {
-                    List<Subtask> subtaskList =
-                            WorkflowMethods.deleteAccessPoint(ap);
-                    if (subtaskList == null) {
+                    Pair<Boolean, List<Subtask>> deleteResult =
+                            WorkflowMethods.deleteAccessPoint(ap, true);
+                    boolean doDatabaseDeletion = deleteResult.getLeft();
+                    List<Subtask> subtaskList = deleteResult.getRight();
+                    if (doDatabaseDeletion) {
                         TemporalUtils.makeHistorical(ap, nowTime());
                         ap.setModifiedBy(modifiedBy());
                         AccessPointDAO.updateAccessPoint(em(), ap);
@@ -382,12 +385,10 @@ public class AccessPointsModel extends ModelBase {
                                 RegistryEventEventType.CREATED, modifiedBy(),
                                 null, newAP);
                         draftAPs.add(vId, newAP);
-                    } else {
-                        // Need the workflow to remove it.
-                        accumulateSubtasks(
-                                vocabularyModel.getCurrentVocabulary(),
-                                currentVersions.get(vId), subtaskList);
                     }
+                    accumulateSubtasks(
+                            vocabularyModel.getCurrentVocabulary(),
+                            currentVersions.get(vId), subtaskList);
                 }
             }
             for (AccessPoint ap : apsToRemove) {
@@ -426,9 +427,11 @@ public class AccessPointsModel extends ModelBase {
         List<AccessPoint> apsToRemove = new ArrayList<>();
         if (currentAPList != null) {
             for (AccessPoint ap : currentAPList) {
-                List<Subtask> subtaskList =
-                        WorkflowMethods.deleteAccessPoint(ap);
-                if (subtaskList == null) {
+                Pair<Boolean, List<Subtask>> deleteResult =
+                        WorkflowMethods.deleteAccessPoint(ap, true);
+                boolean doDatabaseDeletion = deleteResult.getLeft();
+                List<Subtask> subtaskList = deleteResult.getRight();
+                if (doDatabaseDeletion) {
                     // No more to do.
                     // Make the existing row historical.
                     TemporalUtils.makeHistorical(ap, nowTime());
@@ -442,10 +445,9 @@ public class AccessPointsModel extends ModelBase {
                             ap, null);
                     // Remove from our own records.
                     apsToRemove.add(ap);
-                } else {
-                    accumulateSubtasks(vocabularyModel.getCurrentVocabulary(),
-                            currentVersions.get(versionId), subtaskList);
                 }
+                accumulateSubtasks(vocabularyModel.getCurrentVocabulary(),
+                        currentVersions.get(versionId), subtaskList);
             }
         }
         for (AccessPoint ap : apsToRemove) {
@@ -856,9 +858,14 @@ public class AccessPointsModel extends ModelBase {
         public void visitDeleteCommand(final AccessPointElement ape) {
             Integer versionId = ape.getVersionId();
             AccessPoint apToDelete = ape.getDbAP();
-            List<Subtask> subtaskList =
-                    WorkflowMethods.deleteAccessPoint(apToDelete);
-            if (subtaskList == null) {
+            // NB: we pass false as the second parameter, because
+            // we know we're not deleting this Version. (Version deletions
+            // happen via notifyDeleteCurrentVersion().)
+            Pair<Boolean, List<Subtask>> deleteResult =
+                    WorkflowMethods.deleteAccessPoint(apToDelete, false);
+            boolean doDatabaseDeletion = deleteResult.getLeft();
+            List<Subtask> subtaskList = deleteResult.getRight();
+            if (doDatabaseDeletion) {
                 // No more to do.
                 // Make the existing row historical.
                 TemporalUtils.makeHistorical(apToDelete, nowTime());
@@ -872,10 +879,9 @@ public class AccessPointsModel extends ModelBase {
                         apToDelete.getAccessPointId(), nowTime(),
                         RegistryEventEventType.DELETED, modifiedBy(),
                         apToDelete, null);
-            } else {
-                accumulateSubtasks(vocabularyModel.getCurrentVocabulary(),
-                        currentVersions.get(versionId), subtaskList);
             }
+            accumulateSubtasks(vocabularyModel.getCurrentVocabulary(),
+                    currentVersions.get(versionId), subtaskList);
             // Was a file access point deleted, and does the version have
             // the import flag set? If so, need to force re-importing.
             if (apToDelete.getType() == AccessPointType.FILE
