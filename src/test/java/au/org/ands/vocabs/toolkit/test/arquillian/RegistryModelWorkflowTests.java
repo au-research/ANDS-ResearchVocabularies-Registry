@@ -8,6 +8,7 @@ import static au.org.ands.vocabs.toolkit.test.utils.DatabaseSelector.ROLES;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
@@ -37,6 +38,7 @@ import au.org.ands.vocabs.registry.db.dao.VocabularyIdDAO;
 import au.org.ands.vocabs.registry.db.entity.AccessPoint;
 import au.org.ands.vocabs.registry.db.entity.VocabularyId;
 import au.org.ands.vocabs.registry.db.internal.ApSesameDownload;
+import au.org.ands.vocabs.registry.db.internal.ApSissvoc;
 import au.org.ands.vocabs.registry.enums.AccessPointType;
 import au.org.ands.vocabs.registry.model.ModelMethods;
 import au.org.ands.vocabs.registry.model.VocabularyModel;
@@ -844,9 +846,15 @@ public class RegistryModelWorkflowTests extends ArquillianBaseTest {
                 "test/tests/" + testName + "/test-registry-results.xml");
     }
 
-    /** Test of changing a version slug, when there is a Sesame
-     * repository in play. In particular, make sure that after deletion
-     * of the version, the Sesame repo is gone.
+    /** Test of changing a version slug, when there are access points
+     * in play that in some way use the version slug: both Sesame
+     * and SISSVoc. We don't specify the force-workflow flag; we shouldn't
+     * have to.
+     * Nevertheless, we require that the access points that use the old
+     * slug are deleted/made historical. But we also require that
+     * the concept-related subtasks aren't re-rerun in this case;
+     * they don't need to be.
+     * Make sure that after deletion of the version, the Sesame repo is gone.
      * @throws DatabaseUnitException If a problem with DbUnit.
      * @throws IOException If a problem getting test data for DbUnit,
      *          or reading JSON from the correct and test output files.
@@ -856,6 +864,7 @@ public class RegistryModelWorkflowTests extends ArquillianBaseTest {
      * @throws OpenRDFException If there is a problem connecting with Sesame.
      *  */
     @Test
+    @SuppressWarnings("checkstyle:MethodLength")
     public final void testChangeVersionSlug1() throws
     DatabaseUnitException, IOException, SQLException, JAXBException,
     OpenRDFException {
@@ -871,7 +880,9 @@ public class RegistryModelWorkflowTests extends ArquillianBaseTest {
                 "test/tests/" + testName + "/test-vocabulary1.xml",
                 ValidationMode.CREATE);
         EntityManager em = null;
-        List<AccessPoint> aps = null;
+        List<AccessPoint> sesameAPs = null;
+        List<AccessPoint> sissvocAPsOldSlug = null;
+        List<AccessPoint> sissvocAPsNewSlug = null;
 
         // Create the vocabulary.
         try {
@@ -889,14 +900,20 @@ public class RegistryModelWorkflowTests extends ArquillianBaseTest {
             VocabularyModel vm = ModelMethods.createVocabularyModel(em, 1);
             ModelMethods.applyChanges(vm, "TEST", nowTime1, vocabulary);
             txn.commit();
-            aps = AccessPointDAO.getCurrentAccessPointListForVersionByType(1,
+            sesameAPs = AccessPointDAO.
+                    getCurrentAccessPointListForVersionByType(1,
                     AccessPointType.SESAME_DOWNLOAD, em);
+            sissvocAPsOldSlug = AccessPointDAO.
+                    getCurrentAccessPointListForVersionByType(1,
+                    AccessPointType.SISSVOC, em);
         } catch (Exception e) {
             if (em != null) {
                 em.getTransaction().rollback();
                 throw e;
             }
         }
+//        ArquillianTestUtils.exportFullDbUnitData(REGISTRY,
+//        testName + "-out1.xml");
         ArquillianTestUtils.
         compareDatabaseCurrentAndExpectedContentsIgnoreTaskTimestamps(
                 REGISTRY,
@@ -906,11 +923,11 @@ public class RegistryModelWorkflowTests extends ArquillianBaseTest {
                 "test/tests/" + testName + "/test-vocabulary2.xml",
                 ValidationMode.UPDATE);
 
-        // Now confirm that the Sesame repo exists.
-        Assert.assertEquals(aps.size(), 1, "Not exactly one sesameDownload "
-                + "access point");
+        // Confirm that the Sesame repo exists.
+        Assert.assertEquals(sesameAPs.size(), 1,
+                "Not exactly one sesameDownload access point");
         ApSesameDownload apSesameDownload = JSONSerialization.
-                deserializeStringAsJson(aps.get(0).getData(),
+                deserializeStringAsJson(sesameAPs.get(0).getData(),
                         ApSesameDownload.class);
         String apServerBase = apSesameDownload.getServerBase();
         String apRepositoryID = apSesameDownload.getRepository();
@@ -923,6 +940,17 @@ public class RegistryModelWorkflowTests extends ArquillianBaseTest {
             throw e;
         }
 
+        // Confirm that the SISSVoc spec file exists.
+        Assert.assertEquals(sissvocAPsOldSlug.size(), 1,
+                "Not exactly one sissvoc access point");
+        ApSissvoc apSissvoc = JSONSerialization.
+                deserializeStringAsJson(sissvocAPsOldSlug.get(0).getData(),
+                        ApSissvoc.class);
+        String apSissvocOldSlugPath = apSissvoc.getPath();
+        Path apSissvocOldSlugPathPath = Paths.get(apSissvocOldSlugPath);
+        Assert.assertTrue(Files.exists(apSissvocOldSlugPathPath),
+                "SISSVoc spec file missing");
+
         // Now change the version slug.
         try {
             EntityTransaction txn = em.getTransaction();
@@ -930,29 +958,52 @@ public class RegistryModelWorkflowTests extends ArquillianBaseTest {
             VocabularyModel vm = ModelMethods.createVocabularyModel(em, 1);
             ModelMethods.applyChanges(vm, "TEST", nowTime2, vocabulary);
             txn.commit();
+            sissvocAPsNewSlug = AccessPointDAO.
+                    getCurrentAccessPointListForVersionByType(1,
+                    AccessPointType.SISSVOC, em);
         } catch (Exception e) {
             if (em != null) {
                 em.getTransaction().rollback();
                 throw e;
             }
         }
+//        ArquillianTestUtils.exportFullDbUnitData(REGISTRY,
+//                testName + "-out2.xml");
         ArquillianTestUtils.
         compareDatabaseCurrentAndExpectedContentsIgnoreTaskTimestamps(
                 REGISTRY,
                 "test/tests/" + testName + "/test-registry-results-2.xml");
 
-        // Now confirm that the Sesame repo still exists, and that
-        // there isn't one with the _new_ slug.
+        // Now confirm that the Sesame repo for the _old_ slug no longer
+        // exists, and that there _is_ one with the _new_ slug.
         try {
             manager = RepositoryProvider.getRepositoryManager(apServerBase);
             Repository repository = manager.getRepository(apRepositoryID);
-            Assert.assertNotNull(repository, "Repository no longer exists");
+            Assert.assertNull(repository,
+                    "Repository with old version slug still exists");
             repository = manager.getRepository("ands-curated_rifcs_version-2");
-            Assert.assertNull(repository, "Repository with new version slug "
-                    + "now exists");
+            Assert.assertNotNull(repository,
+                    "Repository with new version slug does not now exist");
         } catch (RepositoryConfigException | RepositoryException e) {
             throw e;
         }
+
+        // Confirm that the SISSVoc spec file for the _old_ slug
+        // is now an empty file, and that there is spec file
+        // for the _new_ slug.
+        Assert.assertTrue(Files.exists(apSissvocOldSlugPathPath),
+                "SISSVoc spec file for old slug was deleted");
+        Assert.assertTrue(Files.size(apSissvocOldSlugPathPath) == 0,
+                "SISSVoc spec file for old slug is non-empty");
+        Assert.assertEquals(sissvocAPsNewSlug.size(), 1,
+                "Not exactly one sissvoc access point");
+        apSissvoc = JSONSerialization.
+                deserializeStringAsJson(sissvocAPsNewSlug.get(0).getData(),
+                        ApSissvoc.class);
+        String apSissvocNewSlugPath = apSissvoc.getPath();
+        Path apSissvocNewSlugPathPath = Paths.get(apSissvocNewSlugPath);
+        Assert.assertTrue(Files.exists(apSissvocNewSlugPathPath),
+                "SISSVoc spec file for new slug does not now exist");
 
         // Now delete the version.
         vocabulary = RegistryTestUtils.
@@ -975,12 +1026,14 @@ public class RegistryModelWorkflowTests extends ArquillianBaseTest {
                 em.close();
             }
         }
+//      ArquillianTestUtils.exportFullDbUnitData(REGISTRY,
+//      testName + "-out3.xml");
         ArquillianTestUtils.
         compareDatabaseCurrentAndExpectedContentsIgnoreTaskTimestamps(
                 REGISTRY,
                 "test/tests/" + testName + "/test-registry-results-3.xml");
 
-        // Now confirm that the Sesame repo _no longer_ exists.
+        // Confirm that the Sesame repo _no longer_ exists.
         try {
             manager = RepositoryProvider.getRepositoryManager(apServerBase);
             Repository repository = manager.getRepository(apRepositoryID);
@@ -994,12 +1047,18 @@ public class RegistryModelWorkflowTests extends ArquillianBaseTest {
         } catch (RepositoryConfigException | RepositoryException e) {
             throw e;
         }
-    }
 
+        // Confirm that the SISSVoc spec file for the _new_ slug
+        // is now an empty file.
+        Assert.assertTrue(Files.exists(apSissvocNewSlugPathPath),
+                "SISSVoc spec file for new slug was deleted");
+        Assert.assertTrue(Files.size(apSissvocNewSlugPathPath) == 0,
+                "SISSVoc spec file for new slug is non-empty");
+    }
 
     // Code to do a database dump; copy/paste and use as required
     // during development of a test.
 //  ArquillianTestUtils.exportFullDbUnitData(REGISTRY,
-//  "testDeleteOnlyPublished-out.xml");
+//  testName + "-out.xml");
 
 }
