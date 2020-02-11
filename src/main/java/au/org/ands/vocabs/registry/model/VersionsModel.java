@@ -792,9 +792,12 @@ public class VersionsModel extends ModelBase {
 
             // We'll make a new Version instance if either:
             // * doConceptBrowseSubtask, or
+            // * doResourceDocsSubtask, or
+            // * slugChanged, or
             // * the version metadata has changed, or
             // * force-workflow is true
             if (doConceptBrowseSubtask || doResourceDocsSubtask
+                    || slugChanged
                     || !ComparisonUtils.isEqualVersion(existingVersion,
                             schemaVersion)
                     || BooleanUtils.isTrue(schemaVersion.isForceWorkflow())) {
