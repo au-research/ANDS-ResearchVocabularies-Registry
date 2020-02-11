@@ -753,10 +753,8 @@ public class VersionsModel extends ModelBase {
             // Here, we examine the three components to see if any
             // have changed.
             boolean slugChanged = false;
-            if ((!updatedVocabulary.getOwner().equals(
-                    vocabularyModel.getCurrentVocabulary().getOwner()))
-                    || (!updatedVocabulary.getSlug().equals(
-                            vocabularyModel.getCurrentVocabulary().getSlug()))
+            if (vocabularyModel.isOwnerChanged()
+                    || vocabularyModel.isSlugChanged()
                     || (!schemaVersion.getSlug().equals(
                             existingVersion.getSlug()))) {
                 logger.info(
