@@ -27,6 +27,15 @@ public class TestLanguageConversion {
         Assert.assertEquals(EntityIndexer.resolveLanguage("ru"), "Russian");
         Assert.assertEquals(EntityIndexer.resolveLanguage("zh"), "Chinese");
 
+        // Check resolution of language variants. Not yet _officially_
+        // supported!
+        Assert.assertEquals(EntityIndexer.resolveLanguage("en-CA"),
+                "English (Canada)");
+        Assert.assertEquals(EntityIndexer.resolveLanguage("en-MT"),
+                "English (Malta)");
+        Assert.assertEquals(EntityIndexer.resolveLanguage("es-UY"),
+                "Spanish (Uruguay)");
+
         // Check resolution of values that aren't valid language tags.
         Assert.assertEquals(EntityIndexer.resolveLanguage("English"),
                 "English");
