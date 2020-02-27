@@ -120,6 +120,8 @@ public final class Owners {
      */
     public static synchronized void clear() {
         cache.clear();
+        // Put back the "magic" key "*" -> 0.
+        cache.put(ALL_OWNERS, ALL_OWNERS_OWNER_ID);
     }
 
 }
