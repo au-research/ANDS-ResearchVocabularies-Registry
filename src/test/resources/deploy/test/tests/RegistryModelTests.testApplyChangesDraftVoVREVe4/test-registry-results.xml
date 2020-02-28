@@ -1,0 +1,60 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE dataset SYSTEM "../../dbunit-registry-export-choice.dtd" >
+<dataset>
+
+  <RELATED_ENTITY_IDS ID="1"/>
+  <RELATED_ENTITY_IDS ID="2"/>
+  <RELATED_ENTITY_IDS ID="3"/>
+  <RELATED_ENTITY_IDS ID="4"/>
+  <RELATED_ENTITY_IDS ID="5"/>
+
+  <RELATED_ENTITIES ID="1" DATA="{''email'':''services@ands.org.au'',''url'':[''http://ands.org.au/'']}" END_DATE="9999-12-01 00:00:00.0" MODIFIED_BY="SYSTEM" OWNER="ANDS-Curated" RELATED_ENTITY_ID="1" START_DATE="2015-11-26 10:04:05.0" TITLE="Australian National Data Service" TYPE="PARTY"/>
+  <RELATED_ENTITIES ID="2" DATA="{''email'':''agrovoc@fao.org'',''url'':[''http://www.fao.org/home/'']}" END_DATE="9999-12-01 00:00:00.0" MODIFIED_BY="SYSTEM" OWNER="ANDS" RELATED_ENTITY_ID="2" START_DATE="2016-09-23 09:52:50.0" TITLE="Food and Agriculture Organization (FAO)" TYPE="PARTY"/>
+  <RELATED_ENTITIES ID="3" DATA="{''email'':''agrovoc@fao.org'',''url'':[''http://www.fao.org/home/'']}" END_DATE="9999-12-01 00:00:00.0" MODIFIED_BY="SYSTEM" OWNER="ANDS-NC" RELATED_ENTITY_ID="3" START_DATE="2016-09-27 13:24:05.0" TITLE="Food and Agriculture Organization (FAO)" TYPE="PARTY"/>
+  <RELATED_ENTITIES ID="4" DATA="{''url'':[''http://www.usgs.gov'']}" END_DATE="9999-12-01 00:00:00.0" MODIFIED_BY="SYSTEM" OWNER="ANDS" RELATED_ENTITY_ID="4" START_DATE="2015-09-23 11:46:42.0" TITLE="United States Geological Survey" TYPE="PARTY"/>
+  <RELATED_ENTITIES ID="5" DATA="{}" END_DATE="9999-12-01 00:00:00.0" MODIFIED_BY="SYSTEM" OWNER="ANDS" RELATED_ENTITY_ID="5" START_DATE="2015-09-23 11:46:42.0" TITLE="Department of the Interior Office of Water Research and Technology" TYPE="PARTY"/>
+
+  <VOCABULARY_IDS ID="1"/>
+
+  <VOCABULARIES ID="1" DATA="{''subjects'':[{''label'':''INFORMATION AND COMPUTING SCIENCES'',''source'':''anzsrc-for'',''iri'':''http://purl.org/au-research/vocabulary/anzsrc-for/2008/08''}],''other-languages'':[],''acronym'':''RIF-CS'',''creation-date'':''2008-12-31'',''description'':''The RIF-CS schema is a data interchange format that supports the electronic exchange of collection and service descriptions. It organises information about collections and services into a format used by the Australian National Data Service (ANDS) Collections Registry. \n\nMore information on the RIF-CS Schema can be found at http://ands.org.au/guides/cpguide/cpgrifcs.html. \n\nWith assistance from the RIF-CS Advisory Board and user community, ANDS has developed a suggested vocabulary for use with the RIF-CS Schema. The vocabulary is comprised of suggested terms for specific elements of the schema. Use of the ANDS vocabulary with the RIF-CS Schema is not mandatory but is however recommended. Use of consistent terminology improves data discoverability and the precision of search operations. \n\nThe ANDS vocabularies are expected to be informed and developed further by the RIF-CS user community. Please contact services@ands.org.au if you have candidate vocabulary terms to be evaluated for possible inclusion in the ANDS vocabularies.'',''licence'':''CC-BY'',''primary-language'':''en'',''revision-cycle'':''Updated as required'',''title'':''Registry Interchange Format - Collections and Services (Vocabularies)''}" END_DATE="9999-12-01 00:00:00.0" MODIFIED_BY="SYSTEM" OWNER="ANDS-Curated" SLUG="rifcs" START_DATE="2015-06-24 10:56:30.0" STATUS="PUBLISHED" VOCABULARY_ID="1"/>
+  <VOCABULARIES ID="2" DATA="{''subjects'':[{''iri'':''http://purl.org/au-research/vocabulary/anzsrc-for/2008/08'',''label'':''INFORMATION AND COMPUTING SCIENCES'',''source'':''anzsrc-for''},{''iri'':''http://purl.org/au-research/vocabulary/anzsrc-for/2008/01'',''label'':''MATHEMATICAL SCIENCES'',''source'':''anzsrc-for''}],''other-languages'':[],''top-concepts'':[],''acronym'':''RIF-CS'',''creation-date'':''2008-12-31'',''description'':''The RIF-CS schema is a data interchange format that supports the electronic exchange of collection and service descriptions. It organises information about collections and services into a format used by the Australian National Data Service (ANDS) Collections Registry. More information on the RIF-CS Schema can be found at http://ands.org.au/guides/cpguide/cpgrifcs.html. With assistance from the RIF-CS Advisory Board and user community, ANDS has developed a suggested vocabulary for use with the RIF-CS Schema. The vocabulary is comprised of suggested terms for specific elements of the schema. Use of the ANDS vocabulary with the RIF-CS Schema is not mandatory but is however recommended. Use of consistent terminology improves data discoverability and the precision of search operations. The ANDS vocabularies are expected to be informed and developed further by the RIF-CS user community. Please contact services@ands.org.au if you have candidate vocabulary terms to be evaluated for possible inclusion in the ANDS vocabularies. Updated.'',''draft-created-date'':''2017-09-01T10:10'',''draft-modified-date'':''2017-10-01T10:10'',''licence'':''CC-BY'',''primary-language'':''en'',''revision-cycle'':''Updated as required'',''title'':''Registry Interchange Format - Collections and Services (Vocabularies)''}" END_DATE="9999-12-03 00:00:00.0" MODIFIED_BY="TEST" OWNER="ANDS-Curated" SLUG="rifcs" START_DATE="9999-12-02 00:00:00.0" STATUS="DRAFT" VOCABULARY_ID="1"/>
+
+  <VOCABULARY_RELATED_ENTITIES ID="1" END_DATE="9999-12-01 00:00:00.0" MODIFIED_BY="SYSTEM" RELATED_ENTITY_ID="1" RELATION="IMPLEMENTED_BY" START_DATE="2015-11-26 10:04:05.0" VOCABULARY_ID="1"/>
+  <VOCABULARY_RELATED_ENTITIES ID="2" END_DATE="9999-12-01 00:00:00.0" MODIFIED_BY="SYSTEM" RELATED_ENTITY_ID="1" RELATION="PUBLISHED_BY" START_DATE="2015-11-26 10:04:05.0" VOCABULARY_ID="1"/>
+  <VOCABULARY_RELATED_ENTITIES ID="3" END_DATE="9999-12-01 00:00:00.0" MODIFIED_BY="SYSTEM" RELATED_ENTITY_ID="1" RELATION="HAS_AUTHOR" START_DATE="2015-11-26 10:04:05.0" VOCABULARY_ID="1"/>
+  <VOCABULARY_RELATED_ENTITIES ID="4" END_DATE="9999-12-01 00:00:00.0" MODIFIED_BY="SYSTEM" RELATED_ENTITY_ID="1" RELATION="POINT_OF_CONTACT" START_DATE="2015-11-26 10:04:05.0" VOCABULARY_ID="1"/>
+  <VOCABULARY_RELATED_ENTITIES ID="5" END_DATE="9999-12-01 00:00:00.0" MODIFIED_BY="SYSTEM" RELATED_ENTITY_ID="2" RELATION="PUBLISHED_BY" START_DATE="2016-09-23 09:52:50.0" VOCABULARY_ID="1"/>
+  <VOCABULARY_RELATED_ENTITIES ID="6" END_DATE="9999-12-01 00:00:00.0" MODIFIED_BY="SYSTEM" RELATED_ENTITY_ID="3" RELATION="PUBLISHED_BY" START_DATE="2016-09-27 13:24:05.0" VOCABULARY_ID="1"/>
+
+  <VOCABULARY_RELATED_ENTITIES ID="7" END_DATE="9999-12-03 00:00:00.0" MODIFIED_BY="SYSTEM" RELATED_ENTITY_ID="1" RELATION="PUBLISHED_BY" START_DATE="9999-12-02 00:00:00.0" VOCABULARY_ID="1"/>
+  <VOCABULARY_RELATED_ENTITIES ID="8" END_DATE="9999-12-03 00:00:00.0" MODIFIED_BY="SYSTEM" RELATED_ENTITY_ID="1" RELATION="HAS_AUTHOR" START_DATE="9999-12-02 00:00:00.0" VOCABULARY_ID="1"/>
+  <VOCABULARY_RELATED_ENTITIES ID="9" END_DATE="9999-12-03 00:00:00.0" MODIFIED_BY="SYSTEM" RELATED_ENTITY_ID="1" RELATION="POINT_OF_CONTACT" START_DATE="9999-12-02 00:00:00.0" VOCABULARY_ID="1"/>
+  <VOCABULARY_RELATED_ENTITIES ID="10" END_DATE="9999-12-03 00:00:00.0" MODIFIED_BY="SYSTEM" RELATED_ENTITY_ID="3" RELATION="PUBLISHED_BY" START_DATE="9999-12-02 00:00:00.0" VOCABULARY_ID="1"/>
+  <VOCABULARY_RELATED_ENTITIES ID="11" END_DATE="9999-12-03 00:00:00.0" MODIFIED_BY="TEST" RELATED_ENTITY_ID="4" RELATION="PUBLISHED_BY" START_DATE="9999-12-02 00:00:00.0" VOCABULARY_ID="1"/>
+
+  <VERSION_IDS ID="1"/>
+  <VERSION_IDS ID="2"/>
+  <VERSION_IDS ID="3"/>
+
+  <VERSIONS ID="1" VERSION_ID="1" VOCABULARY_ID="1"
+            START_DATE="2014-10-01 10:10:00.0" END_DATE="9999-12-01 00:00:00.0"
+            MODIFIED_BY="SYSTEM" STATUS="SUPERSEDED" SLUG="version-1" RELEASE_DATE="2014-01"
+            DATA="{''note'':''Note for v1'',''title'':''Version 1''}"
+            />
+  <VERSIONS ID="2" VERSION_ID="2" VOCABULARY_ID="1"
+            START_DATE="2015-10-01 10:10:00.0" END_DATE="9999-12-01 00:00:00.0"
+            MODIFIED_BY="SYSTEM" STATUS="CURRENT" SLUG="version-2" RELEASE_DATE="2015-01"
+            DATA="{''note'':''Note for v2'',''title'':''Version 2''}"
+            />
+  <VERSIONS ID="3" VERSION_ID="2" VOCABULARY_ID="1"
+            START_DATE="9999-12-02 00:00:00.0" END_DATE="9999-12-03 00:00:00.0"
+            MODIFIED_BY="SYSTEM" STATUS="SUPERSEDED" SLUG="version-2" RELEASE_DATE="2015-01"
+            DATA="{''note'':''Note for v2 draft'',''title'':''Version 2''}"
+            />
+
+  <REGISTRY_EVENTS ID="1" ELEMENT_TYPE="VOCABULARIES" ELEMENT_ID="1" EVENT_DATE="2017-10-01 10:10:00.0" EVENT_TYPE="UPDATED" EVENT_USER="TEST" EVENT_DETAILS="{''id'':2,''status'':''draft''}" />
+  <REGISTRY_EVENTS ID="2" ELEMENT_TYPE="VERSIONS" ELEMENT_ID="3" EVENT_DATE="2017-10-01 10:10:00.0" EVENT_TYPE="DELETED" EVENT_USER="TEST" EVENT_DETAILS="{''draft'':true,''status'':''current''}" />
+
+  <OWNERS OWNER_ID="1" OWNER="ANDS-Curated" />
+
+</dataset>

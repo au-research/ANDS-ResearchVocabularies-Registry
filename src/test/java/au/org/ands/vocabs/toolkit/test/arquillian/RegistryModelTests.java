@@ -1402,6 +1402,24 @@ public class RegistryModelTests extends ArquillianBaseTest {
         }
     }
 
+    /** Test of updating a draft of a vocabulary
+     * that already has both existing published and draft instances.
+     * This particularly tests removing a version from the draft instance.
+     * Vocabulary, VocabularyRelatedEntity, and Version
+     * model elements are used.
+     * @throws DatabaseUnitException If a problem with DbUnit.
+     * @throws IOException If a problem getting test data for DbUnit,
+     *          or reading JSON from the correct and test output files.
+     * @throws SQLException If DbUnit has a problem performing
+     *           performing JDBC operations.
+     * @throws JAXBException If a problem loading vocabulary data.
+     *  */
+    @Test
+    public final void testApplyChangesDraftVoVREVe4() throws
+    DatabaseUnitException, IOException, SQLException, JAXBException {
+        scriptApplyChangesDraft2("testApplyChangesDraftVoVREVe4", false);
+    }
+
     /** Test script of getting the draft of a vocabulary in registry schema
      * format.
      * @param testName The name of the test calling this script. The name
