@@ -1,0 +1,117 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE dataset SYSTEM "../../dbunit-registry-export-choice.dtd" >
+<dataset>
+
+  <RELATED_ENTITY_IDS ID="1"/>
+  <RELATED_ENTITY_IDS ID="2"/>
+  <RELATED_ENTITY_IDS ID="3"/>
+  <RELATED_ENTITY_IDS ID="4"/>
+  <RELATED_ENTITY_IDS ID="5"/>
+
+  <RELATED_ENTITIES ID="1" START_DATE="2015-11-26 10:04:05.0" END_DATE="9999-12-01 00:00:00" RELATED_ENTITY_ID="1" MODIFIED_BY="SYSTEM" OWNER="ANDS-Curated" TYPE="PARTY" TITLE="Australian National Data Service" DATA="{&quot;email&quot;:&quot;services@ands.org.au&quot;,&quot;url&quot;:[&quot;http://ands.org.au/&quot;]}"/>
+  <RELATED_ENTITIES ID="2" START_DATE="2016-09-23 09:52:50.0" END_DATE="9999-12-01 00:00:00" RELATED_ENTITY_ID="2" MODIFIED_BY="SYSTEM" OWNER="ANDS" TYPE="PARTY" TITLE="Food and Agriculture Organization (FAO)" DATA="{&quot;email&quot;:&quot;agrovoc@fao.org&quot;,&quot;url&quot;:[&quot;http://www.fao.org/home/&quot;]}"/>
+  <RELATED_ENTITIES ID="3" START_DATE="2016-09-27 13:24:05.0" END_DATE="9999-12-01 00:00:00" RELATED_ENTITY_ID="3" MODIFIED_BY="SYSTEM" OWNER="ANDS-NC" TYPE="PARTY" TITLE="Food and Agriculture Organization (FAO)" DATA="{&quot;email&quot;:&quot;agrovoc@fao.org&quot;,&quot;url&quot;:[&quot;http://www.fao.org/home/&quot;]}"/>
+  <RELATED_ENTITIES ID="4" START_DATE="2015-09-23 11:46:42.0" END_DATE="9999-12-01 00:00:00" RELATED_ENTITY_ID="4" MODIFIED_BY="SYSTEM" OWNER="ANDS" TYPE="PARTY" TITLE="United States Geological Survey" DATA="{&quot;url&quot;:[&quot;http://www.usgs.gov&quot;]}"/>
+  <RELATED_ENTITIES ID="5" START_DATE="2015-09-23 11:46:42.0" END_DATE="9999-12-01 00:00:00" RELATED_ENTITY_ID="5" MODIFIED_BY="SYSTEM" OWNER="ANDS" TYPE="PARTY" TITLE="Department of the Interior Office of Water Research and Technology" DATA="{}"/>
+
+  <POOLPARTY_SERVERS ID="1" API_URL="http://hostname/PoolParty/" USERNAME="username" PASSWORD="password" />
+
+  <VOCABULARY_IDS ID="1"/>
+
+  <VOCABULARIES ID="1" START_DATE="2015-06-24 10:56:30.0" END_DATE="9999-12-01 00:00:00" VOCABULARY_ID="1" MODIFIED_BY="SYSTEM" STATUS="PUBLISHED" SLUG="rifcs" OWNER="ANDS-Curated" DATA="{''poolparty-project'':{''project-id'':''ABCDEF'',''server-id'':1},''subjects'':[{''label'':''INFORMATION AND COMPUTING SCIENCES'',''source'':''anzsrc-for'',''iri'':''http://purl.org/au-research/vocabulary/anzsrc-for/2008/08''}],''other-languages'':[],''acronym'':''RIF-CS'',''creation-date'':''2008-12-31'',''description'':''The RIF-CS schema is a data interchange format that supports the electronic exchange of collection and service descriptions. It organises information about collections and services into a format used by the Australian National Data Service (ANDS) Collections Registry. \n\nMore information on the RIF-CS Schema can be found at http://ands.org.au/guides/cpguide/cpgrifcs.html. \n\nWith assistance from the RIF-CS Advisory Board and user community, ANDS has developed a suggested vocabulary for use with the RIF-CS Schema. The vocabulary is comprised of suggested terms for specific elements of the schema. Use of the ANDS vocabulary with the RIF-CS Schema is not mandatory but is however recommended. Use of consistent terminology improves data discoverability and the precision of search operations. \n\nThe ANDS vocabularies are expected to be informed and developed further by the RIF-CS user community. Please contact services@ands.org.au if you have candidate vocabulary terms to be evaluated for possible inclusion in the ANDS vocabularies.'',''licence'':''CC-BY'',''primary-language'':''en'',''revision-cycle'':''Updated as required'',''title'':''Registry Interchange Format - Collections and Services (Vocabularies)''}"/>
+
+  <VOCABULARY_RELATED_ENTITIES ID="1" START_DATE="2015-11-26 10:04:05.0" END_DATE="9999-12-01 00:00:00" VOCABULARY_ID="1" RELATED_ENTITY_ID="1" MODIFIED_BY="SYSTEM" RELATION="IMPLEMENTED_BY"/>
+  <VOCABULARY_RELATED_ENTITIES ID="2" START_DATE="2015-11-26 10:04:05.0" END_DATE="9999-12-01 00:00:00" VOCABULARY_ID="1" RELATED_ENTITY_ID="1" MODIFIED_BY="SYSTEM" RELATION="PUBLISHED_BY"/>
+  <VOCABULARY_RELATED_ENTITIES ID="3" START_DATE="2015-11-26 10:04:05.0" END_DATE="9999-12-01 00:00:00" VOCABULARY_ID="1" RELATED_ENTITY_ID="1" MODIFIED_BY="SYSTEM" RELATION="HAS_AUTHOR"/>
+  <VOCABULARY_RELATED_ENTITIES ID="4" START_DATE="2015-11-26 10:04:05.0" END_DATE="9999-12-01 00:00:00" VOCABULARY_ID="1" RELATED_ENTITY_ID="1" MODIFIED_BY="SYSTEM" RELATION="POINT_OF_CONTACT"/>
+  <VOCABULARY_RELATED_ENTITIES ID="5" START_DATE="2016-09-23 09:52:50.0" END_DATE="9999-12-01 00:00:00" VOCABULARY_ID="1" RELATED_ENTITY_ID="2" MODIFIED_BY="SYSTEM" RELATION="PUBLISHED_BY"/>
+  <VOCABULARY_RELATED_ENTITIES ID="6" START_DATE="2016-09-27 13:24:05.0" END_DATE="9999-12-01 00:00:00" VOCABULARY_ID="1" RELATED_ENTITY_ID="3" MODIFIED_BY="SYSTEM" RELATION="PUBLISHED_BY"/>
+
+  <VERSION_IDS ID="1"/>
+  <VERSION_IDS ID="2"/>
+  <VERSION_IDS ID="3"/>
+
+  <VERSIONS ID="1" VERSION_ID="1" VOCABULARY_ID="1"
+            START_DATE="2013-10-01 10:10:00.0" END_DATE="9999-12-01 00:00:00.0"
+            MODIFIED_BY="SYSTEM" STATUS="SUPERSEDED" SLUG="version-1" RELEASE_DATE="2013-01"
+            DATA="{''browse-flag'':[],''do-import'':true,''do-poolparty-harvest'':true,''note'':''Note for v1'',''title'':''Version 1''}"
+            />
+  <VERSIONS ID="2" VERSION_ID="2" VOCABULARY_ID="1"
+            START_DATE="2014-10-01 10:10:00.0" END_DATE="9999-12-01 00:00:00.0"
+            MODIFIED_BY="SYSTEM" STATUS="SUPERSEDED" SLUG="version-2" RELEASE_DATE="2014-01"
+            DATA="{''browse-flag'':[],''do-import'':true,''do-poolparty-harvest'':true,''note'':''Note for v2'',''title'':''Version 2''}"
+            />
+  <VERSIONS ID="3" VERSION_ID="3" VOCABULARY_ID="1"
+            START_DATE="2015-10-01 10:10:00.0" END_DATE="9999-12-01 00:00:00.0"
+            MODIFIED_BY="SYSTEM" STATUS="CURRENT" SLUG="version-3" RELEASE_DATE="2015-01"
+            DATA="{''browse-flag'':[],''do-import'':true,''do-poolparty-harvest'':true,''note'':''Note for v3'',''title'':''Version 3''}"
+            />
+
+  <UPLOADS ID="1" MODIFIED_BY="SYSTEM" OWNER="ANDS-Curated"
+           FORMAT="TTL" FILENAME="test1.ttl" />
+  <UPLOADS ID="2" MODIFIED_BY="SYSTEM" OWNER="ANDS-Curated"
+           FORMAT="TTL" FILENAME="test2.ttl" />
+  <UPLOADS ID="3" MODIFIED_BY="SYSTEM" OWNER="ANDS-Curated"
+           FORMAT="TTL" FILENAME="test3.ttl" />
+  <UPLOADS ID="4" MODIFIED_BY="SYSTEM" OWNER="ANDS-Curated"
+           FORMAT="TTL" FILENAME="test4.ttl" />
+
+  <ACCESS_POINT_IDS ID="1"/>
+  <ACCESS_POINT_IDS ID="2"/>
+  <ACCESS_POINT_IDS ID="3"/>
+
+  <ACCESS_POINTS ID="1" ACCESS_POINT_ID="1" VERSION_ID="1"
+            START_DATE="2013-10-01 10:10:00.0" END_DATE="9999-12-01 00:00:00.0"
+            MODIFIED_BY="SYSTEM" SOURCE="USER" TYPE="FILE"
+            DATA="{''format'':''TTL'',''path'':''{TEMP}/RegistryModelWorkflowTests.testApplyChangesCurrentVoVREVeAPVAW12/1.ttl'',''upload-id'':1,''url'':''http://something''}"
+            />
+  <ACCESS_POINTS ID="2" ACCESS_POINT_ID="2" VERSION_ID="2"
+            START_DATE="2014-10-01 10:10:00.0" END_DATE="9999-12-01 00:00:00.0"
+            MODIFIED_BY="SYSTEM" SOURCE="USER" TYPE="FILE"
+            DATA="{''format'':''TTL'',''path'':''{TEMP}/RegistryModelWorkflowTests.testApplyChangesCurrentVoVREVeAPVAW12/2.ttl'',''upload-id'':2,''url'':''http://something''}"
+            />
+  <ACCESS_POINTS ID="3" ACCESS_POINT_ID="3" VERSION_ID="3"
+            START_DATE="2015-10-01 10:10:00.0" END_DATE="9999-12-01 00:00:00.0"
+            MODIFIED_BY="SYSTEM" SOURCE="USER" TYPE="FILE"
+            DATA="{''format'':''TTL'',''path'':''{TEMP}/RegistryModelWorkflowTests.testApplyChangesCurrentVoVREVeAPVAW12/3.ttl'',''upload-id'':3,''url'':''http://something''}"
+            />
+
+  <VERSION_ARTEFACT_IDS ID="1"/>
+  <VERSION_ARTEFACT_IDS ID="2"/>
+  <VERSION_ARTEFACT_IDS ID="3"/>
+  <VERSION_ARTEFACT_IDS ID="4"/>
+  <VERSION_ARTEFACT_IDS ID="5"/>
+  <VERSION_ARTEFACT_IDS ID="6"/>
+
+  <VERSION_ARTEFACTS ID="1" VERSION_ARTEFACT_ID="1" VERSION_ID="1"
+            START_DATE="2013-10-01 10:10:00.0" END_DATE="9999-12-01 00:00:00.0"
+            MODIFIED_BY="SYSTEM" STATUS="CURRENT" TYPE="CONCEPT_LIST"
+            DATA="{''path'':''{TEMP}/RegistryModelWorkflowTests.testApplyChangesCurrentVoVREVeAPVAW12/concept_list1.json''}"
+            />
+  <VERSION_ARTEFACTS ID="2" VERSION_ARTEFACT_ID="2" VERSION_ID="3"
+            START_DATE="2015-10-01 10:10:00.0" END_DATE="9999-12-01 00:00:00.0"
+            MODIFIED_BY="SYSTEM" STATUS="CURRENT" TYPE="CONCEPT_TREE"
+            DATA="{''path'':''{TEMP}/RegistryModelWorkflowTests.testApplyChangesCurrentVoVREVeAPVAW12/concept_tree2.json''}"
+            />
+  <VERSION_ARTEFACTS ID="3" VERSION_ARTEFACT_ID="3" VERSION_ID="3"
+            START_DATE="2015-10-01 10:10:00.0" END_DATE="9999-12-01 00:00:00.0"
+            MODIFIED_BY="SYSTEM" STATUS="CURRENT" TYPE="RESOURCE_DOCS"
+            DATA="{''path'':''{TEMP}/RegistryModelWorkflowTests.testApplyChangesCurrentVoVREVeAPVAW12/resource_docs.json''}"
+            />
+  <VERSION_ARTEFACTS ID="4" VERSION_ARTEFACT_ID="4" VERSION_ID="1"
+            START_DATE="2015-10-01 10:10:00.0" END_DATE="9999-12-01 00:00:00.0"
+            MODIFIED_BY="SYSTEM" STATUS="CURRENT" TYPE="HARVEST_POOLPARTY"
+            DATA="{''path'':''{TEMP}/RegistryModelWorkflowTests.testApplyChangesCurrentVoVREVeAPVAW12/concepts1.trig''}"
+            />
+  <VERSION_ARTEFACTS ID="5" VERSION_ARTEFACT_ID="5" VERSION_ID="2"
+            START_DATE="2015-10-01 10:10:00.0" END_DATE="9999-12-01 00:00:00.0"
+            MODIFIED_BY="SYSTEM" STATUS="CURRENT" TYPE="HARVEST_POOLPARTY"
+            DATA="{''path'':''{TEMP}/RegistryModelWorkflowTests.testApplyChangesCurrentVoVREVeAPVAW12/concepts2.trig''}"
+            />
+  <VERSION_ARTEFACTS ID="6" VERSION_ARTEFACT_ID="6" VERSION_ID="3"
+            START_DATE="2015-10-01 10:10:00.0" END_DATE="9999-12-01 00:00:00.0"
+            MODIFIED_BY="SYSTEM" STATUS="CURRENT" TYPE="HARVEST_POOLPARTY"
+            DATA="{''path'':''{TEMP}/RegistryModelWorkflowTests.testApplyChangesCurrentVoVREVeAPVAW12/concepts3.trig''}"
+            />
+
+</dataset>
