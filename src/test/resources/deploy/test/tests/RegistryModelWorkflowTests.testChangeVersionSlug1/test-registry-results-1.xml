@@ -13,15 +13,17 @@
 
   <VERSION_IDS ID="1"/>
 
-  <VERSIONS ID="1" DATA="{''browse-flag'':[],''do-import'':true,''note'':''Note for v1'',''title'':''Version 1''}" END_DATE="9999-12-01 00:00:00.0" MODIFIED_BY="TEST" RELEASE_DATE="2014-01" SLUG="version-1" START_DATE="2017-10-01 10:10:00.0" STATUS="CURRENT" VERSION_ID="1" VOCABULARY_ID="1"/>
+  <VERSIONS ID="1" DATA="{''browse-flag'':[],''do-import'':true,''do-publish'':true,''note'':''Note for v1'',''title'':''Version 1''}" END_DATE="9999-12-01 00:00:00.0" MODIFIED_BY="TEST" RELEASE_DATE="2014-01" SLUG="version-1" START_DATE="2017-10-01 10:10:00.0" STATUS="CURRENT" VERSION_ID="1" VOCABULARY_ID="1"/>
 
   <ACCESS_POINT_IDS ID="1"/>
   <ACCESS_POINT_IDS ID="2"/>
   <ACCESS_POINT_IDS ID="3"/>
+  <ACCESS_POINT_IDS ID="4"/>
 
   <ACCESS_POINTS ID="1" ACCESS_POINT_ID="1" DATA="{''format'':''TTL'',''path'':''{VOCABS}/ands-curated/1/1/20171001T1010/harvest_data/1.ttl'',''upload-id'':1,''url'':''{DOWNLOADPREFIX}1/test1.ttl''}" END_DATE="9999-12-01 00:00:00.0" MODIFIED_BY="TEST" SOURCE="USER" START_DATE="2017-10-01 10:10:00.0" TYPE="FILE" VERSION_ID="1"/>
   <ACCESS_POINTS ID="2" ACCESS_POINT_ID="2" DATA="{''url'':''http://localhost/repository/api/sparql/ands-curated_rifcs_version-1''}" END_DATE="9999-12-01 00:00:00.0" MODIFIED_BY="TEST" SOURCE="SYSTEM" START_DATE="2017-10-01 10:10:00.0" TYPE="API_SPARQL" VERSION_ID="1"/>
   <ACCESS_POINTS ID="3" ACCESS_POINT_ID="3" DATA="{''repository'':''ands-curated_rifcs_version-1'',''server-base'':''http://localhost:8123/openrdf-sesame/'',''url-prefix'':''http://localhost:8123/vocabs-registry/api/resource/downloads/3/ands-curated_rifcs_version-1.''}" END_DATE="9999-12-01 00:00:00.0" MODIFIED_BY="TEST" SOURCE="SYSTEM" START_DATE="2017-10-01 10:10:00.0" TYPE="SESAME_DOWNLOAD" VERSION_ID="1"/>
+  <ACCESS_POINTS ID="4" ACCESS_POINT_ID="4" DATA="{''path'':''{SPECS}/ands-curated_rifcs_version-1.ttl'',''url-prefix'':''http://localhost/repository/api/lda/ands-curated/rifcs/version-1''}" END_DATE="9999-12-01 00:00:00.0" MODIFIED_BY="TEST" SOURCE="SYSTEM" START_DATE="2017-10-01 10:10:00.0" TYPE="SISSVOC" VERSION_ID="1"/>
 
   <VOCABULARY_RELATED_ENTITIES ID="1" END_DATE="9999-12-01 00:00:00.0" MODIFIED_BY="TEST" RELATED_ENTITY_ID="1" RELATION="PUBLISHED_BY" START_DATE="2017-10-01 10:10:00.0" VOCABULARY_ID="1"/>
 
@@ -39,7 +41,7 @@
   <REGISTRY_EVENTS ID="2" ELEMENT_ID="1" ELEMENT_TYPE="VERSIONS" EVENT_DATE="2017-10-01 10:10:00.0" EVENT_DETAILS="{''draft'':false,''id'':1,''status'':''current''}" EVENT_TYPE="CREATED" EVENT_USER="TEST"/>
   <REGISTRY_EVENTS ID="3" ELEMENT_ID="1" ELEMENT_TYPE="ACCESS_POINTS" EVENT_DATE="2017-10-01 10:10:00.0" EVENT_DETAILS="{''draft'':false,''id'':1}" EVENT_TYPE="CREATED" EVENT_USER="TEST"/>
 
-  <TASKS ID="1" PARAMS="[{''operation'':''insert'',''priority'':20,''provider'':''ConceptTree'',''results'':{''timestamp'':''2019-08-09T02:18:12.630''},''status'':''success'',''subtaskProviderType'':''transform''},{''operation'':''insert'',''priority'':20,''provider'':''JsonList'',''results'':{''timestamp'':''2019-08-09T02:18:12.641''},''status'':''success'',''subtaskProviderType'':''transform''},{''operation'':''insert'',''priority'':30,''provider'':''Sesame'',''results'':{''timestamp'':''2019-08-09T02:18:13.907''},''status'':''success'',''subtaskProviderType'':''importer''},{''operation'':''insert'',''priority'':50,''provider'':''ResourceDocs'',''results'':{''timestamp'':''2019-09-17T01:35:39.930''},''status'':''success'',''subtaskProviderType'':''transform''}]" RESPONSE="{''response'':''All subtasks completed successfully.'',''timestamp'':''2019-08-09T02:18:13.908''}" STATUS="SUCCESS" VERSION_ID="1" VOCABULARY_ID="1"/>
+  <TASKS ID="1" PARAMS="[{''operation'':''insert'',''priority'':20,''provider'':''ConceptTree'',''results'':{''timestamp'':''2019-08-09T02:18:12.630''},''status'':''success'',''subtaskProviderType'':''transform''},{''operation'':''insert'',''priority'':20,''provider'':''JsonList'',''results'':{''timestamp'':''2019-08-09T02:18:12.641''},''status'':''success'',''subtaskProviderType'':''transform''},{''operation'':''insert'',''priority'':30,''provider'':''Sesame'',''results'':{''timestamp'':''2019-08-09T02:18:13.907''},''status'':''success'',''subtaskProviderType'':''importer''},{''operation'':''insert'',''priority'':40,''provider'':''SISSVoc'',''results'':{''timestamp'':''2020-02-06T04:52:13.110''},''status'':''success'',''subtaskProviderType'':''publish''},{''operation'':''insert'',''priority'':50,''provider'':''ResourceDocs'',''results'':{''timestamp'':''2019-09-17T01:35:39.930''},''status'':''success'',''subtaskProviderType'':''transform''},{''operation'':''perform'',''priority'':50,''provider'':''ResourceMap'',''results'':{''info-private'':''ResourceMapTransformProvider.transform(): no hosts associated with this owner: ANDS-Curated'',''timestamp'':''2020-02-06T04:54:33.963''},''status'':''success'',''subtaskProviderType'':''transform''}]" RESPONSE="{''response'':''All subtasks completed successfully.'',''timestamp'':''2019-08-09T02:18:13.908''}" STATUS="SUCCESS" VERSION_ID="1" VOCABULARY_ID="1"/>
 
   <POOLPARTY_SERVERS/>
   <RELATED_ENTITY_IDENTIFIERS/>

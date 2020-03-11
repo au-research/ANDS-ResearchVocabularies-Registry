@@ -1,0 +1,5 @@
+@prefix skos:  <http://www.w3.org/2004/02/skos/core#> .
+@prefix pp:    <http://pp/> .
+
+pp:2    a skos:Concept ;
+        skos:prefLabel "B from PP"@en .

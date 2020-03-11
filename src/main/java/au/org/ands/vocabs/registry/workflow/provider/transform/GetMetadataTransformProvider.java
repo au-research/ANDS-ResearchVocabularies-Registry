@@ -17,10 +17,12 @@ import java.util.Map.Entry;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.HierarchicalINIConfiguration;
 import org.apache.commons.configuration.SubnodeConfiguration;
+import org.apache.commons.io.FilenameUtils;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.impl.LiteralImpl;
+import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.model.vocabulary.DCTERMS;
 import org.openrdf.model.vocabulary.FOAF;
 import org.openrdf.model.vocabulary.RDF;
@@ -76,12 +78,18 @@ public class GetMetadataTransformProvider {
        metadataToLookFor.put(DCTERMS.TITLE, "dcterms:title");
        metadataToLookFor.put(DCTERMS.DESCRIPTION, "dcterms:description");
        metadataToLookFor.put(DCTERMS.LICENSE, "dcterms:license");
-       metadataToLookFor.put(DCTERMS.LANGUAGE, "dcterms:language");
        metadataToLookFor.put(DCTERMS.SUBJECT, "dcterms:subject");
        metadataToLookFor.put(DCTERMS.IDENTIFIER, "dcterms:identifier");
        metadataToLookFor.put(DCTERMS.PUBLISHER, "dcterms:publisher");
        metadataToLookFor.put(DCTERMS.CREATOR, "dcterms:creator");
        metadataToLookFor.put(DCTERMS.CONTRIBUTOR, "dcterms:contributor");
+       // dcterms:language gives us the primary language ...
+       metadataToLookFor.put(DCTERMS.LANGUAGE, "dcterms:language");
+       // and we get _all_ languages using a PP-specific predicate.
+       metadataToLookFor.put(
+               ValueFactoryImpl.getInstance().
+               createURI("http://www.semantic-web.at/ppcl/availablelanguages"),
+               "ppcl:availablelanguages");
    }
 
     /**
@@ -141,7 +149,9 @@ public class GetMetadataTransformProvider {
                     // Don't parse the users graph file for metadata.
                     continue;
                 }
-                conceptHandler.setSource(entry.getFileName().toString());
+                // Strip file suffix (".ttl", ".trig").
+                conceptHandler.setSource(FilenameUtils.removeExtension(
+                        entry.getFileName().toString()));
                 RDFFormat format = Rio.getParserFormatForFileName(
                         entry.toString());
                 RDFParser rdfParser = Rio.createParser(format);
@@ -178,7 +188,8 @@ public class GetMetadataTransformProvider {
         /** Map for metadata contained in the graph.
          * Keys are property strings ("dcterms:title", etc., as
          * per the values of the metadataToLookFor map.
-         * Values are maps, with: keys: source file name,
+         * Values are maps, with: keys: source file name (with file
+         * suffix stripped, e.g., "concepts", "void"),
          * value: maps. These maps have: keys: "value" (+ optional
          * "_" + language tag), value: an ArrayList
          * of Strings of corresponding values. */

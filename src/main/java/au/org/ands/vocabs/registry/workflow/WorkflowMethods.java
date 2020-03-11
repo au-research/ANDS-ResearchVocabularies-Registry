@@ -313,13 +313,23 @@ public final class WorkflowMethods {
      * NB: in either case, this method does <i>not</i> delete (or mark as
      * historical) the database row for the access point.
      * @param ap The access point to be deleted.
-     * @return null, if the deletion has been completed, or a non-empty
-     *      list of required workflow subtasks that need to be performed.
+     * @param deletingVersion True, if the caller is deleting the entire
+     *      version; false, if the caller is doing updates. This is used
+     *      to determine whether or not it's "worth" adding subtasks in
+     *      some cases.
+     * @return A Pair. The left element of the pair is a Boolean, indicating
+     *      if the caller should delete/make historical the access point.
+     *      The right element of the pair is a list of workflow subtasks
+     *      to be performed, or null, if there are no subtasks needed to
+     *      be performed.
      */
-    public static List<Subtask> deleteAccessPoint(final AccessPoint ap) {
+    public static Pair<Boolean, List<Subtask>>
+    deleteAccessPoint(final AccessPoint ap, final boolean deletingVersion) {
+        // Default is that the caller does not have to delete (or mark
+        // as historical) the row from the database.
+        boolean doDatabaseDeletion = false;
         List<Subtask> subtaskList = new ArrayList<>();
-        Subtask subtask = new Subtask();
-        subtaskList.add(subtask);
+        Subtask subtask;
         switch (ap.getType()) {
         case API_SPARQL:
         case SESAME_DOWNLOAD:
@@ -333,10 +343,12 @@ public final class WorkflowMethods {
             // access points. No problem to double-up; because of
             // the implementation of Subtask, there will be only one
             // instance of this added to the Task.
+            subtask = new Subtask();
             subtask.setSubtaskProviderType(SubtaskProviderType.IMPORTER);
             subtask.setProvider(SesameImporterProvider.class);
             subtask.setOperation(SubtaskOperationType.DELETE);
             subtask.determinePriority();
+            subtaskList.add(subtask);
             break;
         case FILE:
             ApFile apFile = JSONSerialization.deserializeStringAsJson(
@@ -346,28 +358,36 @@ public final class WorkflowMethods {
             } catch (IOException e) {
                 logger.error("Error deleting file: " + apFile.getPath(), e);
             }
-            // No subtask required.
-            return null;
+            doDatabaseDeletion = true;
+            // We deleted a file, therefore we need to run the
+            // concept and resource docs tasks ... unless we're deleting
+            // the entire vocabulary, in which case, we don't bother.
+            if (!deletingVersion) {
+                addConceptTransformSubtasks(subtaskList);
+            }
+            break;
         case SISSVOC:
             if (ap.getSource() == ApSource.USER) {
                 // No further action required.
                 return null;
             }
             // Handle source=SYSTEM.
+            subtask = new Subtask();
             subtask.setSubtaskProviderType(SubtaskProviderType.PUBLISH);
             subtask.setProvider(SISSVocPublishProvider.class);
             subtask.setOperation(SubtaskOperationType.DELETE);
             subtask.determinePriority();
+            subtaskList.add(subtask);
             break;
         case WEB_PAGE:
             // These are all source=USER, and no further action is required.
-            return null;
+            return Pair.of(true, null);
         default:
             // Oops, a type we don't know about.
             throw new IllegalArgumentException(
                     "Unknown access point type: " + ap.getType());
         }
-        return subtaskList;
+        return Pair.of(doDatabaseDeletion, subtaskList);
     }
 
     /** Apply workflow deletion to a version artefact.

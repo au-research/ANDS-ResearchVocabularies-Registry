@@ -285,8 +285,9 @@ public final class ArquillianTestUtils {
      * {@code {TEMP}} with the absolute path to the registry temporary path,
      * replacing the string
      * {@code {VOCABS}} with the path to the registry vocabs path,
-     * and
      * replacing the string
+     * {@code {SPECS}} with the path to the registry specs path,
+     * and replacing the string
      * {@code {DOWNLOADPREFIX}} with the path to the registry download prefix.
      * @param dataset The dataset to which the replacement settings
      * are to be added.
@@ -300,6 +301,9 @@ public final class ArquillianTestUtils {
         dataset.addReplacementSubstring("{VOCABS}",
                 RegistryProperties.getProperty(
                         PropertyConstants.REGISTRY_VOCABSPATH));
+        dataset.addReplacementSubstring("{SPECS}",
+                RegistryProperties.getProperty(
+                        PropertyConstants.SISSVOC_SPECSPATH));
         dataset.addReplacementSubstring("{DOWNLOADPREFIX}",
                 RegistryProperties.getProperty(
                         PropertyConstants.REGISTRY_DOWNLOADPREFIX));

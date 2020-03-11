@@ -29,7 +29,7 @@ The Java source code has characters encoded in UTF-8. You must have a
 locale setting in your environment that means that UTF-8 will be
 understood by the JDK.
 
-In the ANDS environment, the command `echo $LANG` prints:
+In the ARDC environment, the command `echo $LANG` prints:
 en_AU.UTF-8
 
 If, for you, the command `echo $LANG` prints an empty response, or a

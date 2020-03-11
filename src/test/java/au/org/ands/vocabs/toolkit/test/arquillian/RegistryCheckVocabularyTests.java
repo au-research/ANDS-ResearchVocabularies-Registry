@@ -87,7 +87,7 @@ public class RegistryCheckVocabularyTests extends ArquillianBaseTest {
         }
 
         List<ValidationSummary> expectedErrors = new ArrayList<>();
-        String pathPrefix = "testNewVocabulary.arg0.";
+        String pathPrefix = "testNewVocabulary.newVocabulary.";
         expectedErrors.add(new ValidationSummary(
                 "{" + CheckVocabulary.INTERFACE_NAME
                 + ".relatedEntityRef.noPublisher}",
@@ -181,7 +181,7 @@ public class RegistryCheckVocabularyTests extends ArquillianBaseTest {
         }
 
         List<ValidationSummary> expectedErrors = new ArrayList<>();
-        String pathPrefix = "testUpdatedVocabulary.arg0.";
+        String pathPrefix = "testUpdatedVocabulary.updatedVocabulary.";
         expectedErrors.add(new ValidationSummary(
                 "{" + CheckVocabulary.INTERFACE_NAME
                 + ".relatedVocabularyRef.selfReference}",

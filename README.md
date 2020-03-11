@@ -69,7 +69,7 @@ expressions.
 
 The Registry uses JPA for database access.  Hibernate is used as the
 implementation provider for JPA.  The JPA layer provides database
-independence. Nevertheless, because ANDS software has for a long time
+independence. Nevertheless, because ARDC software has for a long time
 used MySQL, the MySQL JDBC driver is included, and the software has
 only been tested using MySQL.
 

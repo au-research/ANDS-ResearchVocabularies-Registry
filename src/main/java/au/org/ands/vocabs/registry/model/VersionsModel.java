@@ -722,6 +722,14 @@ public class VersionsModel extends ModelBase {
             au.org.ands.vocabs.registry.schema.vocabulary201701.Version
             schemaVersion = updatedVersions.get(versionId);
 
+            // In this section of the method, we compute some Boolean
+            // flags that will determine the paths to be taken through
+            // the rest of the method.
+            // NB: if you add another flag here, please follow the existing
+            // courtesy of logging some indication of the setting of the flag,
+            // just in case we need to diagnose unexpected (e.g., wrong)
+            // behaviour.
+
             // Handle the rule:
             // * If the vocabulary's primary language is being changed, and
             //   this is the current version (i.e., so that the
@@ -733,6 +741,25 @@ public class VersionsModel extends ModelBase {
                 logger.info("Primary language was changed; ConceptTree will "
                         + "be run for current version");
                 doConceptBrowseSubtask = true;
+            }
+
+            // Handle changes to owner/slugs as used in access points.
+            // (The question of whether a user can in fact change the
+            // owner or a slug is left to the validation subsystem ....)
+            // The publicly-visible endpoint URLs of Sesame and SISSVoc
+            // access points use the vocabulary owner, vocabulary slug,
+            // and version slug. So if any of them change, we need to
+            // run some subtasks to remove old access points and make new ones.
+            // Here, we examine the three components to see if any
+            // have changed.
+            boolean slugChanged = false;
+            if (vocabularyModel.isOwnerChanged()
+                    || vocabularyModel.isSlugChanged()
+                    || (!schemaVersion.getSlug().equals(
+                            existingVersion.getSlug()))) {
+                logger.info(
+                        "Either the owner, or one of the slugs was changed");
+                slugChanged = true;
             }
 
             // Handle the rules:
@@ -758,11 +785,17 @@ public class VersionsModel extends ModelBase {
                 doResourceDocsSubtask = true;
             }
 
+            // Now we have the values of the flags we need; the nested
+            // conditionals begin ....
+
             // We'll make a new Version instance if either:
             // * doConceptBrowseSubtask, or
+            // * doResourceDocsSubtask, or
+            // * slugChanged, or
             // * the version metadata has changed, or
             // * force-workflow is true
             if (doConceptBrowseSubtask || doResourceDocsSubtask
+                    || slugChanged
                     || !ComparisonUtils.isEqualVersion(existingVersion,
                             schemaVersion)
                     || BooleanUtils.isTrue(schemaVersion.isForceWorkflow())) {
@@ -858,6 +891,50 @@ public class VersionsModel extends ModelBase {
                                         vocabularyModel.
                                         getCurrentVocabulary()));
                     }
+                }
+                // Cope with slug changes.
+                // If any of them is being changed, and do-import was true
+                // and is still true, then we need to remove the old
+                // Sesame repo and make a new one. And if do-publish was true
+                // and is still true, then we need to clear the old spec
+                // file and make a new one.
+                if (slugChanged) {
+                    //  First, Sesame.
+                    if (BooleanUtils.isTrue(existingVersionJson.isDoImport())
+                            && BooleanUtils.isTrue(
+                                    newCurrentVersionJson.isDoImport())) {
+                        // Delete old Sesame repo and add a new one.
+                        task.addSubtask(WorkflowMethods.
+                                createImporterSesameSubtask(
+                                        SubtaskOperationType.DELETE));
+                        task.addSubtask(WorkflowMethods.
+                                createImporterSesameSubtask(
+                                        SubtaskOperationType.INSERT));
+                        // If we also harvested from PoolParty harvest,
+                        // also do metadata insertion.
+                        if (BooleanUtils.isTrue(
+                                schemaVersion.isDoPoolpartyHarvest())) {
+                            task.addSubtask(WorkflowMethods.
+                                    createSesameInsertMetadataSubtask(
+                                            SubtaskOperationType.PERFORM));
+                        }
+                    }
+                    // Second, SISSVoc.
+                    if (BooleanUtils.isTrue(existingVersionJson.isDoPublish())
+                            && BooleanUtils.isTrue(
+                                    newCurrentVersionJson.isDoPublish())) {
+                        // Clear old SISSVoc spec file and add a new one.
+                        task.addSubtask(WorkflowMethods.
+                                createPublishSissvocSubtask(
+                                        SubtaskOperationType.DELETE));
+                        task.addSubtask(WorkflowMethods.
+                                createPublishSissvocSubtask(
+                                        SubtaskOperationType.INSERT));
+                    }
+                    // NB: we _don't_ add concept-related subtasks here,
+                    // as their results aren't affected just by slug changes.
+                    // But concept-related subtasks may be added elsewhere
+                    // in this method!
                 }
                 if (BooleanUtils.isTrue(schemaVersion.isForceWorkflow())
                         || (changedBoolean(

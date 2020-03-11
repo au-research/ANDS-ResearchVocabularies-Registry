@@ -622,10 +622,10 @@ public final class EntityIndexer {
         // the values we already have.
         @SuppressWarnings("unchecked")
         ArrayList<String> subjectLabels = (ArrayList<String>)
-                document.getField(SUBJECT_LABELS).getRawValue();
+                document.getField(SUBJECT_LABELS).getValue();
         @SuppressWarnings("unchecked")
         ArrayList<String> publishers = (ArrayList<String>)
-                document.getField(PUBLISHER).getRawValue();
+                document.getField(PUBLISHER).getValue();
 
         // Get all "current" versions, which here means non-historical,
         // non-draft. We index all such versions, irrespective of

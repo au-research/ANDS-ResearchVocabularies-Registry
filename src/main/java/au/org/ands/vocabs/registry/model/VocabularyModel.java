@@ -209,6 +209,46 @@ public class VocabularyModel extends ModelBase {
         return draftVocabulary != null;
     }
 
+    /** Flag for use by {@link VersionsModel} to see if the owner
+     * of the current instance has changed.
+     */
+    private boolean ownerChanged = false;
+
+    /** Set the {@link #ownerChanged} flag.
+     * @param changed The value of {@code ownerChanged} to set.
+     */
+    private void setOwnerChanged(final boolean changed) {
+        ownerChanged = changed;
+    }
+
+    /** Is the owner of the current instance being changed?
+     * @return true, if the owner of the current instance
+     *      is being changed.
+     */
+    protected boolean isOwnerChanged() {
+        return ownerChanged;
+    }
+
+    /** Flag for use by {@link VersionsModel} to see if the slug
+     * of the current instance has changed.
+     */
+    private boolean slugChanged = false;
+
+    /** Set the {@link #slugChanged} flag.
+     * @param changed The value of {@code slugChanged} to set.
+     */
+    private void setSlugChanged(final boolean changed) {
+        slugChanged = changed;
+    }
+
+    /** Is the slug of the current instance being changed?
+     * @return true, if the slug of the current instance
+     *      is being changed.
+     */
+    protected boolean isSlugChanged() {
+        return slugChanged;
+    }
+
     /** Flag for use by {@link VersionsModel} to see if the primary
      * language of the current instance has changed.
      */
@@ -616,12 +656,21 @@ public class VocabularyModel extends ModelBase {
             VocabularyDAO.saveVocabulary(em(), currentVocabulary);
         }
 
-        // See if we need to set primaryLanguageChanged and/or
-        // topConceptsChanged.
+        // See if we need to set ownerChanged, slugChanged,
+        // primaryLanguageChanged, and/or topConceptsChanged.
         // That is: if there was already an existing (old) current vocabulary,
-        // and its primary language and/or top concepts are different
-        // from updatedVocabulary's.
+        // and its owner and/or slug and/or primary language
+        // and/or top concepts
+        // are different from updatedVocabulary's.
         if (oldCurrentVocabulary != null) {
+            if (!oldCurrentVocabulary.getOwner().equals(
+                    updatedVocabulary.getOwner())) {
+                setOwnerChanged(true);
+            }
+            if (!oldCurrentVocabulary.getSlug().equals(
+                    updatedVocabulary.getSlug())) {
+                setSlugChanged(true);
+            }
             VocabularyJson oldCurrentVocabularyJson =
                     JSONSerialization.deserializeStringAsJson(
                             oldCurrentVocabulary.getData(),

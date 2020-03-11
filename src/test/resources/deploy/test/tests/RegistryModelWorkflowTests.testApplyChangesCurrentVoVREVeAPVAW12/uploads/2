@@ -1,0 +1,5 @@
+@prefix skos:  <http://www.w3.org/2004/02/skos/core#> .
+@prefix my:    <http://test/> .
+
+my:2    a skos:Concept ;
+        skos:prefLabel "B"@en .

@@ -24,7 +24,8 @@
       slug="version-2"
       note="Note for v1"
       release-date="2014-01"
-      do-import="true">
+      do-import="true"
+      do-publish="true">
     <access-point id="1" discriminator="file" source="user">
       <ap-file upload-id="1" format="TTL" />
     </access-point>

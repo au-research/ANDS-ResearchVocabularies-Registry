@@ -1361,6 +1361,65 @@ public class RegistryModelTests extends ArquillianBaseTest {
         scriptApplyChangesDraft2("testApplyChangesDraftVoVREVeAP2", true);
     }
 
+    /** Test of updating a draft of a vocabulary
+     * by adding a version that does not belong to the vocabulary.
+     * Vocabulary, VocabularyRelatedEntity, and Version
+     * model elements are used.
+     * @throws DatabaseUnitException If a problem with DbUnit.
+     * @throws IOException If a problem getting test data for DbUnit,
+     *          or reading JSON from the correct and test output files.
+     * @throws SQLException If DbUnit has a problem performing
+     *           performing JDBC operations.
+     * @throws JAXBException If a problem loading vocabulary data.
+     *  */
+    @Test(expectedExceptions = IllegalArgumentException.class,
+            expectedExceptionsMessageRegExp =
+            "Attempt to update version that does not "
+                    + "belong to this vocabulary; Id = 5")
+    public final void testApplyChangesDraftVoVREVe3() throws
+    DatabaseUnitException, IOException, SQLException, JAXBException {
+        String testName = "testApplyChangesDraftVoVREVe3";
+        ArquillianTestUtils.clearDatabase(REGISTRY);
+        ArquillianTestUtils.loadDbUnitTestFile(REGISTRY, CLASS_NAME_PREFIX
+                + testName);
+        Vocabulary vocabulary;
+            vocabulary = RegistryTestUtils.getUnvalidatedVocabularyFromFile(
+                    "test/tests/"
+                            + CLASS_NAME_PREFIX
+                            + testName
+                            + "/test-vocabulary.xml");
+        EntityManager em = null;
+        try {
+            em = DBContext.getEntityManager();
+            em.getTransaction().begin();
+            VocabularyModel vm = ModelMethods.createVocabularyModel(em, 1);
+            ModelMethods.applyChanges(vm, "TEST", nowTime1, vocabulary);
+        } finally {
+            em.getTransaction().rollback();
+            if (em != null) {
+                em.close();
+            }
+        }
+    }
+
+    /** Test of updating a draft of a vocabulary
+     * that already has both existing published and draft instances.
+     * This particularly tests removing a version from the draft instance.
+     * Vocabulary, VocabularyRelatedEntity, and Version
+     * model elements are used.
+     * @throws DatabaseUnitException If a problem with DbUnit.
+     * @throws IOException If a problem getting test data for DbUnit,
+     *          or reading JSON from the correct and test output files.
+     * @throws SQLException If DbUnit has a problem performing
+     *           performing JDBC operations.
+     * @throws JAXBException If a problem loading vocabulary data.
+     *  */
+    @Test
+    public final void testApplyChangesDraftVoVREVe4() throws
+    DatabaseUnitException, IOException, SQLException, JAXBException {
+        scriptApplyChangesDraft2("testApplyChangesDraftVoVREVe4", false);
+    }
+
     /** Test script of getting the draft of a vocabulary in registry schema
      * format.
      * @param testName The name of the test calling this script. The name
