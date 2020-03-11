@@ -15,7 +15,12 @@ import au.org.ands.vocabs.toolkit.test.utils.TestPropertyConstants;
 import au.org.ands.vocabs.toolkit.utils.ToolkitProperties;
 
 /** TestNG test suite specifically to initialize the Sesame instance
- * used for testing. */
+ * used for testing. The code that's here is here because it can't be
+ * in {@link ArquillianTestSetup}. This code sets system properties that
+ * must set <i>before</i> the managed Tomcat server is started;
+ * the code in {@link ArquillianTestSetup} runs only after Tomcat
+ * has been started.
+ */
 @Test(groups = "sesame")
 public class SesameTests {
 
