@@ -958,7 +958,7 @@ public final class ArquillianTestUtils {
      *      value.
      * @throws IOException If reading either file fails.
      */
-    public static void compareJson(final String testFilename,
+    public static void compareJsonFiles(final String testFilename,
             final String correctFilename) throws IOException {
         File testFile = new File(testFilename);
         FileAssert.assertFile(testFile,
