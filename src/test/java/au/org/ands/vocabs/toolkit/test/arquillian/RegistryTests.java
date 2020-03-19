@@ -52,18 +52,8 @@ public class RegistryTests extends ArquillianBaseTest {
 
     // Server-side tests go here. Client-side tests later on.
 
-    /** Test of {@link VocabularyDAO#getAllVocabulary()}.
-     * This is just a sanity test to make sure that the registry
-     * code is included correctly. */
-    @Test
-    public final void testVocabularyDAOGetAllVocabulary() {
-        List<au.org.ands.vocabs.registry.db.entity.Vocabulary>
-            vocabularyList = VocabularyDAO.getAllVocabulary();
-        Assert.assertNotNull(vocabularyList);
-        Assert.assertEquals(vocabularyList.size(), 0, "Empty list");
-    }
-
-    /** Test of {@link VersionDAO#getAllVersion()}.
+    /** Test of {@link VocabularyDAO#getAllVocabulary()} and
+     * {@link VersionDAO#getAllVersion()}.
      * This is just a sanity test to make sure that the registry
      * code is included correctly.
      * @throws DatabaseUnitException If a problem with DbUnit.
@@ -74,15 +64,20 @@ public class RegistryTests extends ArquillianBaseTest {
      * @throws SQLException If DbUnit has a problem performing
      *           performing JDBC operations.*/
     @Test
-    public final void testVersionDAOGetAllVersion()
+    public final void testVocabularyVersionDAOGetAll()
             throws DatabaseUnitException, SQLException, IOException {
 
         ArquillianTestUtils.clearDatabase(REGISTRY);
 
+        List<au.org.ands.vocabs.registry.db.entity.Vocabulary>
+        vocabularyList = VocabularyDAO.getAllVocabulary();
+        Assert.assertNotNull(vocabularyList);
+        Assert.assertEquals(vocabularyList.size(), 0, "Empty vocabulary list");
+
         List<au.org.ands.vocabs.registry.db.entity.Version>
-                versionList = VersionDAO.getAllVersion();
+        versionList = VersionDAO.getAllVersion();
         Assert.assertNotNull(versionList);
-        Assert.assertEquals(versionList.size(), 0, "should be empty");
+        Assert.assertEquals(versionList.size(), 0, "Empty version list");
     }
 
     /** Test adding a Registry Version and fetching it again.
