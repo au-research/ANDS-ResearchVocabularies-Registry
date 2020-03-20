@@ -1,0 +1,12 @@
+[ {
+  "id" : "1E261BB2-D935-0001-C115-18A018011B23",
+  "uri" : "https://editor.vocabs.ands.org.au/ARDCRWtestsuiteproject1",
+  "title" : "ARDC RW test suite project 1",
+  "subject" : null,
+  "availableLanguages" : [ "de", "en", "fr" ],
+  "defaultLanguage" : "en",
+  "description" : "Registry test suite project 1",
+  "uriSupplement" : "ARDCRWtestsuiteproject1",
+  "lastModified" : "2020-03-18T23:25:19.916Z",
+  "remoteRepositoryIRI" : null
+} ]

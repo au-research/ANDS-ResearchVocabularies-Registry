@@ -131,8 +131,8 @@ public final class NetClientUtils {
      * @param responseMediaType The MediaType to be requested of the server.
      * @param username The username to send to the server.
      * @param password The password to send to the server.
-     * @param additionalComponents The additional operations applied to
-     *      the WebTarget, before it is used.
+     * @param additionalComponents If not null, additional operations
+     *      applied to the WebTarget, before it is used.
      * @return The response from the GET request. It is the responsibility
      * of the caller to invoke the {@code close()} method on the response.
      */
@@ -145,7 +145,9 @@ public final class NetClientUtils {
             + baseURL + "; path = " + path);
         Client client = RegistryNetUtils.getClientBasicAuthentication();
         WebTarget target = client.target(baseURL.toString()).path(path);
-        target = additionalComponents.apply(target);
+        if (additionalComponents != null) {
+            target = additionalComponents.apply(target);
+        }
         Response response = target.request(responseMediaType).
                 property(HttpAuthenticationFeature.
                         HTTP_AUTHENTICATION_BASIC_USERNAME, username).

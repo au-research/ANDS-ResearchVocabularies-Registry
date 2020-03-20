@@ -287,6 +287,8 @@ public final class ArquillianTestUtils {
      * {@code {VOCABS}} with the path to the registry vocabs path,
      * replacing the string
      * {@code {SPECS}} with the path to the registry specs path,
+     * replacing the string
+     * {@code {MOCKSERVERPORT}} with the port number of the mock server,
      * and replacing the string
      * {@code {DOWNLOADPREFIX}} with the path to the registry download prefix.
      * @param dataset The dataset to which the replacement settings
@@ -304,6 +306,8 @@ public final class ArquillianTestUtils {
         dataset.addReplacementSubstring("{SPECS}",
                 RegistryProperties.getProperty(
                         PropertyConstants.SISSVOC_SPECSPATH));
+        dataset.addReplacementSubstring("{MOCKSERVERPORT}",
+                Integer.toString(PoolPartyMockServer.getPort()));
         dataset.addReplacementSubstring("{DOWNLOADPREFIX}",
                 RegistryProperties.getProperty(
                         PropertyConstants.REGISTRY_DOWNLOADPREFIX));
@@ -976,6 +980,46 @@ public final class ArquillianTestUtils {
         // correctJson.equals(testJson). The TestNG one seems to give
         // the same end result, but gives better diagnostics in case
         // a difference is found.
+    }
+
+    /** Compare JSON content provided as a String, with expected content
+     * stored in a file, asserting that they contain the same content.
+     * @param testString A String containing the actual JSON data.
+     * @param correctFilename The filename of the file containing the
+     *      expected JSON data.
+     * @throws IOException If reading from the file fails.
+     */
+    public static void compareJsonStringWithFile(final String testString,
+            final String correctFilename) throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode testJson;
+        JsonNode correctJson;
+        // IOException not caught here, but allowed to propagate.
+        testJson = mapper.readTree(testString);
+        correctJson = mapper.readTree(new File(correctFilename));
+        Assert.assertEquals(testJson, correctJson);
+        // NB This uses a top-level equality test done by TestNG.
+        // There is also a top-level equality test implemented by Jackson:
+        // correctJson.equals(testJson). The TestNG one seems to give
+        // the same end result, but gives better diagnostics in case
+        // a difference is found.
+    }
+
+    /** Path to files contained in the WireMock directory. */
+    private static final Path WIREMOCK_FILES_PATH_CLIENT_SIDE =
+            Paths.get(ArquillianBaseTest.RESOURCES_DEPLOY_PATH,
+                    "wiremock", "__files");
+
+    /** Resolve a filename relative to the directory in which the
+     * WireMock stubbed content is stored.
+     * @param filename The basename of the file to be looked up. For example,
+     *      "body-PoolParty-api-projects.json".
+     * @return The absolute path of the file looked up. For example,
+     *      "/full/path/wiremock/__files/body-PoolParty-api-projects.json".
+     */
+    public static String clientResolveWireMockStubbedContentFilename(
+            final String filename) {
+        return WIREMOCK_FILES_PATH_CLIENT_SIDE.resolve(filename).toString();
     }
 
 }

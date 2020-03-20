@@ -18,3 +18,11 @@ diff -r orig/apache-tomcat-7.0.69/conf/tomcat-users.xml tomcatmanaged/apache-tom
 >   <user username="arquillian" password="arquillian"
 >         roles="manager-script"/>
 >
+
+And this diff is to avoid warnings when using WireMock:
+
+diff orig/apache-tomcat-7.0.69/conf/catalina.properties tomcatmanaged/apache-tomcat-7.0.69/conf/catalina.properties
+116c116
+< xom-*.jar
+---
+> xom-*.jar,wiremock-*.jar

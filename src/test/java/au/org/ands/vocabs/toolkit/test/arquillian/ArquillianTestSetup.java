@@ -56,6 +56,7 @@ public class ArquillianTestSetup extends ArquillianBaseTest {
                         ToolkitConfig.ROOT_FILES_PATH).getAbsolutePath());
                 FileUtils.deleteDirectory(new File(
                         ToolkitConfig.ROOT_FILES_PATH));
+                PoolPartyMockServer.setup();
             } else {
                 logger.info("In ArquillianTestSetup.setupSuite() "
                         + "on server side not for first time");

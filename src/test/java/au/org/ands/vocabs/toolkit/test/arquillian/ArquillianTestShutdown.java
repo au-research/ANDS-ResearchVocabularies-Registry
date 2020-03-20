@@ -36,6 +36,7 @@ public class ArquillianTestShutdown extends ArquillianBaseTest {
             logger.info("In ArquillianTestSetup.shutdownSuite() "
                     + "on server side");
             ArquillianTestUtils.closeConnectionsForDbUnit();
+            PoolPartyMockServer.shutdown();
         }
     }
 
