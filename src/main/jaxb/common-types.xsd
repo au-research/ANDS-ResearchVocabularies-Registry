@@ -165,9 +165,20 @@ http://purl.org/</xs:documentation>
                 <xs:annotation>
                     <xs:documentation>Thomson Reuters ResearcherID.
 Not a URL.
-Identifier made resolvable be prefixing the given identifier
+Identifier made resolvable by prefixing the given identifier
 with "http://www.researcherid.com/rid/".
 http://www.researcherid.com/</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="ror">
+                <xs:annotation>
+                    <xs:documentation>Research Organization Registry ID.
+Not a URL; a
+"unique and opaque character string: leading 0
+followed by 6 characters and a 2-digit checksum".
+Identifier made resolvable by prefixing the given identifier
+with "https://ror.org/".
+https://ror.org/</xs:documentation>
                 </xs:annotation>
             </xs:enumeration>
             <xs:enumeration value="uri">
