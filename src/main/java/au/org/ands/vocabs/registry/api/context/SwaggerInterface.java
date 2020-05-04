@@ -31,7 +31,7 @@ import io.swagger.annotations.Tag;
                 // for the defect. Instead, the value is defined in web.xml
                 // as the init-param "swagger.api.title".
                 title = "Vocabulary Registry API",
-                termsOfService = "http://documentation.ands.org.au/",
+                termsOfService = "http://documentation.ardc.edu.au/",
                 contact = @Contact(
                    name = "ARDC Services",
                    email = "services@ardc.edu.au",
@@ -61,7 +61,7 @@ import io.swagger.annotations.Tag;
         },
         externalDocs = @ExternalDocs(
                 value = "Research Vocabularies Australia",
-                url = "http://documentation.ands.org.au/"),
+                url = "http://documentation.ardc.edu.au/"),
         securityDefinition = @SecurityDefinition(
                 basicAuthDefinitions = {
                         @BasicAuthDefinition(key = SwaggerInterface.BASIC_AUTH)
