@@ -121,6 +121,8 @@ public class CheckRelatedEntityImpl
         // identifiers
 
         // id: if mode == CREATE, required _not_ to be provided
+        // CC-2723: the following is wrong; it allows through
+        // an id on creation.
         if (isNew && relatedEntity.getId() != null) {
             /* User can't specify an id for a new related entity. */
             valid = ValidationUtils.requireFieldNotNull(

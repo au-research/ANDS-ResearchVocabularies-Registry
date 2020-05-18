@@ -121,4 +121,19 @@ public class TestValidationUtils {
                 + "English Abstract:");
     }
 
+    /** Test validation of ROR values. */
+    @Test
+    public void testRORValidation() {
+        Assert.assertFalse(ValidationUtils.isValidROR(null),
+                "Null regarded as valid ROR");
+        Assert.assertFalse(ValidationUtils.isValidROR("0"),
+                "Wrong length regarded as valid ROR");
+        Assert.assertFalse(ValidationUtils.isValidROR("03yrm5c266"),
+                "Wrong length regarded as valid ROR");
+        Assert.assertFalse(ValidationUtils.isValidROR("03yrm5c2Z"),
+                "Wrong character allowed in ROR");
+        Assert.assertTrue(ValidationUtils.isValidROR("03yrm5c26"),
+                "Valid ROR rejected");
+    }
+
 }

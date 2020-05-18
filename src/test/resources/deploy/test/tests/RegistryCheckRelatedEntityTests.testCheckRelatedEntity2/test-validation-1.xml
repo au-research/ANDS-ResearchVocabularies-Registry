@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!DOCTYPE related-entity>
+<related-entity
+    xmlns="http://vocabs.ands.org.au/registry/schema/2017/01/vocabulary"
+    id="1"
+    type="not-a-valid-type"
+    email="not-a-valid-email"
+    >
+  <url>not-a-valid-url</url>
+  <related-entity-identifier
+      identifier-type="" identifier-value="" />
+  <related-entity-identifier
+      id="1" identifier-type="auAnlPeau" identifier-value="abc" />
+
+  <!-- Invalid identifier syntaxes -->
+
+  <related-entity-identifier
+      identifier-type="auAnlPeau" identifier-value="nla.party" />
+  <related-entity-identifier
+      identifier-type="doi" identifier-value="http://dx.doi.org/123" />
+  <related-entity-identifier
+      identifier-type="handle" identifier-value="http://hdl.handle.net/abc" />
+  <related-entity-identifier
+      identifier-type="infouri" identifier-value="ddc/22" />
+  <related-entity-identifier
+      identifier-type="isil" identifier-value="!@#" />
+  <related-entity-identifier
+      identifier-type="isni" identifier-value="ISNI 123" />
+  <related-entity-identifier
+      identifier-type="local" identifier-value="" />
+  <related-entity-identifier
+      identifier-type="orcid" identifier-value="http://orcid.org/0000" />
+  <related-entity-identifier
+      identifier-type="purl" identifier-value="purl.org/abc" />
+  <related-entity-identifier
+      identifier-type="researcherID" identifier-value="1-2345" />
+  <related-entity-identifier
+      identifier-type="ror" identifier-value="01234" />
+  <related-entity-identifier
+      identifier-type="uri" identifier-value="a/b" />
+  <related-entity-identifier
+      identifier-type="viaf" identifier-value="ABC123" />
+
+  <!-- Valid identifier syntaxes -->
+
+  <related-entity-identifier
+      identifier-type="auAnlPeau" identifier-value="nla.party-12345" />
+  <related-entity-identifier
+      identifier-type="doi" identifier-value="10.1000/182" />
+  <related-entity-identifier
+      identifier-type="handle" identifier-value="20.1000/5555" />
+  <related-entity-identifier
+      identifier-type="infouri" identifier-value="info:ddc/22/eng/004.678" />
+  <related-entity-identifier
+      identifier-type="isil" identifier-value="CA-QMCB" />
+  <related-entity-identifier
+      identifier-type="isni" identifier-value="000000040643511X" />
+  <related-entity-identifier
+      identifier-type="local" identifier-value="Me, myself, and I" />
+  <related-entity-identifier
+      identifier-type="orcid" identifier-value="0000-0002-1825-0097" />
+  <related-entity-identifier
+      identifier-type="purl" identifier-value="http://purl.org/abc" />
+  <related-entity-identifier
+      identifier-type="researcherID" identifier-value="A-1009-2008" />
+  <related-entity-identifier
+      identifier-type="ror" identifier-value="03yrm5c26" />
+  <related-entity-identifier
+      identifier-type="uri" identifier-value="http://ardc.edu.au/" />
+  <related-entity-identifier
+      identifier-type="viaf" identifier-value="158902398" />
+
+</related-entity>

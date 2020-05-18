@@ -15,7 +15,8 @@ import org.testng.annotations.Test;
 import au.org.ands.vocabs.toolkit.utils.ApplicationContextListener;
 import au.org.ands.vocabs.toolkit.utils.ToolkitConfig;
 
-/** Code to be executed for test setup. */
+/** Code to be executed for test setup. See also {@link SesameTests}, which
+ * has test setup code that must be run before Tomcat starts. */
 @Test(groups = "arquillian")
 public class ArquillianTestSetup extends ArquillianBaseTest {
 
@@ -55,6 +56,7 @@ public class ArquillianTestSetup extends ArquillianBaseTest {
                         ToolkitConfig.ROOT_FILES_PATH).getAbsolutePath());
                 FileUtils.deleteDirectory(new File(
                         ToolkitConfig.ROOT_FILES_PATH));
+                PoolPartyMockServer.setup();
             } else {
                 logger.info("In ArquillianTestSetup.setupSuite() "
                         + "on server side not for first time");

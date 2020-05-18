@@ -469,7 +469,7 @@ public class ConceptTreeTransformProvider implements WorkflowProvider {
                             + "<br />For more information, please see "
                             + "<a target=\"_blank\" "
                             + "href=\"https://documentation."
-                            + "ands.org.au/display/DOC/Support+for+concept+"
+                            + "ardc.edu.au/display/DOC/Support+for+concept+"
                             + "browsing+within+the+portal\">Portal concept "
                             + "browsing</a>.");
                     logger.error("ConceptTreeTransform: not providing a "

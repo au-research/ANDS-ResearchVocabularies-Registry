@@ -13,6 +13,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import javax.validation.ConstraintValidatorContext;
@@ -737,6 +738,79 @@ public final class ValidationUtils {
         }
     }
 
+    /** A String containing only those characters which are used in
+     * the base 32 representation of ROR values.
+     */
+    private static final String ROR_CHARS = "0123456789abcdefghjkmnpqrstvwxyz";
+
+    /** Basic regular expression for RORs, just for making sure that
+     * a value to be validated has the correct length and only uses
+     * the correct characters.
+     * The first character must be 0; the next six characters must be
+     * valid base 32, and the final two characters must be decimal digits.
+     */
+    private static final String ROR_REGEX = "0[" + ROR_CHARS + "]{6}"
+            + "[0-9]{2}";
+
+    /** Compiled version of the regular expression for RORs. */
+    private static final Pattern ROR_PATTERN =
+            Pattern.compile(ROR_REGEX);
+
+    /** Determine if a String value represents a valid ROR.
+     * How to validate an ROR? It seems <a target="_blank"
+     * href="https://twitter.com/JoakimPhilipson/status/1098194723397922817">this
+     *  tweeted reply by Martin Fenner</a> is the only documentation.
+     * I.e., valid values are as follows:
+     * <ul>
+     *   <li>Valid values are exactly 9 characters long.
+     *     For example, <code>03yrm5c26</code>.</li>
+     *   <li>The first character is always <code>0</code>.</li>
+     *   <li>The following six characters represent a numeric ID.
+     *     These six characters are to be interpreted as a base-32 value,
+     *     where the number/letter values used are as shown here:
+     *     <a target="_blank"
+     * href="https://www.crockford.com/base32.html">https://www.crockford.com/base32.html</a>.
+     *     For example, the value <code>3yrm5c</code> is the decimal value
+     *     132927660.</li>
+     *   <li>The final two characters are a checksum. These two characters
+     *     are to be interpreted as a decimal value; e.g., if the final
+     *     two characters are <code>26</code>, the checksum is the decimal
+     *     value 26.</li>
+     *   <li>To compute the expected checksum, compute
+     *     98 - ((n * 100) % 97), where n is the decimal value of the
+     *     numeric ID. E.g., 98 - ((132927660 * 100) % 97) = 26.</li>
+     * </ul>
+     * @param ror The String to be validated as an ROR.
+     * @return true, iff ror represents a valid ROR.
+     */
+    // Magic numbers: 5, 7, 97, 98, 100
+    @SuppressWarnings("checkstyle:MagicNumber")
+    public static boolean isValidROR(final String ror) {
+        // An explicit null check is required first, as matcher() throws
+        // an NPE on a null actual parameter.
+        if (ror == null) {
+            return false;
+        }
+        if (!ROR_PATTERN.matcher(ror).matches()) {
+            return false;
+        }
+        // The value is the correct syntax. Now attempt to decode it.
+        // Discard the leading 0, and break up into the value proper
+        // and the checksum.
+        String rorIdString = ror.substring(1, 7);
+        String checksumString = ror.substring(7);
+        long intValue = 0;
+        for (int i = 0; i < rorIdString.length(); i++) {
+            intValue = (intValue << 5)
+                    + ROR_CHARS.indexOf(rorIdString.charAt(i));
+        }
+        // logger.info("intValue: " + intValue);
+        int checksumInt = Integer.valueOf(checksumString);
+        long remainder = 98 - ((intValue * 100) % 97);
+        // logger.info("Computed remainder: " + remainder);
+        return remainder == checksumInt;
+    }
+
     /** A convenience reference to the class object for
      * {@link FieldValidationHelper}. Used in {@link
      * #isValidRelatedEntityIdentifier(RelatedEntityIdentifier)}. */
@@ -797,11 +871,17 @@ public final class ValidationUtils {
             return validator.validateValue(FVH_CLASS,
                     FieldValidationHelper.RESEARCHER_ID_FIELDNAME,
                     value).isEmpty();
+        case ROR:
+            return isValidROR(value);
         case URI:
             // For now, use Java's provided way. May need to be modified
             // if users provide values that are erroneously rejected.
             try {
                 new URI(value);
+                // But see CC-2723. The above allows through relative URIs.
+                // Remove the above, and replace with:
+//                URI uri = new URI(value);
+//                return uri.isAbsolute();
             } catch (URISyntaxException | NullPointerException e) {
                 return false;
             }

@@ -148,7 +148,8 @@ public class ArquillianBaseTest extends Arquillian {
             addSolrConfig(war);
 
             // Add certain JAR files from the libdev directory.
-            // For now, that means Mean Bean, DbUnit, XStream, and XMLUnit.
+            // For now, that means Mean Bean, DbUnit, XStream, XMLUnit,
+            // WireMock.
             Files.walk(Paths.get("libdev"))
                 .filter(Files::isRegularFile)
                 .filter(p -> p.getFileName().toString().endsWith(".jar"))
@@ -157,7 +158,8 @@ public class ArquillianBaseTest extends Arquillian {
                     return (fileName.startsWith("meanbean")
                             || fileName.startsWith("dbunit")
                             || fileName.startsWith("xstream")
-                            || fileName.startsWith("xmlunit"));
+                            || fileName.startsWith("xmlunit")
+                            || fileName.startsWith("wiremock"));
                 })
                 .forEach(p -> war.addAsLibrary(p.toFile()));
 

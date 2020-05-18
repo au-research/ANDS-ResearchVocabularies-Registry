@@ -135,7 +135,7 @@ public class TransformProviderTests extends ArquillianBaseTest {
                     va.getData(), VaConceptTree.class);
 
             String conceptsTreeFilename = vaConceptTree.getPath();
-            ArquillianTestUtils.compareJson(conceptsTreeFilename,
+            ArquillianTestUtils.compareJsonFiles(conceptsTreeFilename,
                     testsPath
                     + CLASS_NAME_PREFIX
                     + "testJsonTreeTransformProvider1/"
@@ -159,7 +159,7 @@ public class TransformProviderTests extends ArquillianBaseTest {
                     va.getData(), VaConceptTree.class);
             conceptsTreeFilename = vaConceptTree.getPath();
             // Note the use of the same correct output as the previous test.
-            ArquillianTestUtils.compareJson(conceptsTreeFilename,
+            ArquillianTestUtils.compareJsonFiles(conceptsTreeFilename,
                     testsPath
                     + CLASS_NAME_PREFIX
                     + "testJsonTreeTransformProvider1/"
@@ -232,7 +232,7 @@ public class TransformProviderTests extends ArquillianBaseTest {
             vaConceptTree = JSONSerialization.deserializeStringAsJson(
                     va.getData(), VaConceptTree.class);
             conceptsTreeFilename = vaConceptTree.getPath();
-            ArquillianTestUtils.compareJson(conceptsTreeFilename,
+            ArquillianTestUtils.compareJsonFiles(conceptsTreeFilename,
                     testsPath
                     + CLASS_NAME_PREFIX
                     + "testJsonTreeTransformProvider1/"
@@ -322,7 +322,7 @@ public class TransformProviderTests extends ArquillianBaseTest {
                     va.getData(), VaConceptTree.class);
 
             String conceptsTreeFilename = vaConceptTree.getPath();
-            ArquillianTestUtils.compareJson(conceptsTreeFilename,
+            ArquillianTestUtils.compareJsonFiles(conceptsTreeFilename,
                     testsPath
                     + CLASS_NAME_PREFIX
                     + "testConceptTreeTransformProvider1/"
@@ -346,7 +346,7 @@ public class TransformProviderTests extends ArquillianBaseTest {
                     va.getData(), VaConceptTree.class);
             conceptsTreeFilename = vaConceptTree.getPath();
             // Note the use of the same correct output as the previous test.
-            ArquillianTestUtils.compareJson(conceptsTreeFilename,
+            ArquillianTestUtils.compareJsonFiles(conceptsTreeFilename,
                     testsPath
                     + CLASS_NAME_PREFIX
                     + "testConceptTreeTransformProvider1/"
@@ -370,7 +370,7 @@ public class TransformProviderTests extends ArquillianBaseTest {
             vaConceptTree = JSONSerialization.deserializeStringAsJson(
                     va.getData(), VaConceptTree.class);
             conceptsTreeFilename = vaConceptTree.getPath();
-            ArquillianTestUtils.compareJson(conceptsTreeFilename,
+            ArquillianTestUtils.compareJsonFiles(conceptsTreeFilename,
                     testsPath
                     + CLASS_NAME_PREFIX
                     + "testConceptTreeTransformProvider1/"
@@ -420,7 +420,7 @@ public class TransformProviderTests extends ArquillianBaseTest {
             vaConceptTree = JSONSerialization.deserializeStringAsJson(
                     va.getData(), VaConceptTree.class);
             conceptsTreeFilename = vaConceptTree.getPath();
-            ArquillianTestUtils.compareJson(conceptsTreeFilename,
+            ArquillianTestUtils.compareJsonFiles(conceptsTreeFilename,
                     testsPath
                     + CLASS_NAME_PREFIX
                     + "testConceptTreeTransformProvider1/"
@@ -508,7 +508,7 @@ public class TransformProviderTests extends ArquillianBaseTest {
                     va.getData(), VaConceptTree.class);
 
             String conceptsTreeFilename = vaConceptTree.getPath();
-            ArquillianTestUtils.compareJson(conceptsTreeFilename,
+            ArquillianTestUtils.compareJsonFiles(conceptsTreeFilename,
                     testsPath
                     + CLASS_NAME_PREFIX
                     + "testConceptTreeTransformProvider2/"
@@ -533,7 +533,7 @@ public class TransformProviderTests extends ArquillianBaseTest {
                     va.getData(), VaConceptTree.class);
             conceptsTreeFilename = vaConceptTree.getPath();
             // Note the use of the same correct output as the previous test.
-            ArquillianTestUtils.compareJson(conceptsTreeFilename,
+            ArquillianTestUtils.compareJsonFiles(conceptsTreeFilename,
                     testsPath
                     + CLASS_NAME_PREFIX
                     + "testConceptTreeTransformProvider2/"
@@ -557,7 +557,7 @@ public class TransformProviderTests extends ArquillianBaseTest {
             vaConceptTree = JSONSerialization.deserializeStringAsJson(
                     va.getData(), VaConceptTree.class);
             conceptsTreeFilename = vaConceptTree.getPath();
-            ArquillianTestUtils.compareJson(conceptsTreeFilename,
+            ArquillianTestUtils.compareJsonFiles(conceptsTreeFilename,
                     testsPath
                     + CLASS_NAME_PREFIX
                     + "testConceptTreeTransformProvider2/"
@@ -976,7 +976,7 @@ public class TransformProviderTests extends ArquillianBaseTest {
                     va.getData(), VaResourceDocs.class);
 
             String conceptsTreeFilename = vaResourceDocs.getPath();
-            ArquillianTestUtils.compareJson(conceptsTreeFilename,
+            ArquillianTestUtils.compareJsonFiles(conceptsTreeFilename,
                     testsPath + testName + "/test-data1-resource_docs.json");
 
             // Uncomment as needed for further tests.
