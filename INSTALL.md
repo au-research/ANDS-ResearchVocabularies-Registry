@@ -22,6 +22,7 @@ for LDA custom configuration.)
   * Solr must be run in SolrCloud mode. You may use either the
     embedded ZooKeeper, or use an external ZooKeeper.
 * Tomcat (at least version 7)
+* npm (for packing the generated JavaScript Client API)
 
 # Locale setting for JDK
 
@@ -348,9 +349,13 @@ PHP library:
 
 The browser-side JavaScript code of the Portal also accesses the
 Registry using a client library API generated from the Registry code
-itself. To generate this JavaScript library:
+itself. To generate this JavaScript library and make it available to
+the Portal's own build process in the expected format (a `.tgz` file):
 
-`ant js-client`
+```
+ant js-client
+( cd js-client; npm pack )
+```
 
 # Optional: use automated webapp deploy/start/stop
 
