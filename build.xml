@@ -772,14 +772,14 @@
         classname="au.org.ands.vocabs.registry.db.utils.migration.MigrateAccessPointHostname"
         classpathref="migrate-accesspoint-hostname.classpath"
       >
-      <arg value="demo.ands.org.au/repository/openrdf-sesame/"/>
-      <arg value="demo.vocabs.ardc.edu.au/repository/openrdf-sesame/"/>
-      <arg value="demo.ands.org.au/vocabs-registry/api/resource/downloads/"/>
-      <arg value="demo.vocabs.ardc.edu.au/registry/api/resource/downloads/"/>
-      <arg value="demo.ands.org.au/repository/api/sparql"/>
-      <arg value="demo.vocabs.ardc.edu.au/repository/api/sparql"/>
-      <arg value="demo.ands.org.au/repository/api/lda"/>
-      <arg value="demo.vocabs.ardc.edu.au/repository/api/lda"/>
+      <arg value="localhost:8080/repository/openrdf-sesame/"/>
+      <arg value="localhost:8080/repository/openrdf-sesame/"/>
+      <arg value="vocabs.ands.org.au/registry/api/resource/downloads/"/>
+      <arg value="vocabs.ardc.edu.au/registry/api/resource/downloads/"/>
+      <arg value="vocabs.ands.org.au/repository/api/sparql"/>
+      <arg value="vocabs.ardc.edu.au/repository/api/sparql"/>
+      <arg value="vocabs.ands.org.au/repository/api/lda"/>
+      <arg value="vocabs.ardc.edu.au/repository/api/lda"/>
       <sysproperty key="REGISTRY_PROPS_FILE"
                    value="conf/registry.properties" />
     </java>

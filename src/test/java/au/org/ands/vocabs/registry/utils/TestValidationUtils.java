@@ -80,16 +80,16 @@ public class TestValidationUtils {
 //        Assert.assertTrue(ValidationUtils.isValidHTML(testString));
 
         testString = "Link:&nbsp;&eacute;&mdash;Gänsefüßchen &asymp; "
-                + "Γειά σας नमस्ते 你好<a href=\"https://vocabs.ands.org.au/"
+                + "Γειά σας नमस्ते 你好<a href=\"https://vocabs.ardc.edu.au/"
                 + "aodn-geographic-extents-vocabulary\" target=\"_blank\" "
                 + "rel=\"nofollow noopener noreferrer\">https://vocabs."
-                + "ands.org.au/aodn-geographic-extents-vocabulary<span>"
+                + "ardc.edu.au/aodn-geographic-extents-vocabulary<span>"
                 + "<span> (link is external)</span></span></a>"
-                + "SKOS File:&nbsp; <a href=\"http://vocabs.ands.org.au/"
+                + "SKOS File:&nbsp; <a href=\"http://vocabs.ardc.edu.au/"
                 + "repository/api/download/910/aodn_aodn-geographic-"
                 + "extents-vocabulary_version-2-0.rdf\" target=\"_blank\" "
                 + "rel=\"nofollow noopener noreferrer\">http://vocabs."
-                + "ands.org.au/repository/api/download/910/aodn_aodn-"
+                + "ardc.edu.au/repository/api/download/910/aodn_aodn-"
                 + "geographic-extents-vocabulary_version-2-0.rdf<span>"
                 + "<span> (link is external)</span></span></a>"
                 + "English Abstract:";
@@ -113,9 +113,9 @@ public class TestValidationUtils {
         // so use it:
 
         Assert.assertEquals(Jsoup.parse(testString).text(),
-                "Link: é—Gänsefüßchen ≈ Γειά σας नमस्ते 你好https://vocabs.ands."
-                + "org.au/aodn-geographic-extents-vocabulary (link is "
-                + "external)SKOS File: http://vocabs.ands.org.au/"
+                "Link: é—Gänsefüßchen ≈ Γειά σας नमस्ते 你好https://vocabs.ardc."
+                + "edu.au/aodn-geographic-extents-vocabulary (link is "
+                + "external)SKOS File: http://vocabs.ardc.edu.au/"
                 + "repository/api/download/910/aodn_aodn-geographic-"
                 + "extents-vocabulary_version-2-0.rdf (link is external)"
                 + "English Abstract:");

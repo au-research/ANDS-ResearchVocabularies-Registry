@@ -259,9 +259,9 @@ PoolParty servers you define in this way.
 Connect to the MySQL Registry database as the `registry-user` user.
 
 ```
-INSERT INTO subject_resolver_sources(source,iri) VALUES ('anzsrc-for', 'http://vocabs.ands.org.au/repository/api/sparql/anzsrc-for');
-INSERT INTO subject_resolver_sources(source,iri) VALUES ('anzsrc-seo', 'http://vocabs.ands.org.au/repository/api/sparql/anzsrc-seo');
-INSERT INTO subject_resolver_sources(source,iri) VALUES ('gcmd', 'http://vocabs.ands.org.au/repository/api/sparql/gcmd-sci');
+INSERT INTO subject_resolver_sources(source,iri) VALUES ('anzsrc-for', 'http://vocabs.ardc.edu.au/repository/api/sparql/anzsrc-for');
+INSERT INTO subject_resolver_sources(source,iri) VALUES ('anzsrc-seo', 'http://vocabs.ardc.edu.au/repository/api/sparql/anzsrc-seo');
+INSERT INTO subject_resolver_sources(source,iri) VALUES ('gcmd', 'http://vocabs.ardc.edu.au/repository/api/sparql/gcmd-sci');
 ```
 
 Now run:

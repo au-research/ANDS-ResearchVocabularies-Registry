@@ -175,7 +175,7 @@ public class SISSVocPublishProvider implements WorkflowProvider {
                         "services@ardc.edu.au"));
         // Homepage of the ANDS Vocabulary service
         // ARDC home page for now; in future, could be
-        // vocabs.ands.org.au itself.
+        // vocabs.ardc.edu.au itself.
         specProperties.put("SERVICE_HOMEPAGE",
                 RegistryProperties.getProperty(
                         PropertyConstants.SISSVOC_VARIABLE_SERVICE_HOMEPAGE,
