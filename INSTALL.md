@@ -22,6 +22,7 @@ for LDA custom configuration.)
   * Solr must be run in SolrCloud mode. You may use either the
     embedded ZooKeeper, or use an external ZooKeeper.
 * Tomcat (at least version 7)
+* npm (for packing the generated JavaScript Client API)
 
 # Locale setting for JDK
 
@@ -258,9 +259,9 @@ PoolParty servers you define in this way.
 Connect to the MySQL Registry database as the `registry-user` user.
 
 ```
-INSERT INTO subject_resolver_sources(source,iri) VALUES ('anzsrc-for', 'http://vocabs.ands.org.au/repository/api/sparql/anzsrc-for');
-INSERT INTO subject_resolver_sources(source,iri) VALUES ('anzsrc-seo', 'http://vocabs.ands.org.au/repository/api/sparql/anzsrc-seo');
-INSERT INTO subject_resolver_sources(source,iri) VALUES ('gcmd', 'http://vocabs.ands.org.au/repository/api/sparql/gcmd-sci');
+INSERT INTO subject_resolver_sources(source,iri) VALUES ('anzsrc-for', 'http://vocabs.ardc.edu.au/repository/api/sparql/anzsrc-for');
+INSERT INTO subject_resolver_sources(source,iri) VALUES ('anzsrc-seo', 'http://vocabs.ardc.edu.au/repository/api/sparql/anzsrc-seo');
+INSERT INTO subject_resolver_sources(source,iri) VALUES ('gcmd', 'http://vocabs.ardc.edu.au/repository/api/sparql/gcmd-sci');
 ```
 
 Now run:
@@ -348,9 +349,13 @@ PHP library:
 
 The browser-side JavaScript code of the Portal also accesses the
 Registry using a client library API generated from the Registry code
-itself. To generate this JavaScript library:
+itself. To generate this JavaScript library and make it available to
+the Portal's own build process in the expected format (a `.tgz` file):
 
-`ant js-client`
+```
+ant js-client
+( cd js-client; npm pack )
+```
 
 # Optional: use automated webapp deploy/start/stop
 

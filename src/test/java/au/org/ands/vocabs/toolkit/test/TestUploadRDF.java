@@ -32,7 +32,7 @@ public final class TestUploadRDF {
     logger.info("Running TestUploadRDF.");
 
     String sesameServer =
-              "http://vocabs.ands.org.au/repository/openrdf-sesame/";
+              "http://vocabs.ardc.edu.au/repository/openrdf-sesame/";
     RepositoryManager manager;
     try {
         manager = RepositoryProvider.getRepositoryManager(sesameServer);

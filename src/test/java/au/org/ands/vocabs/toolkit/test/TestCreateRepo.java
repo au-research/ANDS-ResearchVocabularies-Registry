@@ -26,7 +26,7 @@ public final class TestCreateRepo {
   public static void main(final String[] args) {
 
     String sesameServer =
-              "http://vocabs.ands.org.au/repository/openrdf-sesame/";
+              "http://vocabs.ardc.edu.au/repository/openrdf-sesame/";
     RepositoryManager manager;
     try {
         manager = RepositoryProvider.getRepositoryManager(sesameServer);
