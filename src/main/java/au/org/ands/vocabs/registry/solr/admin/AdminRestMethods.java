@@ -152,4 +152,51 @@ public class AdminRestMethods {
         return Response.ok().entity(new SimpleResult("OK")).build();
     }
 
+    /** Force a soft commit of pending changes to the Solr collections.
+     * @param request The HTTP request.
+     * @param uriInfo The UriInfo of the request.
+     * @param profile The caller's security profile.
+     * @return Result of the commit.
+     */
+    @Path("commit")
+    @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+    @Pac4JSecurity
+    @GET
+    @ApiOperation(value = "Force a soft commit of pending changes to the Solr "
+            + "collections.",
+            notes = "This method is only available to administrator users.",
+            response = SimpleResult.class)
+    @ApiResponses(value = {
+            @ApiResponse(code = HttpStatus.SC_UNAUTHORIZED,
+                    message = "Not authenticated",
+                    response = ErrorResult.class,
+                    responseHeaders = {
+                            @ResponseHeader(name = "WWW-Authenticate",
+                                    response = String.class)
+                            }),
+            @ApiResponse(code = HttpStatus.SC_FORBIDDEN,
+                    message = "Not authenticated, or not authorized",
+                    response = ErrorResult.class)
+            })
+    public Response commitSolr(
+            @Context final HttpServletRequest request,
+            @Context final UriInfo uriInfo,
+            @ApiParam(hidden = true) @Pac4JProfile
+            final CommonProfile profile) {
+        logger.info("Called commit");
+        if (!AuthUtils.profileIsSuperuser(profile)) {
+            return ResponseUtils.generateForbiddenResponseNotSuperuser();
+        }
+        try {
+            EntityIndexer.commit();
+        } catch (IOException | SolrServerException | RemoteSolrException e) {
+            logger.error("commit: got exception",  e);
+            return Response.status(Status.INTERNAL_SERVER_ERROR).entity(
+                    new ErrorResult("Exception: " + e.toString())).build();
+        }
+        Logging.logRequest(true, request, uriInfo, profile,
+                "Admin: commit");
+        return Response.ok().entity(new SimpleResult("OK")).build();
+    }
+
 }

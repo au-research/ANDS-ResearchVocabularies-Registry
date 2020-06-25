@@ -729,4 +729,25 @@ public final class EntityIndexer {
         }
     }
 
+    /** Force a soft commit of pending changes to the Solr collections.
+     * @throws IOException If the Solr API generated an IOException.
+     * @throws SolrServerException If the Solr API generated a
+     *      SolrServerException.
+     * @throws RemoteSolrException If there is a problem communicating with
+     *      Zookeeper.
+     */
+    public static void commit()
+            throws IOException, SolrServerException, RemoteSolrException {
+        try {
+            // We need the four-parameter version in order to get
+            // soft commit. The zero-parameter commit() method
+            // does a hard commit.
+            SOLR_CLIENT_REGISTRY.commit(null, false, true, true);
+            SOLR_CLIENT_RESOURCES.commit(null, false, true, true);
+        } catch (IOException | SolrServerException | RemoteSolrException e) {
+            LOGGER.error("Exception during commit of Solr collections", e);
+            throw e;
+        }
+    }
+
 }
