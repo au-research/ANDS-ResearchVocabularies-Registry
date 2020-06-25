@@ -1052,6 +1052,27 @@ public class RegistryModelTests extends ArquillianBaseTest {
         scriptApplyChangesCurrent1("testApplyChangesCurrentVoVREVeAP6", true);
     }
 
+    /** Test of applying changes to the current instance of a vocabulary
+     * that does not have a draft instance.
+     * Vocabulary, VocabularyRelatedEntity, Version, and AccessPoint
+     * model elements are used.
+     * This test particularly exercises the ability to delete
+     * user-specified access points. See CC-2735.
+     * This test deletes three access points of <i>different</i>
+     * types: an apiSparql, a sesameDownload, and a webPage.
+     * @throws DatabaseUnitException If a problem with DbUnit.
+     * @throws IOException If a problem getting test data for DbUnit,
+     *          or reading JSON from the correct and test output files.
+     * @throws SQLException If DbUnit has a problem performing
+     *           performing JDBC operations.
+     * @throws JAXBException If a problem loading vocabulary data.
+     *  */
+    @Test
+    public final void testApplyChangesCurrentVoVREVeAP7() throws
+    DatabaseUnitException, IOException, SQLException, JAXBException {
+        scriptApplyChangesCurrent1("testApplyChangesCurrentVoVREVeAP7", true);
+    }
+
     /** Test script of adding a draft to a vocabulary
      * that has an existing published instance, and then publishing
      * the same.
@@ -1359,6 +1380,26 @@ public class RegistryModelTests extends ArquillianBaseTest {
     public final void testApplyChangesDraftVoVREVeAP2() throws
     DatabaseUnitException, IOException, SQLException, JAXBException {
         scriptApplyChangesDraft2("testApplyChangesDraftVoVREVeAP2", true);
+    }
+
+    /** Test of applying changes to the draft instance of a vocabulary.
+     * Vocabulary, VocabularyRelatedEntity, Version, and AccessPoint
+     * model elements are used.
+     * This test particularly exercises the ability to delete
+     * user-specified access points. See CC-2735.
+     * This test deletes three access points of <i>different</i>
+     * types: an apiSparql, a sesameDownload, and a webPage.
+     * @throws DatabaseUnitException If a problem with DbUnit.
+     * @throws IOException If a problem getting test data for DbUnit,
+     *          or reading JSON from the correct and test output files.
+     * @throws SQLException If DbUnit has a problem performing
+     *           performing JDBC operations.
+     * @throws JAXBException If a problem loading vocabulary data.
+     *  */
+    @Test
+    public final void testApplyChangesDraftVoVREVeAP3() throws
+    DatabaseUnitException, IOException, SQLException, JAXBException {
+        scriptApplyChangesDraft2("testApplyChangesDraftVoVREVeAP3", true);
     }
 
     /** Test of updating a draft of a vocabulary

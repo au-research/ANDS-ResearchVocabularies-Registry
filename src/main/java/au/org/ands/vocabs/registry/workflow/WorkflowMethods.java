@@ -325,6 +325,9 @@ public final class WorkflowMethods {
      */
     public static Pair<Boolean, List<Subtask>>
     deleteAccessPoint(final AccessPoint ap, final boolean deletingVersion) {
+        // Take care to ensure that _every_ return statement returns
+        // a Pair. _No_ instances of "return null"!
+
         // Default is that the caller does not have to delete (or mark
         // as historical) the row from the database.
         boolean doDatabaseDeletion = false;
@@ -334,8 +337,8 @@ public final class WorkflowMethods {
         case API_SPARQL:
         case SESAME_DOWNLOAD:
             if (ap.getSource() == ApSource.USER) {
-                // No further action required.
-                return null;
+                // These are source=USER, and no further action is required.
+                return Pair.of(true, null);
             }
             // Handle source=SYSTEM.
             // Note well: SesameImporterProvider
@@ -368,8 +371,8 @@ public final class WorkflowMethods {
             break;
         case SISSVOC:
             if (ap.getSource() == ApSource.USER) {
-                // No further action required.
-                return null;
+                // These are source=USER, and no further action is required.
+                return Pair.of(true, null);
             }
             // Handle source=SYSTEM.
             subtask = new Subtask();
