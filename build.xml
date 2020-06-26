@@ -772,8 +772,11 @@
         classname="au.org.ands.vocabs.registry.db.utils.migration.MigrateAccessPointHostname"
         classpathref="migrate-accesspoint-hostname.classpath"
       >
-      <arg value="localhost:8080/repository/openrdf-sesame/"/>
-      <arg value="localhost:8080/repository/openrdf-sesame/"/>
+      <!-- NB: DO NOT put localhost:8080 in one of the "before"
+           values, as the rewriter changes everything to https,
+           which won't then work! -->
+      <arg value="vocabs.ands.org.au/repository/openrdf-sesame/"/>
+      <arg value="vocabs.ardc.edu.au/repository/openrdf-sesame/"/>
       <arg value="vocabs.ands.org.au/registry/api/resource/downloads/"/>
       <arg value="vocabs.ardc.edu.au/registry/api/resource/downloads/"/>
       <arg value="vocabs.ands.org.au/repository/api/sparql"/>

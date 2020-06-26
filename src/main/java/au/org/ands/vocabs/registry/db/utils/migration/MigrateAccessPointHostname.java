@@ -26,6 +26,13 @@ import au.org.ands.vocabs.registry.db.internal.ApSissvoc;
 /** Standalone program to change the hostname used within
  * access points. This is not a generic rewriting program;
  * for example, as you will see, we rewrite both http and https to https.
+ *
+ * <p>Please note the previous sentence carefully!
+ * <b>DO NOT</b> specify "localhost:8080", or otherwise specify a non-HTTP
+ * port, as a "before" value, as the URL will be rewritten to begin
+ * "https", and the URL will then be broken.
+ * </p>
+ *
  * The following fields are affected:
  * <ul>
  * <li>type = API_SPARQL, source = SYSTEM or USER: in the field "url", replace
