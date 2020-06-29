@@ -42,15 +42,11 @@ import org.slf4j.LoggerFactory;
 
 import au.org.ands.vocabs.registry.db.context.TemporalUtils;
 import au.org.ands.vocabs.registry.db.converter.JSONSerialization;
-import au.org.ands.vocabs.registry.db.dao.AccessPointDAO;
 import au.org.ands.vocabs.registry.db.dao.VersionArtefactDAO;
-import au.org.ands.vocabs.registry.db.entity.AccessPoint;
 import au.org.ands.vocabs.registry.db.entity.Version;
 import au.org.ands.vocabs.registry.db.entity.VersionArtefact;
 import au.org.ands.vocabs.registry.db.entity.Vocabulary;
-import au.org.ands.vocabs.registry.db.internal.ApSissvoc;
 import au.org.ands.vocabs.registry.db.internal.VocabularyJson;
-import au.org.ands.vocabs.registry.enums.AccessPointType;
 import au.org.ands.vocabs.registry.enums.SubtaskOperationType;
 import au.org.ands.vocabs.registry.enums.TaskStatus;
 import au.org.ands.vocabs.registry.enums.VersionArtefactType;
@@ -76,9 +72,9 @@ import au.org.ands.vocabs.registry.workflow.tasks.VersionArtefactUtils;
  * are copies of vocabulary and version metadata, e.g.,
  * vocabulary title and owner, and version status. The values of those
  * fields must be filled in elsewhere. Indeed, see the method
- * {@link EntityIndexer#indexResourceDocsForVocabulary(int, Vocabulary,
- * SolrInputDocument)}, which inserts fields for those values into
- * each document at indexing time.
+ * {@link EntityIndexer#indexResourceDocsForVocabulary(EntityManager,
+ * int, Vocabulary, SolrInputDocument)}, which inserts fields for those
+ * values into each document at indexing time.
  * @see EntityIndexer
  *  */
 public class ResourceDocsTransformProvider implements WorkflowProvider {
@@ -176,10 +172,6 @@ public class ResourceDocsTransformProvider implements WorkflowProvider {
      */
     private ArrayList<String> titleKeys = new ArrayList<>();
 
-    /** The SISSVoc endpoint of the version being transformed, or null,
-     * if there isn't one. */
-    private String sissvocEndpoint = null;
-
     /** Create/update the ResourceDocs version artefact for the version.
      * @param taskInfo The top-level TaskInfo for the subtask.
      * @param subtask The subtask to be performed.
@@ -256,7 +248,6 @@ public class ResourceDocsTransformProvider implements WorkflowProvider {
      * @param taskInfo The top-level TaskInfo for the subtask.
      */
     public void initializeConvenienceFields(final TaskInfo taskInfo) {
-        EntityManager em = taskInfo.getEm();
         Vocabulary vocabulary = taskInfo.getVocabulary();
         int vocabularyId = vocabulary.getVocabularyId();
         vocabularyIdString = Integer.toString(vocabularyId);
@@ -288,23 +279,6 @@ public class ResourceDocsTransformProvider implements WorkflowProvider {
         titleKeys.add(FieldConstants.DCTERMS_TITLE + "-en");
         titleKeys.add(FieldConstants.TOP_CONCEPT);
         titleKeys.add(FieldConstants.IRI);
-
-        // Now get the value we want to use for the sissvoc_endpoint field.
-        // Note: so as to get the "right answer" for the endpoint,
-        // it's necessary that (a) this transform provider be called
-        // _after_ the publish provider, (b) we use the EntityManager
-        // of the transaction. If one or either of these conditions
-        // is not met, we will not "see" a SISSVOC access point
-        // that is being created as part of the same task.
-        List<AccessPoint> accessPoints = AccessPointDAO.
-                getCurrentAccessPointListForVersionByType(versionId,
-                        AccessPointType.SISSVOC, em);
-        if (accessPoints != null && accessPoints.size() > 0) {
-            ApSissvoc apSissvoc = JSONSerialization.
-                    deserializeStringAsJson(
-                            accessPoints.get(0).getData(), ApSissvoc.class);
-            sissvocEndpoint = apSissvoc.getUrlPrefix();
-        }
     }
 
     /** Add entries into the resource map for the vocabulary's
@@ -331,7 +305,6 @@ public class ResourceDocsTransformProvider implements WorkflowProvider {
                         versionIdString + "__" + topConcept);
                 concept.put(FieldConstants.TOP_CONCEPT, topConcept);
                 concept.put(FieldConstants.RDF_TYPE, NO_RDF_TYPE);
-                // No SISSVoc endpoint in this case.
             }
         }
     }
@@ -431,10 +404,6 @@ public class ResourceDocsTransformProvider implements WorkflowProvider {
                         vocabularyIdString + "_"
                         + subject.stringValue());
                 resource.put(FieldConstants.IRI, subject.stringValue());
-                if (sissvocEndpoint != null) {
-                    resource.put(FieldConstants.SISSVOC_ENDPOINT,
-                            sissvocEndpoint);
-                }
             }
             PredicateInfo predicateInfo = predicatesInfo.get(predicate);
             if (predicateInfo == null) {
@@ -525,12 +494,13 @@ public class ResourceDocsTransformProvider implements WorkflowProvider {
     }
 
     /** {@inheritDoc}
-     * In order to be able to get the "right answer" for the
-     * generated {@code sissvoc_endpoint} fields,
-     * it's necessary that for inserts/performs, this transform provider
-     * be called <i>after</i> the publish provider;
+     * We used to include generated {@code sissvoc_endpoint} fields, and it
+     * was therefore necessary that for inserts/performs, this
+     * transform provider be called <i>after</i> the publish provider;
      * otherwise, this transform would not "see" a SISSVOC access point
      * that is being created as part of the same task.
+     * But including generated {@code sissvoc_endpoint} fields turns out
+     * to be wrong; see CC-2709. We leave the priorities unchanged, anyway.
      */
     @Override
     public Integer defaultPriority(final SubtaskOperationType operationType) {

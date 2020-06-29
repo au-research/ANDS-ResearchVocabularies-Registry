@@ -12,12 +12,14 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityTransaction;
 import javax.xml.bind.JAXBException;
 
+import org.apache.solr.client.solrj.SolrServerException;
 import org.dbunit.DatabaseUnitException;
 import org.openrdf.OpenRDFException;
 import org.openrdf.repository.Repository;
@@ -29,6 +31,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.Assert;
 import org.testng.annotations.Test;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import au.org.ands.vocabs.registry.api.validation.ValidationMode;
 import au.org.ands.vocabs.registry.db.context.DBContext;
@@ -43,6 +48,8 @@ import au.org.ands.vocabs.registry.enums.AccessPointType;
 import au.org.ands.vocabs.registry.model.ModelMethods;
 import au.org.ands.vocabs.registry.model.VocabularyModel;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.Vocabulary;
+import au.org.ands.vocabs.registry.solr.EntityIndexer;
+import au.org.ands.vocabs.registry.solr.SearchResourcesIndex;
 import au.org.ands.vocabs.registry.workflow.tasks.TaskInfo;
 import au.org.ands.vocabs.registry.workflow.tasks.TaskUtils;
 
@@ -1259,12 +1266,13 @@ public class RegistryModelWorkflowTests extends ArquillianBaseTest {
      *           performing JDBC operations.
      * @throws JAXBException If a problem loading vocabulary data.
      * @throws OpenRDFException If there is a problem connecting with Sesame.
+     * @throws SolrServerException If an error during Solr searching.
      *  */
     @Test
     @SuppressWarnings("checkstyle:MethodLength")
     public final void testChangeVersionSlug1() throws
     DatabaseUnitException, IOException, SQLException, JAXBException,
-    OpenRDFException {
+    OpenRDFException, SolrServerException {
         String testName = CLASS_NAME_PREFIX
                 + "testChangeVersionSlug1";
         ArquillianTestUtils.clearDatabase(ROLES);
@@ -1348,6 +1356,22 @@ public class RegistryModelWorkflowTests extends ArquillianBaseTest {
         Assert.assertTrue(Files.exists(apSissvocOldSlugPathPath),
                 "SISSVoc spec file missing");
 
+        // The following confirms (among other things) that the
+        // sissvoc_endpoint in resource search results ends with
+        // "...version-1", i.e., the correct version slug.
+        EntityIndexer.indexAllVocabularies();
+        EntityIndexer.commit();
+        List<Object> filtersAndResultsExtracted = new ArrayList<>();
+        String searchResults = SearchResourcesIndex.query("{}",
+                filtersAndResultsExtracted, false);
+//        logger.info("Result from resources index: " + searchResults);
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode testJson = mapper.readTree(searchResults);
+        JsonNode docsJson = testJson.get("response").get("docs");
+        ArquillianTestUtils.compareJsonNodeWithFile(docsJson,
+                ArquillianTestUtils.getClassesPath()
+                + "/test/tests/" + testName + "/searchResultsDocs1.json");
+
         // Now change the version slug.
         try {
             EntityTransaction txn = em.getTransaction();
@@ -1401,6 +1425,22 @@ public class RegistryModelWorkflowTests extends ArquillianBaseTest {
         Path apSissvocNewSlugPathPath = Paths.get(apSissvocNewSlugPath);
         Assert.assertTrue(Files.exists(apSissvocNewSlugPathPath),
                 "SISSVoc spec file for new slug does not now exist");
+
+        // The sissvoc_endpoint in resource search results should now
+        // end with "...version-2", i.e., with the updated version slug.
+        // The point: the value changed, although we didn't re-run the
+        // ResourceDocs transform. CC-2709.
+        EntityIndexer.indexAllVocabularies();
+        EntityIndexer.commit();
+        filtersAndResultsExtracted = new ArrayList<>();
+        searchResults = SearchResourcesIndex.query("{}",
+                filtersAndResultsExtracted, false);
+//        logger.info("Result from resources index: " + searchResults);
+        testJson = mapper.readTree(searchResults);
+        docsJson = testJson.get("response").get("docs");
+        ArquillianTestUtils.compareJsonNodeWithFile(docsJson,
+                ArquillianTestUtils.getClassesPath()
+                + "/test/tests/" + testName + "/searchResultsDocs2.json");
 
         // Now delete the version.
         vocabulary = RegistryTestUtils.
