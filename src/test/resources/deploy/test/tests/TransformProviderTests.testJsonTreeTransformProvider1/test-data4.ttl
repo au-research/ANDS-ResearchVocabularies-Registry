@@ -24,4 +24,4 @@
 
 <http://test/uri2> a skos:Concept ;
   skos:prefLabel "Label 2" ;
-  skos:definition: "Definition 2" .
+  skos:definition "Definition 2" .
