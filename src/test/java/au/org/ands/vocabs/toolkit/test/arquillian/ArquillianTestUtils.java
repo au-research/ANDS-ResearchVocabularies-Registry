@@ -982,6 +982,28 @@ public final class ArquillianTestUtils {
         // a difference is found.
     }
 
+    /** Compare JSON content provided as a JsonNode, with expected content
+     * stored in a file, asserting that they contain the same content.
+     * @param testJson A JsonNode containing the actual JSON data.
+     * @param correctFilename The filename of the file containing the
+     *      expected JSON data.
+     * @throws IOException If reading from the file fails.
+     */
+    public static void compareJsonNodeWithFile(final JsonNode testJson,
+            final String correctFilename) throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode correctJson;
+        // IOException not caught here, but allowed to propagate.
+        correctJson = mapper.readTree(new File(correctFilename));
+        Assert.assertEquals(testJson, correctJson);
+        // NB This uses a top-level equality test done by TestNG.
+        // There is also a top-level equality test implemented by Jackson:
+        // correctJson.equals(testJson). The TestNG one seems to give
+        // the same end result, but gives better diagnostics in case
+        // a difference is found.
+    }
+
+
     /** Compare JSON content provided as a String, with expected content
      * stored in a file, asserting that they contain the same content.
      * @param testString A String containing the actual JSON data.

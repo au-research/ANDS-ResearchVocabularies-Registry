@@ -1,0 +1,45 @@
+[
+  {
+    "id": "1_http://test/uri1",
+    "iri": "http://test/uri1",
+    "rdf_type": [
+      "http://www.w3.org/2004/02/skos/core#Concept"
+    ],
+    "skos_definition_all": [
+      "Definition 1"
+    ],
+    "skos_definition_phrase_all": [
+      "Definition 1"
+    ],
+    "skos_definition_search_all": [
+      "Definition 1"
+    ],
+    "skos_notation": [
+      "1"
+    ],
+    "skos_prefLabel_all": [
+      "Label 1"
+    ],
+    "skos_prefLabel_phrase_all": [
+      "Label 1"
+    ],
+    "skos_prefLabel_search_all": [
+      "Label 1"
+    ],
+    "title": "Label 1",
+    "vocabulary_id_iri": "1_http://test/uri1",
+    "version_id": 1,
+    "version_title": "Version 1",
+    "version_release_date": "2014-01",
+    "vocabulary_id": "1",
+    "vocabulary_title": "RIF - CS (Vocabularies)",
+    "owner": "ANDS-Curated",
+    "last_updated": "2017-10-01T10:10:00Z",
+    "sissvoc_endpoint": "http://localhost/repository/api/lda/ands-curated/rifcs/version-1",
+    "publisher": [
+      "Australian National Data Service"
+    ],
+    "status": "CURRENT",
+    "collapse_id": "1_http://test/uri1"
+  }
+]

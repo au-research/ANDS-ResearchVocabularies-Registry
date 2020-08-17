@@ -30,7 +30,6 @@ import au.org.ands.vocabs.registry.enums.VersionStatus;
 import au.org.ands.vocabs.registry.solr.EntityIndexer;
 import au.org.ands.vocabs.registry.solr.SearchRegistryIndex;
 import au.org.ands.vocabs.registry.solr.SearchResourcesIndex;
-import au.org.ands.vocabs.registry.solr.SolrUtils;
 import au.org.ands.vocabs.toolkit.db.TaskUtils;
 
 /** All Arquillian tests of the Registry.
@@ -155,7 +154,7 @@ public class RegistryTests extends ArquillianBaseTest {
         EntityIndexer.indexAllVocabularies();
         // Explicit commit is required so that we can do a search
         // immediately.
-        SolrUtils.getSolrClientRegistry().commit();
+        EntityIndexer.commit();
         List<Object> filtersAndResultsExtracted = new ArrayList<>();
         String searchResults = SearchRegistryIndex.query("{}",
                 filtersAndResultsExtracted, false);
@@ -192,7 +191,7 @@ public class RegistryTests extends ArquillianBaseTest {
         EntityIndexer.indexAllVocabularies();
         // Explicit commit is required so that we can do a search
         // immediately.
-        SolrUtils.getSolrClientRegistry().commit();
+        EntityIndexer.commit();
 
         // pp: -1 -> MAX_ROWS
         List<Object> filtersAndResultsExtracted = new ArrayList<>();

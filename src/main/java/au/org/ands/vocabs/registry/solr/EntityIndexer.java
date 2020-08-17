@@ -42,6 +42,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.persistence.EntityManager;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 
@@ -62,6 +63,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.ibm.icu.util.ULocale;
 
+import au.org.ands.vocabs.registry.db.context.DBContext;
 import au.org.ands.vocabs.registry.db.converter.JSONSerialization;
 import au.org.ands.vocabs.registry.db.dao.AccessPointDAO;
 import au.org.ands.vocabs.registry.db.dao.RelatedEntityDAO;
@@ -211,11 +213,13 @@ public final class EntityIndexer {
     }
 
     /** Create the Solr document for the current version of a vocabulary.
+     * @param em The EntityManager to use.
      * @param vocabulary The vocabulary for which the Solr document is
      *      to be created.
      * @return The Solr document.
      */
     public static SolrInputDocument createSolrDocument(
+            final EntityManager em,
             final Vocabulary vocabulary) {
         Integer vocabularyId = vocabulary.getVocabularyId();
         SolrInputDocument document = new SolrInputDocument();
@@ -300,7 +304,7 @@ public final class EntityIndexer {
         MultivaluedMap<Integer, VocabularyRelatedEntity> vreMap =
                 VocabularyRelatedEntityDAO.
                 getCurrentVocabularyRelatedEntitiesForVocabulary(
-                        vocabularyId);
+                        em, vocabularyId);
         // Now fetch the related entities that are publishers of this
         // vocabulary.
         ArrayList<RelatedEntity> relatedEntities = new ArrayList<>();
@@ -311,7 +315,7 @@ public final class EntityIndexer {
                         vre.getRelation())) {
                     relatedEntities.add(RelatedEntityDAO.
                             getCurrentRelatedEntityByRelatedEntityId(
-                                    vre.getRelatedEntityId()));
+                                    em, vre.getRelatedEntityId()));
                 }
             }
         }
@@ -325,20 +329,23 @@ public final class EntityIndexer {
 
         // The values of the remaining fields are determined by what
         // is the "current version" of the vocabulary, if it has one.
-        addFieldsForCurrentVersion(vocabularyId, document);
+        addFieldsForCurrentVersion(em, vocabularyId, document);
         return document;
     }
 
     /** Add the fields for the current version of the vocabulary.
+     * @param em The EntityManager to use.
      * @param vocabularyId The vocabulary ID of the vocabulary. Used to
      *      fetch other database entities.
      * @param document The Solr document being generated. This method
      *      adds fields to it.
      */
-    private static void addFieldsForCurrentVersion(final Integer vocabularyId,
+    private static void addFieldsForCurrentVersion(
+            final EntityManager em,
+            final Integer vocabularyId,
             final SolrInputDocument document) {
         List<Version> versions =
-                VersionDAO.getCurrentVersionListForVocabulary(vocabularyId);
+                VersionDAO.getCurrentVersionListForVocabulary(em, vocabularyId);
         // The widgetable flag is always added to the Solr document.
         // Assume false unless/until proven otherwise.
         boolean widgetable = false;
@@ -360,7 +367,7 @@ public final class EntityIndexer {
                     VersionArtefactDAO.
                     getCurrentVersionArtefactListForVersionByType(
                             currentVersionId,
-                            VersionArtefactType.CONCEPT_LIST);
+                            VersionArtefactType.CONCEPT_LIST, em);
             if (conceptLists != null && conceptLists.size() == 1) {
                 String artefactData = conceptLists.get(0).getData();
                 VaConceptList vaConceptList =
@@ -394,7 +401,7 @@ public final class EntityIndexer {
                 }
             }
             List<AccessPoint> accessPoints = AccessPointDAO.
-                    getCurrentAccessPointListForVersion(currentVersionId);
+                    getCurrentAccessPointListForVersion(em, currentVersionId);
             for (AccessPoint accessPoint : accessPoints) {
                 accessList.add(accessPointName.get(accessPoint.getType()));
                 switch (accessPoint.getType()) {
@@ -472,21 +479,32 @@ public final class EntityIndexer {
      */
     public static void indexVocabulary(final int vocabularyId)
             throws IOException, SolrServerException, RemoteSolrException {
-        Vocabulary vocabulary =
-                VocabularyDAO.getCurrentVocabularyByVocabularyId(vocabularyId);
-        if (vocabulary == null) {
-            // For now, do nothing. Maybe revisit this decision later,
-            // e.g., to throw an exception in this case.
-            return;
-        }
-        SolrInputDocument document = createSolrDocument(vocabulary);
+        EntityManager em = null;
         try {
-            SOLR_CLIENT_REGISTRY.add(document);
-        } catch (IOException | SolrServerException | RemoteSolrException e) {
-            LOGGER.error("Exception when adding document to Solr index", e);
-            throw e;
+            em = DBContext.getEntityManager();
+            Vocabulary vocabulary =
+                    VocabularyDAO.getCurrentVocabularyByVocabularyId(em,
+                            vocabularyId);
+            if (vocabulary == null) {
+                // For now, do nothing. Maybe revisit this decision later,
+                // e.g., to throw an exception in this case.
+                return;
+            }
+            SolrInputDocument document = createSolrDocument(em, vocabulary);
+            try {
+                SOLR_CLIENT_REGISTRY.add(document);
+            } catch (IOException | SolrServerException
+                    | RemoteSolrException e) {
+                LOGGER.error("Exception when adding document to Solr index", e);
+                throw e;
+            }
+            indexResourceDocsForVocabulary(em,
+                    vocabularyId, vocabulary, document);
+        } finally {
+            if (em != null) {
+                em.close();
+            }
         }
-        indexResourceDocsForVocabulary(vocabularyId, vocabulary, document);
     }
 
     /** Index all current vocabularies into Solr.
@@ -498,36 +516,51 @@ public final class EntityIndexer {
      */
     public static void indexAllVocabularies()
             throws IOException, SolrServerException, RemoteSolrException {
+        // At present, there isn't a method getAllCurrentVocabulary(em),
+        // so for now, use the method that makes its own EntityManager.
+        // If we later have another reason to add that method, come
+        // back here and use it.
         List<Vocabulary> allVocabularies =
                 VocabularyDAO.getAllCurrentVocabulary();
-        List<SolrInputDocument> documents = new ArrayList<>();
-        // Populate vocabularyIdList with vocabulary Ids, so we can
-        // invoke indexResourceDocsForVocabulary on each one.
-        List<Integer> vocabularyIdList = new ArrayList<>();
-        for (Vocabulary vocabulary : allVocabularies) {
-            vocabularyIdList.add(vocabulary.getVocabularyId());
-            documents.add(createSolrDocument(vocabulary));
-        }
+        EntityManager em = null;
         try {
-            // First, delete all existing documents.
-            SOLR_CLIENT_REGISTRY.deleteByQuery("*:*");
-            // In this case, we do do a commit immediately (by specifying 0
-            // as the second parameter).
-            SOLR_CLIENT_REGISTRY.add(documents, 0);
-            // Clear out the entire resources index here, as there
-            // "might" be deleted vocabularies for which resources
-            // still need to be cleaned out. (Of course, that
-            // "shouldn't happen", but if you're using this method,
-            // you may well be dealing with an exceptional circumstance.)
-            SOLR_CLIENT_RESOURCES.deleteByQuery("*:*");
-        } catch (IOException | SolrServerException | RemoteSolrException e) {
-            LOGGER.error("Exception when adding documents to Solr index", e);
-            throw e;
-        }
-        // Now put all of the resource docs into the resource Solr collection.
-        for (int i = 0; i < vocabularyIdList.size(); i++) {
-            indexResourceDocsForVocabulary(vocabularyIdList.get(i),
-                    allVocabularies.get(i), documents.get(i));
+            em = DBContext.getEntityManager();
+            List<SolrInputDocument> documents = new ArrayList<>();
+            // Populate vocabularyIdList with vocabulary Ids, so we can
+            // invoke indexResourceDocsForVocabulary on each one.
+            List<Integer> vocabularyIdList = new ArrayList<>();
+            for (Vocabulary vocabulary : allVocabularies) {
+                vocabularyIdList.add(vocabulary.getVocabularyId());
+                documents.add(createSolrDocument(em, vocabulary));
+            }
+            try {
+                // First, delete all existing documents.
+                SOLR_CLIENT_REGISTRY.deleteByQuery("*:*");
+                // In this case, we do do a commit immediately (by specifying 0
+                // as the second parameter).
+                SOLR_CLIENT_REGISTRY.add(documents, 0);
+                // Clear out the entire resources index here, as there
+                // "might" be deleted vocabularies for which resources
+                // still need to be cleaned out. (Of course, that
+                // "shouldn't happen", but if you're using this method,
+                // you may well be dealing with an exceptional circumstance.)
+                SOLR_CLIENT_RESOURCES.deleteByQuery("*:*");
+            } catch (IOException | SolrServerException
+                    | RemoteSolrException e) {
+                LOGGER.error("Exception when adding documents to Solr index",
+                        e);
+                throw e;
+            }
+            // Now put all of the resource docs into the
+            // resource Solr collection.
+            for (int i = 0; i < vocabularyIdList.size(); i++) {
+                indexResourceDocsForVocabulary(em, vocabularyIdList.get(i),
+                        allVocabularies.get(i), documents.get(i));
+            }
+        } finally {
+            if (em != null) {
+                em.close();
+            }
         }
     }
 
@@ -596,6 +629,7 @@ public final class EntityIndexer {
      * metadata, e.g., vocabulary title and owner, and version status.
      * This method fills in all of the missing data before sending it
      * to Solr for indexing.
+     * @param em The EntityManager to use.
      * @param vocabularyId The vocabulary ID of the vocabulary for which
      *      resource docs are to be added to the Solr index.
      * @param vocabulary The current Vocabulary instance of the vocabulary
@@ -605,7 +639,9 @@ public final class EntityIndexer {
      *      Used as a quick way to get some of the vocabulary-level metadata,
      *      rather than re-computing it.
      */
-    private static void indexResourceDocsForVocabulary(final int vocabularyId,
+    private static void indexResourceDocsForVocabulary(
+            final EntityManager em,
+            final int vocabularyId,
             final Vocabulary vocabulary,
             final SolrInputDocument document) {
         // Extract the fields that we need to add to each Solr document,
@@ -631,7 +667,7 @@ public final class EntityIndexer {
         // non-draft. We index all such versions, irrespective of
         // whether they have version status "current" or "superseded".
         List<Version> versions =
-                VersionDAO.getCurrentVersionListForVocabulary(vocabularyId);
+                VersionDAO.getCurrentVersionListForVocabulary(em, vocabularyId);
         try {
             SOLR_CLIENT_RESOURCES.deleteByQuery("vocabulary_id:"
                     + vocabularyId);
@@ -649,10 +685,11 @@ public final class EntityIndexer {
             String versionTitle = versionJson.getTitle();
             String versionReleaseDate = version.getReleaseDate();
             String versionStatus = version.getStatus().toString();
+            String sissvocEndpoint = getSissvocEndpoint(em, versionId);
 
             List<VersionArtefact> resourceDocs = VersionArtefactDAO.
                     getCurrentVersionArtefactListForVersionByType(
-                            versionId, VersionArtefactType.RESOURCE_DOCS);
+                            versionId, VersionArtefactType.RESOURCE_DOCS, em);
             if (resourceDocs != null && resourceDocs.size() == 1) {
                 String vaData = resourceDocs.get(0).getData();
                 VaResourceDocs vaResourceDocs =
@@ -676,6 +713,9 @@ public final class EntityIndexer {
                     objectNode.put(VOCABULARY_TITLE, vocabularyTitle);
                     objectNode.put(OWNER, owner);
                     objectNode.put(LAST_UPDATED, lastUpdated);
+                    if (sissvocEndpoint != null) {
+                        objectNode.put(SISSVOC_ENDPOINT, sissvocEndpoint);
+                    }
                     objectNode.putPOJO(SUBJECT_LABELS, subjectLabels);
                     objectNode.putPOJO(PUBLISHER, publishers);
                     objectNode.put(STATUS, versionStatus);
@@ -695,6 +735,31 @@ public final class EntityIndexer {
                 }
             }
         }
+    }
+
+    /** Get the value to use for the {@code sissvoc_endpoint} field
+     * of the resources of a specified version, if the version
+     * has a currently-valid access point of type {@code sissvoc},
+     * or null, if it doesn't.
+     * @param em The EntityManager to use.
+     * @param versionId The version Id of the version.
+     * @return The {@code url-prefix} of the version's (first) access point
+     *      of type {@code sissvoc}, if such an access point exists,
+     *      or null, if it doesn't.
+     */
+    private static String getSissvocEndpoint(final EntityManager em,
+            final Integer versionId) {
+        List<AccessPoint> accessPoints = AccessPointDAO.
+                getCurrentAccessPointListForVersionByType(versionId,
+                        AccessPointType.SISSVOC, em);
+        if (accessPoints != null && accessPoints.size() > 0) {
+            ApSissvoc apSissvoc = JSONSerialization.
+                    deserializeStringAsJson(
+                            accessPoints.get(0).getData(), ApSissvoc.class);
+            return apSissvoc.getUrlPrefix();
+        }
+        // No currently-valid access point of type "sissvoc" for this version.
+        return null;
     }
 
     /** Parse a file containing JSON into a JsonNode.
@@ -726,6 +791,27 @@ public final class EntityIndexer {
         } catch (IOException e) {
             LOGGER.error("Exception in jsonNodeToString", e);
             return null;
+        }
+    }
+
+    /** Force a soft commit of pending changes to the Solr collections.
+     * @throws IOException If the Solr API generated an IOException.
+     * @throws SolrServerException If the Solr API generated a
+     *      SolrServerException.
+     * @throws RemoteSolrException If there is a problem communicating with
+     *      Zookeeper.
+     */
+    public static void commit()
+            throws IOException, SolrServerException, RemoteSolrException {
+        try {
+            // We need the four-parameter version in order to get
+            // soft commit. The zero-parameter commit() method
+            // does a hard commit.
+            SOLR_CLIENT_REGISTRY.commit(null, false, true, true);
+            SOLR_CLIENT_RESOURCES.commit(null, false, true, true);
+        } catch (IOException | SolrServerException | RemoteSolrException e) {
+            LOGGER.error("Exception during commit of Solr collections", e);
+            throw e;
         }
     }
 
