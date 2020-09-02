@@ -1,0 +1,138 @@
+{
+  "forest": [
+    {
+      "children": [
+        {
+          "iri": "http://test/OCcommon",
+          "label": "OCcommon",
+          "orderedCollectionSortOrder": 0,
+          "type": "ordered_collection_ref"
+        }
+      ],
+      "iri": "http://test/OC2",
+      "label": "OC2",
+      "type": "ordered_collection"
+    },
+    {
+      "children": [
+        {
+          "iri": "http://test/OCcommon",
+          "label": "OCcommon",
+          "orderedCollectionSortOrder": 0,
+          "type": "ordered_collection_ref"
+        }
+      ],
+      "iri": "http://test/OC3",
+      "label": "OC3",
+      "type": "ordered_collection"
+    },
+    {
+      "children": [
+        {
+          "iri": "http://test/UC1",
+          "label": "UC1",
+          "orderedCollectionSortOrder": 0,
+          "type": "unordered_collection_ref"
+        }
+      ],
+      "iri": "http://test/OC4",
+      "label": "OC4",
+      "type": "ordered_collection"
+    },
+    {
+      "children": [
+        {
+          "children": [
+            {
+              "iri": "http://test/UCcommon",
+              "label": "UCcommon",
+              "type": "unordered_collection_ref"
+            }
+          ],
+          "iri": "http://test/UC1",
+          "label": "UC1",
+          "orderedCollectionSortOrder": 0,
+          "type": "unordered_collection"
+        }
+      ],
+      "iri": "http://test/OC5",
+      "label": "OC5",
+      "type": "ordered_collection"
+    },
+    {
+      "children": [
+        {
+          "iri": "http://test/UCcommon",
+          "label": "UCcommon",
+          "type": "unordered_collection_ref"
+        }
+      ],
+      "iri": "http://test/UC2",
+      "label": "UC2",
+      "type": "unordered_collection"
+    },
+    {
+      "children": [
+        {
+          "children": [
+            {
+              "iri": "http://test/C1",
+              "label": "C1",
+              "type": "concept"
+            }
+          ],
+          "iri": "http://test/UCcommon",
+          "label": "UCcommon",
+          "type": "unordered_collection"
+        }
+      ],
+      "iri": "http://test/UC3",
+      "label": "UC3",
+      "type": "unordered_collection"
+    },
+    {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "iri": "http://test/C1",
+                  "label": "C1",
+                  "orderedCollectionSortOrder": 0,
+                  "type": "concept"
+                }
+              ],
+              "iri": "http://test/OCcommon",
+              "label": "OCcommon",
+              "orderedCollectionSortOrder": 0,
+              "type": "ordered_collection"
+            }
+          ],
+          "iri": "http://test/OC1",
+          "label": "OC1",
+          "type": "ordered_collection"
+        }
+      ],
+      "iri": "http://test/UC4",
+      "label": "UC4",
+      "type": "unordered_collection"
+    },
+    {
+      "children": [
+        {
+          "iri": "http://test/OC1",
+          "label": "OC1",
+          "type": "ordered_collection_ref"
+        }
+      ],
+      "iri": "http://test/UC5",
+      "label": "UC5",
+      "type": "unordered_collection"
+    }
+  ],
+  "format": "3",
+  "language": "en",
+  "mayResolveResources": false,
+  "maySortByNotation": false
+}

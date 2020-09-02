@@ -1,0 +1,6 @@
+@prefix skos:    <http://www.w3.org/2004/02/skos/core#> .
+@prefix my:    <http://test/> .
+
+# RDF_ERROR_MEMBERLIST_ELEMENT_LITERAL (second phase, showstopper): A literal value of a value within a skos:memberList.
+my:memberList-literal-member skos:memberList
+  ( "Literal memberList member" ) .

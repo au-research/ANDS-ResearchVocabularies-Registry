@@ -1,0 +1,2 @@
+# Test of a bad IRI.
+<f> a skos:Concept .

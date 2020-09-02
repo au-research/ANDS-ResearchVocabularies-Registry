@@ -57,6 +57,36 @@ public class BrowseFlagsParsed {
         return notationFormat;
     }
 
+    /** Whether concept schemes should be taken into account. */
+    private boolean includeConceptSchemes = false;
+
+    /** Whether concept schemes should be taken into account.
+     * @return Whether concept schemes should be taken into account.
+     */
+    public boolean isIncludeConceptSchemes() {
+        return includeConceptSchemes;
+    }
+
+    /** Whether collections should be taken into account. */
+    private boolean includeCollections = false;
+
+    /** Whether collections should be taken into account.
+     * @return Whether collections should be taken into account.
+     */
+    public boolean isIncludeCollections() {
+        return includeCollections;
+    }
+
+    /** Whether resource IRIs are expected to resolve. */
+    private boolean mayResolveResources = false;
+
+    /** Whether resource IRIs are expected to resolve.
+     * @return Whether resource IRIs are expected to resolve.
+     */
+    public boolean isMayResolveResources() {
+        return mayResolveResources;
+    }
+
     /** Parse and internalize a list of BrowseFlags. The results are
      * then available using the getters.
      * @param browseFlags The list of BrowseFlags to be parsed.
@@ -67,6 +97,15 @@ public class BrowseFlagsParsed {
             switch (browseFlag) {
             case DEFAULT_SORT_BY_NOTATION:
                 defaultSortByNotation = true;
+                break;
+            case INCLUDE_COLLECTIONS:
+                includeCollections = true;
+                break;
+            case INCLUDE_CONCEPT_SCHEMES:
+                includeConceptSchemes = true;
+                break;
+            case MAY_RESOLVE_RESOURCES:
+                mayResolveResources = true;
                 break;
             case MAY_SORT_BY_NOTATION:
                 maySortByNotation = true;

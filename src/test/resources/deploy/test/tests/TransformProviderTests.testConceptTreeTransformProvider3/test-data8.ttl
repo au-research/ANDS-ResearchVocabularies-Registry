@@ -1,0 +1,5 @@
+@prefix skos:    <http://www.w3.org/2004/02/skos/core#> .
+@prefix my:    <http://test/> .
+
+# RDF_ERROR_MEMBER_UNKNOWN_TYPE (second phase, showstopper): A member of unknown type.
+my:member-unknown-type skos:member my:member-unknown-type-resource .

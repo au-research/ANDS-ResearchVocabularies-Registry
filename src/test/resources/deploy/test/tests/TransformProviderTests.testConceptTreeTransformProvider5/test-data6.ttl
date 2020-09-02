@@ -1,0 +1,15 @@
+# Test of cycle detection of collections, with a
+# mix of unordered and ordered.
+# In this case, there is a root my:Coll1,
+# which has member my:Coll2.
+# But there is a cycle my:Coll2 -> my:Coll3 -> my:Coll3.
+# This is picked up because of a back edge.
+
+@prefix skos:    <http://www.w3.org/2004/02/skos/core#> .
+@prefix my:    <http://test/> .
+
+my:Coll1 skos:member my:Coll2 .
+
+my:Coll2 skos:member my:Coll3 .
+
+my:Coll3 skos:memberList ( my:Coll2 ) .

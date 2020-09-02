@@ -1,0 +1,161 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE dataset SYSTEM "../../dbunit-registry-export-choice.dtd" >
+<dataset>
+
+  <VOCABULARY_IDS ID="1"/>
+
+  <VOCABULARIES ID="1" START_DATE="2015-06-24 10:56:30.0" END_DATE="9999-12-01 00:00:00" VOCABULARY_ID="1" MODIFIED_BY="SYSTEM" STATUS="PUBLISHED" SLUG="rifcs" OWNER="ANDS-Curated" DATA="{''subjects'':[{''label'':''Information And Computing Sciences'',''source'':''anzsrc-for''}],''other-languages'':[],''acronym'':''RIF-CS'',''creation-date'':''2008-12-31'',''description'':''The RIF-CS schema is a data interchange format that supports the electronic exchange of collection and service descriptions. It organises information about collections and services into a format used by the Australian National Data Service (ANDS) Collections Registry. \n\nMore information on the RIF-CS Schema can be found at http://ands.org.au/guides/cpguide/cpgrifcs.html. \n\nWith assistance from the RIF-CS Advisory Board and user community, ANDS has developed a suggested vocabulary for use with the RIF-CS Schema. The vocabulary is comprised of suggested terms for specific elements of the schema. Use of the ANDS vocabulary with the RIF-CS Schema is not mandatory but is however recommended. Use of consistent terminology improves data discoverability and the precision of search operations. \n\nThe ANDS vocabularies are expected to be informed and developed further by the RIF-CS user community. Please contact services@ands.org.au if you have candidate vocabulary terms to be evaluated for possible inclusion in the ANDS vocabularies.'',''licence'':''CC-BY'',''primary-language'':''en'',''revision-cycle'':''Updated as required'',''title'':''Registry Interchange Format - Collections and Services (Vocabularies)''}"/>
+
+  <VERSION_IDS ID="1"/>
+  <VERSION_IDS ID="2"/>
+  <VERSION_IDS ID="3"/>
+  <VERSION_IDS ID="4"/>
+  <VERSION_IDS ID="5"/>
+  <VERSION_IDS ID="6"/>
+  <VERSION_IDS ID="7"/>
+
+  <VERSIONS ID="1" START_DATE="2015-11-26 10:04:05.0" END_DATE="9999-12-01 00:00:00.0" VERSION_ID="1" VOCABULARY_ID="1" MODIFIED_BY="SYSTEM" STATUS="CURRENT" SLUG="v1" RELEASE_DATE="2015-12-01" DATA="{''browse-flag'':[''maySortByNotation'',''notationAlpha'',''mayResolveResources''],''do-import'':false,''do-poolparty-harvest'':false,''do-publish'':false,''title'':''Version 1''}"/>
+  <VERSIONS ID="2" START_DATE="2015-11-26 10:04:05.0" END_DATE="9999-12-01 00:00:00.0" VERSION_ID="2" VOCABULARY_ID="1" MODIFIED_BY="SYSTEM" STATUS="CURRENT" SLUG="v2" RELEASE_DATE="2015-12-01" DATA="{''browse-flag'':[''maySortByNotation'',''notationAlpha'',''mayResolveResources'',''includeConceptSchemes''],''do-import'':false,''do-poolparty-harvest'':false,''do-publish'':false,''title'':''Version 2''}"/>
+  <VERSIONS ID="3" START_DATE="2015-11-26 10:04:05.0" END_DATE="9999-12-01 00:00:00.0" VERSION_ID="3" VOCABULARY_ID="1" MODIFIED_BY="SYSTEM" STATUS="CURRENT" SLUG="v3" RELEASE_DATE="2015-12-01" DATA="{''browse-flag'':[''maySortByNotation'',''notationAlpha'',''mayResolveResources'',''includeCollections''],''do-import'':false,''do-poolparty-harvest'':false,''do-publish'':false,''title'':''Version 3''}"/>
+  <VERSIONS ID="4" START_DATE="2015-11-26 10:04:05.0" END_DATE="9999-12-01 00:00:00.0" VERSION_ID="4" VOCABULARY_ID="1" MODIFIED_BY="SYSTEM" STATUS="CURRENT" SLUG="v4" RELEASE_DATE="2015-12-01" DATA="{''browse-flag'':[''maySortByNotation'',''notationAlpha'',''mayResolveResources'',''includeConceptSchemes'',''includeCollections''],''do-import'':false,''do-poolparty-harvest'':false,''do-publish'':false,''title'':''Version 4''}"/>
+  <VERSIONS ID="5" START_DATE="2015-11-26 10:04:05.0" END_DATE="9999-12-01 00:00:00.0" VERSION_ID="5" VOCABULARY_ID="1" MODIFIED_BY="SYSTEM" STATUS="CURRENT" SLUG="v5" RELEASE_DATE="2015-12-01" DATA="{''browse-flag'':[''includeCollections''],''do-import'':false,''do-poolparty-harvest'':false,''do-publish'':false,''title'':''Version 5''}"/>
+  <VERSIONS ID="6" START_DATE="2015-11-26 10:04:05.0" END_DATE="9999-12-01 00:00:00.0" VERSION_ID="6" VOCABULARY_ID="1" MODIFIED_BY="SYSTEM" STATUS="CURRENT" SLUG="v6" RELEASE_DATE="2015-12-01" DATA="{''browse-flag'':[''includeCollections''],''do-import'':false,''do-poolparty-harvest'':false,''do-publish'':false,''title'':''Version 6''}"/>
+  <VERSIONS ID="7" START_DATE="2015-11-26 10:04:05.0" END_DATE="9999-12-01 00:00:00.0" VERSION_ID="7" VOCABULARY_ID="1" MODIFIED_BY="SYSTEM" STATUS="CURRENT" SLUG="v7" RELEASE_DATE="2015-12-01" DATA="{''browse-flag'':[''includeCollections''],''do-import'':false,''do-poolparty-harvest'':false,''do-publish'':false,''title'':''Version 7''}"/>
+
+  <ACCESS_POINT_IDS ID="1"/>
+  <ACCESS_POINT_IDS ID="2"/>
+  <ACCESS_POINT_IDS ID="3"/>
+  <ACCESS_POINT_IDS ID="4"/>
+  <ACCESS_POINT_IDS ID="5"/>
+  <ACCESS_POINT_IDS ID="6"/>
+  <ACCESS_POINT_IDS ID="7"/>
+
+  <ACCESS_POINTS ID="1" START_DATE="2015-11-26 10:04:05.0" END_DATE="9999-12-01 00:00:00.0" ACCESS_POINT_ID="1" VERSION_ID="1" MODIFIED_BY="SYSTEM" SOURCE="USER" TYPE="FILE" DATA="{''format'':''XML'',''upload-id'':''1'',''path'':''{CLASSES}/test/tests/TransformProviderTests.testConceptTreeTransformProvider6/test-data1.ttl'',''url'':''http://vocabs.ands.org.au/repository/api/download/1/test-data.ttl''}"/>
+  <ACCESS_POINTS ID="2" START_DATE="2015-11-26 10:04:05.0" END_DATE="9999-12-01 00:00:00.0" ACCESS_POINT_ID="2" VERSION_ID="2" MODIFIED_BY="SYSTEM" SOURCE="USER" TYPE="FILE" DATA="{''format'':''XML'',''upload-id'':''1'',''path'':''{CLASSES}/test/tests/TransformProviderTests.testConceptTreeTransformProvider6/test-data1.ttl'',''url'':''http://vocabs.ands.org.au/repository/api/download/1/test-data.ttl''}"/>
+  <ACCESS_POINTS ID="3" START_DATE="2015-11-26 10:04:05.0" END_DATE="9999-12-01 00:00:00.0" ACCESS_POINT_ID="3" VERSION_ID="3" MODIFIED_BY="SYSTEM" SOURCE="USER" TYPE="FILE" DATA="{''format'':''XML'',''upload-id'':''1'',''path'':''{CLASSES}/test/tests/TransformProviderTests.testConceptTreeTransformProvider6/test-data1.ttl'',''url'':''http://vocabs.ands.org.au/repository/api/download/1/test-data.ttl''}"/>
+  <ACCESS_POINTS ID="4" START_DATE="2015-11-26 10:04:05.0" END_DATE="9999-12-01 00:00:00.0" ACCESS_POINT_ID="4" VERSION_ID="4" MODIFIED_BY="SYSTEM" SOURCE="USER" TYPE="FILE" DATA="{''format'':''XML'',''upload-id'':''1'',''path'':''{CLASSES}/test/tests/TransformProviderTests.testConceptTreeTransformProvider6/test-data1.ttl'',''url'':''http://vocabs.ands.org.au/repository/api/download/1/test-data.ttl''}"/>
+  <ACCESS_POINTS ID="5" START_DATE="2015-11-26 10:04:05.0" END_DATE="9999-12-01 00:00:00.0" ACCESS_POINT_ID="5" VERSION_ID="5" MODIFIED_BY="SYSTEM" SOURCE="USER" TYPE="FILE" DATA="{''format'':''XML'',''upload-id'':''1'',''path'':''{CLASSES}/test/tests/TransformProviderTests.testConceptTreeTransformProvider6/test-data5.ttl'',''url'':''http://vocabs.ands.org.au/repository/api/download/1/test-data.ttl''}"/>
+  <ACCESS_POINTS ID="6" START_DATE="2015-11-26 10:04:05.0" END_DATE="9999-12-01 00:00:00.0" ACCESS_POINT_ID="6" VERSION_ID="6" MODIFIED_BY="SYSTEM" SOURCE="USER" TYPE="FILE" DATA="{''format'':''XML'',''upload-id'':''1'',''path'':''{CLASSES}/test/tests/TransformProviderTests.testConceptTreeTransformProvider6/test-data6.ttl'',''url'':''http://vocabs.ands.org.au/repository/api/download/1/test-data.ttl''}"/>
+  <ACCESS_POINTS ID="7" START_DATE="2015-11-26 10:04:05.0" END_DATE="9999-12-01 00:00:00.0" ACCESS_POINT_ID="7" VERSION_ID="7" MODIFIED_BY="SYSTEM" SOURCE="USER" TYPE="FILE" DATA="{''format'':''XML'',''upload-id'':''1'',''path'':''{CLASSES}/test/tests/TransformProviderTests.testConceptTreeTransformProvider6/test-data7.ttl'',''url'':''http://vocabs.ands.org.au/repository/api/download/1/test-data.ttl''}"/>
+
+  <TASKS
+      ID="1"
+      VOCABULARY_ID="1"
+      VERSION_ID="1"
+      PARAMS="[
+                {
+                  ''subtaskProviderType'': ''transform'',
+                  ''status'': ''new'',
+                  ''results'': null,
+                  ''provider'': ''ConceptTree'',
+                  ''priority'': 20,
+                  ''operation'': ''insert''
+                }
+              ]"
+      STATUS="NEW"
+      RESPONSE="{}"
+      />
+  <TASKS
+      ID="2"
+      VOCABULARY_ID="1"
+      VERSION_ID="2"
+      PARAMS="[
+                {
+                  ''subtaskProviderType'': ''transform'',
+                  ''status'': ''new'',
+                  ''results'': null,
+                  ''provider'': ''ConceptTree'',
+                  ''priority'': 20,
+                  ''operation'': ''insert''
+                }
+              ]"
+      STATUS="NEW"
+      RESPONSE="{}"
+      />
+  <TASKS
+      ID="3"
+      VOCABULARY_ID="1"
+      VERSION_ID="3"
+      PARAMS="[
+                {
+                  ''subtaskProviderType'': ''transform'',
+                  ''status'': ''new'',
+                  ''results'': null,
+                  ''provider'': ''ConceptTree'',
+                  ''priority'': 20,
+                  ''operation'': ''insert''
+                }
+              ]"
+      STATUS="NEW"
+      RESPONSE="{}"
+      />
+  <TASKS
+      ID="4"
+      VOCABULARY_ID="1"
+      VERSION_ID="4"
+      PARAMS="[
+                {
+                  ''subtaskProviderType'': ''transform'',
+                  ''status'': ''new'',
+                  ''results'': null,
+                  ''provider'': ''ConceptTree'',
+                  ''priority'': 20,
+                  ''operation'': ''insert''
+                }
+              ]"
+      STATUS="NEW"
+      RESPONSE="{}"
+      />
+  <TASKS
+      ID="5"
+      VOCABULARY_ID="1"
+      VERSION_ID="5"
+      PARAMS="[
+                {
+                  ''subtaskProviderType'': ''transform'',
+                  ''status'': ''new'',
+                  ''results'': null,
+                  ''provider'': ''ConceptTree'',
+                  ''priority'': 20,
+                  ''operation'': ''insert''
+                }
+              ]"
+      STATUS="NEW"
+      RESPONSE="{}"
+      />
+  <TASKS
+      ID="6"
+      VOCABULARY_ID="1"
+      VERSION_ID="6"
+      PARAMS="[
+                {
+                  ''subtaskProviderType'': ''transform'',
+                  ''status'': ''new'',
+                  ''results'': null,
+                  ''provider'': ''ConceptTree'',
+                  ''priority'': 20,
+                  ''operation'': ''insert''
+                }
+              ]"
+      STATUS="NEW"
+      RESPONSE="{}"
+      />
+  <TASKS
+      ID="7"
+      VOCABULARY_ID="1"
+      VERSION_ID="7"
+      PARAMS="[
+                {
+                  ''subtaskProviderType'': ''transform'',
+                  ''status'': ''new'',
+                  ''results'': null,
+                  ''provider'': ''ConceptTree'',
+                  ''priority'': 20,
+                  ''operation'': ''insert''
+                }
+              ]"
+      STATUS="NEW"
+      RESPONSE="{}"
+      />
+
+</dataset>

@@ -1,0 +1,12 @@
+# Test of cycle detection of collections.
+# This is the most simple cycle of unordered collections.
+# There is a path my:Coll1 -> my:Coll2 -> my:Coll1.
+# This is picked up first because of an unvisited node,
+# and we then visit anyway and discover a back edge.
+
+@prefix skos:    <http://www.w3.org/2004/02/skos/core#> .
+@prefix my:    <http://test/> .
+
+my:Coll1 skos:member my:Coll2.
+
+my:Coll2 skos:member my:Coll1.

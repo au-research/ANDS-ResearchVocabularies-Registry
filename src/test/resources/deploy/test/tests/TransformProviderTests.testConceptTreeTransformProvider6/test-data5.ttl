@@ -1,0 +1,44 @@
+# Test of nested collections.
+# Many possibilities: nesting of unordered within unordered,
+#   unordered within ordered, etc.
+# Test the use of deputies and _refs.
+
+@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix skos:    <http://www.w3.org/2004/02/skos/core#> .
+@prefix my:      <http://test/> .
+
+my:C1 a skos:Concept ;
+  skos:prefLabel "C1" .
+
+# Unordered with unordered members
+my:UC1 skos:prefLabel "UC1" ;
+  skos:member my:UCcommon .
+my:UC2 dcterms:title "UC2" ;
+  skos:member my:UCcommon .
+my:UC3 rdfs:label "UC3" ;
+  skos:member my:UCcommon .
+my:UCcommon dcterms:title "UCcommon" ;
+  skos:member my:C1 .
+
+# Ordered with ordered members.
+my:OC1 skos:prefLabel "OC1" ;
+  skos:memberList ( my:OCcommon ) .
+my:OC2 dcterms:title "OC2" ;
+  skos:memberList ( my:OCcommon ) .
+my:OC3 rdfs:label "OC3" ;
+  skos:memberList ( my:OCcommon ) .
+my:OCcommon dcterms:title "OCcommon" ;
+  skos:memberList ( my:C1 ) .
+
+# Unordered with ordered members
+my:UC4 skos:prefLabel "UC4" ;
+  skos:member my:OC1 .
+my:UC5 skos:prefLabel "UC5" ;
+  skos:member my:OC1 .
+
+# Ordered with unordered members
+my:OC4 skos:prefLabel "OC4" ;
+  skos:memberList ( my:UC1 ) .
+my:OC5 skos:prefLabel "OC5" ;
+  skos:memberList ( my:UC1 ) .

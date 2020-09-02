@@ -1,1 +1,57 @@
-[{"id":"1_http://test/uri1/narrower1","iri":"http://test/uri1/narrower1","rdf_type":"http://www.w3.org/2004/02/skos/core#Concept","skos_definition":"Definition 1.1","skos_notation":"1.1","skos_prefLabel":"Label 1.1","title":"Label 1.1","vocabulary_id_iri":"1_http://test/uri1/narrower1"},{"id":"1_http://test/uri2","iri":"http://test/uri2","rdf_type":"http://www.w3.org/2004/02/skos/core#Concept","skos_prefLabel":"Label 2","title":"Label 2","vocabulary_id_iri":"1_http://test/uri2"},{"id":"1_http://test/noPrefLabel1","iri":"http://test/noPrefLabel1","rdf_type":"http://www.w3.org/2004/02/skos/core#Concept","title":"http://test/noPrefLabel1","vocabulary_id_iri":"1_http://test/noPrefLabel1"},{"id":"1_http://test/uri1","iri":"http://test/uri1","rdf_type":"http://www.w3.org/2004/02/skos/core#Concept","skos_definition":"Definition 1","skos_notation":"1","skos_prefLabel":"Label 1","title":"Label 1","vocabulary_id_iri":"1_http://test/uri1"},{"id":"1_http://test/noPrefLabel2","iri":"http://test/noPrefLabel2","rdf_type":"http://www.w3.org/2004/02/skos/core#Concept","title":"http://test/noPrefLabel2","vocabulary_id_iri":"1_http://test/noPrefLabel2"},{"id":"1_http://test/uri1/narrower1/narrower1","iri":"http://test/uri1/narrower1/narrower1","rdf_type":"http://www.w3.org/2004/02/skos/core#Concept","skos_definition":"Definition 1.1.1","skos_notation":"1.1.1","skos_prefLabel":"Label 1.1.1","title":"Label 1.1.1","vocabulary_id_iri":"1_http://test/uri1/narrower1/narrower1"}]
+[
+  {
+    "id": "1_http://test/uri1/narrower1",
+    "iri": "http://test/uri1/narrower1",
+    "rdf_type": "http://www.w3.org/2004/02/skos/core#Concept",
+    "skos_definition": "Definition 1.1",
+    "skos_notation": "1.1",
+    "skos_prefLabel": "Label 1.1",
+    "title": "Label 1.1",
+    "vocabulary_id_iri": "1_http://test/uri1/narrower1"
+  },
+  {
+    "id": "1_http://test/uri2",
+    "iri": "http://test/uri2",
+    "rdf_type": "http://www.w3.org/2004/02/skos/core#Concept",
+    "skos_definition": "Definition 2",
+    "skos_prefLabel": "Label 2",
+    "title": "Label 2",
+    "vocabulary_id_iri": "1_http://test/uri2"
+  },
+  {
+    "id": "1_http://test/noPrefLabel1",
+    "iri": "http://test/noPrefLabel1",
+    "rdf_type": "http://www.w3.org/2004/02/skos/core#Concept",
+    "skos_definition": "Concepts without preflabels go at the end ...",
+    "title": "http://test/noPrefLabel1",
+    "vocabulary_id_iri": "1_http://test/noPrefLabel1"
+  },
+  {
+    "id": "1_http://test/uri1",
+    "iri": "http://test/uri1",
+    "rdf_type": "http://www.w3.org/2004/02/skos/core#Concept",
+    "skos_definition": "Definition 1",
+    "skos_notation": "1",
+    "skos_prefLabel": "Label 1",
+    "title": "Label 1",
+    "vocabulary_id_iri": "1_http://test/uri1"
+  },
+  {
+    "id": "1_http://test/noPrefLabel2",
+    "iri": "http://test/noPrefLabel2",
+    "rdf_type": "http://www.w3.org/2004/02/skos/core#Concept",
+    "skos_definition": "... sorted by IRI",
+    "title": "http://test/noPrefLabel2",
+    "vocabulary_id_iri": "1_http://test/noPrefLabel2"
+  },
+  {
+    "id": "1_http://test/uri1/narrower1/narrower1",
+    "iri": "http://test/uri1/narrower1/narrower1",
+    "rdf_type": "http://www.w3.org/2004/02/skos/core#Concept",
+    "skos_definition": "Definition 1.1.1",
+    "skos_notation": "1.1.1",
+    "skos_prefLabel": "Label 1.1.1",
+    "title": "Label 1.1.1",
+    "vocabulary_id_iri": "1_http://test/uri1/narrower1/narrower1"
+  }
+]

@@ -1,0 +1,11 @@
+@prefix skos:    <http://www.w3.org/2004/02/skos/core#> .
+@prefix my:    <http://test/> .
+
+# RDF_ERROR_MEMBER_NOT_IN_MEMBERLIST (second phase, showstopper): A collection that has a skos:memberList, and also
+# a skos:member not in that list.
+my:memberList-and-other-member
+  skos:memberList ( my:memberList-and-other-member-member1 my:memberList-and-other-member-member2 ) ;
+  skos:member my:memberList-and-other-member-member1 , my:memberList-and-other-member-member3 .
+my:memberList-and-other-member-member1 a skos:Concept .
+my:memberList-and-other-member-member2 a skos:Concept .
+my:memberList-and-other-member-member3 a skos:Concept .
