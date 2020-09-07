@@ -857,7 +857,7 @@ public class StatementHandler extends RDFHandlerBase {
                         ((Literal) stObject).getLanguage(),
                         primaryLanguage);
             } else {
-                subjectResource.setDctermsTitle(stObject.stringValue());
+                subjectResource.setDctermsDescription(stObject.stringValue());
             }
             break;
         case RDFS_LABEL:

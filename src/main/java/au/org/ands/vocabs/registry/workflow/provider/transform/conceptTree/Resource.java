@@ -466,7 +466,7 @@ public class Resource extends ResourceOrRef {
                 && !primaryLanguage.equals(dctermsDescriptionLanguage))
                 ) {
             dctermsDescription = aDctermsDescription;
-            rdfsLabelLanguage = aLanguage;
+            dctermsDescriptionLanguage = aLanguage;
         }
         // Otherwise, leave the existing rdfsLabel unchanged.
     }
