@@ -112,8 +112,20 @@ implements Comparator<Pair<ResourceOrRef, Integer>> {
     @Override
     public int compare(final Pair<ResourceOrRef, Integer> o1,
             final Pair<ResourceOrRef, Integer> o2) {
-        String n1 = o1.getLeft().getNotation();
-        String n2 = o2.getLeft().getNotation();
+        ResourceOrRef o1Left = o1.getLeft();
+        ResourceOrRef o2Left = o2.getLeft();
+        Integer o1OCSO = o1Left.getOrderedCollectionSortOrder();
+        // So, the next bit is somewhat of a lie, which we live with
+        // for now. If in future we want to support _really_ displaying
+        // the members of an ordered collection by notation,
+        // this needs to be revisited.
+        if (o1OCSO != null) {
+            // Two children of an ordered collection. Respect that
+            // canonical ordering.
+            return o1OCSO - o2Left.getOrderedCollectionSortOrder();
+        }
+        String n1 = o1Left.getNotation();
+        String n2 = o2Left.getNotation();
         if (n1 == null || n1.isEmpty()) {
             // o1 has no notation. It will be sorted
             // after all concepts that _do_ have notations.
