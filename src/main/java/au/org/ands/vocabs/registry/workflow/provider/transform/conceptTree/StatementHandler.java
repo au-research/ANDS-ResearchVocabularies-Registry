@@ -1139,8 +1139,11 @@ public class StatementHandler extends RDFHandlerBase {
                                 + resource.getIri() + " to "
                                 + narrower.getIri());
                     }
-                    // Add as a reference.
-                    resource.addChild(narrower.getSingletonResourceRef());
+                    // Add as a reference. We make a new instance each
+                    // time if we need one -- which we do, if we
+                    // need to support sort-by-notation.
+                    resource.addChild(narrower.getConceptResourceRef(
+                            maySortByNotation));
                 }
             }
         }
@@ -1267,7 +1270,7 @@ public class StatementHandler extends RDFHandlerBase {
                                 + member.getIri());
                     }
                     // Add as a reference.
-                    collection.addChild(member.getNewResourceRef());
+                    collection.addChild(member.getCollectionResourceRef());
                 }
             }
         }
@@ -1337,7 +1340,7 @@ public class StatementHandler extends RDFHandlerBase {
                                 + element.getIri());
                     }
                     // Add as a reference.
-                    ResourceOrRef ref = element.getNewResourceRef();
+                    ResourceOrRef ref = element.getCollectionResourceRef();
                     // If we ever add the inserted flag, do this here:
                     //     ref.setInsertedIntoTree(true);
                     ref.setOrderedCollectionSortOrder(i);

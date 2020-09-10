@@ -511,13 +511,17 @@ public class Resource extends ResourceOrRef {
      * instance, if one has been requested, otherwise null. */
     private ResourceRef resourceRef;
 
-    /** Get the singleton {@link ResourceRef} instance corresponding
-     * to this instance. If one doesn't already exist, it is created.
-     * @return The {@link ResourceRef} instance correspoding
+    /** For a Resource of type concept, get a {@link ResourceRef} instance
+     * corresponding to this Resource instance.
+     * If one doesn't already exist, it is created.
+     * @param newInstance If true, always make a new instance. Otherwise,
+     *      a cached instance may be returned.
+     * @return A {@link ResourceRef} instance correspoding
      *      to this instance.
      */
     @JsonIgnore
-    public synchronized ResourceRef getSingletonResourceRef() {
+    public synchronized ResourceRef getConceptResourceRef(
+            final boolean newInstance) {
         if (type != ResourceType.CONCEPT) {
             LOGGER.error("Attempt to make singleton ResourceRef "
                     + "of something other than a concept: " + iri
@@ -525,19 +529,25 @@ public class Resource extends ResourceOrRef {
             throw new IllegalArgumentException("Attempt to make singleton "
                     + "ResourceRef of something other than a concept: " + iri);
         }
+        if (newInstance) {
+            // We were asked for a new instance, so provide one.
+            return new ResourceRef(this);
+        }
+        // We weren't asked for a new instance, so make one only if needed.
         if (resourceRef == null) {
             resourceRef = new ResourceRef(this);
         }
         return resourceRef;
     }
 
-    /** Get a new {@link ResourceRef} instance corresponding
-     * to this instance. This method always creates a new instance.
+    /** For a resource of a collection type, get a new {@link ResourceRef}
+     * instance corresponding to this instance.
+     * This method always creates a new instance.
      * @return The {@link ResourceRef} instance correspoding
      *      to this instance.
      */
     @JsonIgnore
-    public synchronized ResourceRef getNewResourceRef() {
+    public synchronized ResourceRef getCollectionResourceRef() {
         if (!((type == ResourceType.UNORDERED_COLLECTION)
                 || (type == ResourceType.ORDERED_COLLECTION))) {
             LOGGER.error("Attempt to make non-singleton ResourceRef "
