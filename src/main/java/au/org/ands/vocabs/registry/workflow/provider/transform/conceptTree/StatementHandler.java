@@ -997,7 +997,7 @@ public class StatementHandler extends RDFHandlerBase {
             //     topmostResource.setInsertedIntoTree(true);
             switch (topmostResource.getType()) {
             case CONCEPT:
-                depthFirstSearchConcept(topmostResource);
+                depthFirstSearchConcept(topmostResource, true);
                 break;
             case CONCEPT_SCHEME:
                 depthFirstSearchConceptScheme(topmostResource);
@@ -1064,7 +1064,7 @@ public class StatementHandler extends RDFHandlerBase {
                     addRdfError(error);
                     // If we ever add the inserted flag, do this here:
                     //     newRoot.setInsertedIntoTree(true);
-                  depthFirstSearchConcept(newRoot);
+                  depthFirstSearchConcept(newRoot, true);
                 } else {
                     // Not a concept, so must be a collection.
                     error = RDF_ERROR_CYCLE_COLLECTION_UNVISITED
@@ -1102,18 +1102,31 @@ public class StatementHandler extends RDFHandlerBase {
 
     /** Perform a depth-first search starting at a concept.
      * @param resource The resource from which to start the search.
+     * @param searchRootIsAConcept The root of the search is a concept.
+     *      If this is true, and {@link #includeConceptSchemes} is also
+     *      true, then the values of the narrower scaffolding are
+     *      filtered down to the concepts not in any concept scheme.
      */
-    private void depthFirstSearchConcept(final Resource resource) {
+    private void depthFirstSearchConcept(final Resource resource,
+            final boolean searchRootIsAConcept) {
         nodesNotVisited.remove(resource);
         nodesActive.add(resource);
         Set<Resource> narrowerSet = resource.getScaffoldNarrower();
         if (narrowerSet != null) {
             for (Resource narrower : narrowerSet) {
+                if (includeConceptSchemes && searchRootIsAConcept
+                        && narrower.getScaffoldInConceptSchemes() != null) {
+                    // resource is a master resource; it is being traversed
+                    // from the top level of the visualization, and narrower
+                    // is a member of at least one concept scheme. We won't
+                    // visit it.
+                    continue;
+                }
                 if (nodesNotVisited.contains(narrower)) {
                     resource.addChild(narrower);
                     // If we ever add the inserted flag, do this here:
                     //     narrower.setInsertedIntoTree(true);
-                    depthFirstSearchConcept(narrower);
+                    depthFirstSearchConcept(narrower, searchRootIsAConcept);
                 } else {
                     // We have visited this narrower concept already,
                     // which means this edge is not a tree edge,
@@ -1169,7 +1182,7 @@ public class StatementHandler extends RDFHandlerBase {
                 if (nodesNotVisited.contains(child)) {
                     // If we ever add the inserted flag, do this here:
                     //     child.setInsertedIntoTree(true);
-                    depthFirstSearchConcept(child);
+                    depthFirstSearchConcept(child, false);
                 } else {
                     // Something wrong! We should not have visited this
                     // deputy before.

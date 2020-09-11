@@ -1,0 +1,24 @@
+# Test of display of top-level concepts when
+# includeConceptSchemes browse flag is set.
+
+@prefix skos:    <http://www.w3.org/2004/02/skos/core#> .
+@prefix my:      <http://test/> .
+
+my:C1 a skos:Concept ;
+  skos:prefLabel "C1" ;
+  skos:inScheme my:CS .
+
+my:C2 a skos:Concept ;
+  skos:prefLabel "C2" ;
+  skos:narrower my:TC1 , my:C3 .
+
+my:C3 a skos:Concept ;
+  skos:prefLabel "C3" .
+
+my:TC1 a skos:Concept ;
+  skos:prefLabel "TC1" ;
+  skos:narrower my:C1 .
+
+my:CS a skos:ConceptScheme ;
+  skos:prefLabel "CS" ;
+  skos:hasTopConcept my:TC1 .
