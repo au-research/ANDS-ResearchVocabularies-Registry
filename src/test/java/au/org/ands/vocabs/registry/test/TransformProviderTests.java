@@ -1031,7 +1031,8 @@ public class TransformProviderTests extends ArquillianBaseTest {
     }
 
     /** Server-side test of {@code ConceptTreeTransformProvider}.
-     * The test data of this test exercises cycle detection of collections.
+     * The test data of this test exercises the processing of
+     * concept schemes and collections.
      * @throws DatabaseUnitException If a problem with DbUnit.
      * @throws HibernateException If a problem getting the underlying
      *          JDBC connection.
@@ -1074,6 +1075,8 @@ public class TransformProviderTests extends ArquillianBaseTest {
             testConceptTreeProcessing(em, vocabulary, 4, 4,
                     testsPath, testName);
             testConceptTreeProcessing(em, vocabulary, 5, 5,
+                    testsPath, testName);
+            testConceptTreeProcessing(em, vocabulary, 6, 6,
                     testsPath, testName);
 
             txn.commit();
