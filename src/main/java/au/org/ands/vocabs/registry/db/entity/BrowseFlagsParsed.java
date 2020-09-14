@@ -57,6 +57,18 @@ public class BrowseFlagsParsed {
         return notationFormat;
     }
 
+    /** In case {@link #maySortByNotation} is true, whether the
+     * notation values should be displayed by default. */
+    private boolean defaultDisplayNotation = false;
+
+    /** In case {@link #maySortByNotation} is true, whether the
+     * notation values should be displayed by default.
+     * @return Whether the notation values should be displayed by default.
+     */
+    public boolean isDefaultDisplayNotation() {
+        return defaultDisplayNotation;
+    }
+
     /** Whether concept schemes should be taken into account. */
     private boolean includeConceptSchemes = false;
 
@@ -114,6 +126,9 @@ public class BrowseFlagsParsed {
             case NOTATION_DOTTED:
             case NOTATION_FLOAT:
                 notationFormat = browseFlag;
+                break;
+            case DEFAULT_DISPLAY_NOTATION:
+                defaultDisplayNotation = true;
                 break;
             default:
                 logger.error("Encountered an unexpected browse flag: "

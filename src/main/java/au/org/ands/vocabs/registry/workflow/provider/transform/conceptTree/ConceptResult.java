@@ -90,6 +90,26 @@ public class ConceptResult {
         return notationFormat;
     }
 
+    /** Whether notations should be displayed by default. */
+    private Boolean defaultDisplayNotation;
+
+    /** Set the value of {@link #defaultDisplayNotation}.
+     * @param aDefaultDisplayNotation The value of defaultDisplayNotation
+     *      to set.
+     */
+    public void setDefaultDisplayNotation(
+            final boolean aDefaultDisplayNotation) {
+        defaultDisplayNotation = aDefaultDisplayNotation;
+    }
+
+    /** Get the value of {@link #defaultDisplayNotation}. Invoked during
+     * serialization into JSON.
+     * @return The value of defaultDisplayNotation.
+     */
+    public Boolean getDefaultDisplayNotation() {
+        return defaultDisplayNotation;
+    }
+
     /** Whether users will be offered the ability to resolve resource IRIs. */
     private boolean mayResolveResources = false;
 
@@ -102,7 +122,7 @@ public class ConceptResult {
 
     /** Get the value of mayResolveResources. Invoked during
      * serialization into JSON.
-     * @return The value of notationFormat.
+     * @return The value of mayResolveResources.
      */
     public boolean getMayResolveResources() {
         return mayResolveResources;

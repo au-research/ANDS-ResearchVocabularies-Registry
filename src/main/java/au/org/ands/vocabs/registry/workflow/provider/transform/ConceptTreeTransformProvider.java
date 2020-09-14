@@ -577,6 +577,8 @@ public class ConceptTreeTransformProvider implements WorkflowProvider {
                                     bfParsed.isDefaultSortByNotation());
                             conceptResult.setNotationFormat(
                                     bfParsed.getNotationFormat());
+                            conceptResult.setDefaultDisplayNotation(
+                                    bfParsed.isDefaultDisplayNotation());
                         }
                     } else {
                         // There was an exception when parsing a notation.
