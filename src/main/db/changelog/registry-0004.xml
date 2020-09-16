@@ -32,63 +32,63 @@
          supported_ for MySQL.
     -->
     <sql dbms="mysql">
-      ALTER TABLE vocabs_registry.access_points MODIFY start_date datetime(6) NOT NULL COMMENT 'Values in UTC.';
-      ALTER TABLE vocabs_registry.access_points MODIFY end_date datetime(6) NOT NULL COMMENT 'Values in UTC.';
-      ALTER TABLE vocabs_registry.related_entities MODIFY start_date datetime(6) NOT NULL COMMENT 'Values in UTC.';
-      ALTER TABLE vocabs_registry.related_entities MODIFY end_date datetime(6) NOT NULL COMMENT 'Values in UTC.';
-      ALTER TABLE vocabs_registry.related_entity_identifiers MODIFY start_date datetime(6) NOT NULL COMMENT 'Values in UTC.';
-      ALTER TABLE vocabs_registry.related_entity_identifiers MODIFY end_date datetime(6) NOT NULL COMMENT 'Values in UTC.';
-      ALTER TABLE vocabs_registry.resource_owner_hosts MODIFY start_date datetime(6) NOT NULL COMMENT 'Values in UTC.';
-      ALTER TABLE vocabs_registry.resource_owner_hosts MODIFY end_date datetime(6) NOT NULL COMMENT 'Values in UTC.';
-      ALTER TABLE vocabs_registry.subscriber_email_addresses MODIFY start_date datetime(6) NOT NULL COMMENT 'Values in UTC.';
-      ALTER TABLE vocabs_registry.subscriber_email_addresses MODIFY end_date datetime(6) NOT NULL COMMENT 'Values in UTC.';
-      ALTER TABLE vocabs_registry.subscribers MODIFY start_date datetime(6) NOT NULL COMMENT 'Values in UTC.';
-      ALTER TABLE vocabs_registry.subscribers MODIFY end_date datetime(6) NOT NULL COMMENT 'Values in UTC.';
-      ALTER TABLE vocabs_registry.subscriptions MODIFY start_date datetime(6) NOT NULL COMMENT 'Values in UTC.';
-      ALTER TABLE vocabs_registry.subscriptions MODIFY end_date datetime(6) NOT NULL COMMENT 'Values in UTC.';
-      ALTER TABLE vocabs_registry.version_artefacts MODIFY start_date datetime(6) NOT NULL COMMENT 'Values in UTC.';
-      ALTER TABLE vocabs_registry.version_artefacts MODIFY end_date datetime(6) NOT NULL COMMENT 'Values in UTC.';
-      ALTER TABLE vocabs_registry.versions MODIFY start_date datetime(6) NOT NULL COMMENT 'Values in UTC.';
-      ALTER TABLE vocabs_registry.versions MODIFY end_date datetime(6) NOT NULL COMMENT 'Values in UTC.';
-      ALTER TABLE vocabs_registry.vocabularies MODIFY start_date datetime(6) NOT NULL COMMENT 'Values in UTC.';
-      ALTER TABLE vocabs_registry.vocabularies MODIFY end_date datetime(6) NOT NULL COMMENT 'Values in UTC.';
-      ALTER TABLE vocabs_registry.vocabulary_related_entities MODIFY start_date datetime(6) NOT NULL COMMENT 'Values in UTC.';
-      ALTER TABLE vocabs_registry.vocabulary_related_entities MODIFY end_date datetime(6) NOT NULL COMMENT 'Values in UTC.';
-      ALTER TABLE vocabs_registry.vocabulary_related_vocabularies MODIFY start_date datetime(6) NOT NULL COMMENT 'Values in UTC.';
-      ALTER TABLE vocabs_registry.vocabulary_related_vocabularies MODIFY end_date datetime(6) NOT NULL COMMENT 'Values in UTC.';
+      ALTER TABLE access_points MODIFY start_date datetime(6) NOT NULL COMMENT 'Values in UTC.';
+      ALTER TABLE access_points MODIFY end_date datetime(6) NOT NULL COMMENT 'Values in UTC.';
+      ALTER TABLE related_entities MODIFY start_date datetime(6) NOT NULL COMMENT 'Values in UTC.';
+      ALTER TABLE related_entities MODIFY end_date datetime(6) NOT NULL COMMENT 'Values in UTC.';
+      ALTER TABLE related_entity_identifiers MODIFY start_date datetime(6) NOT NULL COMMENT 'Values in UTC.';
+      ALTER TABLE related_entity_identifiers MODIFY end_date datetime(6) NOT NULL COMMENT 'Values in UTC.';
+      ALTER TABLE resource_owner_hosts MODIFY start_date datetime(6) NOT NULL COMMENT 'Values in UTC.';
+      ALTER TABLE resource_owner_hosts MODIFY end_date datetime(6) NOT NULL COMMENT 'Values in UTC.';
+      ALTER TABLE subscriber_email_addresses MODIFY start_date datetime(6) NOT NULL COMMENT 'Values in UTC.';
+      ALTER TABLE subscriber_email_addresses MODIFY end_date datetime(6) NOT NULL COMMENT 'Values in UTC.';
+      ALTER TABLE subscribers MODIFY start_date datetime(6) NOT NULL COMMENT 'Values in UTC.';
+      ALTER TABLE subscribers MODIFY end_date datetime(6) NOT NULL COMMENT 'Values in UTC.';
+      ALTER TABLE subscriptions MODIFY start_date datetime(6) NOT NULL COMMENT 'Values in UTC.';
+      ALTER TABLE subscriptions MODIFY end_date datetime(6) NOT NULL COMMENT 'Values in UTC.';
+      ALTER TABLE version_artefacts MODIFY start_date datetime(6) NOT NULL COMMENT 'Values in UTC.';
+      ALTER TABLE version_artefacts MODIFY end_date datetime(6) NOT NULL COMMENT 'Values in UTC.';
+      ALTER TABLE versions MODIFY start_date datetime(6) NOT NULL COMMENT 'Values in UTC.';
+      ALTER TABLE versions MODIFY end_date datetime(6) NOT NULL COMMENT 'Values in UTC.';
+      ALTER TABLE vocabularies MODIFY start_date datetime(6) NOT NULL COMMENT 'Values in UTC.';
+      ALTER TABLE vocabularies MODIFY end_date datetime(6) NOT NULL COMMENT 'Values in UTC.';
+      ALTER TABLE vocabulary_related_entities MODIFY start_date datetime(6) NOT NULL COMMENT 'Values in UTC.';
+      ALTER TABLE vocabulary_related_entities MODIFY end_date datetime(6) NOT NULL COMMENT 'Values in UTC.';
+      ALTER TABLE vocabulary_related_vocabularies MODIFY start_date datetime(6) NOT NULL COMMENT 'Values in UTC.';
+      ALTER TABLE vocabulary_related_vocabularies MODIFY end_date datetime(6) NOT NULL COMMENT 'Values in UTC.';
 
-      ALTER TABLE vocabs_registry.registry_events MODIFY event_date datetime(6) NOT NULL COMMENT 'Values in UTC.';
-      ALTER TABLE vocabs_registry.subscriptions MODIFY last_notification datetime(6) NOT NULL COMMENT 'Values in UTC.';
+      ALTER TABLE registry_events MODIFY event_date datetime(6) NOT NULL COMMENT 'Values in UTC.';
+      ALTER TABLE subscriptions MODIFY last_notification datetime(6) NOT NULL COMMENT 'Values in UTC.';
     </sql>
     <rollback>
       <sql dbms="mysql">
-        ALTER TABLE vocabs_registry.access_points MODIFY start_date datetime NOT NULL COMMENT 'Values in UTC.';
-        ALTER TABLE vocabs_registry.access_points MODIFY end_date datetime NOT NULL COMMENT 'Values in UTC.';
-        ALTER TABLE vocabs_registry.related_entities MODIFY start_date datetime NOT NULL COMMENT 'Values in UTC.';
-        ALTER TABLE vocabs_registry.related_entities MODIFY end_date datetime NOT NULL COMMENT 'Values in UTC.';
-        ALTER TABLE vocabs_registry.related_entity_identifiers MODIFY start_date datetime NOT NULL COMMENT 'Values in UTC.';
-        ALTER TABLE vocabs_registry.related_entity_identifiers MODIFY end_date datetime NOT NULL COMMENT 'Values in UTC.';
-        ALTER TABLE vocabs_registry.resource_owner_hosts MODIFY start_date datetime NOT NULL COMMENT 'Values in UTC.';
-        ALTER TABLE vocabs_registry.resource_owner_hosts MODIFY end_date datetime NOT NULL COMMENT 'Values in UTC.';
-        ALTER TABLE vocabs_registry.subscriber_email_addresses MODIFY start_date datetime NOT NULL COMMENT 'Values in UTC.';
-        ALTER TABLE vocabs_registry.subscriber_email_addresses MODIFY end_date datetime NOT NULL COMMENT 'Values in UTC.';
-        ALTER TABLE vocabs_registry.subscribers MODIFY start_date datetime NOT NULL COMMENT 'Values in UTC.';
-        ALTER TABLE vocabs_registry.subscribers MODIFY end_date datetime NOT NULL COMMENT 'Values in UTC.';
-        ALTER TABLE vocabs_registry.subscriptions MODIFY start_date datetime NOT NULL COMMENT 'Values in UTC.';
-        ALTER TABLE vocabs_registry.subscriptions MODIFY end_date datetime NOT NULL COMMENT 'Values in UTC.';
-        ALTER TABLE vocabs_registry.version_artefacts MODIFY start_date datetime NOT NULL COMMENT 'Values in UTC.';
-        ALTER TABLE vocabs_registry.version_artefacts MODIFY end_date datetime NOT NULL COMMENT 'Values in UTC.';
-        ALTER TABLE vocabs_registry.versions MODIFY start_date datetime NOT NULL COMMENT 'Values in UTC.';
-        ALTER TABLE vocabs_registry.versions MODIFY end_date datetime NOT NULL COMMENT 'Values in UTC.';
-        ALTER TABLE vocabs_registry.vocabularies MODIFY start_date datetime NOT NULL COMMENT 'Values in UTC.';
-        ALTER TABLE vocabs_registry.vocabularies MODIFY end_date datetime NOT NULL COMMENT 'Values in UTC.';
-        ALTER TABLE vocabs_registry.vocabulary_related_entities MODIFY start_date datetime NOT NULL COMMENT 'Values in UTC.';
-        ALTER TABLE vocabs_registry.vocabulary_related_entities MODIFY end_date datetime NOT NULL COMMENT 'Values in UTC.';
-        ALTER TABLE vocabs_registry.vocabulary_related_vocabularies MODIFY start_date datetime NOT NULL COMMENT 'Values in UTC.';
-        ALTER TABLE vocabs_registry.vocabulary_related_vocabularies MODIFY end_date datetime NOT NULL COMMENT 'Values in UTC.';
+        ALTER TABLE access_points MODIFY start_date datetime NOT NULL COMMENT 'Values in UTC.';
+        ALTER TABLE access_points MODIFY end_date datetime NOT NULL COMMENT 'Values in UTC.';
+        ALTER TABLE related_entities MODIFY start_date datetime NOT NULL COMMENT 'Values in UTC.';
+        ALTER TABLE related_entities MODIFY end_date datetime NOT NULL COMMENT 'Values in UTC.';
+        ALTER TABLE related_entity_identifiers MODIFY start_date datetime NOT NULL COMMENT 'Values in UTC.';
+        ALTER TABLE related_entity_identifiers MODIFY end_date datetime NOT NULL COMMENT 'Values in UTC.';
+        ALTER TABLE resource_owner_hosts MODIFY start_date datetime NOT NULL COMMENT 'Values in UTC.';
+        ALTER TABLE resource_owner_hosts MODIFY end_date datetime NOT NULL COMMENT 'Values in UTC.';
+        ALTER TABLE subscriber_email_addresses MODIFY start_date datetime NOT NULL COMMENT 'Values in UTC.';
+        ALTER TABLE subscriber_email_addresses MODIFY end_date datetime NOT NULL COMMENT 'Values in UTC.';
+        ALTER TABLE subscribers MODIFY start_date datetime NOT NULL COMMENT 'Values in UTC.';
+        ALTER TABLE subscribers MODIFY end_date datetime NOT NULL COMMENT 'Values in UTC.';
+        ALTER TABLE subscriptions MODIFY start_date datetime NOT NULL COMMENT 'Values in UTC.';
+        ALTER TABLE subscriptions MODIFY end_date datetime NOT NULL COMMENT 'Values in UTC.';
+        ALTER TABLE version_artefacts MODIFY start_date datetime NOT NULL COMMENT 'Values in UTC.';
+        ALTER TABLE version_artefacts MODIFY end_date datetime NOT NULL COMMENT 'Values in UTC.';
+        ALTER TABLE versions MODIFY start_date datetime NOT NULL COMMENT 'Values in UTC.';
+        ALTER TABLE versions MODIFY end_date datetime NOT NULL COMMENT 'Values in UTC.';
+        ALTER TABLE vocabularies MODIFY start_date datetime NOT NULL COMMENT 'Values in UTC.';
+        ALTER TABLE vocabularies MODIFY end_date datetime NOT NULL COMMENT 'Values in UTC.';
+        ALTER TABLE vocabulary_related_entities MODIFY start_date datetime NOT NULL COMMENT 'Values in UTC.';
+        ALTER TABLE vocabulary_related_entities MODIFY end_date datetime NOT NULL COMMENT 'Values in UTC.';
+        ALTER TABLE vocabulary_related_vocabularies MODIFY start_date datetime NOT NULL COMMENT 'Values in UTC.';
+        ALTER TABLE vocabulary_related_vocabularies MODIFY end_date datetime NOT NULL COMMENT 'Values in UTC.';
 
-        ALTER TABLE vocabs_registry.registry_events MODIFY event_date datetime NOT NULL COMMENT 'Values in UTC.';
-        ALTER TABLE vocabs_registry.subscriptions MODIFY last_notification datetime NOT NULL COMMENT 'Values in UTC.';
+        ALTER TABLE registry_events MODIFY event_date datetime NOT NULL COMMENT 'Values in UTC.';
+        ALTER TABLE subscriptions MODIFY last_notification datetime NOT NULL COMMENT 'Values in UTC.';
       </sql>
     </rollback>
   </changeSet>
