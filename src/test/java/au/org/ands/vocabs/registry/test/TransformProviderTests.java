@@ -1061,7 +1061,7 @@ public class TransformProviderTests extends ArquillianBaseTest {
 
             List<Task> taskList = TaskDAO.getAllTask();
             logger.info(testName + ": task list length = " + taskList.size());
-            Assert.assertEquals(taskList.size(), 7, "Not seven tasks");
+            Assert.assertEquals(taskList.size(), 8, "Not eight tasks");
 
             Vocabulary vocabulary = VocabularyDAO.
                     getCurrentVocabularyByVocabularyId(em, 1);
@@ -1077,6 +1077,10 @@ public class TransformProviderTests extends ArquillianBaseTest {
             testConceptTreeProcessing(em, vocabulary, 5, 5,
                     testsPath, testName);
             testConceptTreeProcessing(em, vocabulary, 6, 6,
+                    testsPath, testName);
+            testConceptTreeProcessing(em, vocabulary, 7, 7,
+                    testsPath, testName);
+            testConceptTreeProcessing(em, vocabulary, 8, 8,
                     testsPath, testName);
 
             txn.commit();

@@ -1,3 +1,4 @@
+// CHECKSTYLE_FILE:OFF: FileLength
 /** See the file "LICENSE" for the full license governing this code. */
 
 package au.org.ands.vocabs.registry.workflow.provider.transform.conceptTree;
@@ -1553,7 +1554,9 @@ public class StatementHandler extends RDFHandlerBase {
                                 &&
                                 !conceptHasBroaderResourceNotInAnyConceptScheme(
                                         resource)
-                                && resource.getScaffoldNarrower() != null
+                                &&
+                                conceptHasNarrowerResourceNotInAnyConceptScheme(
+                                        resource)
                               )
                             )
                             )) {
@@ -1614,6 +1617,27 @@ public class StatementHandler extends RDFHandlerBase {
         }
         for (Resource broader : broaderSet) {
             if (broader.getScaffoldInConceptSchemes() == null) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** Test if a concept Resource has a "narrower" resource
+     * (from the scaffolding) that does not belong to any concept scheme.
+     * @param concept The concept Resource to be tested.
+     * @return True, if the concept has a "narrower" resource (from
+     *      the scaffolding) that does not belong to any concept scheme.
+     */
+    private boolean conceptHasNarrowerResourceNotInAnyConceptScheme(
+            final Resource concept) {
+        Set<Resource> narrowerSet = concept.getScaffoldNarrower();
+        if (narrowerSet == null) {
+            // No narrower concepts at all.
+            return false;
+        }
+        for (Resource narrower : narrowerSet) {
+            if (narrower.getScaffoldInConceptSchemes() == null) {
                 return true;
             }
         }

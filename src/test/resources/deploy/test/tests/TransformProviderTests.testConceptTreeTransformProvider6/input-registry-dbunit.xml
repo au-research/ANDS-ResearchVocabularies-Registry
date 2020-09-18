@@ -13,6 +13,7 @@
   <VERSION_IDS ID="5"/>
   <VERSION_IDS ID="6"/>
   <VERSION_IDS ID="7"/>
+  <VERSION_IDS ID="8"/>
 
   <VERSIONS ID="1" START_DATE="2015-11-26 10:04:05.0" END_DATE="9999-12-01 00:00:00.0" VERSION_ID="1" VOCABULARY_ID="1" MODIFIED_BY="SYSTEM" STATUS="CURRENT" SLUG="v1" RELEASE_DATE="2015-12-01" DATA="{''browse-flag'':[''maySortByNotation'',''notationAlpha'',''mayResolveResources''],''do-import'':false,''do-poolparty-harvest'':false,''do-publish'':false,''title'':''Version 1''}"/>
   <VERSIONS ID="2" START_DATE="2015-11-26 10:04:05.0" END_DATE="9999-12-01 00:00:00.0" VERSION_ID="2" VOCABULARY_ID="1" MODIFIED_BY="SYSTEM" STATUS="CURRENT" SLUG="v2" RELEASE_DATE="2015-12-01" DATA="{''browse-flag'':[''maySortByNotation'',''notationAlpha'',''mayResolveResources'',''includeConceptSchemes''],''do-import'':false,''do-poolparty-harvest'':false,''do-publish'':false,''title'':''Version 2''}"/>
@@ -21,6 +22,7 @@
   <VERSIONS ID="5" START_DATE="2015-11-26 10:04:05.0" END_DATE="9999-12-01 00:00:00.0" VERSION_ID="5" VOCABULARY_ID="1" MODIFIED_BY="SYSTEM" STATUS="CURRENT" SLUG="v5" RELEASE_DATE="2015-12-01" DATA="{''browse-flag'':[''includeCollections''],''do-import'':false,''do-poolparty-harvest'':false,''do-publish'':false,''title'':''Version 5''}"/>
   <VERSIONS ID="6" START_DATE="2015-11-26 10:04:05.0" END_DATE="9999-12-01 00:00:00.0" VERSION_ID="6" VOCABULARY_ID="1" MODIFIED_BY="SYSTEM" STATUS="CURRENT" SLUG="v6" RELEASE_DATE="2015-12-01" DATA="{''browse-flag'':[''includeConceptSchemes''],''do-import'':false,''do-poolparty-harvest'':false,''do-publish'':false,''title'':''Version 6''}"/>
   <VERSIONS ID="7" START_DATE="2015-11-26 10:04:05.0" END_DATE="9999-12-01 00:00:00.0" VERSION_ID="7" VOCABULARY_ID="1" MODIFIED_BY="SYSTEM" STATUS="CURRENT" SLUG="v7" RELEASE_DATE="2015-12-01" DATA="{''browse-flag'':[''includeCollections''],''do-import'':false,''do-poolparty-harvest'':false,''do-publish'':false,''title'':''Version 7''}"/>
+  <VERSIONS ID="8" START_DATE="2015-11-26 10:04:05.0" END_DATE="9999-12-01 00:00:00.0" VERSION_ID="8" VOCABULARY_ID="1" MODIFIED_BY="SYSTEM" STATUS="CURRENT" SLUG="v7" RELEASE_DATE="2015-12-01" DATA="{''browse-flag'':[''includeConceptSchemes'',''includeCollections''],''do-import'':false,''do-poolparty-harvest'':false,''do-publish'':false,''title'':''Version 8''}"/>
 
   <ACCESS_POINT_IDS ID="1"/>
   <ACCESS_POINT_IDS ID="2"/>
@@ -29,6 +31,7 @@
   <ACCESS_POINT_IDS ID="5"/>
   <ACCESS_POINT_IDS ID="6"/>
   <ACCESS_POINT_IDS ID="7"/>
+  <ACCESS_POINT_IDS ID="8"/>
 
   <ACCESS_POINTS ID="1" START_DATE="2015-11-26 10:04:05.0" END_DATE="9999-12-01 00:00:00.0" ACCESS_POINT_ID="1" VERSION_ID="1" MODIFIED_BY="SYSTEM" SOURCE="USER" TYPE="FILE" DATA="{''format'':''XML'',''upload-id'':''1'',''path'':''{CLASSES}/test/tests/TransformProviderTests.testConceptTreeTransformProvider6/test-data1.ttl'',''url'':''http://vocabs.ands.org.au/repository/api/download/1/test-data.ttl''}"/>
   <ACCESS_POINTS ID="2" START_DATE="2015-11-26 10:04:05.0" END_DATE="9999-12-01 00:00:00.0" ACCESS_POINT_ID="2" VERSION_ID="2" MODIFIED_BY="SYSTEM" SOURCE="USER" TYPE="FILE" DATA="{''format'':''XML'',''upload-id'':''1'',''path'':''{CLASSES}/test/tests/TransformProviderTests.testConceptTreeTransformProvider6/test-data1.ttl'',''url'':''http://vocabs.ands.org.au/repository/api/download/1/test-data.ttl''}"/>
@@ -37,6 +40,7 @@
   <ACCESS_POINTS ID="5" START_DATE="2015-11-26 10:04:05.0" END_DATE="9999-12-01 00:00:00.0" ACCESS_POINT_ID="5" VERSION_ID="5" MODIFIED_BY="SYSTEM" SOURCE="USER" TYPE="FILE" DATA="{''format'':''XML'',''upload-id'':''1'',''path'':''{CLASSES}/test/tests/TransformProviderTests.testConceptTreeTransformProvider6/test-data5.ttl'',''url'':''http://vocabs.ands.org.au/repository/api/download/1/test-data.ttl''}"/>
   <ACCESS_POINTS ID="6" START_DATE="2015-11-26 10:04:05.0" END_DATE="9999-12-01 00:00:00.0" ACCESS_POINT_ID="6" VERSION_ID="6" MODIFIED_BY="SYSTEM" SOURCE="USER" TYPE="FILE" DATA="{''format'':''XML'',''upload-id'':''1'',''path'':''{CLASSES}/test/tests/TransformProviderTests.testConceptTreeTransformProvider6/test-data6.ttl'',''url'':''http://vocabs.ands.org.au/repository/api/download/1/test-data.ttl''}"/>
   <ACCESS_POINTS ID="7" START_DATE="2015-11-26 10:04:05.0" END_DATE="9999-12-01 00:00:00.0" ACCESS_POINT_ID="7" VERSION_ID="7" MODIFIED_BY="SYSTEM" SOURCE="USER" TYPE="FILE" DATA="{''format'':''XML'',''upload-id'':''1'',''path'':''{CLASSES}/test/tests/TransformProviderTests.testConceptTreeTransformProvider6/test-data7.ttl'',''url'':''http://vocabs.ands.org.au/repository/api/download/1/test-data.ttl''}"/>
+  <ACCESS_POINTS ID="8" START_DATE="2015-11-26 10:04:05.0" END_DATE="9999-12-01 00:00:00.0" ACCESS_POINT_ID="8" VERSION_ID="8" MODIFIED_BY="SYSTEM" SOURCE="USER" TYPE="FILE" DATA="{''format'':''XML'',''upload-id'':''1'',''path'':''{CLASSES}/test/tests/TransformProviderTests.testConceptTreeTransformProvider6/test-data7.ttl'',''url'':''http://vocabs.ands.org.au/repository/api/download/1/test-data.ttl''}"/>
 
   <TASKS
       ID="1"
@@ -144,6 +148,23 @@
       ID="7"
       VOCABULARY_ID="1"
       VERSION_ID="7"
+      PARAMS="[
+                {
+                  ''subtaskProviderType'': ''transform'',
+                  ''status'': ''new'',
+                  ''results'': null,
+                  ''provider'': ''ConceptTree'',
+                  ''priority'': 20,
+                  ''operation'': ''insert''
+                }
+              ]"
+      STATUS="NEW"
+      RESPONSE="{}"
+      />
+  <TASKS
+      ID="8"
+      VOCABULARY_ID="1"
+      VERSION_ID="8"
       PARAMS="[
                 {
                   ''subtaskProviderType'': ''transform'',

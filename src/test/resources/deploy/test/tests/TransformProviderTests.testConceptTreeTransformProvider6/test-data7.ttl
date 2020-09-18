@@ -1,0 +1,20 @@
+# Test of "hiding" of concepts when includeConceptSchemes and/or
+# includeConceptSchemes browse flags are set.
+
+@prefix skos:    <http://www.w3.org/2004/02/skos/core#> .
+@prefix my:      <http://test/> .
+
+my:CS a skos:ConceptScheme ;
+  skos:prefLabel "CS" .
+
+my:CO a skos:Collection ;
+  skos:prefLabel "CO" ;
+  skos:member my:C1 .
+
+my:C1 a skos:Concept ;
+  skos:prefLabel "C1" ;
+  skos:narrower my:C2 .
+
+my:C2 a skos:Concept ;
+  skos:prefLabel "C2" ;
+  skos:inScheme my:CS .
