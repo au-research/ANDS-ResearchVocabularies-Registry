@@ -5,6 +5,7 @@ package au.org.ands.vocabs.registry.workflow.provider.transform.conceptTree;
 import java.lang.invoke.MethodHandles;
 import java.util.Comparator;
 
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,6 +16,9 @@ import au.org.ands.vocabs.registry.enums.BrowseFlag;
  * concepts-or-references of a {@link Resource}, by notation,
  * where the format of the notation is specified as the parameter
  * to the constructor.
+ * In fact, there are other considerations besides notation that
+ * come into play. Resource types are grouped together first, as
+ * are top concepts, and then each group is sorted.
  */
 public class NotationComparator
 implements Comparator<Pair<ResourceOrRef, Integer>> {
@@ -124,6 +128,39 @@ implements Comparator<Pair<ResourceOrRef, Integer>> {
             // canonical ordering.
             return o1OCSO - o2Left.getOrderedCollectionSortOrder();
         }
+
+        // Compare types; if not the same, we already know the result.
+        int typeComparison = o1Left.getType().compareToByCategory(
+                o2Left.getType());
+        if (typeComparison < 0) {
+            return -1;
+        } else if (typeComparison > 0) {
+            return 1;
+        }
+        // We now know they are the "same" type (subject to the
+        // explanation given in the compareTypes() method comment).
+        // Order top concepts before non-top concepts.
+        // It happens that we only have to worry about this at the top
+        // level of a concept scheme, and we know the children
+        // of a concept scheme are always Resources.
+        if (o1Left.getType() == ResourceType.CONCEPT
+                && o2Left.getType() == ResourceType.CONCEPT) {
+            Resource thisResource = (Resource) o1Left;
+            Resource otherResource = (Resource) o2Left;
+            if (BooleanUtils.isTrue(thisResource.getIsTopConceptOfContext())) {
+                if (BooleanUtils.isNotTrue(
+                        otherResource.getIsTopConceptOfContext())) {
+                    return -1;
+                }
+            } else {
+                if (BooleanUtils.isTrue(
+                        otherResource.getIsTopConceptOfContext())) {
+                    return 1;
+                }
+            }
+        }
+
+        // And now, we consider notation values.
         String n1 = o1Left.getNotation();
         String n2 = o2Left.getNotation();
         if (n1 == null || n1.isEmpty()) {
