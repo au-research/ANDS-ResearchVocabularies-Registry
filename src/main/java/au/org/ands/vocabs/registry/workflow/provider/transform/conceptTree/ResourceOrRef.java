@@ -173,15 +173,14 @@ implements Comparable<ResourceOrRef> {
         }
         // We now know they are the "same" type (subject to the
         // explanation given in the compareTypes() method comment).
-        ResourceOrRef otherConcept = otherResourceOrRef;
         // Order top concepts before non-top concepts.
         // It happens that we only have to worry about this at the top
         // level of a concept scheme, and we know the children
         // of a concept scheme are always Resources.
         if (getType() == ResourceType.CONCEPT
-                && otherConcept.getType() == ResourceType.CONCEPT) {
+                && otherResourceOrRef.getType() == ResourceType.CONCEPT) {
             Resource thisResource = (Resource) this;
-            Resource otherResource = (Resource) otherConcept;
+            Resource otherResource = (Resource) otherResourceOrRef;
             if (BooleanUtils.isTrue(thisResource.getIsTopConceptOfContext())) {
                 if (BooleanUtils.isNotTrue(
                         otherResource.getIsTopConceptOfContext())) {
@@ -198,31 +197,31 @@ implements Comparable<ResourceOrRef> {
         if (getLabel() == null) {
             // This concept has no label. It will be sorted
             // after all concepts that _do_ have labels.
-            if (otherConcept.getLabel() == null) {
+            if (otherResourceOrRef.getLabel() == null) {
                 // Both concepts have null labels, so
                 // sort by their IRIs.
-                return getIri().compareTo(otherConcept.getIri());
+                return getIri().compareTo(otherResourceOrRef.getIri());
             }
             // The other concept has a label. This concept
             // is sorted after it.
             return 1;
         }
         // This concept has a label.
-        if (otherConcept.getLabel() == null) {
+        if (otherResourceOrRef.getLabel() == null) {
             // The other concept doesn't have a label. It is
             // sorted after this concept.
             return -1;
         }
-        // Both this and otherConcept have labels.
+        // Both this and otherResourceOrRef have labels.
         // Use String case-insensitive comparison on them.
         int labelComparison =
                 getLabel().compareToIgnoreCase(
-                        otherConcept.getLabel());
+                        otherResourceOrRef.getLabel());
         if (labelComparison != 0) {
             return labelComparison;
         }
         // Identical labels. Fall back to comparing their IRIs.
-        return getIri().compareTo(otherConcept.getIri());
+        return getIri().compareTo(otherResourceOrRef.getIri());
     }
 
 }
