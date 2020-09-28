@@ -1057,6 +1057,18 @@ public class StatementHandler extends RDFHandlerBase {
                 // Future work if we support returning a result
                 // even if there's a cycle:
                 // mark newRoot as _belonging_ to a cycle.
+
+                // Subtle point: because roots is a TreeSet,
+                // before we add newRoot to it we must ensure that newRoot
+                // is comparable to all other values in the TreeSet
+                // (i.e., the other roots). But newRoot may be a
+                // collection that is itself a member of an ordered
+                // collection, and may have had an orderedCollectionSortOrder
+                // assigned. Comparison of that with other nodes will
+                // then give an NPE. To prevent that, remove any existing
+                // orderedCollectionSortOrder before adding newRoot
+                // to the TreeSet.
+                newRoot.setOrderedCollectionSortOrder(null);
                 roots.add(newRoot);
                 String error;
                 if (newRoot.getType() == ResourceType.CONCEPT) {
