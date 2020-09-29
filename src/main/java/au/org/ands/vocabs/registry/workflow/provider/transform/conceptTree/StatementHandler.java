@@ -1090,7 +1090,13 @@ public class StatementHandler extends RDFHandlerBase {
             } while (!nodesNotVisited.isEmpty());
         }
         try {
-            if (maySortByNotation && notationFormat != null) {
+            // See the note above about avoiding comparisons of
+            // nodes with orderedCollectionSortOrder values and nodes without.
+            // Turns out that an NPE can also come out from the following
+            // code, i.e., from NotationComparator.compare(), if
+            // we have broken a cycle. So we can't do the resorting
+            // if we found a cycle.
+            if (!cycle && maySortByNotation && notationFormat != null) {
                 logger.info("Will do notation sort by " + notationFormat);
                 NotationComparator comparator =
                         new NotationComparator(notationFormat);
@@ -1973,7 +1979,8 @@ public class StatementHandler extends RDFHandlerBase {
     /** Error message for a cycle, detected because there was a concept node
      * that wasn't visited during depth-first search. */
     public static final String RDF_ERROR_CYCLE_CONCEPT_UNVISITED =
-            "There is a cycle in the broader/narrower hierarchy; "
+            "There is a cycle, either in the broader/narrower hierarchy "
+            + "or in the collection hierarchy; "
             + "this resource wasn't visited: ";
 
     /** Error message for a cycle, detected because there was a collection node
