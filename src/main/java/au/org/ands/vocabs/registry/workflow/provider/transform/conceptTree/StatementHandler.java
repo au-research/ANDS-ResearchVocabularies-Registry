@@ -977,7 +977,6 @@ public class StatementHandler extends RDFHandlerBase {
      *  one resource and each of its "narrower" resources.
      */
     public TreeSet<ResourceOrRef> buildForest() {
-
         // First, "freeze" all resources that don't already have
         // types assigned.
         freezeResources();
@@ -1058,31 +1057,42 @@ public class StatementHandler extends RDFHandlerBase {
                 // even if there's a cycle:
                 // mark newRoot as _belonging_ to a cycle.
 
-                // Subtle point: because roots is a TreeSet,
-                // before we add newRoot to it we must ensure that newRoot
-                // is comparable to all other values in the TreeSet
-                // (i.e., the other roots). But newRoot may be a
-                // collection that is itself a member of an ordered
-                // collection, and may have had an orderedCollectionSortOrder
-                // assigned. Comparison of that with other nodes will
-                // then give an NPE. To prevent that, remove any existing
-                // orderedCollectionSortOrder before adding newRoot
-                // to the TreeSet.
+                // Subtle point: because roots is a TreeSet, before we add
+                // newRoot to it we must ensure that newRoot is comparable
+                // to all other values in the TreeSet (i.e., the other roots).
+                // But newRoot may be a collection that is itself a member
+                // of an ordered collection, and may have had an
+                // orderedCollectionSortOrder assigned. Comparison of that
+                // with other nodes will then give an NPE. To prevent that,
+                // remove any existing orderedCollectionSortOrder before
+                // adding newRoot to the TreeSet.
                 newRoot.setOrderedCollectionSortOrder(null);
                 roots.add(newRoot);
-                String error;
+                // We have a principle of recording an error message
+                // as soon as we discover each error in the data.
+                // So we "should" add an error here. But newRoot may
+                // not itself be in any cycle, so the error message
+                // may be "collateral" and not-very-helpful for the user.
+                // Decision: we trust ourselves that we will indeed
+                // subsequently find the cycle, and add an error
+                // message for the back edge.
+                //    String error;
                 if (newRoot.getType() == ResourceType.CONCEPT) {
+                    /* Trust ourselves that we will find/report the back edge.
                     error = RDF_ERROR_CYCLE_CONCEPT_UNVISITED
                             + newRoot.getIri();
                     addRdfError(error);
+                    */
                     // If we ever add the inserted flag, do this here:
                     //     newRoot.setInsertedIntoTree(true);
                   depthFirstSearchConcept(newRoot, true);
                 } else {
                     // Not a concept, so must be a collection.
+                    /* Trust ourselves that we will find/report the back edge.
                     error = RDF_ERROR_CYCLE_COLLECTION_UNVISITED
                             + newRoot.getIri();
                     addRdfError(error);
+                    */
                     // If we ever add the inserted flag, do this here:
                     //     newRoot.setInsertedIntoTree(true);
                   depthFirstSearchCollection(newRoot);
@@ -1102,14 +1112,12 @@ public class StatementHandler extends RDFHandlerBase {
                         new NotationComparator(notationFormat);
                 assignSortOrders(roots, comparator);
                 if (defaultSortByNotation) {
-                    // Resort the children using the computed
-                    // notation order.
+                    // Resort the children using the computed notation order.
                     TreeSet<ResourceOrRef> resortedRoots =
                             new TreeSet<>(new PrecomputedNotationComparator());
                     resortedRoots.addAll(roots);
                     // Now remove all the notation order values.
-                    resortedRoots.forEach(n ->
-                    n.setNotationSortOrder(null));
+                    resortedRoots.forEach(n -> n.setNotationSortOrder(null));
                     roots = resortedRoots;
                 }
             }
@@ -1976,18 +1984,24 @@ public class StatementHandler extends RDFHandlerBase {
     public static final String RDF_ERROR_MEMBER_UNKNOWN_TYPE_RESOURCE =
             "; resource: ";
 
-    /** Error message for a cycle, detected because there was a concept node
+    /* * Error message for a cycle, detected because there was a concept node
      * that wasn't visited during depth-first search. */
+    /* Trust ourselves that we don't need to report this, because there
+       will be an error logged for a back edge.
     public static final String RDF_ERROR_CYCLE_CONCEPT_UNVISITED =
             "There is a cycle, either in the broader/narrower hierarchy "
             + "or in the collection hierarchy; "
             + "this resource wasn't visited: ";
+    */
 
-    /** Error message for a cycle, detected because there was a collection node
+    /* * Error message for a cycle, detected because there was a collection node
      * that wasn't visited during depth-first search. */
+    /* Trust ourselves that we don't need to report this, because there
+       will be an error logged for a back edge.
     public static final String RDF_ERROR_CYCLE_COLLECTION_UNVISITED =
             "There is a cycle in the collection hierarchy; "
             + "this resource wasn't visited: ";
+    */
 
     /** Error message for a cycle of concepts, detected because we would
      * otherwise have to follow a back edge during depth-first search. */

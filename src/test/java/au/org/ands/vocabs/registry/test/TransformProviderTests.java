@@ -924,16 +924,22 @@ public class TransformProviderTests extends ArquillianBaseTest {
                     getCurrentVocabularyByVocabularyId(em, 1);
 
             testRdfErrors(em, vocabulary, 1,
+                    /*
                     StatementHandler.RDF_ERROR_CYCLE_COLLECTION_UNVISITED
                     + "http://test/Coll2" + ConceptTreeTransformProvider.BR
-                    + StatementHandler.RDF_ERROR_CYCLE_COLLECTION_BACK_EDGE
+                    +
+                    */
+                    StatementHandler.RDF_ERROR_CYCLE_COLLECTION_BACK_EDGE
                     + "http://test/Coll1 to http://test/Coll2"
                     + ConceptTreeTransformProvider.BR);
 
             testRdfErrors(em, vocabulary, 2,
+                    /*
                     StatementHandler.RDF_ERROR_CYCLE_COLLECTION_UNVISITED
                     + "http://test/Coll2" + ConceptTreeTransformProvider.BR
-                    + StatementHandler.RDF_ERROR_CYCLE_COLLECTION_BACK_EDGE
+                    +
+                    */
+                    StatementHandler.RDF_ERROR_CYCLE_COLLECTION_BACK_EDGE
                     + "http://test/Coll1 to http://test/Coll2"
                     + ConceptTreeTransformProvider.BR);
 
@@ -948,9 +954,12 @@ public class TransformProviderTests extends ArquillianBaseTest {
                     + ConceptTreeTransformProvider.BR);
 
             testRdfErrors(em, vocabulary, 5,
+                    /*
                     StatementHandler.RDF_ERROR_CYCLE_COLLECTION_UNVISITED
                     + "http://test/Coll2" + ConceptTreeTransformProvider.BR
-                    + StatementHandler.RDF_ERROR_CYCLE_COLLECTION_BACK_EDGE
+                    +
+                    */
+                    StatementHandler.RDF_ERROR_CYCLE_COLLECTION_BACK_EDGE
                     + "http://test/Coll1 to http://test/Coll2"
                     + ConceptTreeTransformProvider.BR);
 
@@ -971,13 +980,17 @@ public class TransformProviderTests extends ArquillianBaseTest {
             String v8Prefix =
                     "https://editor.vocabs.ands.org.au/ANDSRWtestforbrowse1/";
             testRdfErrors(em, vocabulary, 8,
+                    /*
                     StatementHandler.RDF_ERROR_CYCLE_COLLECTION_UNVISITED
                     + v8Prefix + "OrderedCollection3"
                     + ConceptTreeTransformProvider.BR
-                    + StatementHandler.RDF_ERROR_CYCLE_COLLECTION_BACK_EDGE
+                    +
+                    */
+                    StatementHandler.RDF_ERROR_CYCLE_COLLECTION_BACK_EDGE
                     + v8Prefix + "OrderedCollection1 to "
                     + v8Prefix + "OrderedCollection3"
                     + ConceptTreeTransformProvider.BR
+                    /*
                     + StatementHandler.RDF_ERROR_CYCLE_CONCEPT_UNVISITED
                     + v8Prefix + "C1.1.1" + ConceptTreeTransformProvider.BR
                     + StatementHandler.RDF_ERROR_CYCLE_CONCEPT_UNVISITED
@@ -987,7 +1000,9 @@ public class TransformProviderTests extends ArquillianBaseTest {
                     + StatementHandler.RDF_ERROR_CYCLE_CONCEPT_UNVISITED
                     + v8Prefix + "C1.1.3" + ConceptTreeTransformProvider.BR
                     + StatementHandler.RDF_ERROR_CYCLE_CONCEPT_UNVISITED
-                    + v8Prefix + "TC1.1" + ConceptTreeTransformProvider.BR);
+                    + v8Prefix + "TC1.1" + ConceptTreeTransformProvider.BR
+                    */
+                    );
 
             txn.commit();
             // If a dump is required, uncomment the next lines.
