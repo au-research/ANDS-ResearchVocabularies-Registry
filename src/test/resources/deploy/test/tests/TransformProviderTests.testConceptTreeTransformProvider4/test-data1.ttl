@@ -1,0 +1,5 @@
+# Test data for checking the behaviour of the
+# mayResolveResources browse flag.
+
+# Bad IRI.
+<http://Gänsefüßchen-Γειά-σας-नमस्ते-你好.com/x> a skos:Concept .

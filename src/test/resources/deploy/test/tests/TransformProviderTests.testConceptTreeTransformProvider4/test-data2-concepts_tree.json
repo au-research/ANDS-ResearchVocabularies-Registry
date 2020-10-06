@@ -1,0 +1,32 @@
+{
+  "forest": [
+    {
+      "iri": "http://Gänsefüßchen.org/x",
+      "type": "concept",
+      "url": "http://xn--gnsefsschen-l8a03a.org/x"
+    },
+    {
+      "iri": "http://normal-case.com/x",
+      "type": "concept"
+    },
+    {
+      "iri": "http://Γειά_σας.edu/x",
+      "type": "concept",
+      "url": "http://xn--_-olbqfky6eb.edu/x"
+    },
+    {
+      "iri": "http://नमस्ते.com/x",
+      "type": "concept",
+      "url": "http://xn--h2bhs4b8d8a.com/x"
+    },
+    {
+      "iri": "http://你好.com/x",
+      "type": "concept",
+      "url": "http://xn--6qq79v.com/x"
+    }
+  ],
+  "format": "3",
+  "language": "en",
+  "mayResolveResources": true,
+  "maySortByNotation": false
+}

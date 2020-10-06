@@ -1,1 +1,48 @@
-{"forest":[{"definition":"Definition 1","iri":"http://test/uri1","narrower":[{"definition":"Definition 1.1","iri":"http://test/uri1/narrower1","narrower":[{"iri":"http://test/uri1/narrower1/narrower1","notation":"1.1.1","prefLabel":"Label 1.1.1","type":"concept_ref"}],"notation":"1.1","prefLabel":"Label 1.1","type":"concept"}],"notation":"1","prefLabel":"Label 1","type":"concept"},{"iri":"http://test/uri2","narrower":[{"definition":"Definition 1.1.1","iri":"http://test/uri1/narrower1/narrower1","notation":"1.1.1","prefLabel":"Label 1.1.1","type":"concept"}],"prefLabel":"Label 2","type":"concept"}],"language":"en","maySortByNotation":false}
+{
+  "forest": [
+    {
+      "definition": "Definition 1",
+      "iri": "http://test/uri1",
+      "label": "Label 1",
+      "children": [
+        {
+          "definition": "Definition 1.1",
+          "iri": "http://test/uri1/narrower1",
+          "label": "Label 1.1",
+          "children": [
+            {
+              "definition": "Definition 1.1.1",
+              "iri": "http://test/uri1/narrower1/narrower1",
+              "label": "Label 1.1.1",
+              "notation": "1.1.1",
+              "type": "concept_ref"
+            }
+          ],
+          "notation": "1.1",
+          "type": "concept"
+        }
+      ],
+      "notation": "1",
+      "type": "concept"
+    },
+    {
+      "definition": "Definition 2",
+      "iri": "http://test/uri2",
+      "label": "Label 2",
+      "children": [
+        {
+          "definition": "Definition 1.1.1",
+          "iri": "http://test/uri1/narrower1/narrower1",
+          "label": "Label 1.1.1",
+          "notation": "1.1.1",
+          "type": "concept"
+        }
+      ],
+      "type": "concept"
+    }
+  ],
+  "format": "3",
+  "language": "en",
+  "mayResolveResources": false,
+  "maySortByNotation": false
+}

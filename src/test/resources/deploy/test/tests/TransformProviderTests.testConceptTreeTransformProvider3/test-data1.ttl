@@ -1,0 +1,120 @@
+# Test data for checking for RDF errors.
+# This is a comprehensive set of errors, but note that:
+# 1. The set of errors reported depends on the settings of the
+#    includeConceptSchemes and includeCollections browse flags.
+# 2. Because error checking happens across several passes
+#    of the data, some of these errors will not be reported,
+#    as processing will stop early, after only some of them
+#    have been detected.
+# 3. Some errors are "showstoppers": if detected, processing
+#    stops immediately. Therefore, any test case can only
+#    check that one showstopper is triggered.
+# The labels below correspond to constants in the StatementHandler
+# class:
+# * Errors detected during the depth-first-search are indicated
+#   with the designation "second phase".
+# * Showstoppers are indicated with the designation "showstopper".
+#   All showstoppers are also "second phase".
+
+@prefix skos:    <http://www.w3.org/2004/02/skos/core#> .
+@prefix my:    <http://test/> .
+
+# RDF_ERROR_TYPE_LITERAL: A resource with a type that's a literal.
+my:type-literal a "Literal type" .
+
+# RDF_ERROR_INVALID_TYPE_CHANGE: A resource with two incompatible types.
+my:two-types-Concept-ConceptScheme a skos:Concept , skos:ConceptScheme .
+my:two-types-OrderedCollection-ConceptScheme a skos:OrderedCollection , skos:ConceptScheme .
+my:two-types-OrderedCollection-Concept a skos:OrderedCollection , skos:Concept .
+my:two-types-UnorderedCollection-ConceptScheme a skos:Collection , skos:ConceptScheme .
+my:two-types-UnorderedCollection-Concept a skos:Collection , skos:Concept .
+
+# RDF_ERROR_INVALID_TYPE_CHANGE: type change of broader concept
+my:broader1 a skos:ConceptScheme.
+my:broader1 skos:narrower my:narrower1 .
+
+# RDF_ERROR_INVALID_TYPE_CHANGE: type change of narrower concept
+my:narrower2 a skos:ConceptScheme.
+my:broader2 skos:narrower my:narrower2 .
+
+# RDF_ERROR_MEMBER_LITERAL: A literal value of a skos:member.
+my:member-literal skos:member "Literal member" .
+
+# RDF_ERROR_MEMBERLIST_LITERAL: A literal value of skos:memberList.
+my:memberList-literal skos:memberList "Literal memberList" .
+
+# RDF_ERROR_MULTIPLE_MEMBERLIST: Multiple memberLists for a collection.
+my:two-memberLists skos:memberList my:two-memberList-1 , my:two-memberList-2 .
+
+# RDF_ERROR_MEMBER_UNKNOWN_TYPE (second phase, showstopper): A member of unknown type.
+my:member-unknown-type skos:member my:member-unknown-type-resource .
+
+# RDF_ERROR_MEMBERLIST_ELEMENT_LITERAL (second phase, showstopper): A literal value of a value within a skos:memberList.
+my:memberList-literal-member skos:memberList
+  ( "Literal memberList member" ) .
+
+# RDF_ERROR_MEMBERLIST_CYCLE (second phase, showstopper): A skos:memberList that contains a cycle.
+my:memberList-cycle skos:memberList my:memberList-cycleList .
+my:memberList-cycleList a rdf:List ;
+  rdf:first my:memberList-cycleList-member1 ;
+  rdf:rest my:memberList-cycleList-rest1 .
+my:memberList-cycleList-rest1 a rdf:List ;
+  rdf:first my:memberList-cycleList-member2 ;
+  rdf:rest my:memberList-cycleList-rest2 .
+my:memberList-cycleList-rest2 a rdf:List ;
+  rdf:first my:memberList-cycleList-member3 ;
+  rdf:rest my:memberList-cycleList-rest1 .
+my:memberList-cycleList-member1 a skos:Concept .
+my:memberList-cycleList-member2 a skos:Concept .
+my:memberList-cycleList-member3 a skos:Concept .
+
+# RDF_ERROR_MEMBER_NOT_IN_MEMBERLIST (second phase, showstopper): A collection that has a skos:memberList, and also
+# a skos:member not in that list.
+my:memberList-and-other-member
+  skos:memberList ( my:memberList-and-other-member-member1 my:memberList-and-other-member-member2 ) ;
+  skos:member my:memberList-and-other-member-member1 , my:memberList-and-other-member-member3 .
+my:memberList-and-other-member-member1 a skos:Concept .
+my:memberList-and-other-member-member2 a skos:Concept .
+my:memberList-and-other-member-member3 a skos:Concept .
+
+# RDF_ERROR_TOP_CONCEPT_BROADER (second phase): A top concept of a concept scheme with a broader concept in the same concept scheme.
+my:CS1 a skos:ConceptScheme .
+my:TC a skos:Concept ;
+  skos:topConceptOf my:CS1 .
+my:broader-than-TC a skos:Concept ;
+  skos:inScheme my:CS1 ;
+  skos:narrower my:TC .
+
+# RDF_ERROR_LIST_FIRST_NIL: A List with rdf:nil as the value of rdf:first.
+my:memberList1 rdf:first rdf:nil ;
+  rdf:rest rdf:nil.
+
+# RDF_ERROR_LIST_MULTIPLE_FIRST: A List with multiple values of rdf:first.
+my:memberList2 rdf:first my:C1 , my:C2 .
+
+# RDF_ERROR_LIST_REST_LITERAL:
+my:memberList3 rdf:first my:C1 ;
+  rdf:rest "Literal rest" .
+
+# RDF_ERROR_LIST_MULTIPLE_REST:
+my:memberList4 rdf:first my:C1 ;
+  rdf:rest my:memberList3-1 , my:memberList3-2 .
+
+# RDF_ERROR_LIST_MEMBERLIST_ELEMENT_NOT_VALID (second phase, showstopper):
+my:Coll1 a skos:Collection ;
+  skos:memberList ( my:unknownType ) .
+
+# RDF_ERROR_CS_MEMBER_NOT_CONCEPT (second phase):
+my:CS2 a skos:ConceptScheme .
+my:Coll2 a skos:Collection ;
+  skos:inScheme my:CS2 .
+
+# RDF_ERROR_COLL_MEMBER_NOT_VALID (second phase): unordered collection
+my:CS3 a skos:ConceptScheme .
+my:Coll3 a skos:Collection ;
+  skos:member my:CS3 .
+
+# RDF_ERROR_COLL_MEMBER_NOT_VALID (second phase): ordered collection
+my:CS4 a skos:ConceptScheme .
+my:Coll4 a skos:Collection ;
+  skos:memberList ( my:CS4 ) .

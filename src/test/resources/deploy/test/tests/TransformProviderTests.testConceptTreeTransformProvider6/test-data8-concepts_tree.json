@@ -1,0 +1,32 @@
+{
+  "forest": [
+    {
+      "children": [
+        {
+          "iri": "http://test/C2",
+          "label": "C2",
+          "type": "concept"
+        }
+      ],
+      "iri": "http://test/CS",
+      "label": "CS",
+      "type": "concept_scheme"
+    },
+    {
+      "children": [
+        {
+          "iri": "http://test/C1",
+          "label": "C1",
+          "type": "concept"
+        }
+      ],
+      "iri": "http://test/CO",
+      "label": "CO",
+      "type": "unordered_collection"
+    }
+  ],
+  "format": "3",
+  "language": "en",
+  "mayResolveResources": false,
+  "maySortByNotation": false
+}

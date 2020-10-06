@@ -1,1 +1,102 @@
-{"defaultSortByNotation":true,"forest":[{"iri":"http://test/1","narrower":[{"iri":"http://test/4","narrower":[{"iri":"http://test/10","narrower":[{"iri":"http://test/7","notation":"1.1.1.1","prefLabel":"F","prefLabelSortOrder":0,"type":"concept_ref"}],"prefLabel":"G","prefLabelSortOrder":0,"type":"concept"}],"notation":"1","prefLabel":"C","prefLabelSortOrder":1,"type":"concept"},{"iri":"http://test/3","narrower":[{"iri":"http://test/5","narrower":[{"iri":"http://test/7","narrower":[{"iri":"http://test/8","narrower":[{"iri":"http://test/12","prefLabel":"J","prefLabelSortOrder":0,"type":"concept"}],"prefLabel":"H","prefLabelSortOrder":0,"type":"concept"},{"iri":"http://test/9","prefLabel":"I","prefLabelSortOrder":1,"type":"concept"}],"notation":"1.1.1.1","prefLabel":"F","prefLabelSortOrder":1,"type":"concept"},{"iri":"http://test/6","notation":"1.1.1.2","prefLabel":"E","prefLabelSortOrder":0,"type":"concept"}],"prefLabel":"D","prefLabelSortOrder":0,"type":"concept"}],"notation":"2","prefLabel":"B","prefLabelSortOrder":0,"type":"concept"}],"prefLabel":"A","prefLabelSortOrder":0,"type":"concept"},{"iri":"http://test/2","prefLabel":"TC2","prefLabelSortOrder":1,"type":"concept"}],"language":"en","maySortByNotation":true,"notationFormat":"notationDotted"}
+{
+  "defaultDisplayNotation": false,
+  "defaultSortByNotation": true,
+  "forest": [
+    {
+      "iri": "http://test/1",
+      "label": "A",
+      "labelSortOrder": 0,
+      "children": [
+        {
+          "iri": "http://test/4",
+          "label": "C",
+          "labelSortOrder": 1,
+          "children": [
+            {
+              "iri": "http://test/10",
+              "label": "G",
+              "labelSortOrder": 0,
+              "children": [
+                {
+                  "iri": "http://test/7",
+                  "label": "F",
+                  "labelSortOrder": 0,
+                  "notation": "1.1.1.1",
+                  "type": "concept_ref"
+                }
+              ],
+              "type": "concept"
+            }
+          ],
+          "notation": "1",
+          "type": "concept"
+        },
+        {
+          "iri": "http://test/3",
+          "label": "B",
+          "labelSortOrder": 0,
+          "children": [
+            {
+              "iri": "http://test/5",
+              "label": "D",
+              "labelSortOrder": 0,
+              "children": [
+                {
+                  "iri": "http://test/7",
+                  "label": "F",
+                  "labelSortOrder": 1,
+                  "children": [
+                    {
+                      "iri": "http://test/8",
+                      "label": "H",
+                      "labelSortOrder": 0,
+                      "children": [
+                        {
+                          "iri": "http://test/12",
+                          "label": "J",
+                          "labelSortOrder": 0,
+                          "type": "concept"
+                        }
+                      ],
+                      "type": "concept"
+                    },
+                    {
+                      "iri": "http://test/9",
+                      "label": "I",
+                      "labelSortOrder": 1,
+                      "type": "concept"
+                    }
+                  ],
+                  "notation": "1.1.1.1",
+                  "type": "concept"
+                },
+                {
+                  "iri": "http://test/6",
+                  "label": "E",
+                  "labelSortOrder": 0,
+                  "notation": "1.1.1.2",
+                  "type": "concept"
+                }
+              ],
+              "type": "concept"
+            }
+          ],
+          "notation": "2",
+          "type": "concept"
+        }
+      ],
+      "type": "concept"
+    },
+    {
+      "iri": "http://test/2",
+      "label": "TC2",
+      "labelSortOrder": 1,
+      "type": "concept"
+    }
+  ],
+  "format": "3",
+  "language": "en",
+  "mayResolveResources": false,
+  "maySortByNotation": true,
+  "notationFormat": "notationDotted"
+}

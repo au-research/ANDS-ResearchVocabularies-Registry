@@ -1,0 +1,6 @@
+@prefix skos:    <http://www.w3.org/2004/02/skos/core#> .
+@prefix my:    <http://test/> .
+
+# RDF_ERROR_LIST_MEMBERLIST_ELEMENT_NOT_VALID (second phase, showstopper):
+my:Coll1 a skos:Collection ;
+  skos:memberList ( my:unknownType ) .

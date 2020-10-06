@@ -1,0 +1,17 @@
+@prefix skos:    <http://www.w3.org/2004/02/skos/core#> .
+@prefix my:    <http://test/> .
+
+# RDF_ERROR_MEMBERLIST_CYCLE (second phase, showstopper): A skos:memberList that contains a cycle.
+my:memberList-cycle skos:memberList my:memberList-cycleList .
+my:memberList-cycleList a rdf:List ;
+  rdf:first my:memberList-cycleList-member1 ;
+  rdf:rest my:memberList-cycleList-rest1 .
+my:memberList-cycleList-rest1 a rdf:List ;
+  rdf:first my:memberList-cycleList-member2 ;
+  rdf:rest my:memberList-cycleList-rest2 .
+my:memberList-cycleList-rest2 a rdf:List ;
+  rdf:first my:memberList-cycleList-member3 ;
+  rdf:rest my:memberList-cycleList-rest1 .
+my:memberList-cycleList-member1 a skos:Concept .
+my:memberList-cycleList-member2 a skos:Concept .
+my:memberList-cycleList-member3 a skos:Concept .

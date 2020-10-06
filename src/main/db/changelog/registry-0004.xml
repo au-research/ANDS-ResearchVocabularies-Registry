@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation=
+    "http://www.liquibase.org/xml/ns/dbchangelog-ext
+     dbchangelog-ext.xsd
+     http://www.liquibase.org/xml/ns/dbchangelog
+     dbchangelog-3.5.xsd"
+    >
+<!--
+    objectQuotingStrategy="QUOTE_ALL_OBJECTS"
+-->
+
+  <!-- Change all start_date, end_date, and other similar date/time
+       columns to use the greatest precision supported in MySQL,
+       i.e. DATETIME(6).  For MySQL, "DATETIME" = "DATETIME(0)", and
+       you get only second precision. CC-2751. -->
+
+  <changeSet id="0004-increaseTemporalPrecision"
+             author="Richard.Walker@ands.org.au">
+    <comment>Increase precision of the
+    start_date/end_date/event_date/etc. columns for MySQL. (No need
+    to change anything for DBs that follow the SQL standard, e.g.,
+    H2.)</comment>
+    <!-- Why don't we use modifyDataType? Because it's broken, at
+         least, in Liquibase 3.5.3.  If you change the type to
+         "datetime(6)", you _lose_ both the "NOT NULL" property and
+         the "COMMENT"/remarks.  You can't then subsequently put the
+         COMMENT back using setColumnRemarks, because that's _not
+         supported_ for MySQL.
+    -->
+    <sql dbms="mysql">
+      ALTER TABLE access_points MODIFY start_date datetime(6) NOT NULL COMMENT 'Values in UTC.';
+      ALTER TABLE access_points MODIFY end_date datetime(6) NOT NULL COMMENT 'Values in UTC.';
+      ALTER TABLE related_entities MODIFY start_date datetime(6) NOT NULL COMMENT 'Values in UTC.';
+      ALTER TABLE related_entities MODIFY end_date datetime(6) NOT NULL COMMENT 'Values in UTC.';
+      ALTER TABLE related_entity_identifiers MODIFY start_date datetime(6) NOT NULL COMMENT 'Values in UTC.';
+      ALTER TABLE related_entity_identifiers MODIFY end_date datetime(6) NOT NULL COMMENT 'Values in UTC.';
+      ALTER TABLE resource_owner_hosts MODIFY start_date datetime(6) NOT NULL COMMENT 'Values in UTC.';
+      ALTER TABLE resource_owner_hosts MODIFY end_date datetime(6) NOT NULL COMMENT 'Values in UTC.';
+      ALTER TABLE subscriber_email_addresses MODIFY start_date datetime(6) NOT NULL COMMENT 'Values in UTC.';
+      ALTER TABLE subscriber_email_addresses MODIFY end_date datetime(6) NOT NULL COMMENT 'Values in UTC.';
+      ALTER TABLE subscribers MODIFY start_date datetime(6) NOT NULL COMMENT 'Values in UTC.';
+      ALTER TABLE subscribers MODIFY end_date datetime(6) NOT NULL COMMENT 'Values in UTC.';
+      ALTER TABLE subscriptions MODIFY start_date datetime(6) NOT NULL COMMENT 'Values in UTC.';
+      ALTER TABLE subscriptions MODIFY end_date datetime(6) NOT NULL COMMENT 'Values in UTC.';
+      ALTER TABLE version_artefacts MODIFY start_date datetime(6) NOT NULL COMMENT 'Values in UTC.';
+      ALTER TABLE version_artefacts MODIFY end_date datetime(6) NOT NULL COMMENT 'Values in UTC.';
+      ALTER TABLE versions MODIFY start_date datetime(6) NOT NULL COMMENT 'Values in UTC.';
+      ALTER TABLE versions MODIFY end_date datetime(6) NOT NULL COMMENT 'Values in UTC.';
+      ALTER TABLE vocabularies MODIFY start_date datetime(6) NOT NULL COMMENT 'Values in UTC.';
+      ALTER TABLE vocabularies MODIFY end_date datetime(6) NOT NULL COMMENT 'Values in UTC.';
+      ALTER TABLE vocabulary_related_entities MODIFY start_date datetime(6) NOT NULL COMMENT 'Values in UTC.';
+      ALTER TABLE vocabulary_related_entities MODIFY end_date datetime(6) NOT NULL COMMENT 'Values in UTC.';
+      ALTER TABLE vocabulary_related_vocabularies MODIFY start_date datetime(6) NOT NULL COMMENT 'Values in UTC.';
+      ALTER TABLE vocabulary_related_vocabularies MODIFY end_date datetime(6) NOT NULL COMMENT 'Values in UTC.';
+
+      ALTER TABLE registry_events MODIFY event_date datetime(6) NOT NULL COMMENT 'Values in UTC.';
+      ALTER TABLE subscriptions MODIFY last_notification datetime(6) NOT NULL COMMENT 'Values in UTC.';
+    </sql>
+    <rollback>
+      <sql dbms="mysql">
+        ALTER TABLE access_points MODIFY start_date datetime NOT NULL COMMENT 'Values in UTC.';
+        ALTER TABLE access_points MODIFY end_date datetime NOT NULL COMMENT 'Values in UTC.';
+        ALTER TABLE related_entities MODIFY start_date datetime NOT NULL COMMENT 'Values in UTC.';
+        ALTER TABLE related_entities MODIFY end_date datetime NOT NULL COMMENT 'Values in UTC.';
+        ALTER TABLE related_entity_identifiers MODIFY start_date datetime NOT NULL COMMENT 'Values in UTC.';
+        ALTER TABLE related_entity_identifiers MODIFY end_date datetime NOT NULL COMMENT 'Values in UTC.';
+        ALTER TABLE resource_owner_hosts MODIFY start_date datetime NOT NULL COMMENT 'Values in UTC.';
+        ALTER TABLE resource_owner_hosts MODIFY end_date datetime NOT NULL COMMENT 'Values in UTC.';
+        ALTER TABLE subscriber_email_addresses MODIFY start_date datetime NOT NULL COMMENT 'Values in UTC.';
+        ALTER TABLE subscriber_email_addresses MODIFY end_date datetime NOT NULL COMMENT 'Values in UTC.';
+        ALTER TABLE subscribers MODIFY start_date datetime NOT NULL COMMENT 'Values in UTC.';
+        ALTER TABLE subscribers MODIFY end_date datetime NOT NULL COMMENT 'Values in UTC.';
+        ALTER TABLE subscriptions MODIFY start_date datetime NOT NULL COMMENT 'Values in UTC.';
+        ALTER TABLE subscriptions MODIFY end_date datetime NOT NULL COMMENT 'Values in UTC.';
+        ALTER TABLE version_artefacts MODIFY start_date datetime NOT NULL COMMENT 'Values in UTC.';
+        ALTER TABLE version_artefacts MODIFY end_date datetime NOT NULL COMMENT 'Values in UTC.';
+        ALTER TABLE versions MODIFY start_date datetime NOT NULL COMMENT 'Values in UTC.';
+        ALTER TABLE versions MODIFY end_date datetime NOT NULL COMMENT 'Values in UTC.';
+        ALTER TABLE vocabularies MODIFY start_date datetime NOT NULL COMMENT 'Values in UTC.';
+        ALTER TABLE vocabularies MODIFY end_date datetime NOT NULL COMMENT 'Values in UTC.';
+        ALTER TABLE vocabulary_related_entities MODIFY start_date datetime NOT NULL COMMENT 'Values in UTC.';
+        ALTER TABLE vocabulary_related_entities MODIFY end_date datetime NOT NULL COMMENT 'Values in UTC.';
+        ALTER TABLE vocabulary_related_vocabularies MODIFY start_date datetime NOT NULL COMMENT 'Values in UTC.';
+        ALTER TABLE vocabulary_related_vocabularies MODIFY end_date datetime NOT NULL COMMENT 'Values in UTC.';
+
+        ALTER TABLE registry_events MODIFY event_date datetime NOT NULL COMMENT 'Values in UTC.';
+        ALTER TABLE subscriptions MODIFY last_notification datetime NOT NULL COMMENT 'Values in UTC.';
+      </sql>
+    </rollback>
+  </changeSet>
+
+  <!-- And now tag the result. -->
+
+  <changeSet id="0004-tag"
+             author="Richard.Walker@ardc.edu.au">
+    <tagDatabase tag="version_0004"/>
+  </changeSet>
+
+</databaseChangeLog>

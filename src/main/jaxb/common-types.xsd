@@ -366,6 +366,26 @@ http://viaf.org/</xs:documentation>
                     <xs:documentation>The values of the SKOS notation property are numeric. They are either integer values, or they may have one or more decimal points, e.g., 3.6, or 3.7.2. If the values are to be sorted, each component between the decimal points is treated as an integer value, so, for example, the value 3.45 would be sorted after 3.6. maySortByNotation must also be specified.</xs:documentation>
                 </xs:annotation>
             </xs:enumeration>
+            <xs:enumeration value="defaultDisplayNotation">
+                <xs:annotation>
+                    <xs:documentation>When presenting the vocabulary data, SKOS notation values should be displayed by default. maySortByNotation must also be specified. One of the notation... values must also be specified.</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="includeConceptSchemes">
+                <xs:annotation>
+                    <xs:documentation>Concept schemes are taken into account. Each concept scheme appears as a top-level node in the tree, and concepts are grouped under their corresponding concept schemes.</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="includeCollections">
+                <xs:annotation>
+                    <xs:documentation>Collections are taken into account. Concepts are grouped under the collections of which they are members. Nested collections are supported.</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="mayResolveResources">
+                <xs:annotation>
+                    <xs:documentation>Resource IRIs are expected to resolve; therefore, the Portal may hyperlink IRIs to their targets.</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
         </xs:restriction>
     </xs:simpleType>
     <xs:simpleType name="search-sort-order">

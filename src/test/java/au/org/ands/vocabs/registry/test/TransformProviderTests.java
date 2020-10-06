@@ -41,7 +41,10 @@ import au.org.ands.vocabs.registry.enums.TaskStatus;
 import au.org.ands.vocabs.registry.enums.VersionArtefactType;
 import au.org.ands.vocabs.registry.workflow.provider.transform.ConceptTreeTransformProvider;
 import au.org.ands.vocabs.registry.workflow.provider.transform.JsonTreeTransformProvider;
+import au.org.ands.vocabs.registry.workflow.provider.transform.conceptTree.Resource;
+import au.org.ands.vocabs.registry.workflow.provider.transform.conceptTree.StatementHandler;
 import au.org.ands.vocabs.registry.workflow.tasks.TaskInfo;
+import au.org.ands.vocabs.registry.workflow.tasks.TaskRunner;
 import au.org.ands.vocabs.toolkit.test.arquillian.ArquillianBaseTest;
 import au.org.ands.vocabs.toolkit.test.arquillian.ArquillianTestUtils;
 import au.org.ands.vocabs.toolkit.test.utils.DbUnitConstants;
@@ -583,6 +586,569 @@ public class TransformProviderTests extends ArquillianBaseTest {
             }
         }
     }
+
+    /** Helper method to run through test data that has errors in
+     * the SKOS.
+     * @param em The EntityManager to use.
+     * @param vocabulary The vocabulary under test.
+     * @param taskId The task ID of the task to run.
+     * @param expectedRdfErrorsString The text of the expected RDF errors.
+     */
+    private void testRdfErrors(final EntityManager em,
+            final Vocabulary vocabulary,
+            final int taskId, final String expectedRdfErrorsString) {
+        Task task = TaskDAO.getTaskById(taskId);
+        Version version = VersionDAO.getCurrentVersionByVersionId(em, taskId);
+        TaskInfo taskInfo = new TaskInfo(task, vocabulary, version);
+        taskInfo.setEm(em);
+        taskInfo.setModifiedBy("SYSTEM");
+        taskInfo.setNowTime(nowTime1);
+        taskInfo.process();
+        au.org.ands.vocabs.registry.workflow.tasks.Task workflowTask =
+                taskInfo.getTask();
+
+        Assert.assertEquals(workflowTask.getStatus(), TaskStatus.PARTIAL,
+                "ConceptTreeTransformProvider failed on task " + taskId);
+
+        String actualSubtaskResultAlertHtml =
+                workflowTask.getSubtasks().get(0).getResults().
+                get(TaskRunner.ALERT_HTML);
+
+        String expectedSubtaskResultAlertHtml =
+                ConceptTreeTransformProvider.ALERT_HTML_PRELUDE
+                + version.getSlug()
+                + ConceptTreeTransformProvider.ALERT_HTML_INTERLUDE
+                + expectedRdfErrorsString
+                + ConceptTreeTransformProvider.ALERT_HTML_POSTLUDE;
+
+        Assert.assertEquals(actualSubtaskResultAlertHtml,
+                expectedSubtaskResultAlertHtml,
+                "Wrong value for alert-html");
+    }
+
+    /** Server-side test of {@code ConceptTreeTransformProvider}.
+     * The test data of this test exercises the error checking of
+     * RDF data.
+     * @throws DatabaseUnitException If a problem with DbUnit.
+     * @throws HibernateException If a problem getting the underlying
+     *          JDBC connection.
+     * @throws IOException If a problem getting test data for DbUnit,
+     *          or reading JSON from the correct and test output files.
+     * @throws SQLException If DbUnit has a problem performing
+     *           performing JDBC operations.
+     */
+    @Test
+    @SuppressWarnings({"checkstyle:MagicNumber", "checkstyle:MethodLength"})
+    public final void testConceptTreeTransformProvider3() throws
+        DatabaseUnitException, HibernateException, IOException, SQLException {
+//        String testsPath = ArquillianTestUtils.getClassesPath()
+//                + "/test/tests/";
+        ArquillianTestUtils.clearDatabase(REGISTRY);
+        ArquillianTestUtils.loadDbUnitTestFile(REGISTRY, CLASS_NAME_PREFIX
+                + "testConceptTreeTransformProvider3");
+
+        EntityManager em = null;
+        EntityTransaction txn = null;
+        try {
+            em = DBContext.getEntityManager();
+            txn = em.getTransaction();
+            txn.begin();
+
+            Vocabulary vocabulary = VocabularyDAO.
+                    getCurrentVocabularyByVocabularyId(em, 1);
+
+            List<Task> taskList = TaskDAO.getAllTask();
+            logger.info("testConceptTreeTransformProvider3: task list length = "
+                    + taskList.size());
+            Assert.assertEquals(taskList.size(), 9, "Not nine tasks");
+
+            // Many errors, but most unreported because this time we
+            // have includeCollectionSchemes and includeCollections
+            // both false.
+            String phase1Errors =
+                    StatementHandler.RDF_ERROR_TYPE_LITERAL
+                    + "Literal type" + ConceptTreeTransformProvider.BR
+                    + StatementHandler.RDF_ERROR_INVALID_TYPE_CHANGE
+                    + "http://test/two-types-Concept-ConceptScheme; "
+                    + "from type concept to concept scheme"
+                    + ConceptTreeTransformProvider.BR
+                    + StatementHandler.RDF_ERROR_INVALID_TYPE_CHANGE
+                    + "http://test/two-types-OrderedCollection-ConceptScheme; "
+                    + "from type ordered collection to concept scheme"
+                    + ConceptTreeTransformProvider.BR
+                    + StatementHandler.RDF_ERROR_INVALID_TYPE_CHANGE
+                    + "http://test/two-types-OrderedCollection-Concept; "
+                    + "from type ordered collection to concept"
+                    + ConceptTreeTransformProvider.BR
+                    + StatementHandler.RDF_ERROR_INVALID_TYPE_CHANGE
+                    + "http://test/two-types-"
+                        + "UnorderedCollection-ConceptScheme; "
+                    + "from type unordered collection to concept scheme"
+                    + ConceptTreeTransformProvider.BR
+                    + StatementHandler.RDF_ERROR_INVALID_TYPE_CHANGE
+                    + "http://test/two-types-UnorderedCollection-Concept; "
+                    + "from type unordered collection to concept"
+                    + ConceptTreeTransformProvider.BR
+                    + StatementHandler.RDF_ERROR_INVALID_TYPE_CHANGE
+                    + "http://test/broader1; "
+                    + "from type concept scheme to concept"
+                    + ConceptTreeTransformProvider.BR
+                    + StatementHandler.RDF_ERROR_INVALID_TYPE_CHANGE
+                    + "http://test/narrower2; "
+                    + "from type concept scheme to concept"
+                    + ConceptTreeTransformProvider.BR;
+            testRdfErrors(em, vocabulary, 1, phase1Errors);
+
+            // Same data, but this time we set includeCollectionSchemes and
+            // includeCollections to true, so many more errors are reported.
+            testRdfErrors(em, vocabulary, 2,
+                    phase1Errors
+                    + StatementHandler.RDF_ERROR_MEMBER_LITERAL
+                    + "Literal member" + ConceptTreeTransformProvider.BR
+                    + StatementHandler.RDF_ERROR_MEMBERLIST_LITERAL
+                    + "Literal memberList" + ConceptTreeTransformProvider.BR
+                    + StatementHandler.RDF_ERROR_MULTIPLE_MEMBERLIST
+                    + "http://test/two-memberLists"
+                    + ConceptTreeTransformProvider.BR
+                    + StatementHandler.RDF_ERROR_LIST_FIRST_NIL
+                    + "http://test/memberList1"
+                    + ConceptTreeTransformProvider.BR
+                    + StatementHandler.RDF_ERROR_LIST_MULTIPLE_FIRST
+                    + "http://test/memberList2"
+                    + ConceptTreeTransformProvider.BR
+                    + StatementHandler.RDF_ERROR_LIST_REST_LITERAL
+                    + "Literal rest"
+                    + ConceptTreeTransformProvider.BR
+                    + StatementHandler.RDF_ERROR_LIST_MULTIPLE_REST
+                    + "http://test/memberList4"
+                    + ConceptTreeTransformProvider.BR);
+
+            // Errors only detected during depth-first search.
+            testRdfErrors(em, vocabulary, 3,
+                    StatementHandler.RDF_ERROR_CS_MEMBER_NOT_CONCEPT
+                    + "http://test/Coll2" + ConceptTreeTransformProvider.BR
+                    + StatementHandler.RDF_ERROR_COLL_MEMBER_NOT_VALID
+                    + "http://test/CS3" + ConceptTreeTransformProvider.BR
+                    + StatementHandler.RDF_ERROR_COLL_MEMBER_NOT_VALID
+                    + "http://test/CS4" + ConceptTreeTransformProvider.BR
+                    + StatementHandler.RDF_ERROR_TOP_CONCEPT_BROADER
+                    + "http://test/TC" + ConceptTreeTransformProvider.BR);
+
+            // Now the "showstoppers". Each one is a separate case.
+            testRdfErrors(em, vocabulary, 4,
+                    StatementHandler.RDF_ERROR_MEMBERLIST_ELEMENT_LITERAL
+                    + "Literal memberList member"
+                    + ConceptTreeTransformProvider.BR);
+            testRdfErrors(em, vocabulary, 5,
+                    StatementHandler.RDF_ERROR_MEMBERLIST_CYCLE
+                    + "http://test/memberList-cycle"
+                    + ConceptTreeTransformProvider.BR);
+            testRdfErrors(em, vocabulary, 6,
+                    StatementHandler.RDF_ERROR_MEMBER_NOT_IN_MEMBERLIST
+                    + "http://test/memberList-and-other-member"
+                    + ConceptTreeTransformProvider.BR);
+            testRdfErrors(em, vocabulary, 7,
+                    StatementHandler.RDF_ERROR_LIST_MEMBERLIST_ELEMENT_NOT_VALID
+                    + "http://test/unknownType"
+                    + ConceptTreeTransformProvider.BR);
+            testRdfErrors(em, vocabulary, 8,
+                    StatementHandler.RDF_ERROR_MEMBER_UNKNOWN_TYPE
+                    + "http://test/member-unknown-type"
+                    + StatementHandler.RDF_ERROR_MEMBER_UNKNOWN_TYPE_RESOURCE
+                    + "http://test/member-unknown-type-resource"
+                    + ConceptTreeTransformProvider.BR);
+
+            // An error generated by the RDF parser that doesn't bubble up
+            // through StatementHandler. The text of the error message
+            // comes from org.openrdf.model.impl.URIImpl.setURIString(),
+            // which is then munged by org.openrdf.rio.RDFParseException to
+            // include the line number information.
+            testRdfErrors(em, vocabulary, 9,
+                    "Not a valid (absolute) URI: f [line 1]"
+                    + ConceptTreeTransformProvider.BR);
+
+            txn.commit();
+        } catch (Throwable t) {
+            if (txn != null && txn.isActive()) {
+                try {
+                    logger.error("Exception during transaction; rolling back",
+                            t);
+                    txn.rollback();
+                } catch (Exception e) {
+                    logger.error("Rollback failure!", e);
+                }
+            } else {
+                logger.error("Exception other than during transaction: ", t);
+            }
+            throw t;
+        } finally {
+            if (em != null) {
+                em.close();
+            }
+        }
+    }
+
+    /** Server-side test of {@code ConceptTreeTransformProvider}.
+     * The test data of this test exercises the behaviour of the
+     * {@code mayResolveResources} browse flag.
+     * @throws DatabaseUnitException If a problem with DbUnit.
+     * @throws HibernateException If a problem getting the underlying
+     *          JDBC connection.
+     * @throws IOException If a problem getting test data for DbUnit,
+     *          or reading JSON from the correct and test output files.
+     * @throws SQLException If DbUnit has a problem performing
+     *           performing JDBC operations.
+     */
+    @Test
+    public final void testConceptTreeTransformProvider4() throws
+        DatabaseUnitException, HibernateException, IOException, SQLException {
+        String testsPath = ArquillianTestUtils.getClassesPath()
+                + "/test/tests/";
+        ArquillianTestUtils.clearDatabase(REGISTRY);
+        ArquillianTestUtils.loadDbUnitTestFile(REGISTRY, CLASS_NAME_PREFIX
+                + "testConceptTreeTransformProvider4");
+
+        EntityManager em = null;
+        EntityTransaction txn = null;
+        try {
+            em = DBContext.getEntityManager();
+            txn = em.getTransaction();
+            txn.begin();
+
+            List<Task> taskList = TaskDAO.getAllTask();
+            logger.info("testConceptTreeTransformProvider4: task list length = "
+                    + taskList.size());
+            Assert.assertEquals(taskList.size(), 2, "Not two tasks");
+
+            Vocabulary vocabulary = VocabularyDAO.
+                    getCurrentVocabularyByVocabularyId(em, 1);
+
+            testRdfErrors(em, vocabulary, 1,
+                    Resource.UNABLE_TO_NORMALIZE
+                    + "http://G&auml;nsef&uuml;&szlig;chen-"
+                    + "&Gamma;&epsilon;&iota;ά-&sigma;&alpha;&sigmaf;-"
+                    + "नमस्ते-你好.com/x"
+                    + ConceptTreeTransformProvider.BR
+                    + StatementHandler.UNABLE_TO_CONTINUE
+                    + ConceptTreeTransformProvider.BR);
+
+            Version version;
+
+            TaskInfo taskInfo;
+            au.org.ands.vocabs.registry.workflow.tasks.Task workflowTask;
+            VersionArtefact va;
+            VaConceptTree vaConceptTree;
+
+            Task task = TaskDAO.getTaskById(2);
+            version = VersionDAO.getCurrentVersionByVersionId(em, 2);
+            taskInfo = new TaskInfo(task, vocabulary, version);
+            taskInfo.setEm(em);
+            taskInfo.setModifiedBy("SYSTEM");
+            taskInfo.setNowTime(nowTime1);
+            taskInfo.process();
+
+            txn.commit();
+            // If a dump is required, uncomment the next lines.
+//   ArquillianTestUtils.exportFullDbUnitData(REGISTRY,
+//           "testConceptTreeTransformProvider4-out.xml");
+
+            workflowTask = taskInfo.getTask();
+
+            Assert.assertEquals(workflowTask.getStatus(), TaskStatus.SUCCESS,
+                "ConceptTreeTransformProvider failed on task 2");
+
+            va = VersionArtefactDAO.
+                    getCurrentVersionArtefactListForVersionByType(2,
+                            VersionArtefactType.CONCEPT_TREE, em).get(0);
+            vaConceptTree = JSONSerialization.deserializeStringAsJson(
+                    va.getData(), VaConceptTree.class);
+
+            String conceptsTreeFilename = vaConceptTree.getPath();
+            ArquillianTestUtils.compareJsonFiles(conceptsTreeFilename,
+                    testsPath
+                    + CLASS_NAME_PREFIX
+                    + "testConceptTreeTransformProvider4/"
+                    + "test-data2-concepts_tree.json");
+
+        } catch (Throwable t) {
+            if (txn != null && txn.isActive()) {
+                try {
+                    logger.error("Exception during transaction; rolling back",
+                            t);
+                    txn.rollback();
+                } catch (Exception e) {
+                    logger.error("Rollback failure!", e);
+                }
+            } else {
+                logger.error("Exception other than during transaction: ", t);
+            }
+            throw t;
+        } finally {
+            if (em != null) {
+                em.close();
+            }
+        }
+    }
+
+    /** Server-side test of {@code ConceptTreeTransformProvider}.
+     * The test data of this test exercises cycle detection of collections.
+     * @throws DatabaseUnitException If a problem with DbUnit.
+     * @throws HibernateException If a problem getting the underlying
+     *          JDBC connection.
+     * @throws IOException If a problem getting test data for DbUnit,
+     *          or reading JSON from the correct and test output files.
+     * @throws SQLException If DbUnit has a problem performing
+     *           performing JDBC operations.
+     */
+    @Test
+    @SuppressWarnings("checkstyle:MagicNumber")
+    public final void testConceptTreeTransformProvider5() throws
+        DatabaseUnitException, HibernateException, IOException, SQLException {
+        ArquillianTestUtils.clearDatabase(REGISTRY);
+        ArquillianTestUtils.loadDbUnitTestFile(REGISTRY, CLASS_NAME_PREFIX
+                + "testConceptTreeTransformProvider5");
+
+        EntityManager em = null;
+        EntityTransaction txn = null;
+        try {
+            em = DBContext.getEntityManager();
+            txn = em.getTransaction();
+            txn.begin();
+
+            List<Task> taskList = TaskDAO.getAllTask();
+            logger.info("testConceptTreeTransformProvider5: task list length = "
+                    + taskList.size());
+            Assert.assertEquals(taskList.size(), 8, "Not eight tasks");
+
+            Vocabulary vocabulary = VocabularyDAO.
+                    getCurrentVocabularyByVocabularyId(em, 1);
+
+            testRdfErrors(em, vocabulary, 1,
+                    /*
+                    StatementHandler.RDF_ERROR_CYCLE_COLLECTION_UNVISITED
+                    + "http://test/Coll2" + ConceptTreeTransformProvider.BR
+                    +
+                    */
+                    StatementHandler.RDF_ERROR_CYCLE_COLLECTION_BACK_EDGE
+                    + "http://test/Coll1 to http://test/Coll2"
+                    + ConceptTreeTransformProvider.BR);
+
+            testRdfErrors(em, vocabulary, 2,
+                    /*
+                    StatementHandler.RDF_ERROR_CYCLE_COLLECTION_UNVISITED
+                    + "http://test/Coll2" + ConceptTreeTransformProvider.BR
+                    +
+                    */
+                    StatementHandler.RDF_ERROR_CYCLE_COLLECTION_BACK_EDGE
+                    + "http://test/Coll1 to http://test/Coll2"
+                    + ConceptTreeTransformProvider.BR);
+
+            testRdfErrors(em, vocabulary, 3,
+                    StatementHandler.RDF_ERROR_CYCLE_COLLECTION_BACK_EDGE
+                    + "http://test/Coll3 to http://test/Coll2"
+                    + ConceptTreeTransformProvider.BR);
+
+            testRdfErrors(em, vocabulary, 4,
+                    StatementHandler.RDF_ERROR_CYCLE_COLLECTION_BACK_EDGE
+                    + "http://test/Coll3 to http://test/Coll2"
+                    + ConceptTreeTransformProvider.BR);
+
+            testRdfErrors(em, vocabulary, 5,
+                    /*
+                    StatementHandler.RDF_ERROR_CYCLE_COLLECTION_UNVISITED
+                    + "http://test/Coll2" + ConceptTreeTransformProvider.BR
+                    +
+                    */
+                    StatementHandler.RDF_ERROR_CYCLE_COLLECTION_BACK_EDGE
+                    + "http://test/Coll1 to http://test/Coll2"
+                    + ConceptTreeTransformProvider.BR);
+
+            testRdfErrors(em, vocabulary, 6,
+                    StatementHandler.RDF_ERROR_CYCLE_COLLECTION_BACK_EDGE
+                    + "http://test/Coll3 to http://test/Coll2"
+                    + ConceptTreeTransformProvider.BR);
+
+            testRdfErrors(em, vocabulary, 7,
+                    StatementHandler.RDF_ERROR_CYCLE_COLLECTION_BACK_EDGE
+                    + "http://test/Coll3 to http://test/Coll2"
+                    + ConceptTreeTransformProvider.BR);
+
+            // This test exercises the places in the code where we
+            // take care, in the case that we broke a cycle, that we
+            // don't subsequently try to compare a node that has
+            // an orderedCollectionSortOrder value with a node that doesn't.
+            String v8Prefix =
+                    "https://editor.vocabs.ands.org.au/ANDSRWtestforbrowse1/";
+            testRdfErrors(em, vocabulary, 8,
+                    /*
+                    StatementHandler.RDF_ERROR_CYCLE_COLLECTION_UNVISITED
+                    + v8Prefix + "OrderedCollection3"
+                    + ConceptTreeTransformProvider.BR
+                    +
+                    */
+                    StatementHandler.RDF_ERROR_CYCLE_COLLECTION_BACK_EDGE
+                    + v8Prefix + "OrderedCollection1 to "
+                    + v8Prefix + "OrderedCollection3"
+                    + ConceptTreeTransformProvider.BR
+                    /*
+                    + StatementHandler.RDF_ERROR_CYCLE_CONCEPT_UNVISITED
+                    + v8Prefix + "C1.1.1" + ConceptTreeTransformProvider.BR
+                    + StatementHandler.RDF_ERROR_CYCLE_CONCEPT_UNVISITED
+                    + v8Prefix + "C2.1.1" + ConceptTreeTransformProvider.BR
+                    + StatementHandler.RDF_ERROR_CYCLE_CONCEPT_UNVISITED
+                    + v8Prefix + "C1.2.1.1" + ConceptTreeTransformProvider.BR
+                    + StatementHandler.RDF_ERROR_CYCLE_CONCEPT_UNVISITED
+                    + v8Prefix + "C1.1.3" + ConceptTreeTransformProvider.BR
+                    + StatementHandler.RDF_ERROR_CYCLE_CONCEPT_UNVISITED
+                    + v8Prefix + "TC1.1" + ConceptTreeTransformProvider.BR
+                    */
+                    );
+
+            txn.commit();
+            // If a dump is required, uncomment the next lines.
+//   ArquillianTestUtils.exportFullDbUnitData(REGISTRY,
+//           "testConceptTreeTransformProvider5-out.xml");
+
+        } catch (Throwable t) {
+            if (txn != null && txn.isActive()) {
+                try {
+                    logger.error("Exception during transaction; rolling back",
+                            t);
+                    txn.rollback();
+                } catch (Exception e) {
+                    logger.error("Rollback failure!", e);
+                }
+            } else {
+                logger.error("Exception other than during transaction: ", t);
+            }
+            throw t;
+        } finally {
+            if (em != null) {
+                em.close();
+            }
+        }
+    }
+
+    /** Do one test of concept tree processing, expecting success,
+     * and match it against the expected result.
+     * @param em The EntityManager to use.
+     * @param vocabulary The vocabulary under test.
+     * @param versionId The task ID of the task to run.
+     * @param taskId The task ID of the task to run.
+     * @param testsPath The path to the test data.
+     * @param testName The name of the test, used as a directory name.
+     * @throws IOException If a problem reading JSON from the correct
+     *      and test output files.
+     */
+    private void testConceptTreeProcessing(final EntityManager em,
+            final Vocabulary vocabulary, final int versionId,
+            final int taskId, final String testsPath,
+            final String testName) throws IOException {
+        Version version = VersionDAO.getCurrentVersionByVersionId(em,
+                versionId);
+        Task task = TaskDAO.getTaskById(taskId);
+        TaskInfo taskInfo = new TaskInfo(task, vocabulary, version);
+        taskInfo.setEm(em);
+        taskInfo.setModifiedBy("SYSTEM");
+        taskInfo.setNowTime(nowTime1);
+        taskInfo.process();
+        au.org.ands.vocabs.registry.workflow.tasks.Task workflowTask =
+                taskInfo.getTask();
+
+        Assert.assertEquals(workflowTask.getStatus(), TaskStatus.SUCCESS,
+                "ConceptTreeTransformProvider failed on task " + taskId);
+        VersionArtefact va = VersionArtefactDAO.
+                getCurrentVersionArtefactListForVersionByType(versionId,
+                        VersionArtefactType.CONCEPT_TREE, em).get(0);
+        VaConceptTree vaConceptTree =
+                JSONSerialization.deserializeStringAsJson(
+                va.getData(), VaConceptTree.class);
+        String conceptsTreeFilename = vaConceptTree.getPath();
+        ArquillianTestUtils.compareJsonFiles(conceptsTreeFilename,
+                testsPath
+                + CLASS_NAME_PREFIX
+                + testName + "/test-data" + taskId + "-concepts_tree.json");
+    }
+
+    /** Server-side test of {@code ConceptTreeTransformProvider}.
+     * The test data of this test exercises the processing of
+     * concept schemes and collections.
+     * @throws DatabaseUnitException If a problem with DbUnit.
+     * @throws HibernateException If a problem getting the underlying
+     *          JDBC connection.
+     * @throws IOException If a problem getting test data for DbUnit,
+     *          or reading JSON from the correct and test output files.
+     * @throws SQLException If DbUnit has a problem performing
+     *           performing JDBC operations.
+     */
+    @Test
+    @SuppressWarnings("checkstyle:MagicNumber")
+    public final void testConceptTreeTransformProvider6() throws
+        DatabaseUnitException, HibernateException, IOException, SQLException {
+        String testsPath = ArquillianTestUtils.getClassesPath()
+                + "/test/tests/";
+        String testName = "testConceptTreeTransformProvider6";
+        ArquillianTestUtils.clearDatabase(REGISTRY);
+        ArquillianTestUtils.loadDbUnitTestFile(REGISTRY, CLASS_NAME_PREFIX
+                + testName);
+
+        EntityManager em = null;
+        EntityTransaction txn = null;
+        try {
+            em = DBContext.getEntityManager();
+            txn = em.getTransaction();
+            txn.begin();
+
+            List<Task> taskList = TaskDAO.getAllTask();
+            logger.info(testName + ": task list length = " + taskList.size());
+            Assert.assertEquals(taskList.size(), 8, "Not eight tasks");
+
+            Vocabulary vocabulary = VocabularyDAO.
+                    getCurrentVocabularyByVocabularyId(em, 1);
+
+            testConceptTreeProcessing(em, vocabulary, 1, 1,
+                    testsPath, testName);
+            testConceptTreeProcessing(em, vocabulary, 2, 2,
+                    testsPath, testName);
+            testConceptTreeProcessing(em, vocabulary, 3, 3,
+                    testsPath, testName);
+            testConceptTreeProcessing(em, vocabulary, 4, 4,
+                    testsPath, testName);
+            testConceptTreeProcessing(em, vocabulary, 5, 5,
+                    testsPath, testName);
+            testConceptTreeProcessing(em, vocabulary, 6, 6,
+                    testsPath, testName);
+            testConceptTreeProcessing(em, vocabulary, 7, 7,
+                    testsPath, testName);
+            testConceptTreeProcessing(em, vocabulary, 8, 8,
+                    testsPath, testName);
+
+            txn.commit();
+            // If a dump is required, uncomment the next lines.
+//   ArquillianTestUtils.exportFullDbUnitData(REGISTRY,
+//           "testConceptTreeTransformProvider6-out.xml");
+
+        } catch (Throwable t) {
+            if (txn != null && txn.isActive()) {
+                try {
+                    logger.error("Exception during transaction; rolling back",
+                            t);
+                    txn.rollback();
+                } catch (Exception e) {
+                    logger.error("Rollback failure!", e);
+                }
+            } else {
+                logger.error("Exception other than during transaction: ", t);
+            }
+            throw t;
+        } finally {
+            if (em != null) {
+                em.close();
+            }
+        }
+    }
+
+
 
     // Tests of class
     // au.org.ands.vocabs.registry.workflow.

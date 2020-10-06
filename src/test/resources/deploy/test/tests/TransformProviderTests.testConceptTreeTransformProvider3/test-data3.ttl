@@ -1,0 +1,29 @@
+# Test data for checking for RDF errors.
+# This has all of the "second-phase" errors that are not
+# also "showstoppers".
+
+@prefix skos:    <http://www.w3.org/2004/02/skos/core#> .
+@prefix my:    <http://test/> .
+
+# RDF_ERROR_TOP_CONCEPT_BROADER (second phase): A top concept of a concept scheme with a broader concept in the same concept scheme.
+my:CS1 a skos:ConceptScheme .
+my:TC a skos:Concept ;
+  skos:topConceptOf my:CS1 .
+my:broader-than-TC a skos:Concept ;
+  skos:inScheme my:CS1 ;
+  skos:narrower my:TC .
+
+# RDF_ERROR_CS_MEMBER_NOT_CONCEPT (second phase):
+my:CS2 a skos:ConceptScheme .
+my:Coll2 a skos:Collection ;
+  skos:inScheme my:CS2 .
+
+# RDF_ERROR_COLL_MEMBER_NOT_VALID (second phase): unordered collection
+my:CS3 a skos:ConceptScheme .
+my:Coll3 a skos:Collection ;
+  skos:member my:CS3 .
+
+# RDF_ERROR_COLL_MEMBER_NOT_VALID (second phase): ordered collection
+my:CS4 a skos:ConceptScheme .
+my:Coll4 a skos:Collection ;
+  skos:memberList ( my:CS4 ) .

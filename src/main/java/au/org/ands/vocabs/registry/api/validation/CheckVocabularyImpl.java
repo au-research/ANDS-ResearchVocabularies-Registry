@@ -982,6 +982,7 @@ public class CheckVocabularyImpl
             boolean maySortByNotation = false;
             boolean defaultSortByNotation = false;
             int notationFormats = 0;
+            boolean defaultDisplayNotation = false;
             for (BrowseFlag browseFlag : browseFlags) {
                 switch (browseFlag) {
                 case DEFAULT_SORT_BY_NOTATION:
@@ -995,6 +996,9 @@ public class CheckVocabularyImpl
                 case NOTATION_FLOAT:
                     notationFormats++;
                     break;
+                case DEFAULT_DISPLAY_NOTATION:
+                    defaultDisplayNotation = true;
+                    break;
                 default:
                     // Oops, unknown.
                     break;
@@ -1005,6 +1009,17 @@ public class CheckVocabularyImpl
                 constraintContext.buildConstraintViolationWithTemplate(
                         "{" + INTERFACE_NAME
                         + ".version.browseFlagsDefaultButNoMaySortByNotation}").
+                    addPropertyNode("version").
+                    addPropertyNode("browseFlags").inIterable().
+                    atIndex(versionIndex).
+                    addConstraintViolation();
+            }
+            if (defaultDisplayNotation && !maySortByNotation) {
+                valid = false;
+                constraintContext.buildConstraintViolationWithTemplate(
+                        "{" + INTERFACE_NAME
+                        + ".version.browseFlagsDefaultDisplayNotation"
+                        + "ButNoMaySortByNotation}").
                     addPropertyNode("version").
                     addPropertyNode("browseFlags").inIterable().
                     atIndex(versionIndex).

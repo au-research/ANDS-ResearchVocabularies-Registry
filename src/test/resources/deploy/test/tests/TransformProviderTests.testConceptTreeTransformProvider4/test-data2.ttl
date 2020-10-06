@@ -1,0 +1,8 @@
+# Test data for checking the behaviour of the
+# mayResolveResources browse flag.
+
+<http://normal-case.com/x> a skos:Concept .
+<http://Gänsefüßchen.org/x> a skos:Concept .
+<http://Γειά_σας.edu/x> a skos:Concept .
+<http://नमस्ते.com/x> a skos:Concept .
+<http://你好.com/x> a skos:Concept .

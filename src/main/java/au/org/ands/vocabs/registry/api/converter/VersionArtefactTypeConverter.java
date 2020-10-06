@@ -14,7 +14,7 @@ import au.org.ands.vocabs.registry.enums.VersionArtefactType;
 /** Converter for VersionArtefactType values provided to API calls.
  * This is needed, because VersionArtefactType doesn't satisfy
  * the requirements for autoconversion by JAX-RS: it has a fromValue()
- * method, not a fromString() method. So this class provies
+ * method, not a fromString() method. So this class provides
  * a converter that implements the latter using the former.
  */
 @Provider
