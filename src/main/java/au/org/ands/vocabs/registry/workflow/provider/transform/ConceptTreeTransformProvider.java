@@ -45,15 +45,6 @@ import au.org.ands.vocabs.registry.workflow.tasks.TaskRunner;
 import au.org.ands.vocabs.registry.workflow.tasks.TaskUtils;
 import au.org.ands.vocabs.registry.workflow.tasks.VersionArtefactUtils;
 
-/*
- *
- * THIS IS THE NEW IMPLEMENTATION of the back end of the
- * browse tree, replacing JsonTreeTransformProvider.
- *
- */
-
-
-
 /** Transform provider for generating a forest-like representation of the
  * SKOS concepts, collections, and concept schemes as JSON.
  *
@@ -61,10 +52,10 @@ import au.org.ands.vocabs.registry.workflow.tasks.VersionArtefactUtils;
  *
  * The transform assumes a vocabulary encoded using SKOS.
  * The resulting output is sorted at each level. The sort key is
- * user-determined: either by prefLabel, case-insensitively, or by
+ * user-determined: either by label, case-insensitively, or by
  * notation. In some cases (as explained below),
  * an alternative sort order is also represented within the result.
- * When sorting by prefLabel, resources without prefLabels are
+ * When sorting by label, resources without labels are
  * gathered at the end, sorted by IRI.
  *
  * For the following vocabulary data:
@@ -110,29 +101,31 @@ import au.org.ands.vocabs.registry.workflow.tasks.VersionArtefactUtils;
  *   "format": "3",
  *   "language": "en",
  *   "maySortByNotation": true,
+ *   "mayResolveResources": false,
  *   "notationFormat": "notationDotted",
+ *   "defaultDisplayNotation": false,
  *   "defaultSortByNotation": false,
  *   "forest": [
  *     {
  *       "type": "concept",
  *       "iri": "http://url1",
- *       "prefLabel": "Label 1",
+ *       "label": "Label 1",
  *       "definition": "Definition 1",
  *       "notation": "1",
  *       "notationSortOrder": 0,
- *       "narrower": [
+ *       "children": [
  *         {
  *           "type": "concept",
  *           "iri": "http://uri1/narrower1",
- *           "prefLabel": "Label 1.1",
+ *           "label": "Label 1.1",
  *           "definition": "Definition 1.1",
  *           "notation": "1.1",
  *           "notationSortOrder": 0,
- *           "narrower": [
+ *           "children": [
  *             {
  *               "type": "concept",
  *               "iri": "http://uri1/narrower1/narrower1",
- *               "prefLabel": "Label 1.1.1",
+ *               "label": "Label 1.1.1",
  *               "definition": "Definition 1.1.1",
  *               "notation": "1.1.1",
  *               "notationSortOrder": 0
@@ -144,15 +137,16 @@ import au.org.ands.vocabs.registry.workflow.tasks.VersionArtefactUtils;
  *     {
  *       "type": "concept",
  *       "iri": "http://url2",
- *       "prefLabel": "Label 2",
+ *       "label": "Label 2",
  *       "definition": "Definition 2",
  *       "notation": "2",
  *       "notationSortOrder": 1,
- *       "narrower": [
+ *       "children": [
  *         {
  *           "type": "concept_ref",
  *           "iri": "http://uri1/narrower1/narrower1",
- *           "prefLabel": "Label 1.1.1",
+ *           "label": "Label 1.1.1",
+ *           "definition": "Definition 1.1.1",
  *           "notation": "1.1.1",
  *           "notationSortOrder": 0
  *         }
@@ -184,7 +178,7 @@ import au.org.ands.vocabs.registry.workflow.tasks.VersionArtefactUtils;
  * (indicating a cross edge), and so this is a
  * "cross-reference" to a concept whose full definition is given elsewhere
  * in the hierarchy. A concept with {@code "type": "concept_ref"}
- * does <em>not</em> include a {@code narrower} key/value pair. In order to
+ * does <em>not</em> include a {@code children} key/value pair. In order to
  * find out if the concept has narrower concepts, it is necessary to locate
  * the corresponding concept with the same {@code iri} but with {@code
  * "type": "concept"}, and to see if <em>it</em> has a {@code narrower}
@@ -214,6 +208,9 @@ import au.org.ands.vocabs.registry.workflow.tasks.VersionArtefactUtils;
  *     </ul>
  *   </li>
  *   <li><code>defaultSortByNotation</code>
+ *     <ul><li>Boolean</li></ul>
+ *   </li>
+ *   <li><code>defaultDisplayNotation</code>
  *     <ul><li>Boolean</li></ul>
  *   </li>
  *   <li>{@code includeConceptSchemes}
@@ -249,8 +246,8 @@ import au.org.ands.vocabs.registry.workflow.tasks.VersionArtefactUtils;
  *   </li>
  * </ul>
  *
- * <p>The input vocabulary can have its hierarchy specified using either
- * {@code skos:narrower} or {@code skos:broader};
+ * <p>The input vocabulary can have its broader/narrower hierarchy specified
+ * using either {@code skos:narrower} or {@code skos:broader};
  * missing properties are inferred.</p>
  *
  * <p>Because the SKOS model explicitly allows polyhierarchies and cycles,
@@ -264,7 +261,7 @@ import au.org.ands.vocabs.registry.workflow.tasks.VersionArtefactUtils;
  *   <li>A concept marked as the top concept of a concept scheme may
  *     nevertheless have a broader concept in the same concept scheme
  *     (SKOS Reference 4.6.3)</li>
- *   <li>The arrower/broader relations do not entail containment within
+ *   <li>The narrower/broader relations do not entail containment within
  *     the same concept scheme. If concept A is inScheme CS, and B is
  *     narrower then A, then B is not automatically also inScheme CS.
  *     (SKOS Reference 4.6.4)</li>
@@ -317,8 +314,8 @@ import au.org.ands.vocabs.registry.workflow.tasks.VersionArtefactUtils;
  *   remove node from NodesActive
  * </pre>
  *
- * This class has a number of nested classes; see also the documentation
- * for those classes.
+ * See also the documentation for the classes in the child package
+ * {@link au.org.ands.vocabs.registry.workflow.provider.transform.conceptTree}.
  */
 public class ConceptTreeTransformProvider implements WorkflowProvider {
 

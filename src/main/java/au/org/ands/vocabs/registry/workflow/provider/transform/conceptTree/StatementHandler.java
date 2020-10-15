@@ -304,7 +304,6 @@ public class StatementHandler extends RDFHandlerBase {
      * If either flag is true, then concept schemes and/or collections
      * are also considered to be "top-most". (We also handle
      * nesting of collections.)
-     * This is based on finding all concepts that do not have a broader concept.
      * This is used in the first stage of {@link #buildForest()}
      * to collect the top-most resources. It can be a HashMap
      * (e.g., rather than a TreeMap), because its contents are iterated
