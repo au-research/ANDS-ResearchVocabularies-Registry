@@ -223,6 +223,10 @@ running.
 
 To proceed, the web application must have been successfully deployed.
 
+Access to the migration process is locked-down to the loopback
+address; in the following, you must specify "localhost" or its IP
+address "127.0.0.1".
+
 Migrate the content from the "old-style" database into the new, blank
 Registry database:
 
@@ -263,6 +267,10 @@ INSERT INTO subject_resolver_sources(source,iri) VALUES ('anzsrc-for', 'http://v
 INSERT INTO subject_resolver_sources(source,iri) VALUES ('anzsrc-seo', 'http://vocabs.ardc.edu.au/repository/api/sparql/anzsrc-seo');
 INSERT INTO subject_resolver_sources(source,iri) VALUES ('gcmd', 'http://vocabs.ardc.edu.au/repository/api/sparql/gcmd-sci');
 ```
+
+Access to the populate process is locked-down to the loopback address;
+in the following, you must specify "localhost" or its IP address
+"127.0.0.1".
 
 Now run:
 

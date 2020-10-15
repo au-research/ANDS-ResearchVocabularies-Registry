@@ -8,6 +8,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.nio.file.DirectoryIteratorException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
@@ -30,8 +32,10 @@ import java.util.regex.Pattern;
 
 import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.core.Context;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -115,7 +119,8 @@ import au.org.ands.vocabs.toolkit.utils.ToolkitFileUtils;
 import au.org.ands.vocabs.toolkit.utils.ToolkitProperties;
 
 /** Utility class for migrating the contents of the "toolkit" database
- * to the "registry" database.
+ * to the "registry" database. This class is of historical interest only.
+ * The migrate method is accessible only via a loopback interface.
  */
 @Path(AdminApiPaths.API_ADMIN + "/" + AdminApiPaths.DATABASE)
 public final class MigrateToolkitToRegistry {
@@ -344,11 +349,27 @@ public final class MigrateToolkitToRegistry {
     /** Migrate the contents of the "toolkit" database to
      * the "registry" database, and the "toolkit" data to the "registry"
      * data storage.
+     * @param request The HTTP request.
      * @return Text indicating success.
      */
     @Path("migrateToolkitToRegistry")
     @GET
-    public String migrateToolkitToRegistry() {
+    public String migrateToolkitToRegistry(
+            @Context final HttpServletRequest request) {
+        // Only allow access from a loopback interface.
+        String remoteAddress = request.getRemoteAddr();
+        InetAddress ipAddress;
+        try {
+            ipAddress = InetAddress.getByName(remoteAddress);
+        } catch (UnknownHostException e) {
+            logger.error("Unable to parse IP address", e);
+            return "Unable to parse caller's IP address";
+        }
+
+        if (!ipAddress.isLoopbackAddress()) {
+            return "Not localhost; forbidden";
+        }
+
         SimpleDateFormat formatter =
                 new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         nowTimeString = replaceCharactersInTimestamp(
