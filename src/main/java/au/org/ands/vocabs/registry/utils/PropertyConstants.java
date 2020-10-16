@@ -50,7 +50,7 @@ public final class PropertyConstants {
 //  public static final String REGISTRY_ =
 //          "Registry.";
 
-    /* Configure the swagger view of the API. */
+    /* Configure the Swagger view of the API. */
 
     /** Swagger scheme. */
     public static final String REGISTRY_SWAGGER_DEFAULTSCHEME =
