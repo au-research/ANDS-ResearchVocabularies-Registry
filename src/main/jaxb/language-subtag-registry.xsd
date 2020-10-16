@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified"
+    targetNamespace="http://vocabs.ands.org.au/registry/schema/2017/01/language-subtag-registry"
+    xmlns="http://vocabs.ands.org.au/registry/schema/2017/01/language-subtag-registry">
+
+    <xs:annotation>
+        <xs:documentation>A representation of some of the data contained in the IANA Language Subtag Registry.
+Some element names have abbreviated to reduce the total size of the data.</xs:documentation>
+    </xs:annotation>
+    <xs:element name="lsr">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="languages">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element maxOccurs="unbounded" ref="entry"/>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="scripts">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element maxOccurs="unbounded" ref="entry"/>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="regions">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element maxOccurs="unbounded" ref="entry"/>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="grandfathereds">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element maxOccurs="unbounded" ref="entry"/>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="redundants">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element maxOccurs="unbounded" ref="entry"/>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="variants">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element maxOccurs="unbounded" ref="entry"/>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="extlangs">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element maxOccurs="unbounded" ref="entry"/>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+            </xs:sequence>
+            <xs:attribute name="file-date" type="xs:string"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="entry">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element maxOccurs="unbounded" minOccurs="0" name="comments" type="xs:string">
+                    <xs:annotation>
+                        <xs:documentation>Comments</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element minOccurs="0" name="deprecated" type="xs:string">
+                    <xs:annotation>
+                        <xs:documentation>Deprecated. Note that entries with a Deprecated element may or may not also have a Preferred-Value element.</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element maxOccurs="unbounded" name="d" type="xs:string">
+                    <xs:annotation>
+                        <xs:documentation>Description</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element minOccurs="0" name="m" type="xs:string">
+                    <xs:annotation>
+                        <xs:documentation>Macrolanguage</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element minOccurs="0" name="pv" type="xs:string">
+                    <xs:annotation>
+                        <xs:documentation>Preferred-Value</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element maxOccurs="unbounded" minOccurs="0" name="prefix" type="xs:string">
+                    <xs:annotation>
+                        <xs:documentation>Prefix</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element minOccurs="0" name="scope" type="xs:string">
+                    <xs:annotation>
+                        <xs:documentation>Scope</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element minOccurs="0" name="s" type="xs:string">
+                    <xs:annotation>
+                        <xs:documentation>Subtag</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element minOccurs="0" name="ss" type="xs:string">
+                    <xs:annotation>
+                        <xs:documentation>Suppress-Script</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element minOccurs="0" name="tag" type="xs:string"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+</xs:schema>

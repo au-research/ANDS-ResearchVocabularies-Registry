@@ -12,8 +12,8 @@ import org.slf4j.LoggerFactory;
 import org.testng.annotations.BeforeSuite;
 import org.testng.annotations.Test;
 
+import au.org.ands.vocabs.registry.utils.RegistryConfig;
 import au.org.ands.vocabs.toolkit.utils.ApplicationContextListener;
-import au.org.ands.vocabs.toolkit.utils.ToolkitConfig;
 
 /** Code to be executed for test setup. See also {@link SesameTests}, which
  * has test setup code that must be run before Tomcat starts. */
@@ -33,11 +33,12 @@ public class ArquillianTestSetup extends ArquillianBaseTest {
 
     /** Set up the suite. This means:
      * clear out the contents of the repository (deleting
-     * the directory pointed to by property {@code Toolkit.storagePath}).
+     * the directory pointed to by property {@code Registry.storagePath})
+     * and install a copy of the LSR.
      * Note: Arquillian invokes this method first on the client side, and
      * then on the server side after deployment.
      * @throws IOException If unable to remove the repository directory
-     *      {@code Toolkit.storagePath}.
+     *      {@code Registry.storagePath}.
      */
     @BeforeSuite(groups = "arquillian")
     public final void setupSuite() throws IOException {
@@ -52,10 +53,16 @@ public class ArquillianTestSetup extends ArquillianBaseTest {
                 logger.info("In ArquillianTestSetup.setupSuite() "
                         + "on server side for first time");
                 setupSuiteRunServerSide = true;
+                // logger.info("pwd: " +  Paths.get("").toAbsolutePath());
                 logger.info("ROOT_FILES_PATH = " + new File(
-                        ToolkitConfig.ROOT_FILES_PATH).getAbsolutePath());
+                        RegistryConfig.ROOT_FILES_PATH).getAbsolutePath());
                 FileUtils.deleteDirectory(new File(
-                        ToolkitConfig.ROOT_FILES_PATH));
+                        RegistryConfig.ROOT_FILES_PATH));
+                FileUtils.copyFile(
+                        new File(MethodHandles.lookup().lookupClass().
+                                getClassLoader().getResource(
+                                    "language-subtag-registry").getPath()),
+                        new File(RegistryConfig.LSR_FILE_PATH));
                 PoolPartyMockServer.setup();
             } else {
                 logger.info("In ArquillianTestSetup.setupSuite() "

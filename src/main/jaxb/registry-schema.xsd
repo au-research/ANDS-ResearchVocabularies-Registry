@@ -131,6 +131,7 @@ For anzsrc-for, anzsrc-seo, and gcmd, the label, notation, and iri values must b
                         </xs:attribute>
                     </xs:complexType>
                 </xs:element>
+                <xs:element minOccurs="0" ref="language-list"/>
                 <xs:element minOccurs="0" ref="workflow-outcome"> </xs:element>
             </xs:sequence>
             <xs:attribute name="id" type="id-type">
@@ -768,6 +769,19 @@ NoLicence</xs:documentation>
         <xs:complexType>
             <xs:sequence>
                 <xs:element maxOccurs="unbounded" minOccurs="0" ref="subscription"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="language-details">
+        <xs:complexType>
+            <xs:attribute name="tag" type="xs:token"/>
+            <xs:attribute name="description" type="xs:string"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="language-list">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element maxOccurs="unbounded" minOccurs="0" ref="language-details"/>
             </xs:sequence>
         </xs:complexType>
     </xs:element>

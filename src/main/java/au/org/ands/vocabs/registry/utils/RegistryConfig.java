@@ -60,4 +60,9 @@ public final class RegistryConfig {
             RegistryProperties.getProperty(PropertyConstants.REGISTRY_LSR,
                     "/tmp/vocabs/conf/language-subtag-registry");
 
+    /** Path to the directory containing the processed
+     * Language Subtag Registry files. */
+    public static final String LSR_OUTPUT_FILES_PATH =
+            Paths.get(ROOT_FILES_PATH).resolve("lsr").toString();
+
 }

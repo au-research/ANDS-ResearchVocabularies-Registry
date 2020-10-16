@@ -47,6 +47,7 @@ public interface VocabularyDbSchemaMapper {
     @Mapping(target = "version", ignore = true)
     @Mapping(target = "relatedEntityRef", ignore = true)
     @Mapping(target = "relatedVocabularyRef", ignore = true)
+    @Mapping(target = "languageList", ignore = true)
     @Mapping(target = "workflowOutcome", ignore = true)
     au.org.ands.vocabs.registry.schema.vocabulary201701.Vocabulary
       sourceToTarget(au.org.ands.vocabs.registry.db.entity.Vocabulary source,
@@ -67,6 +68,7 @@ public interface VocabularyDbSchemaMapper {
     @Mapping(target = "version", ignore = true)
     @Mapping(target = "relatedEntityRef", ignore = true)
     @Mapping(target = "relatedVocabularyRef", ignore = true)
+    @Mapping(target = "languageList", ignore = true)
     @Mapping(target = "workflowOutcome", ignore = true)
     void jsonDataIntoTarget(VocabularyJson data,
               @MappingTarget
