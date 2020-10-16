@@ -46,6 +46,10 @@ public final class PropertyConstants {
     public static final String REGISTRY_DOWNLOADPREFIX =
             "Registry.downloadPrefix";
 
+    /** Registry language subtag registry. */
+    public static final String REGISTRY_LSR =
+            "Registry.lsr";
+
 //  /** Registry . */
 //  public static final String REGISTRY_ =
 //          "Registry.";
