@@ -47,9 +47,10 @@ public class ParseLanguageTag {
     @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     @GET
     @ApiOperation(value = "Parse a BCP 47 language tag.",
-            response = SimpleResult.class,
-            notes = "If the tag is valid, the response stringValue "
-                    + "will contain the description. If the tag is "
+            response = LanguageDetails.class,
+            notes = "If the tag is valid, the response "
+                    + "will contain the canonical form of the tag, and"
+                    + "its full description. If the tag is "
                     + "invalid, the response will contain the errors "
                     + "generated during parsing.")
     @ApiResponses(value = {
@@ -79,8 +80,10 @@ public class ParseLanguageTag {
             return Response.status(Status.BAD_REQUEST).entity(errorResult).
                     build();
         }
-        return Response.ok().entity(new SimpleResult(
-                parsedLanguage.getDescription())).build();
+        LanguageDetails languageDetails = new LanguageDetails();
+        languageDetails.setTag(parsedLanguage.getCanonicalForm());
+        languageDetails.setDescription(parsedLanguage.getDescription());
+        return Response.ok().entity(languageDetails).build();
     }
 
     /** Parse several language tags.
@@ -121,7 +124,7 @@ public class ParseLanguageTag {
                 continue;
             }
             LanguageDetails languageDetails = new LanguageDetails();
-            languageDetails.setTag(tag);
+            languageDetails.setTag(parsedLanguage.getCanonicalForm());
             languageDetails.setDescription(parsedLanguage.getDescription());
             languageDetailsList.add(languageDetails);
         }
