@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!DOCTYPE vocabulary>
+<vocabulary xmlns="http://vocabs.ands.org.au/registry/schema/2017/01/vocabulary"  status="published" owner="string" slug="string" title="string" description="string" creation-date="2017-04-05" primary-language="eng">
+  <subject source="anzsrc-for" label="INFORMATION AND COMPUTING SCIENCES" iri="http://purl.org/au-research/vocabulary/anzsrc-for/2008/08" />
+  <other-language>fr</other-language>
+  <other-language>French</other-language>
+  <other-language>fr-fr</other-language>
+  <other-language>German</other-language>
+  <other-language>fr</other-language>
+  <related-entity-ref id="1">
+    <relation>publishedBy</relation>
+  </related-entity-ref>
+</vocabulary>

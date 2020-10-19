@@ -43,6 +43,7 @@ import au.org.ands.vocabs.registry.schema.vocabulary201701.Vocabulary.RelatedEnt
 import au.org.ands.vocabs.registry.schema.vocabulary201701.Vocabulary.RelatedVocabularyRef;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.Vocabulary.Subject;
 import au.org.ands.vocabs.registry.utils.SlugGenerator;
+import au.org.ands.vocabs.registry.utils.language.ParsedLanguage;
 
 /** Validation of input data provided for vocabulary creation.
  */
@@ -287,41 +288,55 @@ public class CheckVocabularyImpl
         // subject: at least one from ANZSRC-FOR required
         valid = isValidSubjects(valid, newVocabulary, constraintContext);
 
-        // primaryLanguage: required, and must come from the list
+        // primaryLanguage: required, and must be valid BCP 47 tags.
+        // If valid, it is canonicalized.
         String primaryLanguage = newVocabulary.getPrimaryLanguage();
-        valid = ValidationUtils.
-                requireFieldNotEmptyStringAndSatisfiesPredicate(
-                        INTERFACE_NAME, primaryLanguage, "primaryLanguage",
-                        Languages::isValidLanguage, constraintContext, valid);
+        ParsedLanguage parsedLanguage =
+                au.org.ands.vocabs.registry.utils.language.Languages.
+                getParsedLanguage(primaryLanguage);
+        if (parsedLanguage.isValid()) {
+            primaryLanguage = parsedLanguage.getCanonicalForm();
+            newVocabulary.setPrimaryLanguage(primaryLanguage);
+        } else {
+            valid = false;
+            constraintContext.buildConstraintViolationWithTemplate(
+                    "{" + INTERFACE_NAME + ".primaryLanguage}").
+            addPropertyNode("primaryLanguage").
+            addConstraintViolation();
+        }
+
         // We use primaryLanguage below. Be careful, since it may be null.
         // (If it's null, the vocabulary is invalid, but we keep checking
         // anyway. So the following code mustn't _assume_ it's non-null,
         // otherwise we might get a NullPointerException.)
-        // For now, that concern applies to
-        // Languages.isValidLanguageNotPrimary(). It does not require
-        // the primaryLanguage parameter to be non-null.
+        // For now, that concern applies when seeing if any of the other
+        // languages match the primary language.
 
-        // otherLanguages: optional, and must come from the list
-        int olIndex = 0;
-        for (Iterator<String> it = newVocabulary.getOtherLanguage().iterator();
-                it.hasNext(); olIndex++) {
-            String tc = it.next();
-            final int index = olIndex;
-            // See https://hibernate.atlassian.net/browse/BVAL-191
-            // for why we need the otherwise bogus addBeanNode().
-            // Without it, we get, e.g., newVocab[1].topConcept
-            // instead of newVocab.topConcept[1].
-            valid = ValidationUtils.
-                    requireFieldNotEmptyStringAndSatisfiesPredicate(
-                            INTERFACE_NAME,
-                            tc, "otherLanguage",
-                            lang -> Languages.isValidLanguageNotPrimary(
-                                    primaryLanguage, lang),
-                            constraintContext,
-                            cvb -> cvb.addPropertyNode("otherLanguage").
-                                addBeanNode().inIterable().
-                                atIndex(index).addConstraintViolation(),
-                                valid);
+        // otherLanguages: optional, and must be valid BCP 47 tags.
+        // All valid values are canonicalized.
+        List<String> otherLanguages = newVocabulary.getOtherLanguage();
+        // otherLanguages will never be null.
+        for (int olIndex = 0; olIndex < otherLanguages.size(); olIndex++) {
+            parsedLanguage =
+                    au.org.ands.vocabs.registry.utils.language.Languages.
+                    getParsedLanguage(otherLanguages.get(olIndex));
+            String canonicalForm = parsedLanguage.getCanonicalForm();
+            // canonicalForm == null iff the tag is invalid.
+            if (canonicalForm != null
+                    && !canonicalForm.equals(primaryLanguage)) {
+                newVocabulary.getOtherLanguage().set(olIndex, canonicalForm);
+            } else {
+                valid = false;
+                // See https://hibernate.atlassian.net/browse/BVAL-191
+                // for why we need the otherwise bogus addBeanNode().
+                // Without it, we get, e.g., newVocab[1].otherLanguages
+                // instead of newVocab.otherLanguages[1].
+                constraintContext.buildConstraintViolationWithTemplate(
+                        "{" + INTERFACE_NAME + ".otherLanguage}").
+                addPropertyNode("otherLanguage").
+                addBeanNode().inIterable().
+                atIndex(olIndex).addConstraintViolation();
+            }
         }
 
         // Check for duplicates in the list of other languages.

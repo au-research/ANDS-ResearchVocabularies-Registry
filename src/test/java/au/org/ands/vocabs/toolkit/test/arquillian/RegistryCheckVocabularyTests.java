@@ -196,6 +196,119 @@ public class RegistryCheckVocabularyTests extends ArquillianBaseTest {
                 "Set of validation errors does not match");
     }
 
+    /** Tests of the CheckVocabulary validator.
+     * The test data contains multiple validation errors related to
+     * languages.
+     * @throws DatabaseUnitException If a problem with DbUnit.
+     * @throws IOException If a problem getting test data for DbUnit,
+     *          or reading JSON from the correct and test output files.
+     * @throws SQLException If DbUnit has a problem performing
+     *           performing JDBC operations.
+     * @throws JAXBException If there is an error configuring or
+     *      reading XML data.
+     */
+    @Test
+    public final void testCheckVocabulary3() throws
+    DatabaseUnitException, IOException, SQLException, JAXBException {
+        String testName = "testCheckVocabulary3";
+        ArquillianTestUtils.clearDatabase(REGISTRY);
+        ArquillianTestUtils.loadDbUnitTestFile(REGISTRY, CLASS_NAME_PREFIX
+                + testName);
+        Vocabulary newVocabulary;
+
+        InputStream is = ArquillianTestUtils.getResourceAsInputStream(
+                "test/tests/"
+                + CLASS_NAME_PREFIX
+                + testName
+                + "/test-validation-1.xml");
+        JAXBContext jaxbContext = JAXBContext.newInstance(Vocabulary.class);
+        Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
+        newVocabulary = (Vocabulary) jaxbUnmarshaller.unmarshal(is);
+
+        Set<ConstraintViolation<RegistrySchemaValidationHelper>>
+        errors = RegistrySchemaValidationHelper.getNewVocabularyValidation(
+                newVocabulary);
+
+        List<ValidationSummary> actualErrors = new ArrayList<>();
+        for (ConstraintViolation<RegistrySchemaValidationHelper> oneError
+                : errors) {
+//            logger.info("One error: message template: "
+//                + oneError.getMessageTemplate()
+//                + "; propertypath: " + oneError.getPropertyPath());
+            actualErrors.add(new ValidationSummary(
+                    oneError.getMessageTemplate(),
+                    oneError.getPropertyPath().toString()));
+        }
+
+        List<ValidationSummary> expectedErrors = new ArrayList<>();
+        String pathPrefix = "testNewVocabulary.newVocabulary.";
+        expectedErrors.add(new ValidationSummary(
+                "{" + CheckVocabulary.INTERFACE_NAME
+                + ".primaryLanguage}",
+                pathPrefix + "primaryLanguage"));
+        expectedErrors.add(new ValidationSummary(
+                "{" + CheckVocabulary.INTERFACE_NAME
+                + ".otherLanguage}",
+                pathPrefix + "otherLanguage[1]"));
+        expectedErrors.add(new ValidationSummary(
+                "{" + CheckVocabulary.INTERFACE_NAME
+                + ".otherLanguage}",
+                pathPrefix + "otherLanguage[3]"));
+        expectedErrors.add(new ValidationSummary(
+                "{" + CheckVocabulary.INTERFACE_NAME
+                + ".otherLanguage.duplicate}",
+                pathPrefix + "otherLanguage"));
+//        expectedErrors.add(new ValidationSummary(
+//                "{" + CheckVocabulary.INTERFACE_NAME
+//                + "}",
+//                pathPrefix + ""));
+
+        Assert.assertEqualsNoOrder(actualErrors.toArray(),
+                expectedErrors.toArray(),
+                "Set of validation errors does not match");
+
+        is = ArquillianTestUtils.getResourceAsInputStream(
+                "test/tests/"
+                + CLASS_NAME_PREFIX
+                + testName
+                + "/test-validation-2.xml");
+        newVocabulary = (Vocabulary) jaxbUnmarshaller.unmarshal(is);
+
+        errors = RegistrySchemaValidationHelper.getNewVocabularyValidation(
+                newVocabulary);
+
+        actualErrors = new ArrayList<>();
+        for (ConstraintViolation<RegistrySchemaValidationHelper> oneError
+                : errors) {
+//            logger.info("One error: message template: "
+//                + oneError.getMessageTemplate()
+//                + "; propertypath: " + oneError.getPropertyPath());
+            actualErrors.add(new ValidationSummary(
+                    oneError.getMessageTemplate(),
+                    oneError.getPropertyPath().toString()));
+        }
+
+        expectedErrors = new ArrayList<>();
+        expectedErrors.add(new ValidationSummary(
+                "{" + CheckVocabulary.INTERFACE_NAME
+                + ".otherLanguage}",
+                pathPrefix + "otherLanguage[2]"));
+//        expectedErrors.add(new ValidationSummary(
+//                "{" + CheckVocabulary.INTERFACE_NAME
+//                + "}",
+//                pathPrefix + ""));
+
+        Assert.assertEqualsNoOrder(actualErrors.toArray(),
+                expectedErrors.toArray(),
+                "Set of validation errors does not match");
+        // Now check canonicalization of the language tags.
+        Assert.assertEquals(newVocabulary.getPrimaryLanguage(),
+                "en-CA", "Primary language not canonicalized");
+        List<String> otherLanguages = newVocabulary.getOtherLanguage();
+        Assert.assertEquals(otherLanguages.get(1),
+                "fr-FR", "Other language 1 not canonicalized");
+    }
+
 
 
     /** Static nested class to aid comparison between actual and expected
