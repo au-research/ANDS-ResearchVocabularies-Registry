@@ -68,6 +68,8 @@ public class GetVocabulariesBySlug {
      * @param includeRelatedEntitiesAndVocabularies Whether or not to include
      *      full related entity elements, and top-level details of
      *      related vocabularies.
+     * @param includeLanguageList Whether or not to include
+     *      descriptions of the language tags used in the metadata.
      * @return The vocabulary, in either XML or JSON format,
      *      or an error result, if there is no such vocabulary. */
     @Path(ApiPaths.SLUG)
@@ -105,7 +107,13 @@ public class GetVocabulariesBySlug {
             defaultValue = "false")
             @QueryParam("includeRelatedEntitiesAndVocabularies")
             @DefaultValue("false")
-            final boolean includeRelatedEntitiesAndVocabularies) {
+            final boolean includeRelatedEntitiesAndVocabularies,
+            @ApiParam(value = "Whether or not to include descriptions of "
+                    + "the language tags.",
+            defaultValue = "false")
+            @QueryParam("includeLanguageList")
+            @DefaultValue("false")
+            final boolean includeLanguageList) {
         logger.debug("called getVocabularyBySlug: " + slug);
         au.org.ands.vocabs.registry.db.entity.Vocabulary
             dbVocabulary = VocabularyDAO.getCurrentVocabularyBySlug(slug);
@@ -187,6 +195,12 @@ public class GetVocabulariesBySlug {
                             rvr.getId());
                 }
             }
+        }
+
+        // If includeLanguageList, get the full details of the language tags
+        // used in the metadata.
+        if (includeLanguageList) {
+            GetVocabularies.populateLanguageList(outputVocabulary);
         }
 
         Logging.logRequest(true, request, uriInfo, null,

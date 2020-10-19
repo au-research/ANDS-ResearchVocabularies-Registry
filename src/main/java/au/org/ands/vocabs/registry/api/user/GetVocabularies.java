@@ -53,6 +53,8 @@ import au.org.ands.vocabs.registry.log.Logging;
 import au.org.ands.vocabs.registry.model.ModelMethods;
 import au.org.ands.vocabs.registry.model.VocabularyModel;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.AccessPoint;
+import au.org.ands.vocabs.registry.schema.vocabulary201701.LanguageDetails;
+import au.org.ands.vocabs.registry.schema.vocabulary201701.LanguageList;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.RelatedEntity;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.RelatedEntityIdentifier;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.RelatedEntityList;
@@ -65,6 +67,8 @@ import au.org.ands.vocabs.registry.schema.vocabulary201701.Vocabulary;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.Vocabulary.RelatedEntityRef;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.Vocabulary.RelatedVocabularyRef;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.VocabularyList;
+import au.org.ands.vocabs.registry.utils.language.Languages;
+import au.org.ands.vocabs.registry.utils.language.ParsedLanguage;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -128,6 +132,8 @@ public class GetVocabularies {
      * @param includeRelatedEntitiesAndVocabularies Whether or not to include
      *      full related entity elements, and top-level details of
      *      related vocabularies.
+     * @param includeLanguageList Whether or not to include
+     *      descriptions of the language tags used in the metadata.
      * @return The vocabulary, in either XML or JSON format,
      *      or an error result, if there is no such vocabulary. */
     @Path(ApiPaths.VOCABULARY_ID)
@@ -164,12 +170,19 @@ public class GetVocabularies {
             defaultValue = "false")
             @QueryParam("includeRelatedEntitiesAndVocabularies")
             @DefaultValue("false")
-            final boolean includeRelatedEntitiesAndVocabularies) {
+            final boolean includeRelatedEntitiesAndVocabularies,
+            @ApiParam(value = "Whether or not to include descriptions of "
+                    + "the language tags.",
+            defaultValue = "false")
+            @QueryParam("includeLanguageList")
+            @DefaultValue("false")
+            final boolean includeLanguageList) {
         logger.debug("called getVocabularyById: " + vocabularyId);
         Pair<Response, Vocabulary> responseOrVocabulary =
                 getVocabularyByIdHelper(vocabularyId,
                         includeVersions, includeAccessPoints,
-                        includeRelatedEntitiesAndVocabularies);
+                        includeRelatedEntitiesAndVocabularies,
+                        includeLanguageList);
 
         Response response = responseOrVocabulary.getLeft();
         if (response != null) {
@@ -198,7 +211,7 @@ public class GetVocabularies {
      * there is an error.
      * The body of this method used to be the core of {@link
      *   #getVocabularyById(HttpServletRequest, UriInfo, Integer, boolean,
-     *   boolean, boolean)}, but it has now been extracted into a
+     *   boolean, boolean, boolean)}, but it has now been extracted into a
      * separate method,
      * so that it also be used by {@link #getVocabularyByIdEdit(
      *   HttpServletRequest, UriInfo, CommonProfile, Integer)},
@@ -212,6 +225,8 @@ public class GetVocabularies {
      * @param includeRelatedEntitiesAndVocabularies Whether or not to include
      *      full related entity elements, and top-level details of
      *      related vocabularies.
+     * @param includeLanguageList Whether or not to include
+     *      descriptions of the language tags used in the metadata.
      * @return A Pair containing <i>either</i> a Response in the left value
      *      if there was an error fetching the Vocabulary,
      *      or the Vocabulary, in Registry Schema format, in the right value.
@@ -219,7 +234,8 @@ public class GetVocabularies {
     private Pair<Response, Vocabulary> getVocabularyByIdHelper(
             final Integer vocabularyId,
             final boolean includeVersions, final boolean includeAccessPoints,
-            final boolean includeRelatedEntitiesAndVocabularies) {
+            final boolean includeRelatedEntitiesAndVocabularies,
+            final boolean includeLanguageList) {
         au.org.ands.vocabs.registry.db.entity.Vocabulary
             dbVocabulary = VocabularyDAO.getCurrentVocabularyByVocabularyId(
                     vocabularyId);
@@ -300,6 +316,13 @@ public class GetVocabularies {
                 }
             }
         }
+
+        // If includeLanguageList, get the full details of the language tags
+        // used in the metadata.
+        if (includeLanguageList) {
+            populateLanguageList(outputVocabulary);
+        }
+
         return Pair.of(null, outputVocabulary);
     }
 
@@ -366,6 +389,7 @@ public class GetVocabularies {
                 vocabularyAsSchema.getVersion().forEach(
                         v -> v.getAccessPoint().removeIf(
                                 ap -> ap.getSource() == ApSource.SYSTEM));
+                populateLanguageList(vocabularyAsSchema);
             } catch (Exception e) {
                 logger.error("Exception when trying to get draft instance", e);
                 return ResponseUtils.generateInternalServerError(
@@ -403,7 +427,7 @@ public class GetVocabularies {
         // No draft, and the caller is authorized. Defer to
         // getVocabularyByIdHelper().
         Pair<Response, Vocabulary> responseOrVocabulary =
-                getVocabularyByIdHelper(vocabularyId, true, true, true);
+                getVocabularyByIdHelper(vocabularyId, true, true, true, true);
 
         Response response = responseOrVocabulary.getLeft();
         if (response != null) {
@@ -720,6 +744,32 @@ public class GetVocabularies {
                 "Get current vocabularies related to a vocabulary "
                 + "by its ID");
         return outputRVList;
+    }
+
+    /** Populate the language-list element of the vocabulary with
+     * the primary language and the other languages.
+     * @param vocabulary The vocabulary being populated with a
+     *      language-list element.
+     */
+    static void populateLanguageList(final Vocabulary vocabulary) {
+        LanguageList languageList = new LanguageList();
+        List<LanguageDetails> languageDetailsList =
+                languageList.getLanguageDetails();
+        ParsedLanguage parsedLanguage = Languages.getParsedLanguage(
+                vocabulary.getPrimaryLanguage());
+        LanguageDetails languageDetails = new LanguageDetails();
+        languageDetails.setTag(parsedLanguage.getCanonicalForm());
+        languageDetails.setDescription(parsedLanguage.getDescription());
+        languageDetailsList.add(languageDetails);
+
+        for (String otherLanguage : vocabulary.getOtherLanguage()) {
+            parsedLanguage = Languages.getParsedLanguage(otherLanguage);
+            languageDetails = new LanguageDetails();
+            languageDetails.setTag(parsedLanguage.getCanonicalForm());
+            languageDetails.setDescription(parsedLanguage.getDescription());
+            languageDetailsList.add(languageDetails);
+        }
+        vocabulary.setLanguageList(languageList);
     }
 
 }
