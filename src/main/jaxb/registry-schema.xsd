@@ -12,6 +12,8 @@ See https://documentation.ands.org.au/display/DOC/Research+Vocabularies
 
 Change history (most recent changes first)
 
+2020-10-16
+  * Defined the language-list and language-details elements, and added the language-list element to the vocabulary element.
 2019-04-09
   * Added the browse-flag element to the version element.
 2019-03-19
