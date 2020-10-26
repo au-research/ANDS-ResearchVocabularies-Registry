@@ -89,15 +89,19 @@ public class ParseLanguageTag {
     /** Parse several language tags.
      * @param tags Langauge tags, in the format specified in BCP 47.
      * @return The parsing of the language tags.
-     *      The result contains only parsings of the valid tags;
-     *      any invalid language tags are ignored. */
+     *      The response contains a list element for every tag passed into
+     *      the method, but an element is only filled in with the
+     *      tag's canonical form and description if the tag is valid.
+     *      If an element is not filled in, it means the tag is invalid. */
     @Path("parseLanguageTags")
     @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     @GET
     @ApiOperation(value = "Parse several BCP 47 language tags.",
             response = LanguageList.class,
-            notes = "The response contains an entry for every valid tag. "
-                    + "Invalid tags are ignored.")
+            notes = "The response contains a list element for every tag "
+                    + "included in the input. "
+                    + "For each invalid tag, the list element has "
+                    + "no attributes.")
     @ApiResponses(value = {
             @ApiResponse(code = HttpStatus.SC_BAD_REQUEST,
                     message = "Invalid tag list",
@@ -119,13 +123,13 @@ public class ParseLanguageTag {
                 return ErrorResultUtils.badRequest(
                         "Invalid language tag (internal error)");
             }
-            if (!parsedLanguage.isValid()) {
-                // In this method, we ignore invalid tags.
-                continue;
-            }
+            // Always return an entry for a tag ...
             LanguageDetails languageDetails = new LanguageDetails();
-            languageDetails.setTag(parsedLanguage.getCanonicalForm());
-            languageDetails.setDescription(parsedLanguage.getDescription());
+            if (parsedLanguage.isValid()) {
+                // ... but only fill it in, if the tag is valid.
+                languageDetails.setTag(parsedLanguage.getCanonicalForm());
+                languageDetails.setDescription(parsedLanguage.getDescription());
+            }
             languageDetailsList.add(languageDetails);
         }
         return Response.ok().entity(languageList).build();
