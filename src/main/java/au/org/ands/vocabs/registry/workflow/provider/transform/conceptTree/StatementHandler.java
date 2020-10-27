@@ -1465,12 +1465,14 @@ public class StatementHandler extends RDFHandlerBase {
      */
     private void populateOrderedCollectionMembers() {
         populateLists();
-        for (Resource resource : getAllMasterResources()) {
-            if (resource.getType() == ResourceType.ORDERED_COLLECTION) {
+        // By now, collectionMap is complete, and we can use
+        // values() reliably.
+        for (Resource collection : collectionMap.values()) {
+            if (collection.getType() == ResourceType.ORDERED_COLLECTION) {
                 // This has the effect of setting up the inCollections
                 // scaffolding for the member resources.
-                orderedCollectionMembers.put(resource,
-                        getOrderedMembersForCollection(resource));
+                orderedCollectionMembers.put(collection,
+                        getOrderedMembersForCollection(collection));
             }
         }
     }

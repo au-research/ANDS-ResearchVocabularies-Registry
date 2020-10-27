@@ -86,7 +86,7 @@ For anzsrc-for, anzsrc-seo, and gcmd, the label, notation, and iri values must b
                 <xs:element maxOccurs="unbounded" name="other-language" minOccurs="0"
                     type="xs:token">
                     <xs:annotation>
-                        <xs:documentation>The two-letter code for a language other than the primary language, drawn from ISO 639-1. No value of an other-language element may be a duplicate of any other, or of the value of primary-language.</xs:documentation>
+                        <xs:documentation>The two-letter code for a language other than the primary language, drawn from BCP 47. No value of an other-language element may be a duplicate of any other, or of the value of primary-language.</xs:documentation>
                     </xs:annotation>
                 </xs:element>
                 <xs:element maxOccurs="unbounded" minOccurs="0" name="top-concept" type="xs:token">
@@ -188,7 +188,7 @@ For anzsrc-for, anzsrc-seo, and gcmd, the label, notation, and iri values must b
             </xs:attribute>
             <xs:attribute name="primary-language" type="xs:token">
                 <xs:annotation>
-                    <xs:documentation>The two-letter code for the language, drawn from ISO 639-1.</xs:documentation>
+                    <xs:documentation>The two-letter code for the language, drawn from BCP 47.</xs:documentation>
                 </xs:annotation>
             </xs:attribute>
             <xs:attribute name="licence" type="xs:token">
