@@ -3,10 +3,18 @@
     {
       "children": [
         {
+          "children": [
+            {
+              "iri": "http://test/C1",
+              "label": "C1",
+              "orderedCollectionSortOrder": 0,
+              "type": "concept"
+            }
+          ],
           "iri": "http://test/OCcommon",
           "label": "OCcommon",
           "orderedCollectionSortOrder": 0,
-          "type": "ordered_collection_ref"
+          "type": "ordered_collection"
         }
       ],
       "iri": "http://test/OC2",
@@ -29,10 +37,24 @@
     {
       "children": [
         {
+          "children": [
+            {
+              "children": [
+                {
+                  "iri": "http://test/C1",
+                  "label": "C1",
+                  "type": "concept"
+                }
+              ],
+              "iri": "http://test/UCcommon",
+              "label": "UCcommon",
+              "type": "unordered_collection"
+            }
+          ],
           "iri": "http://test/UC1",
           "label": "UC1",
           "orderedCollectionSortOrder": 0,
-          "type": "unordered_collection_ref"
+          "type": "unordered_collection"
         }
       ],
       "iri": "http://test/OC4",
@@ -42,17 +64,10 @@
     {
       "children": [
         {
-          "children": [
-            {
-              "iri": "http://test/UCcommon",
-              "label": "UCcommon",
-              "type": "unordered_collection_ref"
-            }
-          ],
           "iri": "http://test/UC1",
           "label": "UC1",
           "orderedCollectionSortOrder": 0,
-          "type": "unordered_collection"
+          "type": "unordered_collection_ref"
         }
       ],
       "iri": "http://test/OC5",
@@ -74,16 +89,9 @@
     {
       "children": [
         {
-          "children": [
-            {
-              "iri": "http://test/C1",
-              "label": "C1",
-              "type": "concept"
-            }
-          ],
           "iri": "http://test/UCcommon",
           "label": "UCcommon",
-          "type": "unordered_collection"
+          "type": "unordered_collection_ref"
         }
       ],
       "iri": "http://test/UC3",
@@ -95,18 +103,10 @@
         {
           "children": [
             {
-              "children": [
-                {
-                  "iri": "http://test/C1",
-                  "label": "C1",
-                  "orderedCollectionSortOrder": 0,
-                  "type": "concept"
-                }
-              ],
               "iri": "http://test/OCcommon",
               "label": "OCcommon",
               "orderedCollectionSortOrder": 0,
-              "type": "ordered_collection"
+              "type": "ordered_collection_ref"
             }
           ],
           "iri": "http://test/OC1",

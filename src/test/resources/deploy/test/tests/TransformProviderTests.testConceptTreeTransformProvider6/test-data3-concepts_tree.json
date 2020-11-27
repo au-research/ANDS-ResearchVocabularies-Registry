@@ -120,11 +120,19 @@
           "type": "concept"
         },
         {
+          "children": [
+            {
+              "iri": "https://editor.vocabs.ands.org.au/ANDSRWtestforbrowse1/C1.2.1.1.1",
+              "label": "C1.2.1.1.1",
+              "notationSortOrder": 0,
+              "type": "concept"
+            }
+          ],
           "iri": "https://editor.vocabs.ands.org.au/ANDSRWtestforbrowse1/C1.2.1.1",
           "label": "C1.2.1.1",
           "notation": "Z-C",
           "notationSortOrder": 2,
-          "type": "concept_ref"
+          "type": "concept"
         }
       ],
       "iri": "https://editor.vocabs.ands.org.au/ANDSRWtestforbrowse1/TC1.1",
@@ -212,19 +220,11 @@
     {
       "children": [
         {
-          "children": [
-            {
-              "iri": "https://editor.vocabs.ands.org.au/ANDSRWtestforbrowse1/C1.2.1.1.1",
-              "label": "C1.2.1.1.1",
-              "notationSortOrder": 0,
-              "type": "concept"
-            }
-          ],
           "iri": "https://editor.vocabs.ands.org.au/ANDSRWtestforbrowse1/C1.2.1.1",
           "label": "C1.2.1.1",
           "notation": "Z-C",
           "notationSortOrder": 0,
-          "type": "concept"
+          "type": "concept_ref"
         }
       ],
       "iri": "https://editor.vocabs.ands.org.au/ANDSRWtestforbrowse1/TC4.2",
