@@ -260,7 +260,6 @@ public class ParsedLanguage {
         return description;
     }
 
-
     /** Set the language subtag.
      * @param aLanguage The Entry for the language subtag to set.
      */
@@ -323,7 +322,6 @@ public class ParsedLanguage {
     public Entry getRegion() {
         return region;
     }
-
 
     /** Add a variant.
      * @param aVariant The Entry for the variant to add.
