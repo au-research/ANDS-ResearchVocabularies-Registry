@@ -600,14 +600,15 @@ public class StatementHandler extends RDFHandlerBase {
      * relationship and infer its inverse.
      * See section 9.3 of the SKOS Reference.
      * This method does not do type inference or checking.
-     * @param parent The parent Resource.
-     * @param child The child Resource.
+     * @param unorderedCollection The unordered collection Resource.
+     * @param member The member Resource.
      */
-    private void addBroaderMemberForCollection(final Resource parent,
-            final Resource child) {
-        parent.addScaffoldMember(child);
+    private void addMemberForUnorderedCollection(
+            final Resource unorderedCollection,
+            final Resource member) {
+        unorderedCollection.addScaffoldMember(member);
         // This concept will _not_ appear as an "orphan" at the top level.
-        child.addScaffoldInCollections(parent);
+        member.addScaffoldInCollections(unorderedCollection);
     }
 
     /** When a {@code skos:memberList} is encountered, keep track of that
@@ -669,6 +670,7 @@ public class StatementHandler extends RDFHandlerBase {
         }
         switch (requiredType) {
         case CONCEPT:
+            break;
         case ORDERED_COLLECTION:
         case UNORDERED_COLLECTION:
             collectionMap.put(iri, resource);
@@ -803,7 +805,7 @@ public class StatementHandler extends RDFHandlerBase {
                     //   throw new IllegalArgumentException(error);
                     return;
                 }
-                addBroaderMemberForCollection(subjectResource,
+                addMemberForUnorderedCollection(subjectResource,
                         getMasterResource(stObject.stringValue()));
             }
             break;
@@ -1465,12 +1467,14 @@ public class StatementHandler extends RDFHandlerBase {
      */
     private void populateOrderedCollectionMembers() {
         populateLists();
-        for (Resource resource : getAllMasterResources()) {
-            if (resource.getType() == ResourceType.ORDERED_COLLECTION) {
+        // By now, collectionMap is complete, and we can use
+        // collectionMap.values() reliably.
+        for (Resource collection : collectionMap.values()) {
+            if (collection.getType() == ResourceType.ORDERED_COLLECTION) {
                 // This has the effect of setting up the inCollections
                 // scaffolding for the member resources.
-                orderedCollectionMembers.put(resource,
-                        getOrderedMembersForCollection(resource));
+                orderedCollectionMembers.put(collection,
+                        getOrderedMembersForCollection(collection));
             }
         }
     }
