@@ -265,6 +265,12 @@ public final class EntityIndexer {
         for (String otherLanguage : vocabularyData.getOtherLanguages()) {
             languages.add(resolveLanguage(otherLanguage));
         }
+        //   NB: as a function, the resolveLanguage() method is not currently
+        //   one-to-one. (E.g., "en" -> "English", and "en-CA" -> "English".)
+        //   So it is quite possible for the ArrayList languages to contain
+        //   duplicate values. This does not affect subsequent Solr search
+        //   result scores or facet counts, so there's no pressing
+        //   need to remove these duplicates.
         // Use addField() directly, as we know that languages is non-empty.
         document.addField(LANGUAGE, languages);
         // subjects
