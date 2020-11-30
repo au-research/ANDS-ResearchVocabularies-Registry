@@ -39,6 +39,7 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -260,17 +261,20 @@ public final class EntityIndexer {
             addDataToDocument(document, NOTE, Jsoup.parse(note).text());
         }
         // languages
-        ArrayList<String> languages = new ArrayList<>();
+        //   NB: as a function, the resolveLanguage() method is not currently
+        //   one-to-one. (E.g., "en" -> "English", and "en-CA" -> "English".)
+        //   So, if languages were defined as an ArrayList, it would be
+        //   quite possible for it to contain duplicate values.
+        //   This would not affect subsequent Solr search result scores or
+        //   facet counts, so there's no pressing need to remove these
+        //   duplicates.
+        //   Nevertheless, remove duplicates, while otherwise preserving
+        //   the sequence of values, by using a LinkedHashSet.
+        LinkedHashSet<String> languages = new LinkedHashSet<>();
         languages.add(resolveLanguage(vocabularyData.getPrimaryLanguage()));
         for (String otherLanguage : vocabularyData.getOtherLanguages()) {
             languages.add(resolveLanguage(otherLanguage));
         }
-        //   NB: as a function, the resolveLanguage() method is not currently
-        //   one-to-one. (E.g., "en" -> "English", and "en-CA" -> "English".)
-        //   So it is quite possible for the ArrayList languages to contain
-        //   duplicate values. This does not affect subsequent Solr search
-        //   result scores or facet counts, so there's no pressing
-        //   need to remove these duplicates.
         // Use addField() directly, as we know that languages is non-empty.
         document.addField(LANGUAGE, languages);
         // subjects
