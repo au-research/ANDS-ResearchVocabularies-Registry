@@ -32,8 +32,9 @@ class ResourceRef extends ResourceOrRef {
     /** The type of the resource. */
     private ResourceType type;
 
-    /** Constructor with an IRI specified.
-     * @param aResource The Resource, of which this is a reference.
+    /** Constructor to make a proxy for the {@link Resource} specified
+     * as the parameter.
+     * @param aResource The {@link Resource}, of which this is a reference.
      *      Must be non-null.
      * @throws IllegalArgumentException Thrown if {@code aResource == null}.
      */
@@ -51,6 +52,9 @@ class ResourceRef extends ResourceOrRef {
         case CONCEPT_REF:
         case UNORDERED_COLLECTION_REF:
         case ORDERED_COLLECTION_REF:
+            // Because Resource#setType() forbids these ..._REF values, these
+            // cases are unreachable.
+            // But handle them by falling through to this case anyway ...
         case CONCEPT_SCHEME:
             LOGGER.error("Won't make a ResourceRef "
                     + "for a concept scheme or another ResourceRef");

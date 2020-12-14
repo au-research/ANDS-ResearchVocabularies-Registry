@@ -70,6 +70,9 @@ Registry.uploadsPath = ${Registry.storagePath}/uploads
 # The directory in which all SISSVoc spec files will be stored
 SISSVoc.specsPath = ${Registry.storagePath}/specs
 
+# Properties for IANA language subtag registry
+Registry.lsr=${Registry.storagePath}/conf/language-subtag-registry
+
 ## Solr
 
 # Base URL of Solr. Used for CoreAdmin requests, e.g.,

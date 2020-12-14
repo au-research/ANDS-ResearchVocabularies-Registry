@@ -21,7 +21,7 @@
        generated code, apart from the VisibilityModifer violations.
   -->
   <suppress checks="DesignForExtension|FinalParameters|JavadocMethod|JavadocVariable|JavadocStyle|LeftCurly|LineLength"
-            files="au[\\/]org[\\/]ands[\\/]vocabs[\\/]registry[\\/]schema[\\/]vocabulary201701[\\/].*java|au[\\/]org[\\/]ands[\\/]vocabs[\\/]registry[\\/]db[\\/]internal[\\/].*java|au[\\/]org[\\/]ands[\\/]vocabs[\\/]registry[\\/]enums[\\/].*java"
+            files="au[\\/]org[\\/]ands[\\/]vocabs[\\/]registry[\\/]schema[\\/]vocabulary201701[\\/].*java|au[\\/]org[\\/]ands[\\/]vocabs[\\/]registry[\\/]db[\\/]internal[\\/].*java|au[\\/]org[\\/]ands[\\/]vocabs[\\/]registry[\\/]enums[\\/].*java|au[\\/]org[\\/]ands[\\/]vocabs[\\/]registry[\\/]utils[\\/]language[\\/]lsr[\\/].*java"
             />
   <!-- xjc does not generate a package-info.java file for
        au.org.ands.vocabs.registry.enums. We have a manually-created
@@ -30,7 +30,7 @@
        the two packages generated for the Registry database.
   -->
   <suppress checks="JavadocPackage"
-            files="au[\\/]org[\\/]ands[\\/]vocabs[\\/]registry[\\/]enums[\\/].*java|au[\\/]org[\\/]ands[\\/]vocabs[\\/]registry[\\/]db[\\/]dao[\\/].*java|au[\\/]org[\\/]ands[\\/]vocabs[\\/]registry[\\/]db[\\/]entity[\\/].*java"
+            files="au[\\/]org[\\/]ands[\\/]vocabs[\\/]registry[\\/]enums[\\/].*java|au[\\/]org[\\/]ands[\\/]vocabs[\\/]registry[\\/]db[\\/]dao[\\/].*java|au[\\/]org[\\/]ands[\\/]vocabs[\\/]registry[\\/]db[\\/]entity[\\/].*java|au[\\/]org[\\/]ands[\\/]vocabs[\\/]registry[\\/]utils[\\/]language[\\/]lsr[\\/].*java"
             />
 
 </suppressions>

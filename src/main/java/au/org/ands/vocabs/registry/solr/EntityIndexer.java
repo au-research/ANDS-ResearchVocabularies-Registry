@@ -39,6 +39,7 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -61,7 +62,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.ibm.icu.util.ULocale;
 
 import au.org.ands.vocabs.registry.db.context.DBContext;
 import au.org.ands.vocabs.registry.db.converter.JSONSerialization;
@@ -90,6 +90,8 @@ import au.org.ands.vocabs.registry.enums.RelatedEntityRelation;
 import au.org.ands.vocabs.registry.enums.VersionArtefactType;
 import au.org.ands.vocabs.registry.enums.VersionStatus;
 import au.org.ands.vocabs.registry.utils.fileformat.FileFormatUtils;
+import au.org.ands.vocabs.registry.utils.language.Languages;
+import au.org.ands.vocabs.registry.utils.language.ParsedLanguage;
 import au.org.ands.vocabs.registry.workflow.provider.transform.JsonListTransformProvider;
 
 /** Methods to support Solr indexing, including creating a Solr document
@@ -164,12 +166,6 @@ public final class EntityIndexer {
         accessPointName.put(AccessPointType.SISSVOC, "Linked Data API");
         accessPointName.put(AccessPointType.WEB_PAGE, "Online");
     }
-
-    /** Locale for conversion of ISO 639 codes into human-readable
-     * forms used in the indexing process. Currently, we use the "en_NZ"
-     * locale, as this gives the "right answers", i.e., "Māori" for "mi".
-     */
-    private static final ULocale LANGUAGE_LOCALE = new ULocale("en_NZ");
 
     /** Add a key/value pair to the Solr document, if the value
      * is non-null and non-empty. The value is specified as a String.
@@ -265,7 +261,16 @@ public final class EntityIndexer {
             addDataToDocument(document, NOTE, Jsoup.parse(note).text());
         }
         // languages
-        ArrayList<String> languages = new ArrayList<>();
+        //   NB: as a function, the resolveLanguage() method is not currently
+        //   one-to-one. (E.g., "en" -> "English", and "en-CA" -> "English".)
+        //   So, if languages were defined as an ArrayList, it would be
+        //   quite possible for it to contain duplicate values.
+        //   This would not affect subsequent Solr search result scores or
+        //   facet counts, so there's no pressing need to remove these
+        //   duplicates.
+        //   Nevertheless, remove duplicates, while otherwise preserving
+        //   the sequence of values, by using a LinkedHashSet.
+        LinkedHashSet<String> languages = new LinkedHashSet<>();
         languages.add(resolveLanguage(vocabularyData.getPrimaryLanguage()));
         for (String otherLanguage : vocabularyData.getOtherLanguages()) {
             languages.add(resolveLanguage(otherLanguage));
@@ -444,21 +449,21 @@ public final class EntityIndexer {
         document.addField(WIDGETABLE, widgetable);
     }
 
-    /** Resolve a language tag into its full name.
-     * If the result is the same (except for case), we take that to
-     * mean that the language name is unknown, so we return the original
-     * value: this means a tag such as "English" is left alone.
+    /** Resolve a language tag into its brief description.
+     * The tag must be valid according to BCP 47.
      * @param lang The language tag to be resolved.
-     * @return The resolved language name, or lang, if resolution
-     *      fails.
+     * @return The resolved language name. Only the brief description is
+     *      returned. For example, "en-GB" is returned as "English".
      */
     public static String resolveLanguage(final String lang) {
-        ULocale loc = new ULocale(lang);
-        String displayName = loc.getDisplayName(LANGUAGE_LOCALE);
-        if (lang.equalsIgnoreCase(displayName)) {
-            return lang;
+        ParsedLanguage parsedLanguage = Languages.getParsedLanguage(lang);
+        if (parsedLanguage.isValid()) {
+            return parsedLanguage.getBriefDescription();
         } else {
-            return displayName;
+            // Should never happen, if our validation is correct.
+            LOGGER.error("Tried to resolved language that should be valid, "
+                    + "but it wasn't: " + lang);
+            return "";
         }
     }
 

@@ -598,7 +598,7 @@ public class Resource extends ResourceOrRef {
      *  collected during scaffolding. */
     private Set<Resource> scaffoldBroader;
 
-    /** The "children" resources of the resource,
+    /** The "narrower" resources of the resource,
      *  collected during scaffolding. */
     private Set<Resource> scaffoldNarrower;
 

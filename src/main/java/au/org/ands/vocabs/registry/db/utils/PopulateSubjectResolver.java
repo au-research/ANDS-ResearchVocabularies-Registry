@@ -3,10 +3,14 @@
 package au.org.ands.vocabs.registry.db.utils;
 
 import java.lang.invoke.MethodHandles;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.List;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.core.Context;
 
 import org.openrdf.OpenRDFException;
 import org.openrdf.model.Value;
@@ -28,6 +32,7 @@ import au.org.ands.vocabs.registry.db.entity.SubjectResolverSource;
 
 /** Utility class for populating the subject_resolver table based on
  * the contents of the subject_resolver_sources table.
+ * The populate method is accessible only via a loopback interface.
  */
 @Path(AdminApiPaths.API_ADMIN + "/" + AdminApiPaths.DATABASE)
 public class PopulateSubjectResolver {
@@ -50,12 +55,27 @@ public class PopulateSubjectResolver {
 
     /** Populate the subject_resolver table with the subjects extracted
      * from the sources given in the subject_resolver_sources table.
+     * @param request The HTTP request.
      * @return Text indicating success.
      */
     @Path("populateSubjectResolver")
     @GET
-    public String populateSubjectResolver() {
+    public String populateSubjectResolver(
+            @Context final HttpServletRequest request) {
         logger.info("In populateSubjectResolver");
+        // Only allow access from a loopback interface.
+        String remoteAddress = request.getRemoteAddr();
+        InetAddress ipAddress;
+        try {
+            ipAddress = InetAddress.getByName(remoteAddress);
+        } catch (UnknownHostException e) {
+            logger.error("Unable to parse IP address", e);
+            return "Unable to parse caller's IP address";
+        }
+
+        if (!ipAddress.isLoopbackAddress()) {
+            return "Not localhost; forbidden";
+        }
 
         // First, clean out any existing entries.
         SubjectResolverEntryDAO.deleteAllResolverEntries();

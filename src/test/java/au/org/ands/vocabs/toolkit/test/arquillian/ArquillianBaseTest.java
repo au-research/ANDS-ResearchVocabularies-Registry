@@ -194,6 +194,9 @@ public class ArquillianBaseTest extends Arquillian {
                     "roles-h2-mac.properties");
             war.addAsResource(new File("conf/version.properties"),
                     "version.properties");
+            // LSR
+            war.addAsResource(new File("conf/language-subtag-registry"),
+                    "language-subtag-registry");
 
         } catch (IOException e) {
             logger.error("Exception during packaging", e);

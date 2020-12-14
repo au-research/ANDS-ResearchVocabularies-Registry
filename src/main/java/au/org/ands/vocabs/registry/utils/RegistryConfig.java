@@ -55,4 +55,14 @@ public final class RegistryConfig {
     public static final String BACKUP_FILES_PATH =
             Paths.get(ROOT_FILES_PATH).resolve("backup").toString();
 
+    /** Path to the IANA Language Subtag Registry source file. */
+    public static final String LSR_FILE_PATH =
+            RegistryProperties.getProperty(PropertyConstants.REGISTRY_LSR,
+                    "/tmp/vocabs/conf/language-subtag-registry");
+
+    /** Path to the directory containing the processed
+     * Language Subtag Registry files. */
+    public static final String LSR_OUTPUT_FILES_PATH =
+            Paths.get(ROOT_FILES_PATH).resolve("lsr").toString();
+
 }

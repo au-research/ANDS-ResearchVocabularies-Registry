@@ -118,4 +118,8 @@ public final class ApiPaths {
     /** Subpath for resource search. */
     public static final String RESOURCES = "resources";
 
+    /* Utilities API methods. */
+
+    /** Subpath for language lookups. */
+    public static final String LANGUAGES = "languages";
 }

@@ -167,6 +167,16 @@ public class RegistryTests extends ArquillianBaseTest {
         Assert.assertEquals(doc.get("slug").asText(), "rifcs", "slug");
         // And so on, for the rest of the fields.
 
+        // Facets.
+        JsonNode facetCounts = resultsJson.get("facet_counts");
+        JsonNode facetFields = facetCounts.get("facet_fields");
+        // Languages. This is also a test of language tag resolution.
+        JsonNode facetLanguage = facetFields.get("language");
+        Assert.assertEquals(facetLanguage.size(), 2, "language facet size");
+        Assert.assertEquals(facetLanguage.get(0).asText(), "English",
+                "Language facet value");
+        Assert.assertEquals(facetLanguage.get(1).asInt(), 1,
+                "Language facet count");
     }
 
     /** Tests of interpreting the "pp" parameter to the resource search,

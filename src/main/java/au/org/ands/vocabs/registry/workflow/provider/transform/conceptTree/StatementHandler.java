@@ -297,20 +297,14 @@ public class StatementHandler extends RDFHandlerBase {
      * during depth-first search.*/
     private Set<Resource> masterResourcesWhichHaveADeputy = new HashSet<>();
 
-    /** The top-most master Resources of the vocabulary.
+    /** The Resources selected to be the roots of the visualization.
      * If neither {@link #includeConceptSchemes} nor {@link #includeCollections}
      * is true, then a Resource is considered to be "top-most" if it is a
      * SKOS Concept and it does not specify any broader concepts.
      * If either flag is true, then concept schemes and/or collections
      * are also considered to be "top-most". (We also handle
-     * nesting of collections.)
-     * This is based on finding all concepts that do not have a broader concept.
-     * This is used in the first stage of {@link #buildForest()}
-     * to collect the top-most resources. It can be a HashMap
-     * (e.g., rather than a TreeMap), because its contents are iterated
-     * over to produce the Set that is actually returned by
-     * {@link #buildForest()}. */
-    private Set<Resource> topmostResources = new HashSet<>();
+     * nesting of collections.) */
+    private TreeSet<ResourceOrRef> roots = new TreeSet<>();
 
     // Fields and methods to support "deputy" Resources used for
     // each concept scheme.
@@ -601,14 +595,15 @@ public class StatementHandler extends RDFHandlerBase {
      * relationship and infer its inverse.
      * See section 9.3 of the SKOS Reference.
      * This method does not do type inference or checking.
-     * @param parent The parent Resource.
-     * @param child The child Resource.
+     * @param unorderedCollection The unordered collection Resource.
+     * @param member The member Resource.
      */
-    private void addBroaderMemberForCollection(final Resource parent,
-            final Resource child) {
-        parent.addScaffoldMember(child);
+    private void addMemberForUnorderedCollection(
+            final Resource unorderedCollection,
+            final Resource member) {
+        unorderedCollection.addScaffoldMember(member);
         // This concept will _not_ appear as an "orphan" at the top level.
-        child.addScaffoldInCollections(parent);
+        member.addScaffoldInCollections(unorderedCollection);
     }
 
     /** When a {@code skos:memberList} is encountered, keep track of that
@@ -670,6 +665,7 @@ public class StatementHandler extends RDFHandlerBase {
         }
         switch (requiredType) {
         case CONCEPT:
+            break;
         case ORDERED_COLLECTION:
         case UNORDERED_COLLECTION:
             collectionMap.put(iri, resource);
@@ -804,7 +800,7 @@ public class StatementHandler extends RDFHandlerBase {
                     //   throw new IllegalArgumentException(error);
                     return;
                 }
-                addBroaderMemberForCollection(subjectResource,
+                addMemberForUnorderedCollection(subjectResource,
                         getMasterResource(stObject.stringValue()));
             }
             break;
@@ -981,30 +977,26 @@ public class StatementHandler extends RDFHandlerBase {
         // types assigned.
         freezeResources();
 
-        // This is a rearranged version of the values of iriMasterResourceMap,
-        // with the resources arranged in a forest structure based on
-        // the broader/narrower and collection membership relations.
-        // More technically: the elements of roots are the roots
-        // of a depth-first spanning forest.
-        // Depending on the use of concept schemes, collections, and
-        // polyhierarchies, some nodes in the forest will be deputies; some will
-        // be ResourceRefs.
-        TreeSet<ResourceOrRef> roots = new TreeSet<>();
         populateRoots();
-        for (Resource topmostResource : topmostResources) {
-            roots.add(topmostResource);
+        for (ResourceOrRef rootResourceOrRef : roots) {
             // If we ever add the inserted flag, do this here:
-            //     topmostResource.setInsertedIntoTree(true);
-            switch (topmostResource.getType()) {
+            //     root.setInsertedIntoTree(true);
+
+            // Now, notice that roots is only ever added to
+            // using the method addRoot(Resource). So we know
+            // that rootResourceOrRef must be a Resource.
+            Resource root = (Resource) rootResourceOrRef;
+
+            switch (root.getType()) {
             case CONCEPT:
-                depthFirstSearchConcept(topmostResource, true);
+                depthFirstSearchConcept(root, true);
                 break;
             case CONCEPT_SCHEME:
-                depthFirstSearchConceptScheme(topmostResource);
+                depthFirstSearchConceptScheme(root);
                 break;
             case ORDERED_COLLECTION:
             case UNORDERED_COLLECTION:
-                depthFirstSearchCollection(topmostResource);
+                depthFirstSearchCollection(root);
                 break;
             case CONCEPT_REF:
             case UNORDERED_COLLECTION_REF:
@@ -1015,7 +1007,7 @@ public class StatementHandler extends RDFHandlerBase {
                         + "broken resource type");
             default:
                 logger.error("Defect: missing case in switch: "
-                        + topmostResource.getType());
+                        + root.getType());
                 throw new IllegalArgumentException("buildForest: "
                         + "missing case in switch");
             }
@@ -1067,7 +1059,7 @@ public class StatementHandler extends RDFHandlerBase {
                 // remove any existing orderedCollectionSortOrder before
                 // adding newRoot to the TreeSet.
                 newRoot.setOrderedCollectionSortOrder(null);
-                roots.add(newRoot);
+                addRoot(newRoot);
                 // We have a principle of recording an error message
                 // as soon as we discover each error in the data.
                 // So we "should" add an error here. But newRoot may
@@ -1466,12 +1458,14 @@ public class StatementHandler extends RDFHandlerBase {
      */
     private void populateOrderedCollectionMembers() {
         populateLists();
-        for (Resource resource : getAllMasterResources()) {
-            if (resource.getType() == ResourceType.ORDERED_COLLECTION) {
+        // By now, collectionMap is complete, and we can use
+        // collectionMap.values() reliably.
+        for (Resource collection : collectionMap.values()) {
+            if (collection.getType() == ResourceType.ORDERED_COLLECTION) {
                 // This has the effect of setting up the inCollections
                 // scaffolding for the member resources.
-                orderedCollectionMembers.put(resource,
-                        getOrderedMembersForCollection(resource));
+                orderedCollectionMembers.put(collection,
+                        getOrderedMembersForCollection(collection));
             }
         }
     }
@@ -1514,7 +1508,7 @@ public class StatementHandler extends RDFHandlerBase {
                     // type check; we know that resource must be a concept.)
                     if (resource.getScaffoldBroader() == null) {
                         // A concept with nothing broader.
-                        addTopmostResource(resource);
+                        addRoot(resource);
                     }
                 } else if (includeConceptSchemes && !includeCollections) {
                     // resource is either a concept scheme or a concept.
@@ -1524,7 +1518,7 @@ public class StatementHandler extends RDFHandlerBase {
                             && resource.getScaffoldInConceptSchemes() == null
                             && !conceptHasBroaderResourceNotInAnyConceptScheme(
                                     resource))) {
-                        addTopmostResource(resource);
+                        addRoot(resource);
                     }
                 } else if (!includeConceptSchemes && includeCollections) {
                     // resource is either a collection or a concept.
@@ -1548,7 +1542,7 @@ public class StatementHandler extends RDFHandlerBase {
                                 && resource.getScaffoldInCollections() == null)
                                     )
                             )) {
-                        addTopmostResource(resource);
+                        addRoot(resource);
                     }
                 } else if (includeConceptSchemes && includeCollections) {
                     // resource is either a concept scheme, a collection,
@@ -1586,21 +1580,21 @@ public class StatementHandler extends RDFHandlerBase {
                               )
                             )
                             )) {
-                        addTopmostResource(resource);
+                        addRoot(resource);
                     }
                 }
             }
         }
     }
 
-    /** Add a Resource as a topmost resource. It will appear at the
+    /** Add a Resource as a root. It will appear at the
      * top level of the visualization.
      * @param resource The resource to be added at the top level.
      */
-    public void addTopmostResource(final Resource resource) {
+    public void addRoot(final Resource resource) {
         // Uncomment as needed for debugging.
-//        logger.debug("Adding to topmost resources: " + resource.getIri());
-        topmostResources.add(resource);
+//        logger.debug("Adding to roots: " + resource.getIri());
+        roots.add(resource);
     }
 
     /** Test if a concept Resource has a "broader" resource

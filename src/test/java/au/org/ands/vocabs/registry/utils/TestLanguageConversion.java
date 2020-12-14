@@ -6,9 +6,12 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import au.org.ands.vocabs.registry.solr.EntityIndexer;
+import au.org.ands.vocabs.registry.test.LanguageSubtagRegistryTests;
 
-/** Unit tests of the conversion between ISO 639 and human-readable
- * forms of language names. */
+/** Unit tests of the indexing of language names.
+ * For more tests of language resolution, see
+ * {@link LanguageSubtagRegistryTests}.
+ */
 public class TestLanguageConversion {
 
     /** Run tests of the language conversion. */
@@ -27,20 +30,32 @@ public class TestLanguageConversion {
         Assert.assertEquals(EntityIndexer.resolveLanguage("ru"), "Russian");
         Assert.assertEquals(EntityIndexer.resolveLanguage("zh"), "Chinese");
 
-        // Check resolution of language variants. Not yet _officially_
-        // supported!
+        // Check resolution of language variants.
+        // For now, indexing is done on the brief description,
+        // not the full description.
+//        Assert.assertEquals(EntityIndexer.resolveLanguage("en-CA"),
+//                "English (Canada)");
+//        Assert.assertEquals(EntityIndexer.resolveLanguage("en-MT"),
+//                "English (Malta)");
+//        Assert.assertEquals(EntityIndexer.resolveLanguage("es-UY"),
+//                "Spanish (Uruguay)");
         Assert.assertEquals(EntityIndexer.resolveLanguage("en-CA"),
-                "English (Canada)");
+                "English");
         Assert.assertEquals(EntityIndexer.resolveLanguage("en-MT"),
-                "English (Malta)");
+                "English");
         Assert.assertEquals(EntityIndexer.resolveLanguage("es-UY"),
-                "Spanish (Uruguay)");
+                "Spanish");
 
         // Check resolution of values that aren't valid language tags.
+        // These used to be accepted as-is, but are no longer.
+//        Assert.assertEquals(EntityIndexer.resolveLanguage("English"),
+//                "English");
+//        Assert.assertEquals(EntityIndexer.resolveLanguage("Turkish"),
+//                "Turkish");
         Assert.assertEquals(EntityIndexer.resolveLanguage("English"),
-                "English");
+                "");
         Assert.assertEquals(EntityIndexer.resolveLanguage("Turkish"),
-                "Turkish");
+                "");
 
         //        loc = new ULocale("");
 //        Assert.assertEquals(EntityIndexer.resolveLanguage(),

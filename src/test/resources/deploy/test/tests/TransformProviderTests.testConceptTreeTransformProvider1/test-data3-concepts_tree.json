@@ -15,7 +15,7 @@
               "iri": "http://test/uri1/narrower1/narrower1",
               "label": "Label 1.1.1",
               "notation": "1.1.1",
-              "type": "concept_ref"
+              "type": "concept"
             }
           ],
           "notation": "1.1",
@@ -35,7 +35,7 @@
           "iri": "http://test/uri1/narrower1/narrower1",
           "label": "Label 1.1.1",
           "notation": "1.1.1",
-          "type": "concept"
+          "type": "concept_ref"
         }
       ],
       "type": "concept"
