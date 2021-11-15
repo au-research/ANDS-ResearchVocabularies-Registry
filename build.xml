@@ -38,7 +38,7 @@
 
   <!-- mapstruct -->
   <property name="mapstruct-processor"
-        value="libdev/mapstruct-1.1.0/mapstruct-processor-1.1.0.Final.jar" />
+        value="libdev/mapstruct-1.4.2/mapstruct-processor-1.4.2.Final.jar" />
   <property name="mapstruct-sources" value="src/mapstruct/java" />
 
   <!-- JAR files that contain a JPA persistence unit. -->
