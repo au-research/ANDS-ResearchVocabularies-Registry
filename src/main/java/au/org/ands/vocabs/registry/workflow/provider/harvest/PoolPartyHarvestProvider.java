@@ -280,6 +280,7 @@ public class PoolPartyHarvestProvider implements WorkflowProvider {
         // If not only fetching metadata, get deprecated concepts.
         if (!getMetadata) {
             if (!fetchDataUsingQuery(outputDirPath,
+                    poolPartyServer,
                     poolPartyProjects[projectIndex],
                     GET_DEPRECATED_CONCEPTS_TEMPLATE,
                     "deprecated" + RDFUtils.FORMAT_TO_FILEEXT_MAP.get(
@@ -292,6 +293,7 @@ public class PoolPartyHarvestProvider implements WorkflowProvider {
         }
         // Get data from users graph.
         if (!fetchDataUsingQuery(outputDirPath,
+                poolPartyServer,
                 poolPartyProjects[projectIndex],
                 GET_USER_FULLNAMES_TEMPLATE,
                 GetMetadataTransformProvider.USERS_GRAPH_FILE,
@@ -306,7 +308,9 @@ public class PoolPartyHarvestProvider implements WorkflowProvider {
 
     /** Fetch data from a PoolParty project using a SPARQL query,
      * and save the results to a file.
+     * Sorry that this method has too many parameters.
      * @param outputDirPath The Path to the output directory to use.
+     * @param poolPartyServer The PoolParty server; must be non-null.
      * @param poolPartyProject The PoolParty project to run the query
      *      against.
      * @param queryTemplate The template of the SPARQL query to run.
@@ -317,28 +321,31 @@ public class PoolPartyHarvestProvider implements WorkflowProvider {
      * @param subtask The specification of this harvest subtask.
      * @return True, iff the fetch succeeded.
      */
+    @SuppressWarnings("checkstyle:ParameterNumber")
     private boolean fetchDataUsingQuery(final Path outputDirPath,
+            final PoolPartyServer poolPartyServer,
             final PoolPartyProject poolPartyProject,
             final String queryTemplate,
             final String outputFile,
             final String outputFileMimeType,
             final TaskInfo taskInfo,
             final Subtask subtask) {
-        String usersGraphContents = PoolPartyUtils.runQuery(
+        String queryResults = PoolPartyUtils.runQuery(
+                poolPartyServer,
                 poolPartyProject,
                 queryTemplate,
                 outputFileMimeType);
-        File usersGraphFile = new File(outputDirPath.
+        File queryResultsFile = new File(outputDirPath.
                 resolve(outputFile).
                 toString());
         try {
             logger.info("fetchDataUsingQuery: "
-                    + usersGraphFile.getAbsolutePath());
-            FileUtils.writeStringToFile(usersGraphFile, usersGraphContents,
+                    + queryResultsFile.getAbsolutePath());
+            FileUtils.writeStringToFile(queryResultsFile, queryResults,
                     StandardCharsets.UTF_8);
             if (taskInfo != null) {
                 VersionArtefactUtils.createPoolpartyHarvestVersionArtefact(
-                        taskInfo, usersGraphFile.getAbsolutePath());
+                        taskInfo, queryResultsFile.getAbsolutePath());
             }
             return true;
         } catch (IOException e) {

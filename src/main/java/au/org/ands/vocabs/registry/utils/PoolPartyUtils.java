@@ -24,8 +24,6 @@ import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
 import au.org.ands.vocabs.editor.admin.model.PoolPartyProject;
 import au.org.ands.vocabs.registry.db.dao.PoolPartyServerDAO;
 import au.org.ands.vocabs.registry.db.entity.PoolPartyServer;
-import au.org.ands.vocabs.toolkit.utils.PropertyConstants;
-import au.org.ands.vocabs.toolkit.utils.ToolkitProperties;
 
 /** Utility methods for working with PoolParty. */
 public final class PoolPartyUtils {
@@ -158,6 +156,7 @@ public final class PoolPartyUtils {
     }
 
     /** Run a SPARQL query against a project.
+     * @param poolPartyServer The PoolParty server; must be non-null.
      * @param poolPartyProject The PoolParty project.
      * @param query The template of the SPARQL query to run. It may use
      *      template parameters {@code #THESAURUS...#} and
@@ -169,15 +168,13 @@ public final class PoolPartyUtils {
      *      query.
      * @return The results of running the query. */
     public static String runQuery(
+            final PoolPartyServer poolPartyServer,
             final PoolPartyProject poolPartyProject,
             final String query,
             final String format) {
-        String remoteUrl = ToolkitProperties.getProperty(
-                PropertyConstants.POOLPARTY_REMOTEURL);
-        String username = ToolkitProperties.getProperty(
-                PropertyConstants.POOLPARTY_USERNAME);
-        String password = ToolkitProperties.getProperty(
-                PropertyConstants.POOLPARTY_PASSWORD);
+        String remoteUrl = poolPartyServer.getApiUrl();
+        String username = poolPartyServer.getUsername();
+        String password = poolPartyServer.getPassword();
 
         Client client = ClientBuilder.newClient();
 

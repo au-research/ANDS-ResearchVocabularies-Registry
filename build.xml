@@ -979,15 +979,6 @@
         <filter
           token="bambooBuildWorkingDirectory"
           value="${user.dir}" />
-        <filter
-          token="bambooPoolPartyHarvesterRemoteUrl"
-          value="http://pp.url/" />
-        <filter
-          token="bambooPoolPartyHarvesterUsername"
-          value="username-splat" />
-        <filter
-          token="bambooPoolPartyHarvesterPassword"
-          value="password-splat" />
       </filterset>
     </copy>
     <copy
@@ -1174,16 +1165,10 @@
       To test locally on the command line:
       ant \
       -DbambooBuildWorkingDirectory=$(pwd) \
-      -DbambooPoolPartyHarvesterRemoteUrl=http://pp.url/ \
-      -DbambooPoolPartyHarvesterUsername=username-splat \
-      -DbambooPoolPartyHarvesterPassword=password-splat \
       testng-bamboo
       To test within Bamboo:
       ant \
       -DbambooBuildWorkingDirectory=${bamboo.build.working.directory} \
-      -DbambooPoolPartyHarvesterRemoteUrl=http://pp.url/ \
-      -DbambooPoolPartyHarvesterUsername=username-splat \
-      -DbambooPoolPartyHarvesterPassword=password-splat \
       testng-bamboo
   -->
   <target name="testng-bamboo"
@@ -1195,15 +1180,6 @@
         <filter
           token="bambooBuildWorkingDirectory"
           value="${bambooBuildWorkingDirectory}" />
-        <filter
-          token="bambooPoolPartyHarvesterRemoteUrl"
-          value="${bambooPoolPartyHarvesterRemoteUrl}" />
-        <filter
-          token="bambooPoolPartyHarvesterUsername"
-          value="${bambooPoolPartyHarvesterUsername}" />
-        <filter
-          token="bambooPoolPartyHarvesterPassword"
-          value="${bambooPoolPartyHarvesterPassword}" />
       </filterset>
     </copy>
     <copy
