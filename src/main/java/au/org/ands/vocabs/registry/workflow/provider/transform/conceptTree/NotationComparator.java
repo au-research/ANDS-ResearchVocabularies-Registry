@@ -112,7 +112,7 @@ implements Comparator<Pair<ResourceOrRef, Integer>> {
         return ne;
     }
 
-    /* {@inheritDoc} */
+    /** {@inheritDoc} */
     @Override
     public int compare(final Pair<ResourceOrRef, Integer> o1,
             final Pair<ResourceOrRef, Integer> o2) {

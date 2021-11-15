@@ -11,7 +11,7 @@ import java.util.Comparator;
 public class PrecomputedNotationComparator
 implements Comparator<ResourceOrRef> {
 
-    /* {@inheritDoc} */
+    /** {@inheritDoc} */
     @Override
     public int compare(final ResourceOrRef o1, final ResourceOrRef o2) {
         return o1.getNotationSortOrder() - o2.getNotationSortOrder();

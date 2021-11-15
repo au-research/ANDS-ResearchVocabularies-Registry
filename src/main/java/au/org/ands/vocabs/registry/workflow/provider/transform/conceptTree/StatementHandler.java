@@ -1,4 +1,4 @@
-// CHECKSTYLE_FILE:OFF: FileLength
+// CHECKSTYLE:OFF: FileLength
 /** See the file "LICENSE" for the full license governing this code. */
 
 package au.org.ands.vocabs.registry.workflow.provider.transform.conceptTree;

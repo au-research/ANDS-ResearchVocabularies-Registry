@@ -1,4 +1,4 @@
-// CHECKSTYLE_FILE:OFF: FileLength
+// CHECKSTYLE:OFF: FileLength
 // This class is too long. But how to make it shorter?
 /** See the file "LICENSE" for the full license governing this code. */
 
