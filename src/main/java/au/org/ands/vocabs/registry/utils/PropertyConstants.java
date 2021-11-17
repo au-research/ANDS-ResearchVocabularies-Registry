@@ -72,6 +72,19 @@ public final class PropertyConstants {
     public static final String REGISTRY_LOGGING_GEOIPDB =
             "Registry.logging.GeoIPDb";
 
+    /* Timeouts for network connections to external services.
+     * For now, that means to PoolParty. */
+
+    /** Timeout to use for connecting to an external service,
+     * in milliseconds. */
+    public static final String REGISTRY_NETWORK_TIMEOUT_CONNECT =
+            "Registry.network.timeout.connect";
+
+    /** Timeout to use for reads from an external service,
+     * in milliseconds. */
+    public static final String REGISTRY_NETWORK_TIMEOUT_READ =
+            "Registry.network.timeout.read";
+
     /* Solr. */
 
     /** Solr base URL. Used for CoreAdmin requests, e.g.,

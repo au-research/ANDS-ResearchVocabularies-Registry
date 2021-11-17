@@ -47,6 +47,13 @@ Registry.swagger.defaultScheme=http
 Registry.swagger.host=localhost:8080
 Registry.swagger.basePath=/vocabs-registry
 
+# Timeouts for network connections to external services.
+# (For now, that means to PoolParty.)
+# Timeout to use for connecting to an external service, in milliseconds.
+Registry.network.timeout.connect=60000
+# Timeout to use for reads from an external service, in milliseconds.
+Registry.network.timeout.read=60000
+
 # Properties for logging
 
 # Location of a copy of the MaxMind GeoLite2 Free database.

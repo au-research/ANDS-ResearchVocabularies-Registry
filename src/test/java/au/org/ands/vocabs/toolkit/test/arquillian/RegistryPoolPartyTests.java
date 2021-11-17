@@ -8,7 +8,9 @@ import static au.org.ands.vocabs.toolkit.test.utils.DatabaseSelector.ROLES;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.net.URL;
+import java.nio.file.Path;
 import java.sql.SQLException;
+import java.util.HashMap;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -23,6 +25,8 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import au.org.ands.vocabs.registry.api.context.ApiPaths;
+import au.org.ands.vocabs.registry.workflow.provider.backup.PoolPartyBackupProvider;
+import au.org.ands.vocabs.registry.workflow.tasks.TaskRunner;
 import au.org.ands.vocabs.toolkit.test.utils.NetClientUtils;
 
 /** Tests of the Registry API methods that get data from PoolParty,
@@ -129,6 +133,42 @@ public class RegistryPoolPartyTests extends ArquillianBaseTest {
                 response.close();
             }
         }
+    }
+
+    /** Test of doing a backup of a PoolParty project, where reading from the
+     * PoolParty server times out.
+     * @throws DatabaseUnitException If a problem with DbUnit.
+     * @throws IOException If a problem getting test data for DbUnit,
+     *          or reading JSON from the correct and test output files.
+     * @throws SQLException If DbUnit has a problem performing
+     *           performing JDBC operations.
+     *  */
+    @Test
+    public final void testPoolPartyBackupTimeout1() throws
+    DatabaseUnitException, IOException, SQLException {
+        String testName = CLASS_NAME_PREFIX
+                + "testPoolPartyBackupTimeout1";
+        ArquillianTestUtils.clearDatabase(ROLES);
+        ArquillianTestUtils.clearDatabase(REGISTRY);
+        ArquillianTestUtils.loadDbUnitTestFile(REGISTRY, testName);
+
+        PoolPartyBackupProvider ppbp = new PoolPartyBackupProvider();
+        // Provide a usable temporary path. (But if the test works correctly,
+        // the directory won't be used.)
+        Path outputPath = ArquillianTestUtils.getTempPathForTest(testName);
+        HashMap<String, String> backupResponse = ppbp.getBackupFiles(
+                "readTimeout", outputPath.toString());
+
+        // The message "Read timed out" is a string literal that is
+        // hard-coded in the JDK 8 source files
+        //   jdk/src/solaris/native/java/net/SocketInputStream.c
+        //   jdk/src/windows/native/java/net/SocketInputStream.c
+        // in function Java_java_net_SocketInputStream_socketRead0().
+        // (In later releases of the JDK, the files may have been moved
+        // to different directories.)
+        Assert.assertEquals(backupResponse.get(TaskRunner.ERROR),
+                PoolPartyBackupProvider.ERROR_READING_FROM_POOLPARTY
+                + "Read timed out");
     }
 
 }

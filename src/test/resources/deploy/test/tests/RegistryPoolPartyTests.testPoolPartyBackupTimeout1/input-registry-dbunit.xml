@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE dataset SYSTEM "../../dbunit-registry-export-choice.dtd" >
+<dataset>
+
+  <POOLPARTY_SERVERS ID="1" API_URL="http://localhost:{MOCKSERVERPORT}/PoolParty/" USERNAME="ppuser" PASSWORD="pppass" />
+
+</dataset>
