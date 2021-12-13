@@ -1,0 +1,23 @@
+{
+  "request" : {
+    "urlPath" : "/PoolParty/api/7.0/projects/readTimeout/export",
+    "method" : "GET",
+    "headers" : {
+      "Accept" : {
+        "equalTo" : "application/xml"
+      }
+    },
+    "basicAuthCredentials" : {
+      "username" : "ppuser",
+      "password" : "pppass"
+    }
+  },
+  "response" : {
+    "status" : 200,
+    "fixedDelayMilliseconds": 5000,
+    "body" : "Hello, but this response should not be read.",
+    "headers" : {
+      "Content-Type" : "application/json;charset=UTF-8"
+    }
+  }
+}

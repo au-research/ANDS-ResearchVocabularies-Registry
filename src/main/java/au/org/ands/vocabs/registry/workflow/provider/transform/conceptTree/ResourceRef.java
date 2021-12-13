@@ -91,7 +91,7 @@ class ResourceRef extends ResourceOrRef {
         return resource.getUrl();
     }
 
-    /* {@inheritDoc} */
+    /** {@inheritDoc} */
     @Override
     public ResourceType getType() {
         return type;

@@ -95,6 +95,11 @@ public class PoolPartyBackupProvider {
         return pList;
     }
 
+    /** Error message returned if there is an error reading backup
+     * data from PoolParty. */
+    public static final String ERROR_READING_FROM_POOLPARTY =
+            "getBackupFiles got an error reading from PoolParty: ";
+
     /** Do a backup of one PoolParty project. Return a list with the result
      * of the backup.
      * @param ppProjectId The PoolParty project id.
@@ -162,7 +167,32 @@ public class PoolPartyBackupProvider {
         Invocation.Builder invocationBuilder =
                 thisTarget.request(MediaType.APPLICATION_XML);
 
-        Response response = invocationBuilder.get();
+        // Override the timeout values for this request.
+        RegistryNetUtils.setTimeouts(invocationBuilder);
+
+        Response response;
+        try {
+            response = invocationBuilder.get();
+        } catch (Exception e) {
+            // Can't catch SocketTimeoutException directly, but only
+            // the encapsulating ProcessingException. In that case,
+            // e.getCause() is the SocketTimeoutException.
+            logger.error("Exception fetching data from PoolParty: ", e);
+            String message;
+            Throwable cause = e.getCause();
+            if (cause != null) {
+                message = cause.getMessage();
+            } else {
+                message = e.getMessage();
+            }
+            logger.error(ERROR_READING_FROM_POOLPARTY
+                    + message);
+            // This is an abuse of the task status codes, because
+            // it is not a task.
+            result.put(TaskRunner.ERROR, ERROR_READING_FROM_POOLPARTY
+                    + message);
+            return result;
+        }
 
         if (response.getStatus()
                 < Response.Status.BAD_REQUEST.getStatusCode()) {

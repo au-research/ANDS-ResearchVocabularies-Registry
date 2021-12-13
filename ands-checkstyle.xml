@@ -11,9 +11,7 @@
 <module name="Checker">
   <property name="severity" value="warning"/>
   <module name="TreeWalker">
-    <module name="JavadocMethod">
-      <property name="suppressLoadErrors" value="true"/>
-    </module>
+    <module name="JavadocMethod"/>
     <module name="JavadocType"/>
     <module name="JavadocVariable"/>
     <module name="JavadocStyle">
@@ -32,12 +30,6 @@
     <module name="IllegalImport"/>
     <module name="RedundantImport"/>
     <module name="UnusedImports"/>
-    <module name="LineLength">
-      <!-- Ignore lines of Javadoc comments that can't be split,
-           and Eclipse-generated imports. -->
-      <property name="ignorePattern"
-                value="^ *\* *[^ ]+$|^import [^ ]+;$"/>
-    </module>
     <module name="MethodLength"/>
     <module name="ParameterNumber"/>
     <module name="EmptyForIteratorPad"/>
@@ -84,11 +76,6 @@
          SuppressWithPlainTextCommentFilter
          below.
     -->
-    <module name="SuppressionCommentFilter">
-      <property name="offCommentFormat" value="CHECKSTYLE\:OFF\: ([\w\|]+)"/>
-      <property name="onCommentFormat" value="CHECKSTYLE\:ON\: ([\w\|]+)"/>
-      <property name="checkFormat" value="$1"/>
-    </module>
   </module>
   <module name="JavadocPackage"/>
   <module name="NewlineAtEndOfFile"/>
@@ -105,15 +92,20 @@
   <module name="SuppressWarningsFilter"/>
   <!-- SuppressWithPlainTextCommentFilter needed to suppress
        checks that examine the whole file, e.g., FileLength.
-       NB: it "seems" to work to specify the same comment format
-       as used for SuppressionCommentFilter (i.e., CHECKSTYLE:OFF:
-       and CHECKSTYLE:ON:). But, we make it different "just in case".
   -->
   <module name="SuppressWithPlainTextCommentFilter">
     <property name="offCommentFormat"
-              value="CHECKSTYLE_FILE\:OFF\: ([\w\|]+)"/>
+              value="CHECKSTYLE\:OFF\: ([\w\|]+)"/>
     <property name="onCommentFormat"
-              value="CHECKSTYLE_FILE\:ON\: ([\w\|]+)"/>
+              value="CHECKSTYLE\:ON\: ([\w\|]+)"/>
     <property name="checkFormat" value="$1"/>
   </module>
+  <!-- Since CS 8.24, LineLength must be a child of Checker. -->
+  <module name="LineLength">
+    <!-- Ignore lines of Javadoc comments that can't be split,
+         and Eclipse-generated imports. -->
+    <property name="ignorePattern"
+              value="^ *\* *[^ ]+$|^import [^ ]+;$"/>
+  </module>
+
 </module>

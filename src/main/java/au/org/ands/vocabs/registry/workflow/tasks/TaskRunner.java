@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import au.org.ands.vocabs.registry.db.context.TemporalUtils;
+import au.org.ands.vocabs.registry.db.converter.JSONSerialization;
 import au.org.ands.vocabs.registry.enums.TaskStatus;
 import au.org.ands.vocabs.registry.workflow.provider.ProviderUtils;
 import au.org.ands.vocabs.registry.workflow.provider.WorkflowProvider;
@@ -73,7 +74,8 @@ public class TaskRunner {
         boolean partial = false;
         TaskStatus lastSubtaskStatus;
         for (Subtask subtask : subtasks) {
-            logger.debug("Got subtask: " + subtask.toString());
+            logger.debug("Got subtask: "
+                    + JSONSerialization.serializeObjectAsJsonString(subtask));
             logger.debug("subtask type: " + subtask.getSubtaskProviderType());
             WorkflowProvider provider = ProviderUtils.getProvider(
                     subtask.getProviderClass());

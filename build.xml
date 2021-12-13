@@ -38,7 +38,7 @@
 
   <!-- mapstruct -->
   <property name="mapstruct-processor"
-        value="libdev/mapstruct-1.1.0/mapstruct-processor-1.1.0.Final.jar" />
+        value="libdev/mapstruct-1.4.2/mapstruct-processor-1.4.2.Final.jar" />
   <property name="mapstruct-sources" value="src/mapstruct/java" />
 
   <!-- JAR files that contain a JPA persistence unit. -->
@@ -66,7 +66,7 @@
 
   <taskdef
     resource="com/puppycrawl/tools/checkstyle/ant/checkstyle-ant-task.properties"
-    classpath="libdev/checkstyle-8.10/checkstyle-8.10-all.jar" />
+    classpath="libdev/checkstyle-9.1/checkstyle-9.1-all.jar" />
 
   <taskdef
       name="forbiddenapis"
@@ -979,15 +979,6 @@
         <filter
           token="bambooBuildWorkingDirectory"
           value="${user.dir}" />
-        <filter
-          token="bambooPoolPartyHarvesterRemoteUrl"
-          value="http://pp.url/" />
-        <filter
-          token="bambooPoolPartyHarvesterUsername"
-          value="username-splat" />
-        <filter
-          token="bambooPoolPartyHarvesterPassword"
-          value="password-splat" />
       </filterset>
     </copy>
     <copy
@@ -1174,16 +1165,10 @@
       To test locally on the command line:
       ant \
       -DbambooBuildWorkingDirectory=$(pwd) \
-      -DbambooPoolPartyHarvesterRemoteUrl=http://pp.url/ \
-      -DbambooPoolPartyHarvesterUsername=username-splat \
-      -DbambooPoolPartyHarvesterPassword=password-splat \
       testng-bamboo
       To test within Bamboo:
       ant \
       -DbambooBuildWorkingDirectory=${bamboo.build.working.directory} \
-      -DbambooPoolPartyHarvesterRemoteUrl=http://pp.url/ \
-      -DbambooPoolPartyHarvesterUsername=username-splat \
-      -DbambooPoolPartyHarvesterPassword=password-splat \
       testng-bamboo
   -->
   <target name="testng-bamboo"
@@ -1195,15 +1180,6 @@
         <filter
           token="bambooBuildWorkingDirectory"
           value="${bambooBuildWorkingDirectory}" />
-        <filter
-          token="bambooPoolPartyHarvesterRemoteUrl"
-          value="${bambooPoolPartyHarvesterRemoteUrl}" />
-        <filter
-          token="bambooPoolPartyHarvesterUsername"
-          value="${bambooPoolPartyHarvesterUsername}" />
-        <filter
-          token="bambooPoolPartyHarvesterPassword"
-          value="${bambooPoolPartyHarvesterPassword}" />
       </filterset>
     </copy>
     <copy
