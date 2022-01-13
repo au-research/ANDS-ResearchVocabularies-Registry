@@ -239,7 +239,7 @@ public final class MigrateAccessPointHostname {
         String oldUrl = apApiSparql.getUrl();
         String newUrl = oldUrl.replaceFirst(beforeRepositorySparqlRegex,
                 afterRepositorySparqlReplacement);
-        if (newUrl != oldUrl) {
+        if (!newUrl.equals(oldUrl)) {
             logger.info("For apiSparql access point, replacing "
                     + "url |" + oldUrl + "| with |" + newUrl + "|");
             if (TemporalUtils.isCurrent(ap)) {
@@ -295,7 +295,7 @@ public final class MigrateAccessPointHostname {
         String newUrl = oldUrl.replaceFirst(
                 beforeRegistryDownloadsRegex,
                 afterRegistryDownloadsReplacement);
-        if (newUrl != oldUrl) {
+        if (!newUrl.equals(oldUrl)) {
             logger.info("For file access point, replacing "
                     + "url |" + oldUrl + "| with |" + newUrl + "|");
             if (TemporalUtils.isCurrent(ap)) {
@@ -358,8 +358,8 @@ public final class MigrateAccessPointHostname {
                 beforeRegistryDownloadsRegex,
                 afterRegistryDownloadsReplacement);
 
-        if ((newServerBase != oldServerBase)
-                || (newUrlPrefix != oldUrlPrefix)) {
+        if ((!newServerBase.equals(oldServerBase))
+                || (!newUrlPrefix.equals(oldUrlPrefix))) {
             logger.info("For Sesame download access point, replacing "
                     + "serverBase |" + oldServerBase
                     + "| with |" + newServerBase
@@ -416,7 +416,7 @@ public final class MigrateAccessPointHostname {
         String oldUrlPrefix = apSissvoc.getUrlPrefix();
         String newUrlPrefix = oldUrlPrefix.replaceFirst(
                 beforeRepositoryLdaRegex, afterRepositoryLdaReplacement);
-        if (newUrlPrefix != oldUrlPrefix) {
+        if (!newUrlPrefix.equals(oldUrlPrefix)) {
             logger.info("For sissvoc access point, replacing "
                     + "urlPrefix |" + oldUrlPrefix
                     + "| with |" + newUrlPrefix + "|");

@@ -8,6 +8,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.invoke.MethodHandles;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -648,7 +649,7 @@ public final class LanguageSubtagRegistryParser {
 
         // JSON.
         byte[] jsonBytes = JSONSerialization.serializeObjectAsJsonString(lsr).
-                getBytes();
+                getBytes(StandardCharsets.UTF_8);
 
         // Third, uncompressed JSON.
         lsrJsonFilename = lsrDirectory.resolve("lsr.json").toString();
