@@ -177,7 +177,8 @@ public class PoolPartyBackupProvider {
             // Can't catch SocketTimeoutException directly, but only
             // the encapsulating ProcessingException. In that case,
             // e.getCause() is the SocketTimeoutException.
-            logger.error("Exception fetching data from PoolParty: ", e);
+            logger.error("Exception fetching data from PoolParty; "
+                    + "project ID = " + ppProjectId + ": ", e);
             String message;
             Throwable cause = e.getCause();
             if (cause != null) {
@@ -208,6 +209,7 @@ public class PoolPartyBackupProvider {
             result.put(fileName, filePath);
         } else {
             logger.error("getBackupFiles got an error from PoolParty; "
+                    + "project ID = " + ppProjectId + "; "
                     + "response code = " + response.getStatus());
             // This is an abuse of the task status codes, because
             // it is not a task.
