@@ -638,14 +638,19 @@
   <property name="slf4j.javadoc"
             value="https://www.slf4j.org/api/" />
   <property name="pac4j.javadoc"
-            value="http://www.pac4j.org/apidocs/pac4j/2.0.0/" />
+            value="https://www.pac4j.org/apidocs/pac4j/2.0.0/" />
   <property name="openrdf.javadoc"
             value="https://archive.rdf4j.org/javadoc/sesame-2.8.3/" />
   <property name="commons-collections.javadoc"
             value="https://commons.apache.org/proper/commons-collections/javadocs/api-4.1/" />
 
   <target name="javadoc">
+    <!-- Add "-J-Dhttp.agent=javadoc" to the command line to overcome
+         failure to get pac4j content, because that server rejects
+         the default user agent "Java/1.8.0_121".
+    -->
     <javadoc sourcepath="src/main/java;src/db-gen/java;src/jaxb-gen/java;src/test/java"
+             additionalparam="-J-Dhttp.agent=javadoc"
              destdir="${javadoc-output}"
              classpathref="dev-compile-main.classpath"
              linksource="true"
