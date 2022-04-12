@@ -298,13 +298,13 @@ public class ResourceMapTransformProvider implements WorkflowProvider {
                         Value iri = aBinding.getBinding(BINDING_NAME_IRI)
                                 .getValue();
                         LiteralImpl owned = (LiteralImpl)
-                                (aBinding.getBinding(BINDING_NAME_OWNED)
-                                        .getValue());
+                                aBinding.getBinding(BINDING_NAME_OWNED)
+                                        .getValue();
                         Value resourceType = aBinding.
                                 getBinding(BINDING_NAME_TYPE).getValue();
                         LiteralImpl deprecated = (LiteralImpl)
-                                (aBinding.getBinding(BINDING_NAME_DEPRECATED)
-                                        .getValue());
+                                aBinding.getBinding(BINDING_NAME_DEPRECATED)
+                                        .getValue();
                         ResourceMapEntry rme = new ResourceMapEntry();
                         rme.setIri(iri.stringValue());
                         rme.setAccessPointId(accessPointId);

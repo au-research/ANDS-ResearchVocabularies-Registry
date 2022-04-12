@@ -192,7 +192,7 @@ public final class ToolkitFileUtils {
                 .resolve(makeSlug(taskInfo.getVocabulary().getOwner()))
                 .resolve(makeSlug(taskInfo.getVocabulary().getSlug()))
                 .resolve(makeSlug(taskInfo.getVersion().getTitle()));
-        if (extraPath != null && (!extraPath.isEmpty())) {
+        if (extraPath != null && !extraPath.isEmpty()) {
             path = path.resolve(extraPath);
         }
         return path.toString();

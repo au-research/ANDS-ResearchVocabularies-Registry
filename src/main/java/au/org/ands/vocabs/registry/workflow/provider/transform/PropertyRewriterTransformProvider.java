@@ -52,7 +52,7 @@ public class PropertyRewriterTransformProvider extends TransformProvider {
 
    /** A map of metadata properties to look for and rewrite. */
    private static HashMap<URI, String> metadataToLookFor =
-           new HashMap<URI, String>();
+           new HashMap<>();
 
    static {
        metadataToLookFor.put(DCTERMS.TITLE, "dcterms:title");
@@ -219,7 +219,7 @@ public class PropertyRewriterTransformProvider extends TransformProvider {
                         break;
                     }
                     String valueToBeReturned = getMatchedContent(key, value);
-                    if (!(valueToBeReturned.isEmpty())) {
+                    if (!valueToBeReturned.isEmpty()) {
                         model.add(st.getSubject(),
                                 st.getPredicate(),
                                 valueFactory.createLiteral(valueToBeReturned));

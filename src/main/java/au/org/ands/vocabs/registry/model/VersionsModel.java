@@ -755,8 +755,8 @@ public class VersionsModel extends ModelBase {
             boolean slugChanged = false;
             if (vocabularyModel.isOwnerChanged()
                     || vocabularyModel.isSlugChanged()
-                    || (!schemaVersion.getSlug().equals(
-                            existingVersion.getSlug()))) {
+                    || !schemaVersion.getSlug().equals(
+                            existingVersion.getSlug())) {
                 logger.info(
                         "Either the owner, or one of the slugs was changed");
                 slugChanged = true;
@@ -861,9 +861,9 @@ public class VersionsModel extends ModelBase {
                     task.addSubtask(WorkflowMethods.newConceptBrowseSubtask());
                 }
                 if (BooleanUtils.isTrue(schemaVersion.isForceWorkflow())
-                        || (changedBoolean(
+                        || changedBoolean(
                                 newCurrentVersionJson.isDoPoolpartyHarvest(),
-                                existingVersionJson.isDoPoolpartyHarvest()))) {
+                                existingVersionJson.isDoPoolpartyHarvest())) {
                     if (BooleanUtils.isTrue(
                             newCurrentVersionJson.isDoPoolpartyHarvest())) {
                         task.addSubtask(WorkflowMethods.
@@ -937,9 +937,9 @@ public class VersionsModel extends ModelBase {
                     // in this method!
                 }
                 if (BooleanUtils.isTrue(schemaVersion.isForceWorkflow())
-                        || (changedBoolean(
+                        || changedBoolean(
                                 newCurrentVersionJson.isDoImport(),
-                                existingVersionJson.isDoImport()))) {
+                                existingVersionJson.isDoImport())) {
                     if (BooleanUtils.isTrue(
                             newCurrentVersionJson.isDoImport())) {
                         task.addSubtask(WorkflowMethods.
@@ -952,9 +952,9 @@ public class VersionsModel extends ModelBase {
                     }
                 }
                 if (BooleanUtils.isTrue(schemaVersion.isForceWorkflow())
-                        || (changedBoolean(
+                        || changedBoolean(
                                 newCurrentVersionJson.isDoPublish(),
-                                existingVersionJson.isDoPublish()))) {
+                                existingVersionJson.isDoPublish())) {
                     if (BooleanUtils.isTrue(
                             newCurrentVersionJson.isDoPublish())) {
                         task.addSubtask(WorkflowMethods.

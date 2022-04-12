@@ -6,11 +6,9 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 
-import javax.servlet.ServletContext;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 
 import org.openrdf.repository.manager.RepositoryInfo;
@@ -32,9 +30,9 @@ public class GetInfo {
     private Logger logger = LoggerFactory.getLogger(
             MethodHandles.lookup().lookupClass());
 
-    /** Injected servlet context. */
-    @Context
-    private ServletContext context;
+//    /** Injected servlet context. */
+//    @Context
+//    private ServletContext context;
 
     /** Get the list of PoolParty projects.
      * @return The list of PoolParty projects, in JSON format,

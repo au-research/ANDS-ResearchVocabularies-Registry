@@ -261,7 +261,7 @@ public final class AccessPointUtils {
      */
     public static String getPortalUri(final AccessPoint ap) {
         if (!(AccessPoint.API_SPARQL_TYPE.equals(ap.getType())
-                || (AccessPoint.SISSVOC_TYPE.equals(ap.getType())))) {
+                || AccessPoint.SISSVOC_TYPE.equals(ap.getType()))) {
             // Not the right type.
             return null;
         }
@@ -299,7 +299,7 @@ public final class AccessPointUtils {
      */
     public static String getPortalSource(final AccessPoint ap) {
         if (!(AccessPoint.API_SPARQL_TYPE.equals(ap.getType())
-                || (AccessPoint.SISSVOC_TYPE.equals(ap.getType())))) {
+                || AccessPoint.SISSVOC_TYPE.equals(ap.getType()))) {
             // Not the right type.
             return null;
         }

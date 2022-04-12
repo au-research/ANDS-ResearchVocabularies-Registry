@@ -1164,6 +1164,7 @@ public final class MigrateToolkitToRegistry {
                         title = title + " " + numberToAppend;
                     }
                     relatedEntity.setTitle(title);
+                    break;
                 case "type":
                     // We already know what type it is
                     break;
@@ -1535,6 +1536,7 @@ public final class MigrateToolkitToRegistry {
                         title = title + " " + numberToAppend;
                     }
                     relatedEntity.setTitle(title);
+                    break;
                 case "type":
                     // We already know what type it is
                     break;
@@ -1671,12 +1673,11 @@ public final class MigrateToolkitToRegistry {
         } else {
             // We need a new entity.
             relatedEntity = new RelatedEntity();
+            RelatedVocabularyJson relatedVocabularyJson =
+                    new RelatedVocabularyJson();
 
             Iterator<Entry<String, JsonNode>> relatedEntityJsonIterator =
                     relatedEntityJson.fields();
-
-            RelatedVocabularyJson relatedVocabularyJson =
-                    new RelatedVocabularyJson();
             while (relatedEntityJsonIterator.hasNext()) {
                 Entry<String, JsonNode> entry =
                         relatedEntityJsonIterator.next();
@@ -1699,6 +1700,7 @@ public final class MigrateToolkitToRegistry {
                         title = title + " " + numberToAppend;
                     }
                     relatedEntity.setTitle(title);
+                    break;
                 case "type":
                     // We already know what type it is.
                     break;
@@ -1871,8 +1873,7 @@ public final class MigrateToolkitToRegistry {
                 logger.info("ignoring concept_tree version artefact for now");
                 break;
             case "created_date":
-                if (!entry.getValue().asText().
-                        equals(null)) {
+                if (entry.getValue().asText() != null) {
                     logger.error("data[created_date] doesn't match");
                 }
                 break;
@@ -2538,7 +2539,7 @@ public final class MigrateToolkitToRegistry {
                         registryVocabulary.getOwner()))
                 .resolve(registryVocabulary.getSlug())
                 .resolve(registryVersion.getSlug());
-        if (extraPath != null && (!extraPath.isEmpty())) {
+        if (extraPath != null && !extraPath.isEmpty()) {
             path = path.resolve(extraPath);
         }
         return path;
@@ -2585,7 +2586,7 @@ public final class MigrateToolkitToRegistry {
         if (requireDirectory) {
             RegistryFileUtils.requireDirectory(path.toString());
         }
-        if (extraPath != null && (!extraPath.isEmpty())) {
+        if (extraPath != null && !extraPath.isEmpty()) {
             path = path.resolve(extraPath);
         }
         return path;

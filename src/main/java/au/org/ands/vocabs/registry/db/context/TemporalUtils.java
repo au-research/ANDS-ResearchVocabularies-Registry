@@ -298,7 +298,7 @@ public final class TemporalUtils {
         // Test if now >= end_date.
         // Since there is no "isAfterOrEqual" method,
         // use !isBefore(), i.e., test if !(now < end_date).
-        return !(nowUTC().isBefore(entity.getEndDate()));
+        return !nowUTC().isBefore(entity.getEndDate());
     }
 
     /** Make an entity represent currently-valid data. This is done by

@@ -36,7 +36,7 @@ public class RelatedEntityTypeConverter implements ParamConverterProvider {
             @Override
             public T fromString(final String value) {
                 try {
-                    return (T) (RelatedEntityType.fromValue(value));
+                    return (T) RelatedEntityType.fromValue(value);
                 } catch (Exception e) {
                     throw new IllegalArgumentException(
                             "Given value (" + value

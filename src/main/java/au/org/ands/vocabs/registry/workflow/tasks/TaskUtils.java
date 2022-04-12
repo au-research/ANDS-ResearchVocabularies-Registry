@@ -158,7 +158,7 @@ public final class TaskUtils {
         if (requireDirectory) {
             RegistryFileUtils.requireDirectory(path.toString());
         }
-        if (extraPath != null && (!extraPath.isEmpty())) {
+        if (extraPath != null && !extraPath.isEmpty()) {
             path = path.resolve(extraPath);
         }
         return path.toString();

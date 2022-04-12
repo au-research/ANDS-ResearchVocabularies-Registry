@@ -900,7 +900,8 @@ public class StatementHandler extends RDFHandlerBase {
             return;
         }
         List<String> masterIRIsToRemove = new ArrayList<>();
-        Set<Resource> masterResourcesToRemove = new HashSet<>();
+        // Not needed; left in case needed in the future.
+//        Set<Resource> masterResourcesToRemove = new HashSet<>();
         for (Entry<String, Resource> masterResourceEntry
                 : iriMasterResourceMap.entrySet()) {
             Resource masterResource = masterResourceEntry.getValue();
@@ -909,7 +910,7 @@ public class StatementHandler extends RDFHandlerBase {
 //                    + " ; type: " + masterResource.getType());
             if (masterResource.getType() == null) {
                 masterIRIsToRemove.add(masterResourceEntry.getKey());
-                masterResourcesToRemove.add(masterResource);
+//                masterResourcesToRemove.add(masterResource);
             }
         }
         for (String masterResourceIRI : masterIRIsToRemove) {

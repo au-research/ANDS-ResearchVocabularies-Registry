@@ -3,12 +3,10 @@ package au.org.ands.vocabs.toolkit.test.utils;
 
 import java.lang.invoke.MethodHandles;
 
-import javax.servlet.ServletContext;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 
 import org.slf4j.Logger;
@@ -20,9 +18,9 @@ import au.org.ands.vocabs.toolkit.test.arquillian.ArquillianTestUtils;
 @Path("testing")
 public class TestREST {
 
-    /** Servlet context. */
-    @Context
-    private ServletContext context;
+//    /** Servlet context. */
+//    @Context
+//    private ServletContext context;
 
     /** Clear a database.
      * @param dbs The database to be cleared.
