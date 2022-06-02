@@ -12,7 +12,10 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import javax.json.Json;
+import javax.json.JsonObjectBuilder;
 import javax.ws.rs.client.Client;
+import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
@@ -152,6 +155,7 @@ public class PoolPartyHarvestProvider implements WorkflowProvider {
      * @param subtask The specification of this harvest subtask.
      * @return True, iff the harvest succeeded.
      */
+    @SuppressWarnings("checkstyle:MethodLength")
     public final boolean getHarvestFiles(
             final Integer ppServerId,
             final String ppProjectId,
@@ -202,28 +206,50 @@ public class PoolPartyHarvestProvider implements WorkflowProvider {
         logger.debug("Getting project from " + remoteUrl);
 
         Client client = RegistryNetUtils.getClient();
+
+        // Tip: in case you ever need to debug the traffic to/from
+        // PoolParty, uncomment the following. You'll need to add an import
+        // for the class org.glassfish.jersey.filter.LoggingFilter.
+        // (NB: works with Jersey 2.22.1. For later releases, use
+        // LoggingFeature instead.)
+//        client.register(new LoggingFilter(
+//                java.util.logging.Logger.getGlobal(), true));
+
         WebTarget target = client.target(remoteUrl).
                 path(PoolPartyUtils.API_PROJECTS);
         HttpAuthenticationFeature feature =
                 HttpAuthenticationFeature.basic(username, password);
         WebTarget plainTarget = target.register(feature)
                 .path(ppProjectId)
-                .path("export")
-                .queryParam("format", format);
+                .path("export");
 
         // Convenience access to outputDir as a Path.
         Path outputDirPath = Paths.get(outputDir);
 
         for (String exportModule : exportModules) {
-            WebTarget thisTarget = plainTarget.queryParam("exportModules",
-                    exportModule);
-
-            logger.debug("Harvesting from " + thisTarget.toString());
+            logger.debug("Harvesting from " + plainTarget.toString());
 
             Invocation.Builder invocationBuilder =
-                    thisTarget.request(MediaType.APPLICATION_XML);
+                    plainTarget.request(MediaType.APPLICATION_XML);
 
-            Response response = invocationBuilder.get();
+            // Since PoolParty API version 7.1, the parameters
+            // are sent in the body of a POST, in JSON format.
+            JsonObjectBuilder job = Json.createObjectBuilder();
+            job.add("format", format);
+            job.add("modules", Json.createArrayBuilder().add(exportModule));
+            // API documentation now says that the prettyPrint parameter is
+            // required, but that seems to be incorrect. Provide a
+            // value anyway. We used to get the default value of false,
+            // and that seemed to work OK for us, so continue to specify
+            // false.
+            job.add("prettyPrint", false);
+            // It's necessary to use job.build().toString(), not just
+            // job.build(), because otherwise you get extra metadata
+            // in the generated String, e.g.,
+            // {"format":{"valueType":"STRING","chars":"Turtle",
+            //            "string":"Turtle"}, ... etc.
+            Response response = invocationBuilder.post(
+                    Entity.json(job.build().toString()));
 
             if (response.getStatus()
                     >= Response.Status.BAD_REQUEST.getStatusCode()) {

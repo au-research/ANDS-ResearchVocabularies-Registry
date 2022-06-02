@@ -1,7 +1,7 @@
 {
   "id" : "a0f22ca6-7040-4687-99c8-2acb92e2f7ce",
   "request" : {
-    "url" : "/PoolParty/api/7.0/projects",
+    "url" : "/PoolParty/api/projects",
     "method" : "GET",
     "headers" : {
       "Accept" : {
@@ -15,7 +15,7 @@
   },
   "response" : {
     "status" : 200,
-    "bodyFileName" : "body-PoolParty-api-7.0-projects.json",
+    "bodyFileName" : "body-PoolParty-api-projects.json",
     "headers" : {
       "Content-Type" : "application/json;charset=UTF-8"
     }

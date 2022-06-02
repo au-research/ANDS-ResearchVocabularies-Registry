@@ -1,7 +1,7 @@
 {
   "request" : {
-    "urlPath" : "/PoolParty/api/7.0/projects/readTimeout/export",
-    "method" : "GET",
+    "urlPath" : "/PoolParty/api/projects/readTimeout/export",
+    "method" : "POST",
     "headers" : {
       "Accept" : {
         "equalTo" : "application/xml"
