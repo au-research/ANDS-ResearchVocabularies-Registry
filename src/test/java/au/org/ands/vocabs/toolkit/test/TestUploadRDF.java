@@ -27,47 +27,42 @@ public final class TestUploadRDF {
      * @param args Command-line arguments. */
     public static void main(final String[] args) {
 
-    Logger logger = LoggerFactory.getLogger(
-            MethodHandles.lookup().lookupClass());
-    logger.info("Running TestUploadRDF.");
+        Logger logger = LoggerFactory.getLogger(
+                MethodHandles.lookup().lookupClass());
+        logger.info("Running TestUploadRDF.");
 
-    String sesameServer =
-              "http://vocabs.ardc.edu.au/repository/openrdf-sesame/";
-    RepositoryManager manager;
-    try {
-        manager = RepositoryProvider.getRepositoryManager(sesameServer);
+        String sesameServer =
+                "http://vocabs.ardc.edu.au/repository/openrdf-sesame/";
+        RepositoryManager manager;
+        try {
+            manager = RepositoryProvider.getRepositoryManager(sesameServer);
+
+            String repositoryID = "rifcs16";
+
+            Repository repository = manager.getRepository(repositoryID);
+
+            File file =
+                    new File("/Users/rwalker/vocab-exports-from-devl/"
+                            + "export-rifcs16.rdf");
 
 
-    String repositoryID = "rifcs16";
+            RepositoryConnection con = repository.getConnection();
+            try {
+                con.add(file, "", RDFFormat.RDFXML);
 
-    Repository repository = manager.getRepository(repositoryID);
-
-    File file =
-            new File("/Users/rwalker/vocab-exports-from-devl/"
-                     + "export-rifcs16.rdf");
-
-
-   RepositoryConnection con = repository.getConnection();
-   try {
-      con.add(file, "", RDFFormat.RDFXML);
-
-     // con.add(url, url.toString(), RDFFormat.RDFXML);
-
-    } catch (RDFParseException e) {
-        e.printStackTrace();
-    } catch (IOException e) {
-        e.printStackTrace();
-    } finally {
-          con.close();
-       }
-
-    } catch (RepositoryConfigException e) {
-        e.printStackTrace();
-    } catch (RepositoryException e) {
-        e.printStackTrace();
+                // con.add(url, url.toString(), RDFFormat.RDFXML);
+            } catch (RDFParseException e) {
+                logger.error("RDFParseException", e);
+            } catch (IOException e) {
+                logger.error("IOException", e);
+            } finally {
+                con.close();
+            }
+        } catch (RepositoryConfigException e) {
+            logger.error("RepositoryConfigException", e);
+        } catch (RepositoryException e) {
+            logger.error("RepositoryException", e);
+        }
     }
-
-  }
-
 
 }

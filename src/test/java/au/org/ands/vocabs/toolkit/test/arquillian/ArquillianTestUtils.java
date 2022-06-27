@@ -25,6 +25,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.persistence.EntityManager;
 import javax.ws.rs.core.Response;
@@ -190,10 +191,10 @@ public final class ArquillianTestUtils {
         Assert.assertTrue(Files.isDirectory(tempDir),
                 "Temporary directory expected to exist, but does not: "
                 + tempDir);
-        try {
-            Assert.assertTrue(Files.list(tempDir).findAny().isPresent(),
+        try (Stream<Path> stream = Files.list(tempDir)) {
+            Assert.assertTrue(stream.findAny().isPresent(),
                     "Temporary directory expected to be non-empty, "
-                    + "but is empty: " + tempDir);
+                            + "but is empty: " + tempDir);
         } catch (IOException e) {
             Assert.fail("IOException while opening temp directory", e);
         }
@@ -210,8 +211,8 @@ public final class ArquillianTestUtils {
         Assert.assertTrue(Files.isDirectory(tempDir),
                 "Temporary directory expected to exist, but does not: "
                 + tempDir);
-        try {
-            Assert.assertEquals(Files.list(tempDir).count(),
+        try (Stream<Path> stream = Files.list(tempDir)) {
+            Assert.assertEquals(stream.count(),
                     expectedNumberOfFiles,
                     "Temporary directory expected to have "
                     + expectedNumberOfFiles
@@ -229,8 +230,8 @@ public final class ArquillianTestUtils {
         Assert.assertTrue(Files.isDirectory(tempDir),
                 "Temporary directory expected to exist, but does not: "
                 + tempDir);
-        try {
-            Assert.assertTrue(!Files.list(tempDir).findAny().isPresent(),
+        try (Stream<Path> stream = Files.list(tempDir)) {
+            Assert.assertTrue(!stream.findAny().isPresent(),
                     "Temporary directory expected to be empty, "
                     + "but is not: " + tempDir);
         } catch (IOException e) {

@@ -136,10 +136,10 @@ public class Resource extends ResourceOrRef {
         return url;
     }
 
-    /** {@inheritDoc}
-     * Set the type of the resource. Throws an IllegalArgumentException
+    /** Set the type of the resource. Throws an IllegalArgumentException
      * if that would not be allowed, for example, if the type has already
      * been set, and the new type is incompatible.
+     * @param aType The type of this resource.
      */
     public void setType(final ResourceType aType) {
         // LOGGER.info("Setting type for iri:" + iri + " to: " + aType);

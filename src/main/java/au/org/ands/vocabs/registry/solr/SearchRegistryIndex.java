@@ -310,7 +310,7 @@ public final class SearchRegistryIndex {
             // Support both "pp":2 and "pp":"2".
             Object rowsValueAsObject = filters.get("pp");
             if (rowsValueAsObject instanceof Integer) {
-                rows = (Integer) (rowsValueAsObject);
+                rows = (Integer) rowsValueAsObject;
             } else if (rowsValueAsObject instanceof String) {
                 rows = Integer.parseInt((String) rowsValueAsObject);
             } else {
@@ -377,7 +377,7 @@ public final class SearchRegistryIndex {
                 int page;
                 Object pValueAsObject = filterEntry.getValue();
                 if (pValueAsObject instanceof Integer) {
-                    page = (Integer) (pValueAsObject);
+                    page = (Integer) pValueAsObject;
                 } else if (pValueAsObject instanceof String) {
                     page = Integer.parseInt((String) pValueAsObject);
                 } else {

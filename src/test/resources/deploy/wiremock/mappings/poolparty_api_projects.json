@@ -1,0 +1,26 @@
+{
+  "id" : "a0f22ca6-7040-4687-99c8-2acb92e2f7ce",
+  "request" : {
+    "url" : "/PoolParty/api/projects",
+    "method" : "GET",
+    "headers" : {
+      "Accept" : {
+        "equalTo" : "application/json"
+      }
+    },
+    "basicAuthCredentials" : {
+      "username" : "ppuser",
+      "password" : "pppass"
+    }
+  },
+  "response" : {
+    "status" : 200,
+    "bodyFileName" : "body-PoolParty-api-projects.json",
+    "headers" : {
+      "Content-Type" : "application/json;charset=UTF-8"
+    }
+  },
+  "uuid" : "a0f22ca6-7040-4687-99c8-2acb92e2f7ce",
+  "persistent" : true,
+  "insertionIndex" : 1
+}

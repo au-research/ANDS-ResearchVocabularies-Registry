@@ -358,8 +358,8 @@ public final class MigrateAccessPointHostname {
                 beforeRegistryDownloadsRegex,
                 afterRegistryDownloadsReplacement);
 
-        if ((!newServerBase.equals(oldServerBase))
-                || (!newUrlPrefix.equals(oldUrlPrefix))) {
+        if (!newServerBase.equals(oldServerBase)
+                || !newUrlPrefix.equals(oldUrlPrefix)) {
             logger.info("For Sesame download access point, replacing "
                     + "serverBase |" + oldServerBase
                     + "| with |" + newServerBase

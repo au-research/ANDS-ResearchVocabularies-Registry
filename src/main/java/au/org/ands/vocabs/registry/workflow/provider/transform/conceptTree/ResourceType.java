@@ -41,10 +41,10 @@ enum ResourceType {
 
     /** A human-readable representation of the type, useful for
      * error messages. */
-    private String readable;
+    private final String readable;
 
     /** The category into which the type is grouped. */
-    private byte typeCategory;
+    private final byte typeCategory;
 
     /** Constructor of the resource types.
      * @param aReadable The human-readable representation of the type.

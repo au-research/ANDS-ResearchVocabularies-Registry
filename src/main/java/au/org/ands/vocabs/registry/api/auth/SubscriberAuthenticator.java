@@ -73,7 +73,7 @@ public class SubscriberAuthenticator
             throwsException("Token not in correct format: no ID component");
         }
 
-        Subscriber subscriber = null;
+        Subscriber subscriber;
         SubscriberEmailAddress sea = null;
         subscriber = SubscriberDAO.getCurrentSubscriberBySubscriberId(id);
         if (subscriber == null) {

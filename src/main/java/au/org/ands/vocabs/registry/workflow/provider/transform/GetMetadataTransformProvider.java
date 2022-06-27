@@ -218,7 +218,7 @@ public class GetMetadataTransformProvider {
                 }
             }
             if (st.getPredicate().equals(RDF.TYPE)
-                    && (st.getObject().equals(SKOS.CONCEPT))) {
+                    && st.getObject().equals(SKOS.CONCEPT)) {
                 countedConcepts++;
             }
         }
@@ -250,7 +250,7 @@ public class GetMetadataTransformProvider {
             }
             // Now apply rewriting.
             String valueToBeReturned = getMatchedContent(key, value);
-            if (!(valueToBeReturned.isEmpty())) {
+            if (!valueToBeReturned.isEmpty()) {
                 String lang = "";
                 // mMap: keys: source file name, values: maps, with
                 // keys: "value" (+ optional "_" + language tag),

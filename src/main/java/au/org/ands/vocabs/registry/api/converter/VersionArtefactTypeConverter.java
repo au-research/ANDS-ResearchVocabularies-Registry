@@ -36,7 +36,7 @@ public class VersionArtefactTypeConverter implements ParamConverterProvider {
             @Override
             public T fromString(final String value) {
                 try {
-                    return (T) (VersionArtefactType.fromValue(value));
+                    return (T) VersionArtefactType.fromValue(value);
                 } catch (Exception e) {
                     throw new IllegalArgumentException(
                             "Given value (" + value

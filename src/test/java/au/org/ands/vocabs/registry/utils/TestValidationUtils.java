@@ -72,10 +72,10 @@ public class TestValidationUtils {
         Assert.assertTrue(ValidationUtils.isValidHTML(testString));
 
 
-        testString = "EuroVoc:&nbsp;"
-                + "<a href=\"../../../en/EuroVoc/geography\" "
-                + "target=\"_blank\" rel=\"nofollow noopener "
-                + "noreferrer\">geography</a>";
+//        testString = "EuroVoc:&nbsp;"
+//                + "<a href=\"../../../en/EuroVoc/geography\" "
+//                + "target=\"_blank\" rel=\"nofollow noopener "
+//                + "noreferrer\">geography</a>";
 
 //        Assert.assertTrue(ValidationUtils.isValidHTML(testString));
 

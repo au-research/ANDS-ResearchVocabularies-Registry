@@ -14,6 +14,7 @@ import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityTransaction;
@@ -1188,11 +1189,13 @@ public class RegistryModelWorkflowTests extends ArquillianBaseTest {
         TaskInfo taskInfo = TaskUtils.getTaskInfo(2);
         taskInfo.setNowTime(nowTime2);
         String taskPath = TaskUtils.getTaskOutputPath(taskInfo, false, null);
-        // Use Files::isRegularFile to filter to just files, of which
-        // there should be 3. (There is also the harvest_data directory.)
-        Assert.assertEquals(Files.list(Paths.get(taskPath)).
-                filter(Files::isRegularFile).count(),
-                3, "Expected to have 3 regular files for version artefacts");
+        try (Stream<Path> stream = Files.list(Paths.get(taskPath))) {
+            // Use Files::isRegularFile to filter to just files, of which
+            // there should be 3. (There is also the harvest_data directory.)
+            Assert.assertEquals(stream.
+                    filter(Files::isRegularFile).count(), 3,
+                    "Expected to have 3 regular files for version artefacts");
+        }
     }
 
     /** Test of updating a draft of a vocabulary

@@ -15,10 +15,13 @@ import java.util.Locale;
 
 import javax.json.Json;
 import javax.json.JsonArray;
+import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 import javax.json.JsonReader;
 import javax.json.JsonValue;
 import javax.ws.rs.client.Client;
+import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
@@ -150,29 +153,54 @@ public class PoolPartyBackupProvider {
         logger.debug("Getting project from " + remoteUrl);
 
         Client client = RegistryNetUtils.getClient();
+
+        // Tip: in case you ever need to debug the traffic to/from
+        // PoolParty, uncomment the following. You'll need to add an import
+        // for the class org.glassfish.jersey.filter.LoggingFilter.
+        // (NB: works with Jersey 2.22.1. For later releases, use
+        // LoggingFeature instead.)
+//        client.register(new LoggingFilter(
+//                java.util.logging.Logger.getGlobal(), true));
+
         WebTarget target = client.target(remoteUrl).
                 path(PoolPartyUtils.API_PROJECTS);
         HttpAuthenticationFeature feature =
                 HttpAuthenticationFeature.basic(username, password);
         WebTarget thisTarget = target.register(feature)
                 .path(ppProjectId)
-                .path("export")
-                .queryParam("format", format);
-
-        for (String exportModule : exportModules) {
-            thisTarget = thisTarget.queryParam("exportModules",
-                    exportModule);
-        }
+                .path("export");
 
         Invocation.Builder invocationBuilder =
                 thisTarget.request(MediaType.APPLICATION_XML);
+
+        // Since PoolParty API version 7.1, the parameters
+        // are sent in the body of a POST, in JSON format.
+        JsonObjectBuilder job = Json.createObjectBuilder();
+        job.add("format", format);
+        JsonArrayBuilder jab = Json.createArrayBuilder();
+        for (String exportModule : exportModules) {
+            jab.add(exportModule);
+        }
+        job.add("modules", jab);
+        // API documentation now says that the prettyPrint parameter is
+        // required, but that seems to be incorrect. Provide a
+        // value anyway. We used to get the default value of false,
+        // and that seemed to work OK for us, so continue to specify
+        // false.
+        job.add("prettyPrint", false);
 
         // Override the timeout values for this request.
         RegistryNetUtils.setTimeouts(invocationBuilder);
 
         Response response;
         try {
-            response = invocationBuilder.get();
+            // It's necessary to use job.build().toString(), not just
+            // job.build(), because otherwise you get extra metadata
+            // in the generated String, e.g.,
+            // {"format":{"valueType":"STRING","chars":"Turtle",
+            //            "string":"Turtle"}, ... etc.
+            response = invocationBuilder.post(
+                    Entity.json(job.build().toString()));
         } catch (Exception e) {
             // Can't catch SocketTimeoutException directly, but only
             // the encapsulating ProcessingException. In that case,

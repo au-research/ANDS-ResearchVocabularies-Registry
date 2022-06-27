@@ -257,7 +257,7 @@ public final class CreateSolrSchemaRegistry extends SolrSchemaBase {
         } catch (Exception e) {
           logger.error("Could not complete the zk operation for reason: "
                   + e.getMessage());
-          throw (e);
+          throw e;
         }
     }
 

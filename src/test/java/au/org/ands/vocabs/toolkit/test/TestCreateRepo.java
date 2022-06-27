@@ -13,7 +13,6 @@ import org.openrdf.sail.inferencer.fc.config.
             ForwardChainingRDFSInferencerConfig;
 import org.openrdf.sail.memory.config.MemoryStoreConfig;
 
-
 /** Test creating a repository. */
 public final class TestCreateRepo {
 
@@ -23,42 +22,41 @@ public final class TestCreateRepo {
 
     /** main program.
      * @param args Command-line arguments. */
-  public static void main(final String[] args) {
+    @SuppressWarnings("CatchAndPrintStackTrace")
+    public static void main(final String[] args) {
 
-    String sesameServer =
-              "http://vocabs.ardc.edu.au/repository/openrdf-sesame/";
-    RepositoryManager manager;
-    try {
-        manager = RepositoryProvider.getRepositoryManager(sesameServer);
+        String sesameServer =
+                "http://vocabs.ardc.edu.au/repository/openrdf-sesame/";
+        RepositoryManager manager;
+        try {
+            manager = RepositoryProvider.getRepositoryManager(sesameServer);
 
-    // create a configuration for the SAIL stack
-    boolean persist = true;
-    SailImplConfig backendConfig = new MemoryStoreConfig(persist);
+            // create a configuration for the SAIL stack
+            boolean persist = true;
+            SailImplConfig backendConfig = new MemoryStoreConfig(persist);
 
-    // stack an inferencer config on top of our backend-config
-    backendConfig = new ForwardChainingRDFSInferencerConfig(backendConfig);
+            // stack an inferencer config on top of our backend-config
+            backendConfig = new ForwardChainingRDFSInferencerConfig(
+                    backendConfig);
 
-    // create a configuration for the repository implementation
-    RepositoryImplConfig repositoryTypeSpec =
-          new SailRepositoryConfig(backendConfig);
+            // create a configuration for the repository implementation
+            RepositoryImplConfig repositoryTypeSpec =
+                    new SailRepositoryConfig(backendConfig);
 
-    String repositoryID = "rifcs16";
-    String repositoryTitle = "RIFCS v1.6 Vocabularies";
+            String repositoryID = "rifcs16";
+            String repositoryTitle = "RIFCS v1.6 Vocabularies";
 
-    RepositoryConfig repConfig =
-          new RepositoryConfig(repositoryID, repositoryTitle,
-                  repositoryTypeSpec);
-    manager.addRepositoryConfig(repConfig);
+            RepositoryConfig repConfig =
+                    new RepositoryConfig(repositoryID, repositoryTitle,
+                            repositoryTypeSpec);
+            manager.addRepositoryConfig(repConfig);
 
-    // Repository repository = manager.getRepository(repositoryID);
-    } catch (RepositoryConfigException e) {
-        e.printStackTrace();
-    } catch (RepositoryException e) {
-        e.printStackTrace();
+            // Repository repository = manager.getRepository(repositoryID);
+        } catch (RepositoryConfigException e) {
+            e.printStackTrace();
+        } catch (RepositoryException e) {
+            e.printStackTrace();
+        }
     }
-
-
-  }
-
 
 }

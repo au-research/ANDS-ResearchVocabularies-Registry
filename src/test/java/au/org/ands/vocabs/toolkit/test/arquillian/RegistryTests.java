@@ -106,8 +106,8 @@ public class RegistryTests extends ArquillianBaseTest {
         // as it is not valid JSON.
         version.setData("some data");
         version.setModifiedBy("SYSTEM");
-        version.setStartDate(LocalDateTime.now());
-        version.setEndDate(LocalDateTime.now());
+        version.setStartDate(TemporalUtils.nowUTC());
+        version.setEndDate(TemporalUtils.nowUTC());
         // Fix this in VersionListener: should not be possible to persist this,
         // as it is not in the right format.
         version.setReleaseDate("release_date");

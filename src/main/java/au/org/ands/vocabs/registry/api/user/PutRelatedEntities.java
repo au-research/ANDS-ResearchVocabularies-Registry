@@ -557,7 +557,7 @@ public class PutRelatedEntities {
 
             // reReturned (and reiReturned, defined below) are used to represent
             // the value that will be returned to the caller.
-            RelatedEntity reReturned = null;
+            RelatedEntity reReturned;
 
             // Persist the RelatedEntity, if it has changed.
             // No notion of drafts for related entities:

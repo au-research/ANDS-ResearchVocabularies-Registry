@@ -9,6 +9,7 @@ import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.stream.Stream;
 
 import org.eu.ingwar.tools.arquillian.extension.suite.annotations.ArquillianSuiteDeployment;
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -96,7 +97,8 @@ public class ArquillianBaseTest extends Arquillian {
             addModelJARs(war);
 
             // Add all the JAR files from the lib directory.
-            Files.walk(Paths.get("lib"))
+            try (Stream<Path> stream = Files.walk(Paths.get("lib"))) {
+                stream
                 .filter(Files::isRegularFile)
                 .filter(p -> p.getFileName().toString().endsWith(".jar"))
                 .filter(p -> !p.getParent().getFileName().
@@ -115,42 +117,56 @@ public class ArquillianBaseTest extends Arquillian {
                 .filter(p -> !p.getParent().getFileName().
                         toString().startsWith("mysql"))
                 .forEach(p -> war.addAsLibrary(p.toFile()));
+            }
 
             // Add all the needed JAR files from the libtest directory.
-            Files.walk(Paths.get("libtest"))
+            try (Stream<Path> stream = Files.walk(Paths.get("libtest"))) {
+                stream
                 .filter(Files::isRegularFile)
                 .filter(p -> p.getFileName().toString().endsWith(".jar"))
                 .forEach(p -> war.addAsLibrary(p.toFile()));
+            }
             // Add META-INF content
-            Files.walk(Paths.get("WebContent/META-INF"))
+            try (Stream<Path> stream =
+                    Files.walk(Paths.get("WebContent/META-INF"))) {
+                stream
                 .filter(Files::isRegularFile)
                 .forEach(p -> war.addAsManifestResource(p.toFile()));
+            }
             // Add WEB-INF content
             Path webInfPath = Paths.get("WebContent/WEB-INF");
-            Files.walk(webInfPath)
+            try (Stream<Path> stream = Files.walk(webInfPath)) {
+                stream
                 .filter(Files::isRegularFile)
                 .forEach(p -> war.addAsWebInfResource(p.toFile(),
                         webInfPath.relativize(p).toString()));
+            }
             // Add src/main/java/META-INF content to WEB-INF/classes
             Path srcMetaInfPath = Paths.get("src/main/java/META-INF");
-            Files.walk(srcMetaInfPath)
+            try (Stream<Path> stream = Files.walk(srcMetaInfPath)) {
+                stream
                 .filter(Files::isRegularFile)
                 .forEach(p -> war.addAsWebInfResource(p.toFile(),
                         Paths.get("classes/META-INF").resolve(
                                 srcMetaInfPath.relativize(p)).toString()));
+            }
             // Add test data
-            Files.walk(Paths.get(RESOURCES_DEPLOY_PATH))
+            try (Stream<Path> stream =
+                    Files.walk(Paths.get(RESOURCES_DEPLOY_PATH))) {
+                stream
                 .filter(Files::isRegularFile)
                 .forEach(p -> war.addAsResource(p.toFile(),
                         p.toString().substring(
                                 RESOURCES_DEPLOY_PATH.length())));
+            }
 
             addSolrConfig(war);
 
             // Add certain JAR files from the libdev directory.
             // For now, that means Mean Bean, DbUnit, XStream, XMLUnit,
             // WireMock.
-            Files.walk(Paths.get("libdev"))
+            try (Stream<Path> stream = Files.walk(Paths.get("libdev"))) {
+                stream
                 .filter(Files::isRegularFile)
                 .filter(p -> p.getFileName().toString().endsWith(".jar"))
                 .filter(p -> {
@@ -162,6 +178,7 @@ public class ArquillianBaseTest extends Arquillian {
                             || fileName.startsWith("wiremock"));
                 })
                 .forEach(p -> war.addAsLibrary(p.toFile()));
+            }
 
             // Uncomment the following, if log4j configuration required.
             //war.addAsResource(new File("conf/logging.properties"),
@@ -266,7 +283,8 @@ public class ArquillianBaseTest extends Arquillian {
         String solrConfResources = RESOURCES_DEPLOY_PATH
                 + "/solr/configsets/_default/conf/";
         // Copy the config files from _default into the test collections.
-        Files.walk(Paths.get(solrConfResources))
+        try (Stream<Path> stream = Files.walk(Paths.get(solrConfResources))) {
+            stream
             .filter(Files::isRegularFile)
             // Don't copy solrconfig.xml from the template ...
             .filter(p -> !p.getFileName().
@@ -281,6 +299,7 @@ public class ArquillianBaseTest extends Arquillian {
                         + "/conf/" + p.toString().substring(
                                 solrConfResources.length()));
                 });
+        }
         // ... but use our own custom version.
         war.addAsResource(new File("conf/solrconfig.xml"),
                 "solr/" + SolrUtils.TEST_COLLECTION_REGISTRY
@@ -289,13 +308,15 @@ public class ArquillianBaseTest extends Arquillian {
                 "solr/" + SolrUtils.TEST_COLLECTION_RESOURCES
                 + "/conf/solrconfig.xml");
         // And copy in the Safari Press query plugin.
-        Files.walk(Paths.get("lib"))
+        try (Stream<Path> stream = Files.walk(Paths.get("lib"))) {
+            stream
             .filter(Files::isRegularFile)
             .filter(p -> p.getFileName().toString().endsWith(".jar"))
             .filter(p -> p.getParent().getFileName().
                     toString().startsWith("ifpress"))
             .forEach(p -> war.addAsResource(p.toFile(),
                     "solr/ardc/" + p.getFileName().toString()));
+        }
     }
 
     /** Add an optional resource. Any exception generated when locating

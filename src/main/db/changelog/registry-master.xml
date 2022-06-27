@@ -23,4 +23,19 @@
   <include file="src/main/db/changelog/registry-0003.xml" />
   <include file="src/main/db/changelog/registry-0004.xml" />
 
+  <!-- README:
+       Note the defect in Liquibase regarding the behaviour of
+       rollback to a tag:
+       https://liquibase.jira.com/browse/CORE-2946
+       From now on, when adding a new databaseChangeLog,
+       try using the workaround given there when defining
+       the tag, i.e., include an <empty> and a <rollback> element
+       after the <tagDatabase> element:
+       <changeset id="00xx-tag" author="...">
+         <tagDatabase tag="version_00xx" />
+         <empty />
+         <rollback />
+       </changeset>
+  -->
+
 </databaseChangeLog>

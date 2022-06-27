@@ -127,7 +127,7 @@ public class RegistryPoolPartyTests extends ArquillianBaseTest {
             ArquillianTestUtils.compareJsonStringWithFile(responseString,
                     ArquillianTestUtils.
                     clientResolveWireMockStubbedContentFilename(
-                            "body-PoolParty-api-7.0-projects.json"));
+                            "body-PoolParty-api-projects.json"));
         } finally {
             if (response != null) {
                 response.close();

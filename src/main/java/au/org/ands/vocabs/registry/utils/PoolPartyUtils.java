@@ -41,11 +41,14 @@ public final class PoolPartyUtils {
      * to give the base of project-related API calls.
      * Then after this, append the project's UUID, and then
      * the specific API call.
-     * Note 2019-07-24: backwards-incompatible changes have been
-     * made to the export method in PoolParty 7.1.
-     * For now: explicitly specify version 7.0 in the API path.
+     * For now: we don't specify an API version in the API path.
+     * Should it become necessary to use a particular version of the API,
+     * you can include a version number in the URL, e.g.,
+     * {@code public static final String API_PROJECTS = "api/7.0/projects";}
+     * We did this from 2019-2022 to cope with a backwards-incompatible change
+     * that SWC made to the export method in PoolParty 7.1.
      */
-    public static final String API_PROJECTS = "api/7.0/projects";
+    public static final String API_PROJECTS = "api/projects";
 
     /** Supplement to be appended to {@code ToolkitProperties.getProperty(
      * PropertyConstants.POOLPARTY_REMOTEURL)} to give the base
