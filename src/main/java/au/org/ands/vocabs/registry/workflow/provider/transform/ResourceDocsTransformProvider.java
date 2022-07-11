@@ -5,6 +5,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.charset.CharsetDecoder;
+import java.nio.charset.CodingErrorAction;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.DirectoryIteratorException;
 import java.nio.file.Path;
@@ -19,6 +23,7 @@ import javax.persistence.EntityManager;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.multimap.HashSetValuedHashMap;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.solr.common.SolrInputDocument;
 import org.openrdf.model.Literal;
@@ -174,36 +179,98 @@ public class ResourceDocsTransformProvider implements WorkflowProvider {
 
     /** The limit to use when trimming string values so that they fit
      * into a Solr field of string type.
-     * The string type has a hard limit of 32766 characters
+     * The string type has a hard limit of 32766 bytes of UTF-8
      * ({@code
      * org.apache.lucene.index.DocumentsWriterPerThread.MAX_TERM_LENGTH_UTF8});
      * this constant is set to a round value less than that. */
-    public static final int MAXIMUM_STRING_LENGTH = 32000;
+    public static final int MAXIMUM_STRING_LENGTH_BYTES = 32000;
+
+    /** The space character used to attempt to break a long String value.
+     * NB: we do rely on the fact that this value is one byte long in
+     * UTF-8. */
+    private static final byte SPACE = ' ';
+
+    /** Decoder to use to turn a trimmed byte[] back into a String.
+     * This can't be static, as it's not thread-safe. */
+    private CharsetDecoder utf8Decoder = StandardCharsets.UTF_8.newDecoder();
 
     /** Trim a String, so that it can be stored in a Solr field
-     * of type "string".
-     * The value is trimmed at a word boundary, if possible; if not,
-     * trimming is forced.
+     * of type "string". The value is trimmed at a word boundary, if possible;
+     * if not, trimming is forced.
+     * (This method can't be static, as it uses {@code utf8Decoder}.)
      * @param stringToBeTrimmed The string to be trimmed to fit.
      * @return The trimmed string, guaranteed to have a length less than
-     *      or equal to {@link #MAXIMUM_STRING_LENGTH}. If no trimming
-     *      is required, {@code stringToBeTrimmed} is returned
+     *      or equal to {@link #MAXIMUM_STRING_LENGTH_BYTES} bytes.
+     *      If no trimming is required, {@code stringToBeTrimmed} is returned
      *      (which means you can compare values using {@code ==}).
      */
-    public static final String trim(final String stringToBeTrimmed) {
+    public String trim(final String stringToBeTrimmed) {
         if (stringToBeTrimmed == null) {
             return null;
         }
-        if (stringToBeTrimmed.length() <= MAXIMUM_STRING_LENGTH) {
+        // NB: MAXIMUM_STRING_LENGTH_BYTES is a limit on _bytes_ in UTF-8,
+        // not on characters.
+        byte[] stringAsBytes = stringToBeTrimmed.getBytes(
+                StandardCharsets.UTF_8);
+        if (stringAsBytes.length <= MAXIMUM_STRING_LENGTH_BYTES) {
             return stringToBeTrimmed;
         }
-        int index = stringToBeTrimmed.lastIndexOf(' ', MAXIMUM_STRING_LENGTH);
+        int index = ArrayUtils.lastIndexOf(stringAsBytes, SPACE,
+                MAXIMUM_STRING_LENGTH_BYTES);
         if (index == -1) {
-            return stringToBeTrimmed.substring(0, MAXIMUM_STRING_LENGTH);
+            // No space found. OK, force a trim at the end, but we
+            // have to make sure that we trim at a valid UTF-8 boundary.
+            // Inspired by https://stackoverflow.com/a/35148974/3765696 .
+            ByteBuffer bb = ByteBuffer.wrap(stringAsBytes,
+                    0, MAXIMUM_STRING_LENGTH_BYTES);
+            CharBuffer cb = CharBuffer.allocate(MAXIMUM_STRING_LENGTH_BYTES);
+            utf8Decoder.reset();
+            utf8Decoder.onMalformedInput(CodingErrorAction.IGNORE);
+            utf8Decoder.decode(bb, cb, true);
+            utf8Decoder.flush(cb);
+            return new String(cb.array(), 0, cb.position());
         }
-        return stringToBeTrimmed.substring(0, index);
+        // Found a space; trim at that point.
+//        String trimmed = new String(stringAsBytes, 0, index,
+//                StandardCharsets.UTF_8);
+//        LOGGER.info("Trimmed length in characters: " + trimmed.length());
+        return new String(stringAsBytes, 0, index, StandardCharsets.UTF_8);
     }
 
+    /* Variant method with extra limit parameter. It might be useful
+     * in future. */
+    /*
+    public String trim(final String stringToBeTrimmed,
+            final int maximumStringLengthBytes) {
+        if (stringToBeTrimmed == null) {
+            return null;
+        }
+        // NB: maximumStringLengthBytes is a limit on _bytes_ in UTF-8,
+        // not on characters.
+        byte[] stringAsBytes = stringToBeTrimmed.getBytes(
+                StandardCharsets.UTF_8);
+        if (stringAsBytes.length <= maximumStringLengthBytes) {
+            return stringToBeTrimmed;
+        }
+        int index = ArrayUtils.lastIndexOf(stringAsBytes, SPACE,
+                MAXIMUM_STRING_LENGTH_BYTES);
+        if (index == -1) {
+            // No space found. OK, force a trim at the end, but we
+            // have to make sure that we trim at a valid UTF-8 boundary.
+            // Inspired by https://stackoverflow.com/a/35148974/3765696 .
+            ByteBuffer bb = ByteBuffer.wrap(stringAsBytes,
+                    0, maximumStringLengthBytes);
+            CharBuffer cb = CharBuffer.allocate(maximumStringLengthBytes);
+            utf8Decoder.reset();
+            utf8Decoder.onMalformedInput(CodingErrorAction.IGNORE);
+            utf8Decoder.decode(bb, cb, true);
+            utf8Decoder.flush(cb);
+            return new String(cb.array(), 0, cb.position());
+        }
+        // Found a space; trim at that point.
+        return new String(stringAsBytes, 0, index, StandardCharsets.UTF_8);
+    }
+    */
 
     /** Create/update the ResourceDocs version artefact for the version.
      * @param taskInfo The top-level TaskInfo for the subtask.

@@ -1564,7 +1564,6 @@ public class TransformProviderTests extends ArquillianBaseTest {
                     va.getData(), VaResourceDocs.class);
 
             resourceDocsFilename = vaResourceDocs.getPath();
-            logger.info("resourceDocsFilename: " + resourceDocsFilename);
             // Note the use of the same correct output as the previous test.
             ArquillianTestUtils.compareJsonFiles(resourceDocsFilename,
                     testsPath + testName + "/test-data2-resource_docs.json");
@@ -1588,7 +1587,6 @@ public class TransformProviderTests extends ArquillianBaseTest {
                     va.getData(), VaResourceDocs.class);
 
             resourceDocsFilename = vaResourceDocs.getPath();
-            logger.info("resourceDocsFilename: " + resourceDocsFilename);
             // Note the use of the same correct output as the previous test.
             ArquillianTestUtils.compareJsonFiles(resourceDocsFilename,
                     testsPath + testName + "/test-data3-resource_docs.json");
