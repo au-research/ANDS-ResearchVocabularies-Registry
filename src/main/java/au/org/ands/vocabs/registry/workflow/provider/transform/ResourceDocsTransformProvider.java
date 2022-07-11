@@ -172,6 +172,39 @@ public class ResourceDocsTransformProvider implements WorkflowProvider {
      */
     private ArrayList<String> titleKeys = new ArrayList<>();
 
+    /** The limit to use when trimming string values so that they fit
+     * into a Solr field of string type.
+     * The string type has a hard limit of 32766 characters
+     * ({@code
+     * org.apache.lucene.index.DocumentsWriterPerThread.MAX_TERM_LENGTH_UTF8});
+     * this constant is set to a round value less than that. */
+    public static final int MAXIMUM_STRING_LENGTH = 32000;
+
+    /** Trim a String, so that it can be stored in a Solr field
+     * of type "string".
+     * The value is trimmed at a word boundary, if possible; if not,
+     * trimming is forced.
+     * @param stringToBeTrimmed The string to be trimmed to fit.
+     * @return The trimmed string, guaranteed to have a length less than
+     *      or equal to {@link #MAXIMUM_STRING_LENGTH}. If no trimming
+     *      is required, {@code stringToBeTrimmed} is returned
+     *      (which means you can compare values using {@code ==}).
+     */
+    public static final String trim(final String stringToBeTrimmed) {
+        if (stringToBeTrimmed == null) {
+            return null;
+        }
+        if (stringToBeTrimmed.length() <= MAXIMUM_STRING_LENGTH) {
+            return stringToBeTrimmed;
+        }
+        int index = stringToBeTrimmed.lastIndexOf(' ', MAXIMUM_STRING_LENGTH);
+        if (index == -1) {
+            return stringToBeTrimmed.substring(0, MAXIMUM_STRING_LENGTH);
+        }
+        return stringToBeTrimmed.substring(0, index);
+    }
+
+
     /** Create/update the ResourceDocs version artefact for the version.
      * @param taskInfo The top-level TaskInfo for the subtask.
      * @param subtask The subtask to be performed.
@@ -446,12 +479,19 @@ public class ResourceDocsTransformProvider implements WorkflowProvider {
             // We still need to check if there can there be multiple instances.
             if (predicateInfo.isMayHaveMultipleObjects()) {
                 // Add the object; there may already be one for this field.
-                resource.put(field, object.stringValue());
+                // We trim the value, in case it must go into a Solr field
+                // of type string. Possible future work: don't just
+                // truncate a too-long string, but divide it up into
+                // pieces and add _all_ of them.
+                resource.put(field, trim(object.stringValue()));
                 // And we're done.
             } else {
                 // There may be only one. Remove any existing object.
+                // We trim the value, in case it must go into a Solr field
+                // of type string. Since there can be only one, we just
+                // truncate and discard the rest.
                 resource.remove(field);
-                resource.put(field, object.stringValue());
+                resource.put(field, trim(object.stringValue()));
             }
         }
 

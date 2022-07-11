@@ -1,0 +1,156 @@
+[
+  {
+    "id": "2_http://test/uri1",
+    "iri": "http://test/uri1",
+    "rdf_type": "http://www.w3.org/2004/02/skos/core#Concept",
+    "skos_prefLabel": "Label 1 no language tag",
+    "title": "Label 1 no language tag",
+    "vocabulary_id_iri": "1_http://test/uri1"
+  },
+  {
+    "id": "2_http://test/uri0",
+    "iri": "http://test/uri0",
+    "rdf_type": "http://www.w3.org/2004/02/skos/core#Concept",
+    "title": "http://test/uri0",
+    "vocabulary_id_iri": "1_http://test/uri0"
+  },
+  {
+    "id": "2_http://test/uri2-2",
+    "iri": "http://test/uri2-2",
+    "rdf_type": "http://www.w3.org/2004/02/skos/core#Concept",
+    "skos_prefLabel-de": "Label 2-2 de only",
+    "title": "http://test/uri2-2",
+    "vocabulary_id_iri": "1_http://test/uri2-2"
+  },
+  {
+    "id": "2_http://test/uri3-1",
+    "iri": "http://test/uri3-1",
+    "rdf_type": "http://www.w3.org/2004/02/skos/core#Concept",
+    "skos_prefLabel": "Label 3-1 no language tag first",
+    "skos_prefLabel-en": "Label 3-2 en second",
+    "title": "Label 3-2 en second",
+    "vocabulary_id_iri": "1_http://test/uri3-1"
+  },
+  {
+    "id": "2_http://test/uri3-2",
+    "iri": "http://test/uri3-2",
+    "rdf_type": "http://www.w3.org/2004/02/skos/core#Concept",
+    "skos_prefLabel": "Label 3-2 no language tag second",
+    "skos_prefLabel-en": "Label 3-2 en first",
+    "title": "Label 3-2 en first",
+    "vocabulary_id_iri": "1_http://test/uri3-2"
+  },
+  {
+    "id": "2_http://test/uri4-1",
+    "iri": "http://test/uri4-1",
+    "rdf_type": "http://www.w3.org/2004/02/skos/core#Concept",
+    "skos_prefLabel": "Label 4-1 no language tag first",
+    "skos_prefLabel-de": "Label 4-1 de second",
+    "title": "Label 4-1 no language tag first",
+    "vocabulary_id_iri": "1_http://test/uri4-1"
+  },
+  {
+    "id": "2_http://test/uri2-1",
+    "iri": "http://test/uri2-1",
+    "rdf_type": "http://www.w3.org/2004/02/skos/core#Concept",
+    "skos_prefLabel-en": "Label 2-1 en only",
+    "title": "Label 2-1 en only",
+    "vocabulary_id_iri": "1_http://test/uri2-1"
+  },
+  {
+    "id": "2_http://test/uri6-2",
+    "iri": "http://test/uri6-2",
+    "rdf_type": "http://www.w3.org/2004/02/skos/core#Concept",
+    "skos_prefLabel": "Label 6-2 no language tag first",
+    "skos_prefLabel-de": "Label 6-2 de second",
+    "skos_prefLabel-en": "Label 6-2 en third",
+    "title": "Label 6-2 en third",
+    "vocabulary_id_iri": "1_http://test/uri6-2"
+  },
+  {
+    "id": "2_http://test/uri7-1",
+    "iri": "http://test/uri7-1",
+    "rdf_type": "http://www.w3.org/2004/02/skos/core#Concept",
+    "skos_prefLabel-de": "Label 7-1 de first",
+    "skos_prefLabel-fr": "Label 7-1 fr second",
+    "title": "http://test/uri7-1",
+    "vocabulary_id_iri": "1_http://test/uri7-1"
+  },
+  {
+    "id": "2_http://test/uri6-3",
+    "iri": "http://test/uri6-3",
+    "rdf_type": "http://www.w3.org/2004/02/skos/core#Concept",
+    "skos_prefLabel": "Label 6-3 no language tag second",
+    "skos_prefLabel-de": "Label 6-3 de third",
+    "skos_prefLabel-en": "Label 6-3 en first",
+    "title": "Label 6-3 en first",
+    "vocabulary_id_iri": "1_http://test/uri6-3"
+  },
+  {
+    "id": "2_http://test/uri4-2",
+    "iri": "http://test/uri4-2",
+    "rdf_type": "http://www.w3.org/2004/02/skos/core#Concept",
+    "skos_prefLabel": "Label 4-2 no language tag second",
+    "skos_prefLabel-de": "Label 4-2 de first",
+    "title": "Label 4-2 no language tag second",
+    "vocabulary_id_iri": "1_http://test/uri4-2"
+  },
+  {
+    "id": "2_http://test/uri5-1",
+    "iri": "http://test/uri5-1",
+    "rdf_type": "http://www.w3.org/2004/02/skos/core#Concept",
+    "skos_prefLabel-de": "Label 5-1 de second",
+    "skos_prefLabel-en": "Label 5-1 en first",
+    "title": "Label 5-1 en first",
+    "vocabulary_id_iri": "1_http://test/uri5-1"
+  },
+  {
+    "id": "2_http://test/uri5-2",
+    "iri": "http://test/uri5-2",
+    "rdf_type": "http://www.w3.org/2004/02/skos/core#Concept",
+    "skos_prefLabel-de": "Label 5-2 de first",
+    "skos_prefLabel-en": "Label 5-2 en second",
+    "title": "Label 5-2 en second",
+    "vocabulary_id_iri": "1_http://test/uri5-2"
+  },
+  {
+    "id": "2_http://test/uri6-1",
+    "iri": "http://test/uri6-1",
+    "rdf_type": "http://www.w3.org/2004/02/skos/core#Concept",
+    "skos_prefLabel": "Label 6-1 no language tag first",
+    "skos_prefLabel-de": "Label 6-1 de third",
+    "skos_prefLabel-en": "Label 6-1 en second",
+    "title": "Label 6-1 en second",
+    "vocabulary_id_iri": "1_http://test/uri6-1"
+  },
+  {
+    "id": "2_http://test/uri6-6",
+    "iri": "http://test/uri6-6",
+    "rdf_type": "http://www.w3.org/2004/02/skos/core#Concept",
+    "skos_prefLabel": "Label 6-6 no language tag third",
+    "skos_prefLabel-de": "Label 6-6 de first",
+    "skos_prefLabel-en": "Label 6-6 en second",
+    "title": "Label 6-6 en second",
+    "vocabulary_id_iri": "1_http://test/uri6-6"
+  },
+  {
+    "id": "2_http://test/uri6-4",
+    "iri": "http://test/uri6-4",
+    "rdf_type": "http://www.w3.org/2004/02/skos/core#Concept",
+    "skos_prefLabel": "Label 6-4 no language tag second",
+    "skos_prefLabel-de": "Label 6-4 de first",
+    "skos_prefLabel-en": "Label 6-4 en third",
+    "title": "Label 6-4 en third",
+    "vocabulary_id_iri": "1_http://test/uri6-4"
+  },
+  {
+    "id": "2_http://test/uri6-5",
+    "iri": "http://test/uri6-5",
+    "rdf_type": "http://www.w3.org/2004/02/skos/core#Concept",
+    "skos_prefLabel": "Label 6-5 no language tag third",
+    "skos_prefLabel-de": "Label 6-5 de second",
+    "skos_prefLabel-en": "Label 6-5 en first",
+    "title": "Label 6-5 en first",
+    "vocabulary_id_iri": "1_http://test/uri6-5"
+  }
+]
