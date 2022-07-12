@@ -1569,6 +1569,9 @@ public class TransformProviderTests extends ArquillianBaseTest {
                     testsPath + testName + "/test-data2-resource_docs.json");
 
             // Test trimming of long values. CC-2905.
+            // Except that we _don't_ trim anymore, because we changed
+            // the field type for the "multilingual fields" from string
+            // to something text-based.
             task = TaskDAO.getTaskById(3);
             version = VersionDAO.getCurrentVersionByVersionId(em, 3);
             taskInfo = new TaskInfo(task, vocabulary, version);
