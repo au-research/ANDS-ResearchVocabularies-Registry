@@ -8,7 +8,7 @@ import static au.org.ands.vocabs.registry.solr.FieldConstants.LOWER_EXACT_WORDS;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.PHRASE_SUFFIX;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.SCHEMA_VERSION;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.SEARCH_SUFFIX;
-import static au.org.ands.vocabs.registry.solr.FieldConstants.STRING;
+import static au.org.ands.vocabs.registry.solr.FieldConstants.TEXT_BASIC;
 import static au.org.ands.vocabs.registry.solr.FieldConstants.TEXT_EN_SPLITTING;
 
 import java.io.IOException;
@@ -469,6 +469,8 @@ public abstract class SolrSchemaBase {
       }
 
     /** Add fields for data that may be multilingual.
+     * Important: don't use the Solr "string" type for any of these,
+     * so that we avoid the length limits (see CC-2905).
      * @param solrClient The SolrClient used to access Solr.
      * @param fieldName The name of the new field.
      * @param stored Whether the values of the field are to be stored.
@@ -485,9 +487,10 @@ public abstract class SolrSchemaBase {
             final boolean multivalued)
                     throws SolrServerException, IOException {
         // e.g., skos_prefLabel (prefLabels without a language tag)
-        addField(solrClient, fieldName, STRING, stored, indexed, multivalued);
+        addField(solrClient, fieldName, TEXT_BASIC,
+                stored, indexed, multivalued);
         // e.g., skos_prefLabel-en (prefLabels with a language tag)
-        addDynamicField(solrClient, fieldName + "-*", STRING,
+        addDynamicField(solrClient, fieldName + "-*", TEXT_BASIC,
                 stored, indexed, multivalued);
         // e.g., skos_prefLabel_search (prefLabels without a language tag)
         addField(solrClient, fieldName + SEARCH_SUFFIX, TEXT_EN_SPLITTING,
@@ -504,7 +507,7 @@ public abstract class SolrSchemaBase {
         // Multivalued fields for all languages
         // e.g., skos_prefLabel_all
         //       (all prefLabels, with or without a language tag)
-        addField(solrClient, fieldName + ALL_SUFFIX, STRING,
+        addField(solrClient, fieldName + ALL_SUFFIX, TEXT_BASIC,
                 stored, indexed, true);
         // e.g., skos_prefLabel_search_all
         //       (all prefLabels, with or without a language tag)

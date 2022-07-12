@@ -154,6 +154,17 @@ public final class FieldConstants {
     public static final String STRING = "string";
     /** The name of the "text_en_splitting" Solr field type. */
     public static final String TEXT_EN_SPLITTING = "text_en_splitting";
+    /** The name of the "text_ws" Solr field type. */
+    public static final String TEXT_WS = "text_ws";
+    /* NB: we (currently) only use TEXT_WS in the definition of
+     * TEXT_BASIC, q.v. */
 
+    /* Generic names for Solr field types. Listed in alphabetical order! */
 
+    /** The name of a Solr field type that can be used to store
+     * arbitrarily-long text content, but doesn't need to support
+     * searching or faceting. We use this type for fields that
+     * are then used as sources for copyFields.
+     */
+    public static final String TEXT_BASIC = TEXT_WS;
 }
