@@ -340,6 +340,16 @@ for you.
 /path-to-Solr-installation/bin/solr create -c vocabs-resources
 ```
 
+If your setting of `Registry.Solr.baseURL` includes a port that isn't
+Solr's default, you'll need to specify that for these commands. E.g.,
+if you set `Registry.Solr.baseURL = http://localhost:8988/solr`, the
+collection creation commands must be given as:
+
+```
+/path-to-Solr-installation/bin/solr create -p 8988 -c vocabs-registry
+/path-to-Solr-installation/bin/solr create -p 8988 -c vocabs-resources
+```
+
 ## Install the two Solr schemas
 
 Use this build target to upload a custom `solrconfig.xml` (from the
@@ -349,6 +359,32 @@ file `conf/solrconfig.xml`) and to create the Solr schemas.
 ant create-solr-schema
 ant create-solr-schema-resources
 ```
+
+Very important: if you need to re-install the Solr schemas (either
+because something went wrong, or you're upgrading the schemas), use
+the command line to delete the collections and start again:
+
+```
+/path-to-Solr-installation/bin/solr delete -c vocabs-registry
+/path-to-Solr-installation/bin/solr delete -c vocabs-resources
+```
+
+or, specifing a non-default port:
+
+```
+/path-to-Solr-installation/bin/solr delete -p 8988 -c vocabs-registry
+/path-to-Solr-installation/bin/solr delete -p 8988 -c vocabs-resources
+```
+
+This way, you'll also delete each collection's corresponding "config
+set", which contains the value of the "schema version".  (See
+`src/main/java/au/org/ands/vocabs/registry/solr/admin/SolrSchemaBase.java`
+for details of how this is set/read.)  If instead, you use Solr's web
+interface to delete the collections, the config sets won't be deleted,
+and recreating the collections will create them with the existing
+config sets, including any previous setting of the schema version, so
+that any subsequent attempt to do schema installation stops
+immediately.
 
 ## Force indexing of the vocabularies into Solr
 

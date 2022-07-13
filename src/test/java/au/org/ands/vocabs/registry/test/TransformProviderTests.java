@@ -1482,7 +1482,7 @@ public class TransformProviderTests extends ArquillianBaseTest {
     //     provider.transform.ResourceDocsTransformProvider.
 
     // Task numbers >= 3 generate magic number warnings.
-    /** Server-side test of {@code ResourceDocsTransformProvider}.
+    /** Server-side tests of {@code ResourceDocsTransformProvider}.
      * @throws DatabaseUnitException If a problem with DbUnit.
      * @throws HibernateException If a problem getting the underlying
      *          JDBC connection.
@@ -1541,100 +1541,59 @@ public class TransformProviderTests extends ArquillianBaseTest {
             vaResourceDocs = JSONSerialization.deserializeStringAsJson(
                     va.getData(), VaResourceDocs.class);
 
-            String conceptsTreeFilename = vaResourceDocs.getPath();
-            ArquillianTestUtils.compareJsonFiles(conceptsTreeFilename,
+            String resourceDocsFilename = vaResourceDocs.getPath();
+            ArquillianTestUtils.compareJsonFiles(resourceDocsFilename,
                     testsPath + testName + "/test-data1-resource_docs.json");
 
-            // Uncomment as needed for further tests.
+            // Multilingual content.
+            task = TaskDAO.getTaskById(2);
+            version = VersionDAO.getCurrentVersionByVersionId(em, 2);
+            taskInfo = new TaskInfo(task, vocabulary, version);
+            taskInfo.setEm(em);
+            taskInfo.setModifiedBy("SYSTEM");
+            taskInfo.setNowTime(nowTime1);
+            taskInfo.process();
+            workflowTask = taskInfo.getTask();
 
-//            task = TaskDAO.getTaskById(2);
-//            version = VersionDAO.getCurrentVersionByVersionId(em, 2);
-//            taskInfo = new TaskInfo(task, vocabulary, version);
-//            taskInfo.setEm(em);
-//            taskInfo.setModifiedBy("SYSTEM");
-//            taskInfo.setNowTime(nowTime1);
-//            taskInfo.process();
-//            workflowTask = taskInfo.getTask();
-//
-//            Assert.assertEquals(workflowTask.getStatus(), TaskStatus.SUCCESS,
-//                    "ResourceDocsTransformProvider failed on task 2");
-//            va = VersionArtefactDAO.
-//                    getCurrentVersionArtefactListForVersionByType(2,
-//                            VersionArtefactType.RESOURCE_DOCS, em).get(0);
-//            vaResourceDocs = JSONSerialization.deserializeStringAsJson(
-//                    va.getData(), VaResourceDocs.class);
-//            conceptsTreeFilename = vaResourceDocs.getPath();
-//            // Note the use of the same correct output as the previous test.
-//            ArquillianTestUtils.compareJson(conceptsTreeFilename,
-//                    testsPath + testName + "/test-data1-resource_docs.json");
-//
-//            // Polyhierarchy detection: we get an artefact in this case.
-//            task = TaskDAO.getTaskById(3);
-//            version = VersionDAO.getCurrentVersionByVersionId(em, 3);
-//            taskInfo = new TaskInfo(task, vocabulary, version);
-//            taskInfo.setEm(em);
-//            taskInfo.setModifiedBy("SYSTEM");
-//            taskInfo.setNowTime(nowTime1);
-//            taskInfo.process();
-//            workflowTask = taskInfo.getTask();
-//
-//            Assert.assertEquals(workflowTask.getStatus(), TaskStatus.SUCCESS,
-//                    "ResourceDocsTransformProvider failed on task 3");
-//            va = VersionArtefactDAO.
-//                    getCurrentVersionArtefactListForVersionByType(3,
-//                            VersionArtefactType.RESOURCE_DOCS, em).get(0);
-//            vaResourceDocs = JSONSerialization.deserializeStringAsJson(
-//                    va.getData(), VaResourceDocs.class);
-//            conceptsTreeFilename = vaResourceDocs.getPath();
-//            ArquillianTestUtils.compareJson(conceptsTreeFilename,
-//                    testsPath + testName + "/test-data3-resource_docs.json");
-//
-//            // Cycle detection: we _don't_ get an artefact in this case.
-//            task = TaskDAO.getTaskById(4);
-//            version = VersionDAO.getCurrentVersionByVersionId(em, 4);
-//            taskInfo = new TaskInfo(task, vocabulary, version);
-//            taskInfo.setEm(em);
-//            taskInfo.setModifiedBy("SYSTEM");
-//            taskInfo.setNowTime(nowTime1);
-//            taskInfo.process();
-//            workflowTask = taskInfo.getTask();
-//
-//            Assert.assertEquals(workflowTask.getStatus(), TaskStatus.PARTIAL,
-//                    "ResourceDocsTransformProvider failed on task 4");
-//            Assert.assertEquals(VersionArtefactDAO.
-//                    getCurrentVersionArtefactListForVersionByType(4,
-//                            VersionArtefactType.RESOURCE_DOCS, em).size(), 0,
-//                    "ResourceDocsTransformProvider task 4 created a "
-//                            + "version artefact");
-//            Assert.assertEquals(workflowTask.getSubtasks().get(0).
-//                    getResults().get(ResourceDocsTransformProvider.
-//                            CONCEPTS_TREE_NOT_PROVIDED),
-//                    "No concepts tree provided, because there is a cycle.",
-//                    "ResourceDocsTransformProvider task 4 returned "
-//                    + "wrong value for "
-//                + ResourceDocsTransformProvider.CONCEPTS_TREE_NOT_PROVIDED);
-//
-//            // Multilingual vocabularies, giving preference to labels
-//            // in the primary language.
-//            task = TaskDAO.getTaskById(5);
-//            version = VersionDAO.getCurrentVersionByVersionId(em, 5);
-//            taskInfo = new TaskInfo(task, vocabulary, version);
-//            taskInfo.setEm(em);
-//            taskInfo.setModifiedBy("SYSTEM");
-//            taskInfo.setNowTime(nowTime1);
-//            taskInfo.process();
-//            workflowTask = taskInfo.getTask();
-//
-//            Assert.assertEquals(workflowTask.getStatus(), TaskStatus.SUCCESS,
-//                    "ResourceDocTransformProvider failed on task 5");
-//            va = VersionArtefactDAO.
-//                    getCurrentVersionArtefactListForVersionByType(5,
-//                            VersionArtefactType.RESOURCE_DOCS, em).get(0);
-//            vaResourceDocs = JSONSerialization.deserializeStringAsJson(
-//                    va.getData(), VaResourceDocs.class);
-//            conceptsTreeFilename = vaResourceDocs.getPath();
-//            ArquillianTestUtils.compareJson(conceptsTreeFilename,
-//                    testsPath + testName + "/test-data5-resource_docs.json");
+            Assert.assertEquals(workflowTask.getStatus(), TaskStatus.SUCCESS,
+                    "ResourceDocsTransformProvider failed on task 2");
+            va = VersionArtefactDAO.
+                    getCurrentVersionArtefactListForVersionByType(2,
+                            VersionArtefactType.RESOURCE_DOCS, em).get(0);
+            vaResourceDocs = JSONSerialization.deserializeStringAsJson(
+                    va.getData(), VaResourceDocs.class);
+
+            resourceDocsFilename = vaResourceDocs.getPath();
+            // Note the use of the same correct output as the previous test.
+            ArquillianTestUtils.compareJsonFiles(resourceDocsFilename,
+                    testsPath + testName + "/test-data2-resource_docs.json");
+
+            // Test trimming of long values. CC-2905.
+            // Except that we _don't_ trim anymore, because we changed
+            // the field type for the "multilingual fields" from string
+            // to something text-based.
+            task = TaskDAO.getTaskById(3);
+            version = VersionDAO.getCurrentVersionByVersionId(em, 3);
+            taskInfo = new TaskInfo(task, vocabulary, version);
+            taskInfo.setEm(em);
+            taskInfo.setModifiedBy("SYSTEM");
+            taskInfo.setNowTime(nowTime1);
+            taskInfo.process();
+            workflowTask = taskInfo.getTask();
+
+            Assert.assertEquals(workflowTask.getStatus(), TaskStatus.SUCCESS,
+                    "ResourceDocsTransformProvider failed on task 3");
+            va = VersionArtefactDAO.
+                    getCurrentVersionArtefactListForVersionByType(3,
+                            VersionArtefactType.RESOURCE_DOCS, em).get(0);
+            vaResourceDocs = JSONSerialization.deserializeStringAsJson(
+                    va.getData(), VaResourceDocs.class);
+
+            resourceDocsFilename = vaResourceDocs.getPath();
+            // Note the use of the same correct output as the previous test.
+            ArquillianTestUtils.compareJsonFiles(resourceDocsFilename,
+                    testsPath + testName + "/test-data3-resource_docs.json");
+
             txn.commit();
         } catch (Throwable t) {
             if (txn != null && txn.isActive()) {
