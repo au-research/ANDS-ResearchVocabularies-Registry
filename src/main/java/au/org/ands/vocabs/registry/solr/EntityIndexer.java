@@ -140,6 +140,7 @@ public final class EntityIndexer {
         licenceGroups.put("CC-BY-NC-ND", "Non-Derivative Licence");
         licenceGroups.put("CC-BY-NC", "Non-Commercial Licence");
         licenceGroups.put("CC-BY", "Open Licence");
+        licenceGroups.put("CC0", "Open Licence");
         licenceGroups.put("CSIRO Data Licence", "Non-Commercial Licence");
         licenceGroups.put("AusGoalRestrictive", "Restrictive Licence");
         licenceGroups.put("NoLicence", "No Licence");
