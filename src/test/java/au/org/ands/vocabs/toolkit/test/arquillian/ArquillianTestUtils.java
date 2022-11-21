@@ -52,6 +52,11 @@ import org.dbunit.ext.h2.H2Connection;
 import org.dbunit.operation.DatabaseOperation;
 import org.hibernate.HibernateException;
 import org.hibernate.internal.SessionImpl;
+import org.openrdf.repository.RepositoryException;
+import org.openrdf.repository.config.RepositoryConfigException;
+import org.openrdf.repository.manager.RepositoryInfo;
+import org.openrdf.repository.manager.RepositoryManager;
+import org.openrdf.repository.manager.RepositoryProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.Assert;
@@ -1043,6 +1048,27 @@ public final class ArquillianTestUtils {
     public static String clientResolveWireMockStubbedContentFilename(
             final String filename) {
         return WIREMOCK_FILES_PATH_CLIENT_SIDE.resolve(filename).toString();
+    }
+
+    /** URL to access the Sesame server. */
+    private static String sesameServer = RegistryProperties.getProperty(
+            PropertyConstants.SESAME_IMPORTER_SERVERURL);
+
+    /** Remove all of the existing Sesame repositories.
+     * @throws RepositoryException If there is a problem connecting with
+     *   Sesame.
+     * @throws RepositoryConfigException If there is a repository
+     *  configuration problem.
+     */
+    public static void removeAllSesameRepositories()
+            throws RepositoryConfigException, RepositoryException {
+        RepositoryManager manager =
+                RepositoryProvider.getRepositoryManager(sesameServer);
+        // Parameter true means: omit the SYSTEM repository.
+        for (RepositoryInfo repo : manager.getAllRepositoryInfos(true)) {
+            logger.info("Cleaning up Sesame repository: " + repo.getId());
+            manager.removeRepository(repo.getId());
+        }
     }
 
 }

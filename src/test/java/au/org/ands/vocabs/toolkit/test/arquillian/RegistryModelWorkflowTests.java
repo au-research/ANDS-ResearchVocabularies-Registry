@@ -1283,6 +1283,8 @@ public class RegistryModelWorkflowTests extends ArquillianBaseTest {
         ArquillianTestUtils.clearDatabase(REGISTRY);
         ArquillianTestUtils.loadDbUnitTestFile(REGISTRY, testName);
         ArquillianTestUtils.copyUploadsFilesForTest(testName);
+        ArquillianTestUtils.removeAllSesameRepositories();
+
         Vocabulary vocabulary = RegistryTestUtils.
                 getValidatedVocabularyFromFile(
                 "test/tests/" + testName + "/test-vocabulary1.xml",
