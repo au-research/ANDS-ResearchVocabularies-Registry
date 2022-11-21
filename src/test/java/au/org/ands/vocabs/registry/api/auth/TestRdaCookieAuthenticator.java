@@ -22,15 +22,11 @@ public class TestRdaCookieAuthenticator {
             MethodHandles.lookup().lookupClass());
 
     @Test
-    /** Test that UTF-8
-     *
-     * @throws CredentialsException
-     * @throws HttpAction
+    /** Test that percent-encoded UTF-8 content in cookie data is OK.
+     * @throws HttpAction if there is an exception from Pac4J.
      */
     public void testUtf8()
-            throws CredentialsException,
-//            DecoderException,
-            HttpAction {
+          throws HttpAction {
 /*
         String tokenEncoded = "%c3%a4";
         String token = "";
