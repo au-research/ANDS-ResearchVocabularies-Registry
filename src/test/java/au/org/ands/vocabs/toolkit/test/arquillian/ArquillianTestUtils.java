@@ -16,6 +16,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -541,6 +542,11 @@ public final class ArquillianTestUtils {
             for (String seq : sequences) {
                 s.executeUpdate("ALTER SEQUENCE "
                         + seq + " RESTART WITH 1");
+                // We'd like to have the sequence name as a parameter, and say:
+                //    s.setString(1, sequenceName);
+                // ... but H2 doesn't like it. So we have to inject the name.
+                // We console ourselves with the knowledge that this is
+                // test code, and not ever executed in a deployment.
             }
         }
         // Force commit at the JDBC level, as closing the EntityManager
@@ -552,6 +558,55 @@ public final class ArquillianTestUtils {
         if (dbs == DatabaseSelector.REGISTRY) {
             Owners.clear();
         }
+    }
+
+    /** Set the value of a sequence used by a particular table/column.
+     * This is H2-specific!
+     * @param dbs The database to be updated.
+     * @param table The name of the table.
+     * @param column The name of the column.
+     * @param value The value to be used to set the sequence.
+     * @throws SQLException If there is a problem performing
+     *          JDBC operations.
+     */
+    public static void setSequenceValue(final DatabaseSelector dbs,
+            final String table, final String column, final int value) throws
+        SQLException {
+        Connection conn = getJDBCConnectionForDbUnit(dbs);
+
+        String sequenceName;
+        try (PreparedStatement s = conn.prepareStatement(
+                "SELECT SEQUENCE_NAME FROM INFORMATION_SCHEMA.COLUMNS "
+                + "WHERE TABLE_SCHEMA='PUBLIC' AND TABLE_NAME=? "
+                + "AND COLUMN_NAME=?")) {
+            s.setString(1, table);
+            s.setString(2, column);
+            try (ResultSet r = s.executeQuery()) {
+                if (!r.last()) {
+                    throw new IllegalArgumentException("No sequence found for "
+                            + "table = " + table + ", column = " + column);
+                }
+                if (r.getRow() != 1) {
+                    throw new IllegalArgumentException("Brokenness in H2; "
+                            + "multiple sequences found for "
+                            + "table = " + table + ", column = " + column);
+                }
+                sequenceName = r.getString(1);
+            }
+        }
+
+        try (PreparedStatement s = conn.prepareStatement(
+                "ALTER SEQUENCE " + sequenceName + " RESTART WITH ?")) {
+            // We'd like to have the sequence name as a parameter, and say:
+            //    s.setString(1, sequenceName);
+            // ... but H2 doesn't like it. So we have to inject the name.
+            // We console ourselves with the knowledge that this is
+            // test code, and not ever executed in a deployment.
+            s.setInt(1, value);
+            s.executeUpdate();
+        }
+        // Force commit at the JDBC level.
+        conn.commit();
     }
 
     /** Load a DbUnit test file into a database.
