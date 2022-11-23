@@ -1,0 +1,14 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE dataset SYSTEM "../../dbunit-registry-export-choice.dtd" >
+<dataset>
+
+  <RELATED_ENTITY_IDS ID="1"/>
+
+  <RELATED_ENTITIES ID="1" DATA="{&quot;email&quot;:&quot;services@ands.org.au&quot;,&quot;url&quot;:[&quot;http://ands.org.au/&quot;]}" END_DATE="9999-12-01 00:00:00.0" MODIFIED_BY="SYSTEM" OWNER="ANDS-Curated" RELATED_ENTITY_ID="1" START_DATE="2015-11-26 10:04:05.0" TITLE="Australian National Data Service" TYPE="PARTY"/>
+
+  <UPLOADS ID="1" MODIFIED_BY="SYSTEM" OWNER="ANDS-Curated"
+           FORMAT="TTL" FILENAME="test1.ttl" />
+  <UPLOADS ID="2" MODIFIED_BY="SYSTEM" OWNER="ANDS-Curated"
+           FORMAT="TTL" FILENAME="test2.ttl" />
+
+</dataset>

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!DOCTYPE vocabulary>
+<vocabulary
+    xmlns="http://vocabs.ands.org.au/registry/schema/2017/01/vocabulary"
+    id="1"
+    status="published"
+    owner="ANDS-Curated"
+    slug="rifcs"
+    title="RIF - CS (Vocabularies)"
+    acronym="RIF-CS"
+    description="The RIF-CS schema ..."
+    revision-cycle="Updated as required"
+    creation-date="2008-12-31"
+    primary-language="en"
+    licence="CC-BY">
+  <subject
+      source="anzsrc-for"
+      label="INFORMATION AND COMPUTING SCIENCES"
+      iri="http://purl.org/au-research/vocabulary/anzsrc-for/2008/08" />
+  <version
+      id="1"
+      slug="version-2"
+      status="superseded"
+      title="Version 2"
+      note="Note for v1"
+      release-date="2014-01"
+      do-import="true"
+      do-publish="true">
+    <access-point discriminator="file" source="user">
+      <ap-file upload-id="1" format="TTL" />
+    </access-point>
+  </version>
+  <version
+      id="2"
+      slug="version-1"
+      status="superseded"
+      title="Version 1"
+      note="Note for v2"
+      release-date="2014-02"
+      do-import="true"
+      do-publish="true">
+    <access-point discriminator="file" source="user">
+      <ap-file upload-id="2" format="TTL" />
+    </access-point>
+  </version>
+  <related-entity-ref id="1">
+    <relation>publishedBy</relation>
+  </related-entity-ref>
+</vocabulary>

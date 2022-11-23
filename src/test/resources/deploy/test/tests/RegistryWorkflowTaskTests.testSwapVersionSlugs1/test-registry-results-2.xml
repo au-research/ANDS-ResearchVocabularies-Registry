@@ -1,0 +1,121 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE dataset>
+<dataset>
+
+  <RELATED_ENTITIES ID="1" DATA="{''email'':''services@ands.org.au'',''url'':[''http://ands.org.au/'']}" END_DATE="9999-12-01 00:00:00.0" MODIFIED_BY="SYSTEM" OWNER="ANDS-Curated" RELATED_ENTITY_ID="1" START_DATE="2015-11-26 10:04:05.0" TITLE="Australian National Data Service" TYPE="PARTY"/>
+  <RELATED_ENTITY_IDS ID="1"/>
+
+  <UPLOADS ID="1" FILENAME="test1.ttl" FORMAT="TTL" MODIFIED_BY="SYSTEM" OWNER="ANDS-Curated"/>
+  <UPLOADS ID="2" FILENAME="test2.ttl" FORMAT="TTL" MODIFIED_BY="SYSTEM" OWNER="ANDS-Curated"/>
+
+  <VOCABULARY_IDS ID="1"/>
+
+  <VOCABULARIES ID="1" DATA="{''subjects'':[{''iri'':''http://purl.org/au-research/vocabulary/anzsrc-for/2008/08'',''label'':''INFORMATION AND COMPUTING SCIENCES'',''source'':''anzsrc-for''}],''other-languages'':[],''top-concepts'':[],''acronym'':''RIF-CS'',''creation-date'':''2008-12-31'',''description'':''The RIF-CS schema ...'',''licence'':''CC-BY'',''primary-language'':''en'',''revision-cycle'':''Updated as required'',''title'':''RIF - CS (Vocabularies)''}" END_DATE="2017-10-01 10:20:00.0" MODIFIED_BY="TEST" OWNER="ANDS-Curated" SLUG="rifcs" START_DATE="2017-10-01 10:10:00.0" STATUS="PUBLISHED" VOCABULARY_ID="1"/>
+  <VOCABULARIES ID="2" DATA="{''subjects'':[{''iri'':''http://purl.org/au-research/vocabulary/anzsrc-for/2008/08'',''label'':''INFORMATION AND COMPUTING SCIENCES'',''source'':''anzsrc-for''}],''other-languages'':[],''top-concepts'':[],''acronym'':''RIF-CS'',''creation-date'':''2008-12-31'',''description'':''The RIF-CS schema ...'',''licence'':''CC-BY'',''primary-language'':''en'',''revision-cycle'':''Updated as required'',''title'':''RIF - CS (Vocabularies)''}" END_DATE="9999-12-01 00:00:00.0" MODIFIED_BY="TEST" OWNER="ANDS-Curated" SLUG="rifcs" START_DATE="2017-10-01 10:20:00.0" STATUS="PUBLISHED" VOCABULARY_ID="1"/>
+
+  <VERSION_IDS ID="1"/>
+  <VERSION_IDS ID="2"/>
+
+  <VERSIONS ID="1" DATA="{''browse-flag'':[],''do-import'':true,''do-publish'':true,''note'':''Note for v1'',''title'':''Version 1''}" END_DATE="2017-10-01 10:20:00.0" MODIFIED_BY="TEST" RELEASE_DATE="2014-01" SLUG="version-1" START_DATE="2017-10-01 10:10:00.0" STATUS="SUPERSEDED" VERSION_ID="1" VOCABULARY_ID="1"/>
+  <VERSIONS ID="2" DATA="{''browse-flag'':[],''do-import'':true,''do-publish'':true,''note'':''Note for v2'',''title'':''Version 2''}" END_DATE="2017-10-01 10:20:00.0" MODIFIED_BY="TEST" RELEASE_DATE="2014-02" SLUG="version-2" START_DATE="2017-10-01 10:10:00.0" STATUS="SUPERSEDED" VERSION_ID="2" VOCABULARY_ID="1"/>
+  <VERSIONS ID="3" DATA="{''browse-flag'':[],''do-import'':true,''do-publish'':true,''note'':''Note for v1'',''title'':''Version 2''}" END_DATE="9999-12-01 00:00:00.0" MODIFIED_BY="TEST" RELEASE_DATE="2014-01" SLUG="version-2" START_DATE="2017-10-01 10:20:00.0" STATUS="SUPERSEDED" VERSION_ID="1" VOCABULARY_ID="1"/>
+  <VERSIONS ID="4" DATA="{''browse-flag'':[],''do-import'':true,''do-publish'':true,''note'':''Note for v2'',''title'':''Version 1''}" END_DATE="9999-12-01 00:00:00.0" MODIFIED_BY="TEST" RELEASE_DATE="2014-02" SLUG="version-1" START_DATE="2017-10-01 10:20:00.0" STATUS="SUPERSEDED" VERSION_ID="2" VOCABULARY_ID="1"/>
+
+  <ACCESS_POINT_IDS ID="1"/>
+  <ACCESS_POINT_IDS ID="2"/>
+  <ACCESS_POINT_IDS ID="3"/>
+  <ACCESS_POINT_IDS ID="4"/>
+  <ACCESS_POINT_IDS ID="5"/>
+  <ACCESS_POINT_IDS ID="6"/>
+  <ACCESS_POINT_IDS ID="7"/>
+  <ACCESS_POINT_IDS ID="8"/>
+  <ACCESS_POINT_IDS ID="9"/>
+  <ACCESS_POINT_IDS ID="10"/>
+  <ACCESS_POINT_IDS ID="11"/>
+  <ACCESS_POINT_IDS ID="12"/>
+  <ACCESS_POINT_IDS ID="13"/>
+  <ACCESS_POINT_IDS ID="14"/>
+  <ACCESS_POINT_IDS ID="15"/>
+  <ACCESS_POINT_IDS ID="16"/>
+
+  <ACCESS_POINTS ID="1" ACCESS_POINT_ID="1" DATA="{''format'':''TTL'',''path'':''{VOCABS}/ands-curated/1/1/20171001T1010/harvest_data/1.ttl'',''upload-id'':1,''url'':''{DOWNLOADPREFIX}1/test1.ttl''}" END_DATE="2017-10-01 10:20:00.0" MODIFIED_BY="TEST" SOURCE="USER" START_DATE="2017-10-01 10:10:00.0" TYPE="FILE" VERSION_ID="1"/>
+  <ACCESS_POINTS ID="2" ACCESS_POINT_ID="2" DATA="{''format'':''TTL'',''path'':''{VOCABS}/ands-curated/1/2/20171001T1010/harvest_data/2.ttl'',''upload-id'':2,''url'':''{DOWNLOADPREFIX}2/test2.ttl''}" END_DATE="2017-10-01 10:20:00.0" MODIFIED_BY="TEST" SOURCE="USER" START_DATE="2017-10-01 10:10:00.0" TYPE="FILE" VERSION_ID="2"/>
+  <ACCESS_POINTS ID="3" ACCESS_POINT_ID="3" DATA="{''url'':''http://localhost/repository/api/sparql/ands-curated_rifcs_version-1''}" END_DATE="2017-10-01 10:20:00.0" MODIFIED_BY="TEST" SOURCE="SYSTEM" START_DATE="2017-10-01 10:10:00.0" TYPE="API_SPARQL" VERSION_ID="1"/>
+  <ACCESS_POINTS ID="4" ACCESS_POINT_ID="4" DATA="{''repository'':''ands-curated_rifcs_version-1'',''server-base'':''http://localhost:8123/openrdf-sesame/'',''url-prefix'':''{DOWNLOADPREFIX}4/ands-curated_rifcs_version-1.''}" END_DATE="2017-10-01 10:20:00.0" MODIFIED_BY="TEST" SOURCE="SYSTEM" START_DATE="2017-10-01 10:10:00.0" TYPE="SESAME_DOWNLOAD" VERSION_ID="1"/>
+  <ACCESS_POINTS ID="5" ACCESS_POINT_ID="5" DATA="{''path'':''{SPECS}/ands-curated_rifcs_version-1.ttl'',''url-prefix'':''http://localhost/repository/api/lda/ands-curated/rifcs/version-1''}" END_DATE="2017-10-01 10:20:00.0" MODIFIED_BY="TEST" SOURCE="SYSTEM" START_DATE="2017-10-01 10:10:00.0" TYPE="SISSVOC" VERSION_ID="1"/>
+  <ACCESS_POINTS ID="6" ACCESS_POINT_ID="6" DATA="{''url'':''http://localhost/repository/api/sparql/ands-curated_rifcs_version-2''}" END_DATE="2017-10-01 10:20:00.0" MODIFIED_BY="TEST" SOURCE="SYSTEM" START_DATE="2017-10-01 10:10:00.0" TYPE="API_SPARQL" VERSION_ID="2"/>
+  <ACCESS_POINTS ID="7" ACCESS_POINT_ID="7" DATA="{''repository'':''ands-curated_rifcs_version-2'',''server-base'':''http://localhost:8123/openrdf-sesame/'',''url-prefix'':''{DOWNLOADPREFIX}7/ands-curated_rifcs_version-2.''}" END_DATE="2017-10-01 10:20:00.0" MODIFIED_BY="TEST" SOURCE="SYSTEM" START_DATE="2017-10-01 10:10:00.0" TYPE="SESAME_DOWNLOAD" VERSION_ID="2"/>
+  <ACCESS_POINTS ID="8" ACCESS_POINT_ID="8" DATA="{''path'':''{SPECS}/ands-curated_rifcs_version-2.ttl'',''url-prefix'':''http://localhost/repository/api/lda/ands-curated/rifcs/version-2''}" END_DATE="2017-10-01 10:20:00.0" MODIFIED_BY="TEST" SOURCE="SYSTEM" START_DATE="2017-10-01 10:10:00.0" TYPE="SISSVOC" VERSION_ID="2"/>
+  <ACCESS_POINTS ID="9" ACCESS_POINT_ID="9" DATA="{''format'':''TTL'',''path'':''{VOCABS}/ands-curated/1/1/20171001T1020/harvest_data/1.ttl'',''upload-id'':1,''url'':''{DOWNLOADPREFIX}9/test1.ttl''}" END_DATE="9999-12-01 00:00:00.0" MODIFIED_BY="TEST" SOURCE="USER" START_DATE="2017-10-01 10:20:00.0" TYPE="FILE" VERSION_ID="1"/>
+  <ACCESS_POINTS ID="10" ACCESS_POINT_ID="10" DATA="{''format'':''TTL'',''path'':''{VOCABS}/ands-curated/1/2/20171001T1020/harvest_data/2.ttl'',''upload-id'':2,''url'':''{DOWNLOADPREFIX}10/test2.ttl''}" END_DATE="9999-12-01 00:00:00.0" MODIFIED_BY="TEST" SOURCE="USER" START_DATE="2017-10-01 10:20:00.0" TYPE="FILE" VERSION_ID="2"/>
+  <ACCESS_POINTS ID="11" ACCESS_POINT_ID="11" DATA="{''url'':''http://localhost/repository/api/sparql/ands-curated_rifcs_version-2''}" END_DATE="9999-12-01 00:00:00.0" MODIFIED_BY="TEST" SOURCE="SYSTEM" START_DATE="2017-10-01 10:20:00.0" TYPE="API_SPARQL" VERSION_ID="1"/>
+  <ACCESS_POINTS ID="12" ACCESS_POINT_ID="12" DATA="{''repository'':''ands-curated_rifcs_version-2'',''server-base'':''http://localhost:8123/openrdf-sesame/'',''url-prefix'':''{DOWNLOADPREFIX}12/ands-curated_rifcs_version-2.''}" END_DATE="9999-12-01 00:00:00.0" MODIFIED_BY="TEST" SOURCE="SYSTEM" START_DATE="2017-10-01 10:20:00.0" TYPE="SESAME_DOWNLOAD" VERSION_ID="1"/>
+  <ACCESS_POINTS ID="13" ACCESS_POINT_ID="13" DATA="{''path'':''{SPECS}/ands-curated_rifcs_version-2.ttl'',''url-prefix'':''http://localhost/repository/api/lda/ands-curated/rifcs/version-2''}" END_DATE="9999-12-01 00:00:00.0" MODIFIED_BY="TEST" SOURCE="SYSTEM" START_DATE="2017-10-01 10:20:00.0" TYPE="SISSVOC" VERSION_ID="1"/>
+  <ACCESS_POINTS ID="14" ACCESS_POINT_ID="14" DATA="{''url'':''http://localhost/repository/api/sparql/ands-curated_rifcs_version-1''}" END_DATE="9999-12-01 00:00:00.0" MODIFIED_BY="TEST" SOURCE="SYSTEM" START_DATE="2017-10-01 10:20:00.0" TYPE="API_SPARQL" VERSION_ID="2"/>
+  <ACCESS_POINTS ID="15" ACCESS_POINT_ID="15" DATA="{''repository'':''ands-curated_rifcs_version-1'',''server-base'':''http://localhost:8123/openrdf-sesame/'',''url-prefix'':''{DOWNLOADPREFIX}15/ands-curated_rifcs_version-1.''}" END_DATE="9999-12-01 00:00:00.0" MODIFIED_BY="TEST" SOURCE="SYSTEM" START_DATE="2017-10-01 10:20:00.0" TYPE="SESAME_DOWNLOAD" VERSION_ID="2"/>
+  <ACCESS_POINTS ID="16" ACCESS_POINT_ID="16" DATA="{''path'':''{SPECS}/ands-curated_rifcs_version-1.ttl'',''url-prefix'':''http://localhost/repository/api/lda/ands-curated/rifcs/version-1''}" END_DATE="9999-12-01 00:00:00.0" MODIFIED_BY="TEST" SOURCE="SYSTEM" START_DATE="2017-10-01 10:20:00.0" TYPE="SISSVOC" VERSION_ID="2"/>
+
+  <VOCABULARY_RELATED_ENTITIES ID="1" END_DATE="9999-12-01 00:00:00.0" MODIFIED_BY="TEST" RELATED_ENTITY_ID="1" RELATION="PUBLISHED_BY" START_DATE="2017-10-01 10:10:00.0" VOCABULARY_ID="1"/>
+
+  <VERSION_ARTEFACT_IDS ID="1"/>
+  <VERSION_ARTEFACT_IDS ID="2"/>
+  <VERSION_ARTEFACT_IDS ID="3"/>
+  <VERSION_ARTEFACT_IDS ID="4"/>
+  <VERSION_ARTEFACT_IDS ID="5"/>
+  <VERSION_ARTEFACT_IDS ID="6"/>
+  <VERSION_ARTEFACT_IDS ID="7"/>
+  <VERSION_ARTEFACT_IDS ID="8"/>
+  <VERSION_ARTEFACT_IDS ID="9"/>
+  <VERSION_ARTEFACT_IDS ID="10"/>
+  <VERSION_ARTEFACT_IDS ID="11"/>
+  <VERSION_ARTEFACT_IDS ID="12"/>
+
+  <VERSION_ARTEFACTS ID="1" DATA="{''path'':''{VOCABS}/ands-curated/1/1/20171001T1010/concepts_tree3.json''}" END_DATE="2017-10-01 10:20:00.0" MODIFIED_BY="TEST" START_DATE="2017-10-01 10:10:00.0" STATUS="CURRENT" TYPE="CONCEPT_TREE" VERSION_ARTEFACT_ID="1" VERSION_ID="1"/>
+  <VERSION_ARTEFACTS ID="2" DATA="{''path'':''{VOCABS}/ands-curated/1/1/20171001T1010/concepts_list.json''}" END_DATE="2017-10-01 10:20:00.0" MODIFIED_BY="TEST" START_DATE="2017-10-01 10:10:00.0" STATUS="CURRENT" TYPE="CONCEPT_LIST" VERSION_ARTEFACT_ID="2" VERSION_ID="1"/>
+  <VERSION_ARTEFACTS ID="3" DATA="{''path'':''{VOCABS}/ands-curated/1/1/20171001T1010/resource_docs.json''}" END_DATE="2017-10-01 10:20:00.0" MODIFIED_BY="TEST" START_DATE="2017-10-01 10:10:00.0" STATUS="CURRENT" TYPE="RESOURCE_DOCS" VERSION_ARTEFACT_ID="3" VERSION_ID="1"/>
+  <VERSION_ARTEFACTS ID="4" DATA="{''path'':''{VOCABS}/ands-curated/1/2/20171001T1010/concepts_tree3.json''}" END_DATE="2017-10-01 10:20:00.0" MODIFIED_BY="TEST" START_DATE="2017-10-01 10:10:00.0" STATUS="CURRENT" TYPE="CONCEPT_TREE" VERSION_ARTEFACT_ID="4" VERSION_ID="2"/>
+  <VERSION_ARTEFACTS ID="5" DATA="{''path'':''{VOCABS}/ands-curated/1/2/20171001T1010/concepts_list.json''}" END_DATE="2017-10-01 10:20:00.0" MODIFIED_BY="TEST" START_DATE="2017-10-01 10:10:00.0" STATUS="CURRENT" TYPE="CONCEPT_LIST" VERSION_ARTEFACT_ID="5" VERSION_ID="2"/>
+  <VERSION_ARTEFACTS ID="6" DATA="{''path'':''{VOCABS}/ands-curated/1/2/20171001T1010/resource_docs.json''}" END_DATE="2017-10-01 10:20:00.0" MODIFIED_BY="TEST" START_DATE="2017-10-01 10:10:00.0" STATUS="CURRENT" TYPE="RESOURCE_DOCS" VERSION_ARTEFACT_ID="6" VERSION_ID="2"/>
+  <VERSION_ARTEFACTS ID="7" DATA="{''path'':''{VOCABS}/ands-curated/1/1/20171001T1020/concepts_tree3.json''}" END_DATE="9999-12-01 00:00:00.0" MODIFIED_BY="TEST" START_DATE="2017-10-01 10:20:00.0" STATUS="CURRENT" TYPE="CONCEPT_TREE" VERSION_ARTEFACT_ID="7" VERSION_ID="1"/>
+  <VERSION_ARTEFACTS ID="8" DATA="{''path'':''{VOCABS}/ands-curated/1/1/20171001T1020/concepts_list.json''}" END_DATE="9999-12-01 00:00:00.0" MODIFIED_BY="TEST" START_DATE="2017-10-01 10:20:00.0" STATUS="CURRENT" TYPE="CONCEPT_LIST" VERSION_ARTEFACT_ID="8" VERSION_ID="1"/>
+  <VERSION_ARTEFACTS ID="9" DATA="{''path'':''{VOCABS}/ands-curated/1/1/20171001T1020/resource_docs.json''}" END_DATE="9999-12-01 00:00:00.0" MODIFIED_BY="TEST" START_DATE="2017-10-01 10:20:00.0" STATUS="CURRENT" TYPE="RESOURCE_DOCS" VERSION_ARTEFACT_ID="9" VERSION_ID="1"/>
+  <VERSION_ARTEFACTS ID="10" DATA="{''path'':''{VOCABS}/ands-curated/1/2/20171001T1020/concepts_tree3.json''}" END_DATE="9999-12-01 00:00:00.0" MODIFIED_BY="TEST" START_DATE="2017-10-01 10:20:00.0" STATUS="CURRENT" TYPE="CONCEPT_TREE" VERSION_ARTEFACT_ID="10" VERSION_ID="2"/>
+  <VERSION_ARTEFACTS ID="11" DATA="{''path'':''{VOCABS}/ands-curated/1/2/20171001T1020/concepts_list.json''}" END_DATE="9999-12-01 00:00:00.0" MODIFIED_BY="TEST" START_DATE="2017-10-01 10:20:00.0" STATUS="CURRENT" TYPE="CONCEPT_LIST" VERSION_ARTEFACT_ID="11" VERSION_ID="2"/>
+  <VERSION_ARTEFACTS ID="12" DATA="{''path'':''{VOCABS}/ands-curated/1/2/20171001T1020/resource_docs.json''}" END_DATE="9999-12-01 00:00:00.0" MODIFIED_BY="TEST" START_DATE="2017-10-01 10:20:00.0" STATUS="CURRENT" TYPE="RESOURCE_DOCS" VERSION_ARTEFACT_ID="12" VERSION_ID="2"/>
+
+  <OWNERS OWNER_ID="1" OWNER="ANDS-Curated"/>
+
+  <REGISTRY_EVENTS ID="1" ELEMENT_ID="1" ELEMENT_TYPE="VOCABULARIES" EVENT_DATE="2017-10-01 10:10:00.0" EVENT_DETAILS="{''id'':1,''status'':''published''}" EVENT_TYPE="CREATED" EVENT_USER="TEST"/>
+  <REGISTRY_EVENTS ID="2" ELEMENT_ID="1" ELEMENT_TYPE="VERSIONS" EVENT_DATE="2017-10-01 10:10:00.0" EVENT_DETAILS="{''draft'':false,''id'':1,''status'':''superseded''}" EVENT_TYPE="CREATED" EVENT_USER="TEST"/>
+  <REGISTRY_EVENTS ID="3" ELEMENT_ID="2" ELEMENT_TYPE="VERSIONS" EVENT_DATE="2017-10-01 10:10:00.0" EVENT_DETAILS="{''draft'':false,''id'':2,''status'':''superseded''}" EVENT_TYPE="CREATED" EVENT_USER="TEST"/>
+  <REGISTRY_EVENTS ID="4" ELEMENT_ID="1" ELEMENT_TYPE="ACCESS_POINTS" EVENT_DATE="2017-10-01 10:10:00.0" EVENT_DETAILS="{''draft'':false,''id'':1}" EVENT_TYPE="CREATED" EVENT_USER="TEST"/>
+  <REGISTRY_EVENTS ID="5" ELEMENT_ID="2" ELEMENT_TYPE="ACCESS_POINTS" EVENT_DATE="2017-10-01 10:10:00.0" EVENT_DETAILS="{''draft'':false,''id'':2}" EVENT_TYPE="CREATED" EVENT_USER="TEST"/>
+  <REGISTRY_EVENTS ID="6" ELEMENT_ID="1" ELEMENT_TYPE="VOCABULARIES" EVENT_DATE="2017-10-01 10:20:00.0" EVENT_DETAILS="{''id'':2,''previous_id'':1,''status'':''published''}" EVENT_TYPE="UPDATED" EVENT_USER="TEST"/>
+  <REGISTRY_EVENTS ID="7" ELEMENT_ID="1" ELEMENT_TYPE="VERSIONS" EVENT_DATE="2017-10-01 10:20:00.0" EVENT_DETAILS="{''draft'':false,''id'':3,''previous_id'':1,''status'':''superseded''}" EVENT_TYPE="UPDATED" EVENT_USER="TEST"/>
+  <REGISTRY_EVENTS ID="8" ELEMENT_ID="2" ELEMENT_TYPE="VERSIONS" EVENT_DATE="2017-10-01 10:20:00.0" EVENT_DETAILS="{''draft'':false,''id'':4,''previous_id'':2,''status'':''superseded''}" EVENT_TYPE="UPDATED" EVENT_USER="TEST"/>
+  <REGISTRY_EVENTS ID="9" ELEMENT_ID="9" ELEMENT_TYPE="ACCESS_POINTS" EVENT_DATE="2017-10-01 10:20:00.0" EVENT_DETAILS="{''draft'':false,''id'':9}" EVENT_TYPE="CREATED" EVENT_USER="TEST"/>
+  <REGISTRY_EVENTS ID="10" ELEMENT_ID="10" ELEMENT_TYPE="ACCESS_POINTS" EVENT_DATE="2017-10-01 10:20:00.0" EVENT_DETAILS="{''draft'':false,''id'':10}" EVENT_TYPE="CREATED" EVENT_USER="TEST"/>
+  <REGISTRY_EVENTS ID="11" ELEMENT_ID="1" ELEMENT_TYPE="ACCESS_POINTS" EVENT_DATE="2017-10-01 10:20:00.0" EVENT_DETAILS="{''draft'':false,''id'':1}" EVENT_TYPE="DELETED" EVENT_USER="TEST"/>
+  <REGISTRY_EVENTS ID="12" ELEMENT_ID="2" ELEMENT_TYPE="ACCESS_POINTS" EVENT_DATE="2017-10-01 10:20:00.0" EVENT_DETAILS="{''draft'':false,''id'':2}" EVENT_TYPE="DELETED" EVENT_USER="TEST"/>
+
+  <TASKS ID="1" PARAMS="[{''operation'':''insert'',''priority'':20,''provider'':''ConceptTree'',''results'':{''timestamp'':''2022-11-23T03:44:36.497''},''status'':''success'',''subtaskProviderType'':''transform''},{''operation'':''insert'',''priority'':20,''provider'':''JsonList'',''results'':{''timestamp'':''2022-11-23T03:44:36.506''},''status'':''success'',''subtaskProviderType'':''transform''},{''operation'':''insert'',''priority'':30,''provider'':''Sesame'',''results'':{''timestamp'':''2022-11-23T03:44:36.610''},''status'':''success'',''subtaskProviderType'':''importer''},{''operation'':''insert'',''priority'':40,''provider'':''SISSVoc'',''results'':{''timestamp'':''2022-11-23T03:44:36.618''},''status'':''success'',''subtaskProviderType'':''publish''},{''operation'':''insert'',''priority'':50,''provider'':''ResourceDocs'',''results'':{''timestamp'':''2022-11-23T03:44:36.625''},''status'':''success'',''subtaskProviderType'':''transform''},{''operation'':''perform'',''priority'':50,''provider'':''ResourceMap'',''results'':{''info-private'':''ResourceMapTransformProvider.transform(): no hosts associated with this owner: ANDS-Curated'',''timestamp'':''2022-11-23T03:44:36.628''},''status'':''success'',''subtaskProviderType'':''transform''}]" RESPONSE="{''response'':''All subtasks completed successfully.'',''timestamp'':''2022-11-23T03:44:36.628''}" STATUS="SUCCESS" VERSION_ID="1" VOCABULARY_ID="1"/>
+  <TASKS ID="2" PARAMS="[{''operation'':''insert'',''priority'':20,''provider'':''ConceptTree'',''results'':{''timestamp'':''2022-11-23T03:44:36.637''},''status'':''success'',''subtaskProviderType'':''transform''},{''operation'':''insert'',''priority'':20,''provider'':''JsonList'',''results'':{''timestamp'':''2022-11-23T03:44:36.645''},''status'':''success'',''subtaskProviderType'':''transform''},{''operation'':''insert'',''priority'':30,''provider'':''Sesame'',''results'':{''timestamp'':''2022-11-23T03:44:36.740''},''status'':''success'',''subtaskProviderType'':''importer''},{''operation'':''insert'',''priority'':40,''provider'':''SISSVoc'',''results'':{''timestamp'':''2022-11-23T03:44:36.749''},''status'':''success'',''subtaskProviderType'':''publish''},{''operation'':''insert'',''priority'':50,''provider'':''ResourceDocs'',''results'':{''timestamp'':''2022-11-23T03:44:36.758''},''status'':''success'',''subtaskProviderType'':''transform''},{''operation'':''perform'',''priority'':50,''provider'':''ResourceMap'',''results'':{''info-private'':''ResourceMapTransformProvider.transform(): no hosts associated with this owner: ANDS-Curated'',''timestamp'':''2022-11-23T03:44:36.761''},''status'':''success'',''subtaskProviderType'':''transform''}]" RESPONSE="{''response'':''All subtasks completed successfully.'',''timestamp'':''2022-11-23T03:44:36.761''}" STATUS="SUCCESS" VERSION_ID="2" VOCABULARY_ID="1"/>
+  <TASKS ID="3" PARAMS="[{''operation'':''delete'',''priority'':-40,''provider'':''SISSVoc'',''results'':{''timestamp'':''2022-11-23T03:44:36.864''},''status'':''success'',''subtaskProviderType'':''publish''},{''operation'':''delete'',''priority'':-30,''provider'':''Sesame'',''results'':{''timestamp'':''2022-11-23T03:44:36.896''},''status'':''success'',''subtaskProviderType'':''importer''},{''operation'':''insert'',''priority'':20,''provider'':''ConceptTree'',''results'':{''timestamp'':''2022-11-23T03:44:36.915''},''status'':''success'',''subtaskProviderType'':''transform''},{''operation'':''insert'',''priority'':20,''provider'':''JsonList'',''results'':{''timestamp'':''2022-11-23T03:44:36.928''},''status'':''success'',''subtaskProviderType'':''transform''},{''operation'':''insert'',''priority'':30,''provider'':''Sesame'',''results'':{''timestamp'':''2022-11-23T03:44:36.993''},''status'':''success'',''subtaskProviderType'':''importer''},{''operation'':''insert'',''priority'':40,''provider'':''SISSVoc'',''results'':{''timestamp'':''2022-11-23T03:44:37.004''},''status'':''success'',''subtaskProviderType'':''publish''},{''operation'':''insert'',''priority'':50,''provider'':''ResourceDocs'',''results'':{''timestamp'':''2022-11-23T03:44:37.016''},''status'':''success'',''subtaskProviderType'':''transform''},{''operation'':''perform'',''priority'':50,''provider'':''ResourceMap'',''results'':{''info-private'':''ResourceMapTransformProvider.transform(): no hosts associated with this owner: ANDS-Curated'',''timestamp'':''2022-11-23T03:44:37.019''},''status'':''success'',''subtaskProviderType'':''transform''}]" RESPONSE="{''response'':''All subtasks completed successfully.'',''timestamp'':''2022-11-23T03:44:37.019''}" STATUS="SUCCESS" VERSION_ID="1" VOCABULARY_ID="1"/>
+  <TASKS ID="4" PARAMS="[{''operation'':''delete'',''priority'':-40,''provider'':''SISSVoc'',''results'':{''timestamp'':''2022-11-23T03:44:37.023''},''status'':''success'',''subtaskProviderType'':''publish''},{''operation'':''delete'',''priority'':-30,''provider'':''Sesame'',''results'':{''timestamp'':''2022-11-23T03:44:37.057''},''status'':''success'',''subtaskProviderType'':''importer''},{''operation'':''insert'',''priority'':20,''provider'':''ConceptTree'',''results'':{''timestamp'':''2022-11-23T03:44:37.071''},''status'':''success'',''subtaskProviderType'':''transform''},{''operation'':''insert'',''priority'':20,''provider'':''JsonList'',''results'':{''timestamp'':''2022-11-23T03:44:37.079''},''status'':''success'',''subtaskProviderType'':''transform''},{''operation'':''insert'',''priority'':30,''provider'':''Sesame'',''results'':{''timestamp'':''2022-11-23T03:44:37.191''},''status'':''success'',''subtaskProviderType'':''importer''},{''operation'':''insert'',''priority'':40,''provider'':''SISSVoc'',''results'':{''timestamp'':''2022-11-23T03:44:37.203''},''status'':''success'',''subtaskProviderType'':''publish''},{''operation'':''insert'',''priority'':50,''provider'':''ResourceDocs'',''results'':{''timestamp'':''2022-11-23T03:44:37.219''},''status'':''success'',''subtaskProviderType'':''transform''},{''operation'':''perform'',''priority'':50,''provider'':''ResourceMap'',''results'':{''info-private'':''ResourceMapTransformProvider.transform(): no hosts associated with this owner: ANDS-Curated'',''timestamp'':''2022-11-23T03:44:37.222''},''status'':''success'',''subtaskProviderType'':''transform''}]" RESPONSE="{''response'':''All subtasks completed successfully.'',''timestamp'':''2022-11-23T03:44:37.222''}" STATUS="SUCCESS" VERSION_ID="2" VOCABULARY_ID="1"/>
+
+  <POOLPARTY_SERVERS/>
+  <RELATED_ENTITY_IDENTIFIERS/>
+  <RELATED_ENTITY_IDENTIFIER_IDS/>
+  <RESOURCE_MAP/>
+  <RESOURCE_OWNER_HOSTS/>
+  <SUBJECT_RESOLVER/>
+  <SUBJECT_RESOLVER_SOURCES/>
+  <SUBSCRIBERS/>
+  <SUBSCRIBER_EMAIL_ADDRESSES/>
+  <SUBSCRIBER_EMAIL_ADDRESS_IDS/>
+  <SUBSCRIBER_IDS/>
+  <SUBSCRIPTIONS/>
+  <SUBSCRIPTION_IDS/>
+  <VOCABULARY_RELATED_VOCABULARIES/>
+
+</dataset>
