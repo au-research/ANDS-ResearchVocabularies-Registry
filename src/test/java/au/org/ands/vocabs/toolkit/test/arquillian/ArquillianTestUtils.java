@@ -1124,6 +1124,37 @@ public final class ArquillianTestUtils {
             logger.info("Cleaning up Sesame repository: " + repo.getId());
             manager.removeRepository(repo.getId());
         }
+        // Seems to be necessary to invoke refresh() to make
+        // the manager "forget" about the repositories.
+        // Without it, if you immediately reimport,
+        // createRepository's call to getRepository()
+        // wrongly reports that the repository already exists,
+        // and the subsequent importing of data fails.
+        // See also the corresponding comment in
+        // SesameImporterProvider.unimport().
+
+        /* Example exception stacktrace that shows what happen if
+         * the refresh is omitted:
+2022-11-24 11:26:30,584 [http-bio-8123-exec-1] DEBUG
+    au.org.ands.vocabs.registry.workflow.provider.importer.
+    SesameImporterProvider - Sesame createRepository: already exists; reusing
+2022-11-24 11:26:30,588 [http-bio-8123-exec-1] ERROR
+    au.org.ands.vocabs.registry.workflow.provider.importer.
+    SesameImporterProvider - Exception in Sesame uploadRDF()
+org.openrdf.repository.RepositoryException: unable to start transaction.
+    HTTP error code 404
+    at org.openrdf.http.client.SesameSession.beginTransaction(
+        SesameSession.java:506)
+    at org.openrdf.repository.http.HTTPRepositoryConnection.begin(
+        HTTPRepositoryConnection.java:173)
+    at org.openrdf.repository.base.RepositoryConnectionBase.
+        startLocalTransaction(RepositoryConnectionBase.java:363)
+    at org.openrdf.repository.http.HTTPRepositoryConnection.clear(
+        HTTPRepositoryConnection.java:744)
+    at au.org.ands.vocabs.registry.workflow.provider.importer.
+        SesameImporterProvider.uploadRDF(SesameImporterProvider.java:267)
+         */
+        manager.refresh();
     }
 
 }
