@@ -213,4 +213,28 @@ public class TaskInfo {
         persist();
     }
 
+    /** Process the task. Only the subtasks with a negative priority
+     * are executed. If the task has not already been persisted,
+     * {@link #persist()} will be called first. In any case,
+     * {@link #persist()} will be called <i>after</i> processing. */
+    public void processOnlyNegativePrioritySubtasks() {
+        if (dbTask == null) {
+            persist();
+        }
+        new TaskRunner(this).runTaskOnlyNegativePrioritySubtasks();
+        persist();
+    }
+
+    /** Process the remaining subtasks of this task.
+     * If the task has not already been persisted,
+     * {@link #persist()} will be called first. In any case,
+     * {@link #persist()} will be called <i>after</i> processing. */
+    public void processRemainingSubtasks() {
+        if (dbTask == null) {
+            persist();
+        }
+        new TaskRunner(this).runTaskRemainingSubtasks();
+        persist();
+    }
+
 }

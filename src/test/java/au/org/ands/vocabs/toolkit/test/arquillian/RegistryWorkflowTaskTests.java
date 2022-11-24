@@ -97,7 +97,7 @@ public class RegistryWorkflowTaskTests extends ArquillianBaseTest {
      * @throws OpenRDFException If there is a problem connecting with Sesame.
      * @throws SolrServerException If an error during Solr searching.
      *  */
-    @Test(enabled = false)
+    @Test
     @SuppressWarnings("checkstyle:MethodLength")
     public final void testDeleteAndAddSameVersion1() throws
     DatabaseUnitException, IOException, SQLException, JAXBException,
@@ -254,7 +254,7 @@ public class RegistryWorkflowTaskTests extends ArquillianBaseTest {
      * @throws OpenRDFException If there is a problem connecting with Sesame.
      * @throws SolrServerException If an error during Solr searching.
      *  */
-    @Test(enabled = false)
+    @Test
     @SuppressWarnings("checkstyle:MethodLength")
     public final void testSwapVersionSlugs1() throws
     DatabaseUnitException, IOException, SQLException, JAXBException,
