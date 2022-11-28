@@ -648,7 +648,7 @@ public final class ValidationUtils {
 
     static {
         // Business rules as specified in:
-        // https://intranet.ands.org.au/display/PROJ/
+        // https://confluence.ardc.edu.au/display/PROJ/
         //   Vocabularies+for+vocabulary+schema
         ALLOWED_RELATIONS_FOR_PARTY.add(RelatedEntityRelation.CONSUMER_OF);
         ALLOWED_RELATIONS_FOR_PARTY.add(RelatedEntityRelation.HAS_AUTHOR);
