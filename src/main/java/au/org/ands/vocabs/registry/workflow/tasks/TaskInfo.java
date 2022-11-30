@@ -58,7 +58,11 @@ public class TaskInfo {
         version = aVersion;
     }
 
-    /** Constructor.
+    /** Constructor. This variant, which accepts an existing <i>database</i>
+     * {@code au.org.ands.vocabs.registry.db.entity.Task} as its
+     * first parameter, creates a new <i>workflow</i> {@code Task}, in which
+     * the subtask list is populated from the database contents, but
+     * in which each subtask has its status reset to {@code TaskStatus#NEW}.
      * @param aDbTask The Task object as it came from the database.
      * @param aVocabulary The Vocabulary object.
      * @param aVersion The Version object.
@@ -85,7 +89,9 @@ public class TaskInfo {
         }
     }
 
-    /** Constructor.
+    /** Constructor. This variant, which accepts a <i>workflow</i>
+     * {@code Task} as its first parameter, does <i>not</i>
+     * modify the status values of its subtasks.
      * @param aTask The workflow Task object.
      * @param aVocabulary The Vocabulary object.
      * @param aVersion The Version object.

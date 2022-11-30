@@ -283,12 +283,16 @@ public class AdminRestMethods {
             // As we go, make sure that we don't have tasks for
             // more than one vocabulary.
             Integer vocabularyId = null;
+            Vocabulary vocabulary = null;
             List<TaskInfo> taskInfos = new ArrayList<>();
             for (Integer taskId : taskIds) {
                 au.org.ands.vocabs.registry.db.entity.Task dbTask =
                         TaskDAO.getTaskById(em, taskId);
                 if (vocabularyId == null) {
                     vocabularyId = dbTask.getVocabularyId();
+                    vocabulary =
+                            VocabularyDAO.getCurrentVocabularyByVocabularyId(em,
+                                    dbTask.getVocabularyId());
                 } else {
                     if (!vocabularyId.equals(dbTask.getVocabularyId())) {
                         ErrorResult errorResult =
@@ -298,14 +302,17 @@ public class AdminRestMethods {
                                 entity(errorResult).build();
                     }
                 }
-                Vocabulary vocabulary =
-                        VocabularyDAO.getCurrentVocabularyByVocabularyId(em,
-                                dbTask.getVocabularyId());
                 Version version =
                         VersionDAO.getCurrentVersionByVersionId(em,
                                 dbTask.getVersionId());
 
                 TaskInfo taskInfo = new TaskInfo(dbTask, vocabulary, version);
+                // Non-obvious but important fact: using the TaskInfo
+                // constructor that takes a _database_ Task creates
+                // a _workflow_ Task in which the Subtasks have their
+                // status reset to NEW. So we don't need to reset
+                // them here (which we would otherwise have to do, in order to
+                // force execution by processRemainingSubtasks()).
                 taskInfo.setEm(em);
                 taskInfo.setNowTime(TemporalUtils.nowUTC());
                 taskInfo.setModifiedBy(profile.getUsername());
