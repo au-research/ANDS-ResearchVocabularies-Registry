@@ -1026,7 +1026,7 @@ public class VersionsModel extends ModelBase {
                     // by invoking populateSubmodels(): there are then
                     // "orphan" database rows (for now, just AccessPoints).
                     // So see the last part of
-                    // AccessPointsMode.populateModel() to see how this
+                    // AccessPointsModel.populateModel() to see how this
                     // inconsistency is dealt with.
                     Version existingDraft = draftVersions.remove(versionId);
                     // Add a registry event representing deletion of the draft.
