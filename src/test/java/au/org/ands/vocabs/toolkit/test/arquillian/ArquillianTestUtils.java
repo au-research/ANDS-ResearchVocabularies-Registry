@@ -16,6 +16,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -52,6 +53,11 @@ import org.dbunit.ext.h2.H2Connection;
 import org.dbunit.operation.DatabaseOperation;
 import org.hibernate.HibernateException;
 import org.hibernate.internal.SessionImpl;
+import org.openrdf.repository.RepositoryException;
+import org.openrdf.repository.config.RepositoryConfigException;
+import org.openrdf.repository.manager.RepositoryInfo;
+import org.openrdf.repository.manager.RepositoryManager;
+import org.openrdf.repository.manager.RepositoryProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.Assert;
@@ -536,6 +542,11 @@ public final class ArquillianTestUtils {
             for (String seq : sequences) {
                 s.executeUpdate("ALTER SEQUENCE "
                         + seq + " RESTART WITH 1");
+                // We'd like to have the sequence name as a parameter, and say:
+                //    s.setString(1, sequenceName);
+                // ... but H2 doesn't like it. So we have to inject the name.
+                // We console ourselves with the knowledge that this is
+                // test code, and not ever executed in a deployment.
             }
         }
         // Force commit at the JDBC level, as closing the EntityManager
@@ -547,6 +558,55 @@ public final class ArquillianTestUtils {
         if (dbs == DatabaseSelector.REGISTRY) {
             Owners.clear();
         }
+    }
+
+    /** Set the value of a sequence used by a particular table/column.
+     * This is H2-specific!
+     * @param dbs The database to be updated.
+     * @param table The name of the table.
+     * @param column The name of the column.
+     * @param value The value to be used to set the sequence.
+     * @throws SQLException If there is a problem performing
+     *          JDBC operations.
+     */
+    public static void setSequenceValue(final DatabaseSelector dbs,
+            final String table, final String column, final int value) throws
+        SQLException {
+        Connection conn = getJDBCConnectionForDbUnit(dbs);
+
+        String sequenceName;
+        try (PreparedStatement s = conn.prepareStatement(
+                "SELECT SEQUENCE_NAME FROM INFORMATION_SCHEMA.COLUMNS "
+                + "WHERE TABLE_SCHEMA='PUBLIC' AND TABLE_NAME=? "
+                + "AND COLUMN_NAME=?")) {
+            s.setString(1, table);
+            s.setString(2, column);
+            try (ResultSet r = s.executeQuery()) {
+                if (!r.last()) {
+                    throw new IllegalArgumentException("No sequence found for "
+                            + "table = " + table + ", column = " + column);
+                }
+                if (r.getRow() != 1) {
+                    throw new IllegalArgumentException("Brokenness in H2; "
+                            + "multiple sequences found for "
+                            + "table = " + table + ", column = " + column);
+                }
+                sequenceName = r.getString(1);
+            }
+        }
+
+        try (PreparedStatement s = conn.prepareStatement(
+                "ALTER SEQUENCE " + sequenceName + " RESTART WITH ?")) {
+            // We'd like to have the sequence name as a parameter, and say:
+            //    s.setString(1, sequenceName);
+            // ... but H2 doesn't like it. So we have to inject the name.
+            // We console ourselves with the knowledge that this is
+            // test code, and not ever executed in a deployment.
+            s.setInt(1, value);
+            s.executeUpdate();
+        }
+        // Force commit at the JDBC level.
+        conn.commit();
     }
 
     /** Load a DbUnit test file into a database.
@@ -1043,6 +1103,58 @@ public final class ArquillianTestUtils {
     public static String clientResolveWireMockStubbedContentFilename(
             final String filename) {
         return WIREMOCK_FILES_PATH_CLIENT_SIDE.resolve(filename).toString();
+    }
+
+    /** URL to access the Sesame server. */
+    private static String sesameServer = RegistryProperties.getProperty(
+            PropertyConstants.SESAME_IMPORTER_SERVERURL);
+
+    /** Remove all of the existing Sesame repositories.
+     * @throws RepositoryException If there is a problem connecting with
+     *   Sesame.
+     * @throws RepositoryConfigException If there is a repository
+     *  configuration problem.
+     */
+    public static void removeAllSesameRepositories()
+            throws RepositoryConfigException, RepositoryException {
+        RepositoryManager manager =
+                RepositoryProvider.getRepositoryManager(sesameServer);
+        // Parameter true means: omit the SYSTEM repository.
+        for (RepositoryInfo repo : manager.getAllRepositoryInfos(true)) {
+            logger.info("Cleaning up Sesame repository: " + repo.getId());
+            manager.removeRepository(repo.getId());
+        }
+        // Seems to be necessary to invoke refresh() to make
+        // the manager "forget" about the repositories.
+        // Without it, if you immediately reimport,
+        // createRepository's call to getRepository()
+        // wrongly reports that the repository already exists,
+        // and the subsequent importing of data fails.
+        // See also the corresponding comment in
+        // SesameImporterProvider.unimport().
+
+        /* Example exception stacktrace that shows what happen if
+         * the refresh is omitted:
+2022-11-24 11:26:30,584 [http-bio-8123-exec-1] DEBUG
+    au.org.ands.vocabs.registry.workflow.provider.importer.
+    SesameImporterProvider - Sesame createRepository: already exists; reusing
+2022-11-24 11:26:30,588 [http-bio-8123-exec-1] ERROR
+    au.org.ands.vocabs.registry.workflow.provider.importer.
+    SesameImporterProvider - Exception in Sesame uploadRDF()
+org.openrdf.repository.RepositoryException: unable to start transaction.
+    HTTP error code 404
+    at org.openrdf.http.client.SesameSession.beginTransaction(
+        SesameSession.java:506)
+    at org.openrdf.repository.http.HTTPRepositoryConnection.begin(
+        HTTPRepositoryConnection.java:173)
+    at org.openrdf.repository.base.RepositoryConnectionBase.
+        startLocalTransaction(RepositoryConnectionBase.java:363)
+    at org.openrdf.repository.http.HTTPRepositoryConnection.clear(
+        HTTPRepositoryConnection.java:744)
+    at au.org.ands.vocabs.registry.workflow.provider.importer.
+        SesameImporterProvider.uploadRDF(SesameImporterProvider.java:267)
+         */
+        manager.refresh();
     }
 
 }

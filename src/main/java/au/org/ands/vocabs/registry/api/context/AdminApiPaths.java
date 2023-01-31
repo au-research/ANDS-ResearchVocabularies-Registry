@@ -39,6 +39,9 @@ public final class AdminApiPaths {
     /** Subpath for task resources. */
     public static final String TASKS = "tasks";
 
+    /** Subpath for task set resources. */
+    public static final String TASK_SET = "taskSet";
+
     /** Path parameter name for a task resource. */
     public static final String TASK_ID = "{taskId}";
 

@@ -10,7 +10,7 @@ import java.net.URL;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status.Family;
+import javax.ws.rs.core.Response.Status;
 
 import org.hamcrest.MatcherAssert;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -68,8 +68,8 @@ public class RegistryAPITests extends ArquillianBaseTest {
                     ApiPaths.API_RESOURCE + "/" + ApiPaths.VOCABULARIES,
                     MediaType.APPLICATION_XML_TYPE);
 
-            Assert.assertEquals(response.getStatusInfo().getFamily(),
-                    Family.SUCCESSFUL,
+            Assert.assertEquals(response.getStatusInfo().getStatusCode(),
+                    Status.OK.getStatusCode(),
                     "getVocabularies response status");
             vocabularyList = response.readEntity(VocabularyList.class);
         } finally {
@@ -99,8 +99,8 @@ public class RegistryAPITests extends ArquillianBaseTest {
                     ApiPaths.API_RESOURCE + "/" + ApiPaths.VOCABULARIES,
                     MediaType.APPLICATION_XML_TYPE);
 
-            Assert.assertEquals(response.getStatusInfo().getFamily(),
-                    Family.SUCCESSFUL,
+            Assert.assertEquals(response.getStatusInfo().getStatusCode(),
+                    Status.OK.getStatusCode(),
                     "getVocabularies response status");
             vocabularyList = response.readEntity(VocabularyList.class);
         } finally {
@@ -186,8 +186,8 @@ public class RegistryAPITests extends ArquillianBaseTest {
                     MediaType.APPLICATION_XML_TYPE, "test1", "test",
                     webTarget -> webTarget.queryParam("deleteCurrent", "true"));
 
-            Assert.assertEquals(response.getStatusInfo().getFamily(),
-                    Family.SUCCESSFUL,
+            Assert.assertEquals(response.getStatusInfo().getStatusCode(),
+                    Status.NO_CONTENT.getStatusCode(),
                     "deleteVocabularies response status");
         } finally {
             if (response != null) {
@@ -203,8 +203,8 @@ public class RegistryAPITests extends ArquillianBaseTest {
                     ApiPaths.API_RESOURCE + "/" + ApiPaths.VOCABULARIES,
                     MediaType.APPLICATION_XML_TYPE);
 
-            Assert.assertEquals(response.getStatusInfo().getFamily(),
-                    Family.SUCCESSFUL,
+            Assert.assertEquals(response.getStatusInfo().getStatusCode(),
+                    Status.OK.getStatusCode(),
                     "getVocabularies response status");
             vocabularyList = response.readEntity(VocabularyList.class);
         } finally {
@@ -289,8 +289,8 @@ public class RegistryAPITests extends ArquillianBaseTest {
                             + testName
                             + "/test-vocabulary-3.xml");
 
-            Assert.assertEquals(response.getStatusInfo().getFamily(),
-                    Family.SUCCESSFUL,
+            Assert.assertEquals(response.getStatusInfo().getStatusCode(),
+                    Status.OK.getStatusCode(),
                     "updateVocabularies response status");
 
             actualString = response.readEntity(String.class);
@@ -383,8 +383,8 @@ public class RegistryAPITests extends ArquillianBaseTest {
                             + testName
                             + "/test-vocabulary-3.xml").trim();
 
-            Assert.assertEquals(response.getStatusInfo().getFamily(),
-                    Family.CLIENT_ERROR,
+            Assert.assertEquals(response.getStatusInfo().getStatusCode(),
+                    Status.BAD_REQUEST.getStatusCode(),
                     "updateVocabularies response status");
 
             actualString = response.readEntity(String.class);

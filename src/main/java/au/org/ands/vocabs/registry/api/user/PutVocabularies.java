@@ -387,7 +387,7 @@ public class PutVocabularies {
                 // Solr indexing.
                 EntityIndexer.indexVocabulary(updatedVocabularyId);
             }
-            return Response.created(EntityPaths.getURIOfEntity(
+            return Response.ok(EntityPaths.getURIOfEntity(
                     updatedVocabularyResponse)).
                     entity(updatedVocabularyResponse).build();
         } catch (Throwable t) {

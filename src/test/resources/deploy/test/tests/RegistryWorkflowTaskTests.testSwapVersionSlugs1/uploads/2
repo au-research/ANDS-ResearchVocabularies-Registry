@@ -1,0 +1,5 @@
+@prefix skos:    <http://www.w3.org/2004/02/skos/core#> .
+<http://test/uri2> a skos:Concept ;
+  skos:prefLabel "Label 2" ;
+  skos:definition "Definition 2" ;
+  skos:notation "2" .

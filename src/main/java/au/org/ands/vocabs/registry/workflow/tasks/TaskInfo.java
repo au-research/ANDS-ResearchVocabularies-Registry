@@ -58,7 +58,11 @@ public class TaskInfo {
         version = aVersion;
     }
 
-    /** Constructor.
+    /** Constructor. This variant, which accepts an existing <i>database</i>
+     * {@code au.org.ands.vocabs.registry.db.entity.Task} as its
+     * first parameter, creates a new <i>workflow</i> {@code Task}, in which
+     * the subtask list is populated from the database contents, but
+     * in which each subtask has its status reset to {@code TaskStatus#NEW}.
      * @param aDbTask The Task object as it came from the database.
      * @param aVocabulary The Vocabulary object.
      * @param aVersion The Version object.
@@ -85,7 +89,9 @@ public class TaskInfo {
         }
     }
 
-    /** Constructor.
+    /** Constructor. This variant, which accepts a <i>workflow</i>
+     * {@code Task} as its first parameter, does <i>not</i>
+     * modify the status values of its subtasks.
      * @param aTask The workflow Task object.
      * @param aVocabulary The Vocabulary object.
      * @param aVersion The Version object.
@@ -210,6 +216,30 @@ public class TaskInfo {
             persist();
         }
         new TaskRunner(this).runTask();
+        persist();
+    }
+
+    /** Process the task. Only the subtasks with a negative priority
+     * are executed. If the task has not already been persisted,
+     * {@link #persist()} will be called first. In any case,
+     * {@link #persist()} will be called <i>after</i> processing. */
+    public void processOnlyNegativePrioritySubtasks() {
+        if (dbTask == null) {
+            persist();
+        }
+        new TaskRunner(this).runTaskOnlyNegativePrioritySubtasks();
+        persist();
+    }
+
+    /** Process the remaining subtasks of this task.
+     * If the task has not already been persisted,
+     * {@link #persist()} will be called first. In any case,
+     * {@link #persist()} will be called <i>after</i> processing. */
+    public void processRemainingSubtasks() {
+        if (dbTask == null) {
+            persist();
+        }
+        new TaskRunner(this).runTaskRemainingSubtasks();
         persist();
     }
 

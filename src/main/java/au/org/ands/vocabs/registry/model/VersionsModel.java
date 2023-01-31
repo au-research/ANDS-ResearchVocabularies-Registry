@@ -1026,7 +1026,7 @@ public class VersionsModel extends ModelBase {
                     // by invoking populateSubmodels(): there are then
                     // "orphan" database rows (for now, just AccessPoints).
                     // So see the last part of
-                    // AccessPointsMode.populateModel() to see how this
+                    // AccessPointsModel.populateModel() to see how this
                     // inconsistency is dealt with.
                     Version existingDraft = draftVersions.remove(versionId);
                     // Add a registry event representing deletion of the draft.
@@ -1260,11 +1260,44 @@ public class VersionsModel extends ModelBase {
             }
         }
         // Then process all.
+        // How many tasks do we have to execute?
+        int taskCount = 0;
         for (TaskInfo taskInfo : versionTaskInfos.values()) {
-            // Only do something if there is at least one subtask!
             if (!taskInfo.getTask().getSubtasks().isEmpty()) {
-                taskInfo.process();
-                ranATask = true;
+                taskCount++;
+            }
+        }
+        if (taskCount < 2) {
+            // At most one task to do. No problem to use process().
+            for (TaskInfo taskInfo : versionTaskInfos.values()) {
+                // Only do something if there is at least one subtask!
+                if (!taskInfo.getTask().getSubtasks().isEmpty()) {
+                    taskInfo.process();
+                    ranATask = true;
+                }
+            }
+        } else {
+            // Be conservative; do all of the negative-priority
+            // subtasks first, then all of the rest.
+            // This eliminates inter-task dependencies, including cycles ...
+            // we hope. Revisit if it turns out to be necessary.
+            // This approach relies on the "semantics" of priorities:
+            // i.e., that a negative priority is used for all kinds of
+            // deletion, and that a positive or null priority is only used
+            // for kinds of insertion.
+            for (TaskInfo taskInfo : versionTaskInfos.values()) {
+                // Only do something if there is at least one subtask!
+                if (!taskInfo.getTask().getSubtasks().isEmpty()) {
+                    taskInfo.processOnlyNegativePrioritySubtasks();
+                    ranATask = true;
+                }
+            }
+            for (TaskInfo taskInfo : versionTaskInfos.values()) {
+                // Only do something if there is at least one subtask!
+                if (!taskInfo.getTask().getSubtasks().isEmpty()) {
+                    taskInfo.processRemainingSubtasks();
+                    ranATask = true;
+                }
             }
         }
         return ranATask;

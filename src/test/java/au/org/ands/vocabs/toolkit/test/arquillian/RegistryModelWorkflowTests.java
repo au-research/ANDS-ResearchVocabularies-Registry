@@ -1283,6 +1283,8 @@ public class RegistryModelWorkflowTests extends ArquillianBaseTest {
         ArquillianTestUtils.clearDatabase(REGISTRY);
         ArquillianTestUtils.loadDbUnitTestFile(REGISTRY, testName);
         ArquillianTestUtils.copyUploadsFilesForTest(testName);
+        ArquillianTestUtils.removeAllSesameRepositories();
+
         Vocabulary vocabulary = RegistryTestUtils.
                 getValidatedVocabularyFromFile(
                 "test/tests/" + testName + "/test-vocabulary1.xml",
@@ -1326,10 +1328,6 @@ public class RegistryModelWorkflowTests extends ArquillianBaseTest {
         compareDatabaseCurrentAndExpectedContentsIgnoreTaskTimestamps(
                 REGISTRY,
                 "test/tests/" + testName + "/test-registry-results-1.xml");
-        vocabulary = RegistryTestUtils.
-                getValidatedVocabularyFromFile(
-                "test/tests/" + testName + "/test-vocabulary2.xml",
-                ValidationMode.UPDATE);
 
         // Confirm that the Sesame repo exists.
         Assert.assertEquals(sesameAPs.size(), 1,
@@ -1376,6 +1374,10 @@ public class RegistryModelWorkflowTests extends ArquillianBaseTest {
                 + "/test/tests/" + testName + "/searchResultsDocs1.json");
 
         // Now change the version slug.
+        vocabulary = RegistryTestUtils.
+                getValidatedVocabularyFromFile(
+                "test/tests/" + testName + "/test-vocabulary2.xml",
+                ValidationMode.UPDATE);
         try {
             EntityTransaction txn = em.getTransaction();
             txn.begin();
