@@ -86,16 +86,16 @@ public class SISSVocPublishProvider implements WorkflowProvider {
         }
 
         // Use the nice JAX-RS libraries to construct the path to
-        // the SPARQL endpoint.
+        // the SISSVoc endpoint.
         Client client = RegistryNetUtils.getClient();
         WebTarget target = client.target(sissvocEndpointsPrefix);
-        WebTarget sparqlTarget = target
+        WebTarget sissvocTarget = target
                 .path(TaskUtils.getSISSVocRepositoryPath(taskInfo));
 //        subtask.addResult("sissvoc_endpoints",
-//                sparqlTarget.getUri().toString());
+//                sissvocTarget.getUri().toString());
         // Add SISSVoc endpoint.
         AccessPointUtils.createSissvocAccessPoint(taskInfo, path,
-                sparqlTarget.getUri().toString());
+                sissvocTarget.getUri().toString());
         subtask.setStatus(TaskStatus.SUCCESS);
     }
 
