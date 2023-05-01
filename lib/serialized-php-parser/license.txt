@@ -1,5 +1,10 @@
-This version of serialized-php-parser has been built from the GitHub
-project https://github.com/ironpinguin/serialized-php-parser
+The JAR was built from source obtained from:
+
+https://code.google.com/archive/p/serialized-php-parser/
+
+... specifically, from the code in this archive:
+
+https://storage.googleapis.com/google-code-archive-source/v2/code.google.com/serialized-php-parser/source-archive.zip
 
 The license is contained in the source code.
 
