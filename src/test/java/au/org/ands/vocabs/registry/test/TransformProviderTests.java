@@ -304,7 +304,7 @@ public class TransformProviderTests extends ArquillianBaseTest {
             List<Task> taskList = TaskDAO.getAllTask();
             logger.info("testConceptTreeTransformProvider1: task list length = "
                     + taskList.size());
-            Assert.assertEquals(taskList.size(), 5, "Not five tasks");
+            Assert.assertEquals(taskList.size(), 6, "Not six tasks");
 
             Task task = TaskDAO.getTaskById(1);
             version = VersionDAO.getCurrentVersionByVersionId(em, 1);
@@ -428,6 +428,32 @@ public class TransformProviderTests extends ArquillianBaseTest {
                     + CLASS_NAME_PREFIX
                     + "testConceptTreeTransformProvider1/"
                     + "test-data5-concepts_tree.json");
+
+            // SKOS altLabels in multilingual vocabularies, giving
+            // preference to labels in the primary language.
+            task = TaskDAO.getTaskById(6);
+            version = VersionDAO.getCurrentVersionByVersionId(em, 6);
+            taskInfo = new TaskInfo(task, vocabulary, version);
+            taskInfo.setEm(em);
+            taskInfo.setModifiedBy("SYSTEM");
+            taskInfo.setNowTime(nowTime1);
+            taskInfo.process();
+            workflowTask = taskInfo.getTask();
+
+            Assert.assertEquals(workflowTask.getStatus(), TaskStatus.SUCCESS,
+                    "ConceptTreeTransformProvider failed on task 6");
+            va = VersionArtefactDAO.
+                    getCurrentVersionArtefactListForVersionByType(6,
+                            VersionArtefactType.CONCEPT_TREE, em).get(0);
+            vaConceptTree = JSONSerialization.deserializeStringAsJson(
+                    va.getData(), VaConceptTree.class);
+            conceptsTreeFilename = vaConceptTree.getPath();
+            ArquillianTestUtils.compareJsonFiles(conceptsTreeFilename,
+                    testsPath
+                    + CLASS_NAME_PREFIX
+                    + "testConceptTreeTransformProvider1/"
+                    + "test-data6-concepts_tree.json");
+
             txn.commit();
         } catch (Throwable t) {
             if (txn != null && txn.isActive()) {

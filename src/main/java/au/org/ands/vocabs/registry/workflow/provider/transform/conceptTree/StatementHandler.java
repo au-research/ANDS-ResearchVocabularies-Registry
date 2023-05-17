@@ -110,6 +110,8 @@ public class StatementHandler extends RDFHandlerBase {
 
         /** skos:prefLabel. */
         SKOS_PREF_LABEL(SKOS.PREF_LABEL),
+        /** skos:altLabel. */
+        SKOS_ALT_LABEL(SKOS.ALT_LABEL),
         /** skos:notation. */
         SKOS_NOTATION(SKOS.NOTATION),
         /** skos:definition. */
@@ -742,6 +744,17 @@ public class StatementHandler extends RDFHandlerBase {
                 subjectResource.setPrefLabel(stObject.stringValue());
             }
             break;
+        case SKOS_ALT_LABEL:
+            stObject = st.getObject();
+            if (stObject instanceof Literal
+                    && ((Literal) stObject).getLanguage() != null) {
+                subjectResource.addAltLabel(stObject.stringValue(),
+                        ((Literal) stObject).getLanguage(),
+                        primaryLanguage);
+            } else {
+                subjectResource.addAltLabel(stObject.stringValue());
+            }
+            break;
         case SKOS_NOTATION:
             subjectResource.setNotation(st.getObject().stringValue());
             break;
@@ -877,10 +890,6 @@ public class StatementHandler extends RDFHandlerBase {
 
         // Future work: uncomment/modify the next six lines
         // when the portal is ready to receive it.
-//            case SKOS_ALT_LABEL:
-//                set stObject and do Literal test etc. here ...
-//                subjectResource.setAltLabel(stObject.stringValue());
-//                break;
 //            case SKOS_HIDDEN_LABEL:
 //                set stObject and do Literal test etc. here ...
 //                subjectResource.setHiddenLabel(stObject.stringValue());

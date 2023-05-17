@@ -36,9 +36,13 @@ public class Resource extends ResourceOrRef {
     @SuppressWarnings("checkstyle:VisibilityModifier")
     protected ResourceType type;
 
-    /** The prefLabel of the resource. */
+    /** The SKOS prefLabel of the resource. */
     @SuppressWarnings("checkstyle:VisibilityModifier")
     protected String prefLabel;
+
+    /** The SKOS altLabels of the resource. */
+    @SuppressWarnings("checkstyle:VisibilityModifier")
+    protected Set<String> altLabels;
 
     /** The dcterms:title of the resource. */
     @SuppressWarnings("checkstyle:VisibilityModifier")
@@ -292,6 +296,93 @@ public class Resource extends ResourceOrRef {
             prefLabelLanguage = aLanguage;
         }
         // Otherwise, leave the existing prefLabel unchanged.
+    }
+
+    /** The language tag associated with the altLabels, if there
+     * is one; null, otherwise. */
+    private String altLabelLanguage;
+
+    /** Add an altLabel. Call this adder if the altLabel has no
+     * language tag.
+     * @param anAltLabel The value of the altLabel.
+     */
+    public void addAltLabel(final String anAltLabel) {
+//        LOGGER.info("Adding non-languaged altLabel: " + anAltLabel);
+        // Always give priority to altLabels without a language tag.
+        if (altLabels == null) {
+            // This is the very first altLabel we've seen.
+            altLabels = new HashSet<>();
+        } else if (altLabelLanguage != null) {
+            // Throw away the existing contents of altLabels.
+            // (altLabels must be non-null here, because altLabelLanguage
+            // was non-null.)
+            altLabels.clear();
+            altLabelLanguage = null;
+        }
+        altLabels.add(anAltLabel);
+    }
+
+    /** Add an altLabel. Call this adder if the altLabel has a
+     * language tag.
+     * @param anAltLabel The value of the altLabel.
+     * @param aLanguage The language tag of the altLabel.
+     * @param primaryLanguage The primary language of the vocabulary.
+     */
+    public void addAltLabel(final String anAltLabel,
+            final String aLanguage,
+            final String primaryLanguage) {
+//        LOGGER.info("Adding altLabel: " + anAltLabel
+//                + " in language " + aLanguage);
+        // As noted above, altLabels with no language tag have
+        // absolute priority.
+        // After that, give preference to labels in the primary language.
+        // That means:
+        // 1. If this method is called when there is not already an
+        //    altLabel recorded, then use anAltLabel/aLanguage.
+        // 2. If this method is called when there _is_ already an
+        //    altLabel recorded, and there _is_ a language
+        //    recorded, and we're now seeing another altLabel in the same
+        //    language. (This gives "first language wins" behaviour.)
+        // 3. If this method is called when there _is_ already an
+        //    altLabel recorded, and there _is_ a language
+        //    recorded, and that was not the primary language, and we're
+        //    now seeing an altLabel in the primary language.
+        //    (This gives "primary language wins" behaviour.)
+        // 4. Otherwise, leave the existing altLabel/altLabelLanguage
+        //    values unchanged. (I.e., we're already accumulating altLabels
+        //    without a language tag.)
+
+        if (altLabels == null) {
+            // This is the very first altLabel we've seen.
+            altLabels = new HashSet<>();
+            altLabels.add(anAltLabel);
+            altLabelLanguage = aLanguage;
+        } else if (altLabelLanguage == null) {
+            // We've already seen at least one altLabel with no language tag.
+            // That always takes priority.
+            return;
+        } else if (altLabelLanguage.equals(aLanguage)) {
+            // We're currently storing altLabels of the
+            // same language as this one. So add another.
+            altLabels.add(anAltLabel);
+        } else if (primaryLanguage.equals(aLanguage)) {
+            // We're currently storing altLabels that are not of the
+            // primary language. Switch to the primary language.
+            altLabels.clear();
+            altLabels.add(anAltLabel);
+            altLabelLanguage = aLanguage;
+        } else {
+            // Something is wrong.
+            LOGGER.error("Logic error in addAltLabel. Please fix me!");
+        }
+    }
+
+    /** Get the altLabels.
+     * @return The value of the altLabels.
+     */
+//    @Override
+    public Set<String> getAltLabels() {
+        return altLabels;
     }
 
     /** The language tag associated with the dctermsTitle, if there
