@@ -838,6 +838,8 @@ public class Resource extends ResourceOrRef {
         deputy.notation = notation;
         deputy.prefLabel = prefLabel;
         deputy.prefLabelLanguage = prefLabelLanguage;
+        deputy.altLabels = altLabels;
+        deputy.altLabelLanguage = altLabelLanguage;
         deputy.rdfsLabel = rdfsLabel;
         deputy.rdfsLabelLanguage = rdfsLabelLanguage;
         if (scaffoldBroader != null) {
@@ -911,6 +913,8 @@ public class Resource extends ResourceOrRef {
         deputy.notation = notation;
         deputy.prefLabel = prefLabel;
         deputy.prefLabelLanguage = prefLabelLanguage;
+        deputy.altLabels = altLabels;
+        deputy.altLabelLanguage = altLabelLanguage;
         deputy.rdfsLabel = rdfsLabel;
         deputy.rdfsLabelLanguage = rdfsLabelLanguage;
         deputy.type = type;
