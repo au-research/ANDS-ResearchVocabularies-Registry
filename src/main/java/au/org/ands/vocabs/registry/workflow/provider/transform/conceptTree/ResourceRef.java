@@ -3,6 +3,7 @@
 package au.org.ands.vocabs.registry.workflow.provider.transform.conceptTree;
 
 import java.lang.invoke.MethodHandles;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -128,6 +129,12 @@ class ResourceRef extends ResourceOrRef {
     @Override
     public String getLabel() {
         return resource.getLabel();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public Set<String> getAltLabels() {
+        return resource.getAltLabels();
     }
 
     /** {@inheritDoc} */

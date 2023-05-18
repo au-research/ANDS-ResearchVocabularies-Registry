@@ -384,7 +384,7 @@ public class Resource extends ResourceOrRef {
     /** Get the altLabels.
      * @return The value of the altLabels.
      */
-//    @Override
+    @Override
     public Set<String> getAltLabels() {
         return altLabels;
     }
