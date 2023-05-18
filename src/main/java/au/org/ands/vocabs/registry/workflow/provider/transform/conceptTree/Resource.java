@@ -20,6 +20,13 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Resource extends ResourceOrRef {
 
+    /* Maintenance note: if adding a property here, you do need to
+     * consider if it should be visible in the tooltips in the
+     * browse visualization. If so, also add it in ResourceOrRef
+     * and ResourceRef, and pay attention to deputies: see
+     * makeDeputyForConceptScheme() and makeDeputyForCollection().
+     */
+
     /** Logger for this class. */
     private static final Logger LOGGER = LoggerFactory.getLogger(
             MethodHandles.lookup().lookupClass());
@@ -307,7 +314,7 @@ public class Resource extends ResourceOrRef {
      * @param anAltLabel The value of the altLabel.
      */
     public void addAltLabel(final String anAltLabel) {
-        LOGGER.info("Adding non-languaged altLabel: " + anAltLabel);
+//        LOGGER.info("Adding non-languaged altLabel: " + anAltLabel);
         // Always give priority to altLabels without a language tag.
         if (altLabels == null) {
             // This is the very first altLabel we've seen.
@@ -331,8 +338,8 @@ public class Resource extends ResourceOrRef {
     public void addAltLabel(final String anAltLabel,
             final String aLanguage,
             final String primaryLanguage) {
-        LOGGER.info("Adding altLabel: " + anAltLabel
-                + " in language " + aLanguage);
+//        LOGGER.info("Adding altLabel: " + anAltLabel
+//                + " in language " + aLanguage);
         // As noted above, altLabels with no language tag have
         // absolute priority.
         // After that, give preference to labels in the primary language.
