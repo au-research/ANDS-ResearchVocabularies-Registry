@@ -307,7 +307,7 @@ public class Resource extends ResourceOrRef {
      * @param anAltLabel The value of the altLabel.
      */
     public void addAltLabel(final String anAltLabel) {
-//        LOGGER.info("Adding non-languaged altLabel: " + anAltLabel);
+        LOGGER.info("Adding non-languaged altLabel: " + anAltLabel);
         // Always give priority to altLabels without a language tag.
         if (altLabels == null) {
             // This is the very first altLabel we've seen.
@@ -331,8 +331,8 @@ public class Resource extends ResourceOrRef {
     public void addAltLabel(final String anAltLabel,
             final String aLanguage,
             final String primaryLanguage) {
-//        LOGGER.info("Adding altLabel: " + anAltLabel
-//                + " in language " + aLanguage);
+        LOGGER.info("Adding altLabel: " + anAltLabel
+                + " in language " + aLanguage);
         // As noted above, altLabels with no language tag have
         // absolute priority.
         // After that, give preference to labels in the primary language.
@@ -371,10 +371,14 @@ public class Resource extends ResourceOrRef {
             altLabels.clear();
             altLabels.add(anAltLabel);
             altLabelLanguage = aLanguage;
-        } else {
-            // Something is wrong.
-            LOGGER.error("Logic error in addAltLabel. Please fix me!");
         }
+        // else {
+        //   If we reach this point without having executed any of the
+        //   bodies of the preceding conditional, that's because we're
+        //   being asked to accumulate an altLabel in a langauge that's
+        //   neither the primary language nor the current (non-null) value of
+        //   altLabelLanguage, and we aren't going to do that.
+        // }
     }
 
     /** Get the altLabels.
