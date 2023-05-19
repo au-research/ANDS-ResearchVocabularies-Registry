@@ -1,0 +1,70 @@
+# Test of altLabels in a multilingual vocabulary, where
+# we also enable the browse flags for concept schemes and collections.
+# Give preference to altLabels in the primary language, i.e., English.
+#   In fact, give preference to a non-tagged altLabel,
+#   and then, if there isn't one, give preference to one tagged as @en.
+
+@prefix skos:    <http://www.w3.org/2004/02/skos/core#> .
+@prefix my:    <http://test/> .
+
+my:cs a skos:ConceptScheme ;
+  skos:altLabel "CS altLabel" ;
+  skos:hasTopConcept  my:uri0 , my:uri1, my:uri2-1 , my:uri3-1 .
+
+my:coll a skos:Collection ;
+  skos:altLabel "Collection altLabel" ;
+  skos:member my:uri0 , my:uri1 , my:uri2-1 , my:uri3-1 .
+
+# No altLabel at all.
+my:uri0 a skos:Concept
+    .
+
+# Tests with no multiple altLabels of the same language
+# or without a language.
+
+# One altLabel; three possibilities.
+
+my:uri1 a skos:Concept ;
+  skos:altLabel
+    "Label 1 no language tag"
+    .
+
+my:uri2-1 a skos:Concept ;
+  skos:altLabel
+    "Label 2-1 en only"@en
+    .
+
+my:uri2-2 a skos:Concept ;
+  skos:altLabel
+    "Label 2-2 de only"@de
+    .
+
+# Two altLabels; six possibilities.
+
+my:uri3-1 a skos:Concept ;
+  skos:altLabel
+    "Label 3-1 no language tag first",
+    "Label 3-2 en second"@en
+    .
+
+
+# Test resource references using a polyhierarchy.
+my:uri4-1 a skos:Concept ;
+  skos:narrower my:uri4-2, my:uri5-1 ;
+  skos:altLabel
+    "Label 4-1 no language tag first",
+    "Label 4-1 de second"@de
+    .
+
+my:uri4-2 a skos:Concept ;
+  skos:narrower my:uri5-1 ;
+  skos:altLabel
+    "Label 4-2 de first"@de,
+    "Label 4-2 no language tag second"
+    .
+
+my:uri5-1 a skos:Concept ;
+  skos:altLabel
+    "Label 5-1 en first"@en,
+    "Label 5-1 de second"@de
+    .

@@ -1,0 +1,119 @@
+{
+  "forest": [
+    {
+      "altLabels": [
+        "CS altLabel"
+      ],
+      "children": [
+        {
+          "iri": "http://test/uri0",
+          "isTopConceptOfContext": true,
+          "type": "concept"
+        },
+        {
+          "altLabels": [
+            "Label 1 no language tag"
+          ],
+          "iri": "http://test/uri1",
+          "isTopConceptOfContext": true,
+          "type": "concept"
+        },
+        {
+          "altLabels": [
+            "Label 2-1 en only"
+          ],
+          "iri": "http://test/uri2-1",
+          "isTopConceptOfContext": true,
+          "type": "concept"
+        },
+        {
+          "altLabels": [
+            "Label 3-1 no language tag first"
+          ],
+          "iri": "http://test/uri3-1",
+          "isTopConceptOfContext": true,
+          "type": "concept"
+        }
+      ],
+      "iri": "http://test/cs",
+      "type": "concept_scheme"
+    },
+    {
+      "altLabels": [
+        "Collection altLabel"
+      ],
+      "children": [
+        {
+          "iri": "http://test/uri0",
+          "type": "concept"
+        },
+        {
+          "altLabels": [
+            "Label 1 no language tag"
+          ],
+          "iri": "http://test/uri1",
+          "type": "concept"
+        },
+        {
+          "altLabels": [
+            "Label 2-1 en only"
+          ],
+          "iri": "http://test/uri2-1",
+          "type": "concept"
+        },
+        {
+          "altLabels": [
+            "Label 3-1 no language tag first"
+          ],
+          "iri": "http://test/uri3-1",
+          "type": "concept"
+        }
+      ],
+      "iri": "http://test/coll",
+      "type": "unordered_collection"
+    },
+    {
+      "altLabels": [
+        "Label 2-2 de only"
+      ],
+      "iri": "http://test/uri2-2",
+      "type": "concept"
+    },
+    {
+      "altLabels": [
+        "Label 4-1 no language tag first"
+      ],
+      "children": [
+        {
+          "altLabels": [
+            "Label 4-2 no language tag second"
+          ],
+          "children": [
+            {
+              "altLabels": [
+                "Label 5-1 en first"
+              ],
+              "iri": "http://test/uri5-1",
+              "type": "concept"
+            }
+          ],
+          "iri": "http://test/uri4-2",
+          "type": "concept"
+        },
+        {
+          "altLabels": [
+            "Label 5-1 en first"
+          ],
+          "iri": "http://test/uri5-1",
+          "type": "concept_ref"
+        }
+      ],
+      "iri": "http://test/uri4-1",
+      "type": "concept"
+    }
+  ],
+  "format": "3",
+  "language": "en",
+  "mayResolveResources": false,
+  "maySortByNotation": false
+}

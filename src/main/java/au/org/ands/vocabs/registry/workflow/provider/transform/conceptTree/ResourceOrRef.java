@@ -32,6 +32,11 @@ implements Comparable<ResourceOrRef> {
      */
     abstract String getLabel();
 
+    /* NB: it's not necessary to define getAltLabels() (and probabaly
+     * quite a few of the other getters) here, but it's a way of documenting
+     * and requiring consistency between the Resource and ResourceRef
+     * classes. */
+
     /** Get the altLabels.
      * @return The values of the altLabels.
      */

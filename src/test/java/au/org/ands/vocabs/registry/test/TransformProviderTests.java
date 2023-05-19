@@ -304,7 +304,7 @@ public class TransformProviderTests extends ArquillianBaseTest {
             List<Task> taskList = TaskDAO.getAllTask();
             logger.info("testConceptTreeTransformProvider1: task list length = "
                     + taskList.size());
-            Assert.assertEquals(taskList.size(), 6, "Not six tasks");
+            Assert.assertEquals(taskList.size(), 7, "Not seven tasks");
 
             Task task = TaskDAO.getTaskById(1);
             version = VersionDAO.getCurrentVersionByVersionId(em, 1);
@@ -453,6 +453,33 @@ public class TransformProviderTests extends ArquillianBaseTest {
                     + CLASS_NAME_PREFIX
                     + "testConceptTreeTransformProvider1/"
                     + "test-data6-concepts_tree.json");
+
+            // SKOS altLabels in multilingual vocabularies, with the
+            // browse flags set for concept schemes and collections.
+            // This is a test of deputy instances, and of resource
+            // references because of the presence of a polyhierarcny.
+            task = TaskDAO.getTaskById(7);
+            version = VersionDAO.getCurrentVersionByVersionId(em, 7);
+            taskInfo = new TaskInfo(task, vocabulary, version);
+            taskInfo.setEm(em);
+            taskInfo.setModifiedBy("SYSTEM");
+            taskInfo.setNowTime(nowTime1);
+            taskInfo.process();
+            workflowTask = taskInfo.getTask();
+
+            Assert.assertEquals(workflowTask.getStatus(), TaskStatus.SUCCESS,
+                    "ConceptTreeTransformProvider failed on task 7");
+            va = VersionArtefactDAO.
+                    getCurrentVersionArtefactListForVersionByType(7,
+                            VersionArtefactType.CONCEPT_TREE, em).get(0);
+            vaConceptTree = JSONSerialization.deserializeStringAsJson(
+                    va.getData(), VaConceptTree.class);
+            conceptsTreeFilename = vaConceptTree.getPath();
+            ArquillianTestUtils.compareJsonFiles(conceptsTreeFilename,
+                    testsPath
+                    + CLASS_NAME_PREFIX
+                    + "testConceptTreeTransformProvider1/"
+                    + "test-data7-concepts_tree.json");
 
             txn.commit();
         } catch (Throwable t) {
