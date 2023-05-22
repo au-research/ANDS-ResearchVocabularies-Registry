@@ -2,6 +2,8 @@
 
 package au.org.ands.vocabs.registry.workflow.provider.transform.conceptTree;
 
+import java.util.Set;
+
 import org.apache.commons.lang3.BooleanUtils;
 
 /** An abstract class that is extended by both {@link Resource} and
@@ -29,6 +31,16 @@ implements Comparable<ResourceOrRef> {
      * @return The value of the label.
      */
     abstract String getLabel();
+
+    /* NB: it's not necessary to define getAltLabels() (and probabaly
+     * quite a few of the other getters) here, but it's a way of documenting
+     * and requiring consistency between the Resource and ResourceRef
+     * classes. */
+
+    /** Get the altLabels.
+     * @return The values of the altLabels.
+     */
+    abstract Set<String> getAltLabels();
 
     /** Get the definition.
      * @return The value of the definition.

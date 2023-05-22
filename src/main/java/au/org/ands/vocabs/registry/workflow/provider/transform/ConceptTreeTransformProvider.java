@@ -421,8 +421,8 @@ public class ConceptTreeTransformProvider implements WorkflowProvider {
                 RDFParser rdfParser = Rio.createParser(format);
                 rdfParser.setRDFHandler(statementHandler);
                 FileInputStream is = new FileInputStream(entry.toString());
-                rdfParser.parse(is, entry.toString());
                 logger.debug("Reading RDF: " + entry.toString());
+                rdfParser.parse(is, entry.toString());
             } catch (RDFParseException ex) {
                 logger.error("Exception in ConceptTreeTransform "
                         + "while Parsing RDF", ex);

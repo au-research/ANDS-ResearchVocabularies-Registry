@@ -1,0 +1,308 @@
+{
+  "forest": [
+    {
+      "altLabels": [
+        "Label 1-1 no language tag",
+        "Label 1-2 no language tag"
+      ],
+      "iri": "http://test/uri-duplicates1",
+      "type": "concept"
+    },
+    {
+      "altLabels": [
+        "Label 10-1-1 en first",
+        "Label 10-1-2 en first"
+      ],
+      "iri": "http://test/uri-duplicates10-1",
+      "type": "concept"
+    },
+    {
+      "altLabels": [
+        "Label 10-2-3 en second",
+        "Label 10-2-4 en second"
+      ],
+      "iri": "http://test/uri-duplicates10-2",
+      "type": "concept"
+    },
+    {
+      "altLabels": [
+        "Label 2-1-1 en only",
+        "Label 2-1-2 en only"
+      ],
+      "iri": "http://test/uri-duplicates2-1",
+      "type": "concept"
+    },
+    {
+      "altLabels": [
+        "Label 2-2-1 de only",
+        "Label 2-2-2 de only"
+      ],
+      "iri": "http://test/uri-duplicates2-2",
+      "type": "concept"
+    },
+    {
+      "altLabels": [
+        "Label 20-1-2 de first",
+        "Label 20-1-1 de first"
+      ],
+      "iri": "http://test/uri-duplicates20-1",
+      "type": "concept"
+    },
+    {
+      "altLabels": [
+        "Label 3-1-1 no language tag first",
+        "Label 3-1-2 no language tag first"
+      ],
+      "iri": "http://test/uri-duplicates3-1",
+      "type": "concept"
+    },
+    {
+      "altLabels": [
+        "Label 3-2-3 no language tag second",
+        "Label 3-2-4 no language tag second"
+      ],
+      "iri": "http://test/uri-duplicates3-2",
+      "type": "concept"
+    },
+    {
+      "altLabels": [
+        "Label 4-1-2 no language tag first",
+        "Label 4-1-1 no language tag first"
+      ],
+      "iri": "http://test/uri-duplicates4-1",
+      "type": "concept"
+    },
+    {
+      "altLabels": [
+        "Label 4-2-4 no language tag second",
+        "Label 4-2-3 no language tag second"
+      ],
+      "iri": "http://test/uri-duplicates4-2",
+      "type": "concept"
+    },
+    {
+      "altLabels": [
+        "Label 5-1-1 en first",
+        "Label 5-1-2 en first"
+      ],
+      "iri": "http://test/uri-duplicates5-1",
+      "type": "concept"
+    },
+    {
+      "altLabels": [
+        "Label 5-2-4 en second",
+        "Label 5-2-3 en second"
+      ],
+      "iri": "http://test/uri-duplicates5-2",
+      "type": "concept"
+    },
+    {
+      "altLabels": [
+        "Label 6-1-1 no language tag first",
+        "Label 6-1-2 no language tag first"
+      ],
+      "iri": "http://test/uri-duplicates6-1",
+      "type": "concept"
+    },
+    {
+      "altLabels": [
+        "Label 6-2-1 no language tag first",
+        "Label 6-2-2 no language tag first"
+      ],
+      "iri": "http://test/uri-duplicates6-2",
+      "type": "concept"
+    },
+    {
+      "altLabels": [
+        "Label 6-3-4 no language tag second",
+        "Label 6-3-3 no language tag second"
+      ],
+      "iri": "http://test/uri-duplicates6-3",
+      "type": "concept"
+    },
+    {
+      "altLabels": [
+        "Label 6-4-3 no language tag second",
+        "Label 6-4-4 no language tag second"
+      ],
+      "iri": "http://test/uri-duplicates6-4",
+      "type": "concept"
+    },
+    {
+      "altLabels": [
+        "Label 6-5-6 no language tag third",
+        "Label 6-5-5 no language tag third"
+      ],
+      "iri": "http://test/uri-duplicates6-5",
+      "type": "concept"
+    },
+    {
+      "altLabels": [
+        "Label 6-6-6 no language tag third",
+        "Label 6-6-5 no language tag third"
+      ],
+      "iri": "http://test/uri-duplicates6-6",
+      "type": "concept"
+    },
+    {
+      "altLabels": [
+        "Label 7-1-2 de first",
+        "Label 7-1-1 de first"
+      ],
+      "iri": "http://test/uri-duplicates7-1",
+      "type": "concept"
+    },
+    {
+      "altLabels": [
+        "Label 8-1-2 no language tag first",
+        "Label 8-1-1 no language tag first"
+      ],
+      "iri": "http://test/uri-duplicates8-1",
+      "type": "concept"
+    },
+    {
+      "altLabels": [
+        "Label 8-2-3 no language tag second",
+        "Label 8-2-4 no language tag second"
+      ],
+      "iri": "http://test/uri-duplicates8-2",
+      "type": "concept"
+    },
+    {
+      "altLabels": [
+        "Label 9-1-2 no language tag first",
+        "Label 9-1-1 no language tag first"
+      ],
+      "iri": "http://test/uri-duplicates9-1",
+      "type": "concept"
+    },
+    {
+      "altLabels": [
+        "Label 9-2-4 no language tag second",
+        "Label 9-2-3 no language tag second"
+      ],
+      "iri": "http://test/uri-duplicates9-2",
+      "type": "concept"
+    },
+    {
+      "iri": "http://test/uri0",
+      "type": "concept"
+    },
+    {
+      "altLabels": [
+        "Label 1 no language tag"
+      ],
+      "iri": "http://test/uri1",
+      "type": "concept"
+    },
+    {
+      "altLabels": [
+        "Label 2-1 en only"
+      ],
+      "iri": "http://test/uri2-1",
+      "type": "concept"
+    },
+    {
+      "altLabels": [
+        "Label 2-2 de only"
+      ],
+      "iri": "http://test/uri2-2",
+      "type": "concept"
+    },
+    {
+      "altLabels": [
+        "Label 3-1 no language tag first"
+      ],
+      "iri": "http://test/uri3-1",
+      "type": "concept"
+    },
+    {
+      "altLabels": [
+        "Label 3-2 no language tag second"
+      ],
+      "iri": "http://test/uri3-2",
+      "type": "concept"
+    },
+    {
+      "altLabels": [
+        "Label 4-1 no language tag first"
+      ],
+      "iri": "http://test/uri4-1",
+      "type": "concept"
+    },
+    {
+      "altLabels": [
+        "Label 4-2 no language tag second"
+      ],
+      "iri": "http://test/uri4-2",
+      "type": "concept"
+    },
+    {
+      "altLabels": [
+        "Label 5-1 en first"
+      ],
+      "iri": "http://test/uri5-1",
+      "type": "concept"
+    },
+    {
+      "altLabels": [
+        "Label 5-2 en second"
+      ],
+      "iri": "http://test/uri5-2",
+      "type": "concept"
+    },
+    {
+      "altLabels": [
+        "Label 6-1 no language tag first"
+      ],
+      "iri": "http://test/uri6-1",
+      "type": "concept"
+    },
+    {
+      "altLabels": [
+        "Label 6-2 no language tag first"
+      ],
+      "iri": "http://test/uri6-2",
+      "type": "concept"
+    },
+    {
+      "altLabels": [
+        "Label 6-3 no language tag second"
+      ],
+      "iri": "http://test/uri6-3",
+      "type": "concept"
+    },
+    {
+      "altLabels": [
+        "Label 6-4 no language tag second"
+      ],
+      "iri": "http://test/uri6-4",
+      "type": "concept"
+    },
+    {
+      "altLabels": [
+        "Label 6-5 no language tag third"
+      ],
+      "iri": "http://test/uri6-5",
+      "type": "concept"
+    },
+    {
+      "altLabels": [
+        "Label 6-6 no language tag third"
+      ],
+      "iri": "http://test/uri6-6",
+      "type": "concept"
+    },
+    {
+      "altLabels": [
+        "Label 7-1 de first"
+      ],
+      "iri": "http://test/uri7-1",
+      "type": "concept"
+    }
+  ],
+  "format": "3",
+  "language": "en",
+  "mayResolveResources": false,
+  "maySortByNotation": false
+}

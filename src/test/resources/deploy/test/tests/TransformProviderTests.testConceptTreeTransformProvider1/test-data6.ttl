@@ -1,0 +1,326 @@
+# Test of altLabels in a multilingual vocabulary.
+# Give preference to altLabels in the primary language, i.e., English.
+#   In fact, give preference to a non-tagged altLabel,
+#   and then, if there isn't one, give preference to one tagged as @en.
+
+@prefix skos:    <http://www.w3.org/2004/02/skos/core#> .
+@prefix my:    <http://test/> .
+
+# No altLabel at all.
+my:uri0 a skos:Concept
+    .
+
+# Tests with no multiple altLabels of the same language
+# or without a language.
+
+# One altLabel; three possibilities.
+
+my:uri1 a skos:Concept ;
+  skos:altLabel
+    "Label 1 no language tag"
+    .
+
+my:uri2-1 a skos:Concept ;
+  skos:altLabel
+    "Label 2-1 en only"@en
+    .
+
+my:uri2-2 a skos:Concept ;
+  skos:altLabel
+    "Label 2-2 de only"@de
+    .
+
+# Two altLabels; six possibilities.
+
+my:uri3-1 a skos:Concept ;
+  skos:altLabel
+    "Label 3-1 no language tag first",
+    "Label 3-2 en second"@en
+    .
+
+my:uri3-2 a skos:Concept ;
+  skos:altLabel
+    "Label 3-2 en first"@en,
+    "Label 3-2 no language tag second"
+    .
+
+my:uri4-1 a skos:Concept ;
+  skos:altLabel
+    "Label 4-1 no language tag first",
+    "Label 4-1 de second"@de
+    .
+
+my:uri4-2 a skos:Concept ;
+  skos:altLabel
+    "Label 4-2 de first"@de,
+    "Label 4-2 no language tag second"
+    .
+
+my:uri5-1 a skos:Concept ;
+  skos:altLabel
+    "Label 5-1 en first"@en,
+    "Label 5-1 de second"@de
+    .
+
+my:uri5-2 a skos:Concept ;
+  skos:altLabel
+    "Label 5-2 de first"@de,
+    "Label 5-2 en second"@en
+    .
+
+# Three altLabels; six possibilities.
+
+my:uri6-1 a skos:Concept ;
+  skos:altLabel
+    "Label 6-1 no language tag first",
+    "Label 6-1 en second"@en,
+    "Label 6-1 de third"@de
+    .
+
+my:uri6-2 a skos:Concept ;
+  skos:altLabel
+    "Label 6-2 no language tag first",
+    "Label 6-2 de second"@de,
+    "Label 6-2 en third"@en
+    .
+
+my:uri6-3 a skos:Concept ;
+  skos:altLabel
+    "Label 6-3 en first"@en,
+    "Label 6-3 no language tag second",
+    "Label 6-3 de third"@de
+    .
+
+my:uri6-4 a skos:Concept ;
+  skos:altLabel
+    "Label 6-4 de first"@de,
+    "Label 6-4 no language tag second",
+    "Label 6-4 en third"@en
+    .
+
+my:uri6-5 a skos:Concept ;
+  skos:altLabel
+    "Label 6-5 en first"@en,
+    "Label 6-5 de second"@de,
+    "Label 6-5 no language tag third"
+    .
+
+my:uri6-6 a skos:Concept ;
+  skos:altLabel
+    "Label 6-6 de first"@de,
+    "Label 6-6 en second"@en,
+    "Label 6-6 no language tag third"
+    .
+
+# First one wins.
+
+my:uri7-1 a skos:Concept ;
+  skos:altLabel
+    "Label 7-1 de first"@de,
+    "Label 7-1 fr second"@fr
+    .
+
+# Tests where there are multiple altLabels without a language,
+# and/or multiple altLabels of the same language.
+
+# Two altLabels with the same language/no language; three possibilities.
+
+my:uri-duplicates1 a skos:Concept ;
+  skos:altLabel
+    "Label 1-1 no language tag",
+    "Label 1-2 no language tag"
+    .
+
+my:uri-duplicates2-1 a skos:Concept ;
+  skos:altLabel
+    "Label 2-1-1 en only"@en,
+    "Label 2-1-2 en only"@en
+    .
+
+my:uri-duplicates2-2 a skos:Concept ;
+  skos:altLabel
+    "Label 2-2-1 de only"@de,
+    "Label 2-2-2 de only"@de
+    .
+
+# Two paired altLabels; six possibilities.
+
+my:uri-duplicates3-1 a skos:Concept ;
+  skos:altLabel
+    "Label 3-1-1 no language tag first",
+    "Label 3-1-2 no language tag first",
+    "Label 3-1-3 en second"@en ,
+    "Label 3-1-4 en second"@en
+    .
+
+my:uri-duplicates3-2 a skos:Concept ;
+  skos:altLabel
+    "Label 3-2-1 en first"@en,
+    "Label 3-2-2 en first"@en,
+    "Label 3-2-3 no language tag second",
+    "Label 3-2-4 no language tag second"
+    .
+
+my:uri-duplicates4-1 a skos:Concept ;
+  skos:altLabel
+    "Label 4-1-1 no language tag first",
+    "Label 4-1-2 no language tag first",
+    "Label 4-1-3 de second"@de,
+    "Label 4-1-4 de second"@de
+    .
+
+my:uri-duplicates4-2 a skos:Concept ;
+  skos:altLabel
+    "Label 4-2-1 de first"@de,
+    "Label 4-2-2 de first"@de,
+    "Label 4-2-3 no language tag second",
+    "Label 4-2-4 no language tag second"
+    .
+
+my:uri-duplicates5-1 a skos:Concept ;
+  skos:altLabel
+    "Label 5-1-1 en first"@en,
+    "Label 5-1-2 en first"@en,
+    "Label 5-1-3 de second"@de,
+    "Label 5-1-4 de second"@de
+    .
+
+my:uri-duplicates5-2 a skos:Concept ;
+  skos:altLabel
+    "Label 5-2-1 de first"@de,
+    "Label 5-2-2 de first"@de,
+    "Label 5-2-3 en second"@en,
+    "Label 5-2-4 en second"@en
+    .
+
+# Three paired altLabels; six possibilities.
+
+my:uri-duplicates6-1 a skos:Concept ;
+  skos:altLabel
+    "Label 6-1-1 no language tag first",
+    "Label 6-1-2 no language tag first",
+    "Label 6-1-3 en second"@en,
+    "Label 6-1-4 en second"@en,
+    "Label 6-1-5 de third"@de,
+    "Label 6-1-6 de third"@de
+    .
+
+my:uri-duplicates6-2 a skos:Concept ;
+  skos:altLabel
+    "Label 6-2-1 no language tag first",
+    "Label 6-2-2 no language tag first",
+    "Label 6-2-3 de second"@de,
+    "Label 6-2-4 de second"@de,
+    "Label 6-2-5 en third"@en,
+    "Label 6-2-6 en third"@en
+    .
+
+my:uri-duplicates6-3 a skos:Concept ;
+  skos:altLabel
+    "Label 6-3-1 en first"@en,
+    "Label 6-3-2 en first"@en,
+    "Label 6-3-3 no language tag second",
+    "Label 6-3-4 no language tag second",
+    "Label 6-3-5 de third"@de,
+    "Label 6-3-6 de third"@de
+    .
+
+my:uri-duplicates6-4 a skos:Concept ;
+  skos:altLabel
+    "Label 6-4-1 de first"@de,
+    "Label 6-4-2 de first"@de,
+    "Label 6-4-3 no language tag second",
+    "Label 6-4-4 no language tag second",
+    "Label 6-4-5 en third"@en,
+    "Label 6-4-6 en third"@en
+    .
+
+my:uri-duplicates6-5 a skos:Concept ;
+  skos:altLabel
+    "Label 6-5-1 en first"@en,
+    "Label 6-5-2 en first"@en,
+    "Label 6-5-3 de second"@de,
+    "Label 6-5-4 de second"@de,
+    "Label 6-5-5 no language tag third",
+    "Label 6-5-6 no language tag third"
+    .
+
+my:uri-duplicates6-6 a skos:Concept ;
+  skos:altLabel
+    "Label 6-6-1 de first"@de,
+    "Label 6-6-2 de first"@de,
+    "Label 6-6-3 en second"@en,
+    "Label 6-6-4 en second"@en,
+    "Label 6-6-5 no language tag third",
+    "Label 6-6-6 no language tag third"
+    .
+
+# First language wins.
+
+my:uri-duplicates7-1 a skos:Concept ;
+  skos:altLabel
+    "Label 7-1-1 de first"@de,
+    "Label 7-1-2 de first"@de,
+    "Label 7-1-3 fr second"@fr,
+    "Label 7-1-4 fr second"@fr
+    .
+
+# Two paired altLabels, but interleaved; six possibilities.
+
+my:uri-duplicates8-1 a skos:Concept ;
+  skos:altLabel
+    "Label 8-1-1 no language tag first",
+    "Label 8-1-3 en second"@en ,
+    "Label 8-1-2 no language tag first",
+    "Label 8-1-4 en second"@en
+    .
+
+my:uri-duplicates8-2 a skos:Concept ;
+  skos:altLabel
+    "Label 8-2-1 en first"@en,
+    "Label 8-2-3 no language tag second",
+    "Label 8-2-2 en first"@en,
+    "Label 8-2-4 no language tag second"
+    .
+
+my:uri-duplicates9-1 a skos:Concept ;
+  skos:altLabel
+    "Label 9-1-1 no language tag first",
+    "Label 9-1-3 de second"@de,
+    "Label 9-1-2 no language tag first",
+    "Label 9-1-4 de second"@de
+    .
+
+my:uri-duplicates9-2 a skos:Concept ;
+  skos:altLabel
+    "Label 9-2-1 de first"@de,
+    "Label 9-2-3 no language tag second",
+    "Label 9-2-2 de first"@de,
+    "Label 9-2-4 no language tag second"
+    .
+
+my:uri-duplicates10-1 a skos:Concept ;
+  skos:altLabel
+    "Label 10-1-1 en first"@en,
+    "Label 10-1-3 de second"@de,
+    "Label 10-1-2 en first"@en,
+    "Label 10-1-4 de second"@de
+    .
+
+my:uri-duplicates10-2 a skos:Concept ;
+  skos:altLabel
+    "Label 10-2-1 de first"@de,
+    "Label 10-2-3 en second"@en,
+    "Label 10-2-2 de first"@de,
+    "Label 10-2-4 en second"@en
+    .
+
+# First language wins.
+
+my:uri-duplicates20-1 a skos:Concept ;
+  skos:altLabel
+    "Label 20-1-1 de first"@de,
+    "Label 20-1-3 fr second"@fr,
+    "Label 20-1-2 de first"@de,
+    "Label 20-1-4 fr second"@fr
+    .
