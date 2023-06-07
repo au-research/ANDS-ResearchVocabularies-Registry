@@ -2,7 +2,7 @@
 <#macro reportVocabulary vocabId>
     <#assign vdiff = vocabularyIdMap?api.get(vocabId)>
     <h3><#if vdiff.finalResult != "DELETED">
-        <a href="${properties["Notifications.portalPrefix"]}viewById/${vocabId}"
+        <a href="${properties["Notifications.portalPrefix"]}viewById/${vocabId?c}"
            target="_blank">${vdiff.title}</a>
     <#else>${vdiff.title}</#if>
         <#if vdiff.finalResult == "CREATED">

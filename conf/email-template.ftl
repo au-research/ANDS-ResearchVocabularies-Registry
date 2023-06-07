@@ -3,7 +3,7 @@
 <#assign vdiff = vocabularyIdMap?api.get(vocabId)>
 <#if vdiff.finalResult != "DELETED">
 <#if vdiff.finalResult == "CREATED">** New </#if>** ${vdiff.title}
-   ${properties["Notifications.portalPrefix"]}viewById/${vocabId}
+   ${properties["Notifications.portalPrefix"]}viewById/${vocabId?c}
 <#else>
 ${vdiff.title}
 </#if>
