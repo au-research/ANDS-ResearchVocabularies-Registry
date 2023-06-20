@@ -105,7 +105,7 @@
     <!-- Ignore lines of Javadoc comments that can't be split,
          and Eclipse-generated imports. -->
     <property name="ignorePattern"
-              value="^ *\* *[^ ]+$|^import [^ ]+;$"/>
+              value="^ *\* *[^ ]+$|^import (static |)[^ ]+;$"/>
   </module>
 
 </module>
