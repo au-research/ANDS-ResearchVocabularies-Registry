@@ -50,7 +50,7 @@ public class LimitedSizeStringWriter extends StringWriter {
         limit = aLimit;
     }
 
-    /** The the write allowed? It is allowed if the limit has not
+    /** Is the write allowed? It is allowed if the limit has not
      * already been exceeded, and there is space to store the additional
      * content.
      * @param extra The number of extra characters that the caller would
@@ -108,7 +108,6 @@ public class LimitedSizeStringWriter extends StringWriter {
     /** {@inheritDoc} */
     @Override
     public void write(final String aStr, final int aOff, final int aLen) {
-        // TODO Auto-generated method stub
         if (mayWrite(aLen)) {
             super.write(aStr, aOff, aLen);
             count = getBuffer().length();

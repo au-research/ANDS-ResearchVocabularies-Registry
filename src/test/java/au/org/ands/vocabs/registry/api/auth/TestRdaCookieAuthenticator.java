@@ -46,7 +46,6 @@ public class TestRdaCookieAuthenticator {
             tokenBytes = new PercentCodec().
                     decode(tokenEncoded.getBytes(StandardCharsets.UTF_8));
         } catch (DecoderException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
             throw e;
         }
