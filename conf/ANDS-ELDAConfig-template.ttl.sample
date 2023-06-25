@@ -37,7 +37,12 @@
 @prefix svoc:    <http://www.seegrid.csiro.au/siss/voc/> .
 @prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .
 
+# Prefix for local viewer and formatter definitions.
 @prefix andsvocabs: <http://vocabs.ands.org.au/schema/andsvocabs> .
+
+# Additional prefixes added at user request.
+# schema: added by SD-1753220 CC-2992.
+@prefix schema: <https://schema.org/> .
 
 ## TODO: Add your own namespaces
 ## ${NAMESPACES}
@@ -921,3 +926,10 @@ dcterms:title
                 a      rdfs:Property ;
                 rdfs:range     rdfs:Literal .
 
+
+# Added at user request.
+
+# schema:url: added by SD-1753220 CC-2992.
+schema:url
+                api:label "schemaUrl" ;
+                a      rdf:Property .
