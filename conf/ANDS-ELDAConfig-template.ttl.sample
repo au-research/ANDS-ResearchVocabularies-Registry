@@ -888,42 +888,42 @@ skos:relatedMatch
 
 dc:publisher
                 api:label "dcPublisher" ;
-                a      rdfs:Property .
+                a      rdf:Property .
 
 dc:source
                 api:label "dcSource" ;
-                a      rdfs:Property .
+                a      rdf:Property .
 
 dc:title
                 api:label "dcTitle" ;
-                a      rdfs:Property .
+                a      rdf:Property .
 
 
 # Some dcterms metadata elements have a specified range.
 
 ### dcterms:contributor
 ###                 api:label "dctermsContributor" ;
-###                 a      rdfs:Property ;
+###                 a      rdf:Property ;
 ###                 rdfs:range     rdfs:Literal .
 
 dcterms:created
                 api:label "dctermsCreated" ;
-                a      rdfs:Property ;
+                a      rdf:Property ;
                 rdfs:range     xsd:dateTime .
 
 dcterms:description
                 api:label "dctermsDescription" ;
-                a      rdfs:Property ;
+                a      rdf:Property ;
                 rdfs:range     rdfs:Literal .
 
 dcterms:modified
                 api:label "dctermsModified" ;
-                a      rdfs:Property ;
+                a      rdf:Property ;
                 rdfs:range     xsd:dateTime .
 
 dcterms:title
                 api:label "dctermsTitle" ;
-                a      rdfs:Property ;
+                a      rdf:Property ;
                 rdfs:range     rdfs:Literal .
 
 
