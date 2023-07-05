@@ -22,6 +22,7 @@ import org.openrdf.repository.manager.RepositoryInfo;
 import org.openrdf.repository.manager.RepositoryManager;
 import org.openrdf.repository.manager.RepositoryProvider;
 import org.openrdf.repository.sail.config.SailRepositoryConfig;
+import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.Rio;
 import org.openrdf.sail.config.SailImplConfig;
@@ -273,9 +274,14 @@ public class SesameImporterProvider implements WorkflowProvider {
                         File file = new File(entry.toString());
                         logger.debug("Full path:"
                                 + entry.toAbsolutePath().toString());
-                        con.add(file, "",
+                        RDFFormat parserFormat =
                                 Rio.getParserFormatForFileName(
-                                        entry.toString()));
+                                        entry.toString());
+                        // CC-2962 Silently ignore file formats not supported
+                        // by Sesame (e.g., PDF).
+                        if (parserFormat != null) {
+                            con.add(file, "", parserFormat);
+                        }
                     } catch (IOException ex) {
                         // I/O error encountered during the iteration,
                         // the cause is an IOException
