@@ -88,8 +88,10 @@ public class Download {
     FILE_FORMAT_TO_MIMETYPE_MAP =
     new Hashtable<>();
 
-    // The keys should match those in:
-    // ANDS-Registry-Core/applications/portal/vocabs/assets/js/versionCtrl.js
+    // The keys should match those in the definition of
+    // $scope.typeFormatOptions in the repository
+    // Vocabs-Portal (GitHub: ANDS-ResearchVocabularies-Portal)
+    // file: applications/portal/vocabs/assets/js/versionCtrl.js
     static {
         FILE_FORMAT_TO_MIMETYPE_MAP.put("RDF/XML", "application/rdf+xml");
         FILE_FORMAT_TO_MIMETYPE_MAP.put("TTL", "text/turtle");
@@ -113,7 +115,7 @@ public class Download {
         FILE_FORMAT_TO_MIMETYPE_MAP.put("TXT", "text/plain");
         FILE_FORMAT_TO_MIMETYPE_MAP.put("ODT",
                 "application/vnd.oasis.opendocument.text");
-        FILE_FORMAT_TO_MIMETYPE_MAP.put("TEXT", "text/plain");
+        FILE_FORMAT_TO_MIMETYPE_MAP.put("PDF", "application/pdf");
 //        FILE_FORMAT_TO_MIMETYPE_MAP.put("", "");
 
 //        FILE_FORMAT_TO_MIMETYPE_MAP.put("nq", "text/x-nquads");

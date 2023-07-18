@@ -107,7 +107,7 @@ public class TaskRunner {
                 partial = true;
             } else if (lastSubtaskStatus != TaskStatus.SUCCESS) {
                 logger.error("Subtask did not complete successfully: "
-                        + task);
+                        + JSONSerialization.serializeObjectAsJsonString(task));
                 addTimestamp();
                 task.setStatus(TaskStatus.ERROR);
                 task.addResult(ERROR, "Error in subtask.");
@@ -199,7 +199,7 @@ public class TaskRunner {
                 partial = true;
             } else if (lastSubtaskStatus != TaskStatus.SUCCESS) {
                 logger.error("Subtask did not complete successfully: "
-                        + task);
+                        + JSONSerialization.serializeObjectAsJsonString(task));
                 addTimestamp();
                 task.setStatus(TaskStatus.ERROR);
                 task.addResult(ERROR, "Error in subtask.");
@@ -298,7 +298,7 @@ public class TaskRunner {
                 partial = true;
             } else if (lastSubtaskStatus != TaskStatus.SUCCESS) {
                 logger.error("Subtask did not complete successfully: "
-                        + task);
+                        + JSONSerialization.serializeObjectAsJsonString(task));
                 addTimestamp();
                 task.setStatus(TaskStatus.ERROR);
                 task.addResult(ERROR, "Error in subtask.");

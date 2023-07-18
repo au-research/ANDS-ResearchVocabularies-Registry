@@ -268,12 +268,12 @@ public class LanguageSubtagRegistryTests extends ArquillianBaseTest {
         testOneInvalidTag("kea-barla-barla", "duplicate variant",
                 LanguageSubtagRegistry.ERROR_DUPLICATE_VARIANT_SUBTAG);
 
-        // Future work TODO variant but none of the prefixes match
+        // Future work TO DO variant but none of the prefixes match
         // sl-IT-biske
 //        testOneInvalidTag("sl-IT-biske", "variant not allowed for prefix",
 //                LanguageSubtagRegistry.ERROR_INVALID_VARIANT_FOR_PREFIX);
 
-        // Future work TODO ordering of multiple variants (overlaps with above)
+        // Future work TO DO ordering of multiple variants (overlaps with above)
         // sl-IT-1994-rozaj-biske
         // sl-IT-biske-rozaj
     }
