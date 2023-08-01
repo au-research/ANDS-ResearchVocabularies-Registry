@@ -275,9 +275,9 @@ public class JsonTreeTransformProvider implements WorkflowProvider {
                             + ")."
                             + "<br />For more information, please see "
                             + "<a target=\"_blank\" "
-                            + "href=\"https://documentation."
-                            + "ardc.edu.au/display/DOC/Support+for+concept+"
-                            + "browsing+within+the+portal\">Portal concept "
+                            + "href=\"https://documentation.ardc.edu.au/rva/"
+                            + "support-for-concept-browsing-"
+                            + "within-the-portal\">Portal concept "
                             + "browsing</a>.");
                     logger.error("JsonTreeTransform: not providing a concept "
                             + "tree because " + reason + ".");
@@ -685,19 +685,19 @@ public class JsonTreeTransformProvider implements WorkflowProvider {
 
             if (conceptMap.get(parent) == null) {
                 parentConcept = conceptMap.put(parent,
-                        new HashMap<String, Object>());
+                        new HashMap<>());
             }
             parentConcept = conceptMap.get(parent);
 
             if (conceptMap.get(child) == null) {
                 childConcept = conceptMap.put(child,
-                        new HashMap<String, Object>());
+                        new HashMap<>());
             }
             childConcept = conceptMap.get(child);
 
             if (parentConcept.get("narrower") == null) {
                 parentConcept.put("narrower",
-                        new HashSet<Concept>());
+                        new HashSet<>());
             }
             @SuppressWarnings("unchecked")
             HashSet<Concept> narrowerSet =
@@ -706,7 +706,7 @@ public class JsonTreeTransformProvider implements WorkflowProvider {
 
             if (childConcept.get("broader") == null) {
                 childConcept.put("broader",
-                        new HashSet<Concept>());
+                        new HashSet<>());
             }
             @SuppressWarnings("unchecked")
             HashSet<Concept> broaderSet =
@@ -728,7 +728,7 @@ public class JsonTreeTransformProvider implements WorkflowProvider {
             Concept subjectConcept = getConcept(st.getSubject().stringValue());
             if (conceptMap.get(subjectConcept) == null) {
                 conceptMap.put(subjectConcept,
-                        new HashMap<String, Object>());
+                        new HashMap<>());
             }
             HashMap<String, Object> concept =
                     conceptMap.get(subjectConcept);

@@ -329,8 +329,8 @@ public class ConceptTreeTransformProvider implements WorkflowProvider {
     /** URL of a page that gives user-level documentation for
      * the browse visualization. */
     public static final String DOCUMENTATION_URL =
-            "https://documentation.ardc.edu.au/display/DOC/"
-            + "Support+for+concept+browsing+within+the+portal";
+            "https://documentation.ardc.edu.au/rva/"
+            + "support-for-concept-browsing-within-the-portal";
 
     /** The prelude of the alert HTML used when an RDF error is found. */
     public static final String ALERT_HTML_PRELUDE =
