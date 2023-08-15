@@ -357,6 +357,23 @@ public final class Analytics {
         }
     }
 
+    /** Close the GeoIP2 database reader.
+     * Invoke this method during webapp shutdown.
+     * After invoking this method,
+     * you must no longer invoke any of the methods of this class. */
+    public static void shutdown() {
+        if (geoDbReader != null) {
+            try {
+                geoDbReader.close();
+            } catch (IOException e) {
+                logger.error("Unable to close GeoIP database", e);
+            }
+            // Set to null anyway, "just in case" there's another
+            // invocation of a method of this class.
+            geoDbReader = null;
+        }
+    }
+
     /** Create a LogstashMarker with identification data, and basic data
      * from the request.
      * The identification data includes a randomly-generated UUID to

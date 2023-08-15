@@ -19,9 +19,9 @@ import org.slf4j.LoggerFactory;
 import com.mchange.v2.c3p0.C3P0Registry;
 import com.mchange.v2.c3p0.PooledDataSource;
 
+import au.org.ands.vocabs.registry.log.Analytics;
 import au.org.ands.vocabs.registry.utils.RegistryNetUtils;
 import au.org.ands.vocabs.registry.utils.SlugGenerator;
-import au.org.ands.vocabs.toolkit.db.DBContext;
 
 /** Context listener for the Registry web application.
  * This class should be moved into a registry package.
@@ -131,6 +131,7 @@ public class ApplicationContextListener implements ServletContextListener {
         RegistryNetUtils.doShutdown();
         SlugGenerator.shutdown();
         solrShutdown();
+        Analytics.shutdown();
 
         // When running tests, log4j may have started a thread;
         // shut it down. However, note that if Arquillian uses
@@ -189,7 +190,7 @@ public class ApplicationContextListener implements ServletContextListener {
             if (dbContextClass != null) {
                 // The class has indeed been loaded already.
                 logger.info("Calling Toolkit DBContext.doShutdown");
-                DBContext.doShutdown();
+                au.org.ands.vocabs.toolkit.db.DBContext.doShutdown();
             } else {
                 logger.info("Toolkit DBContext not loaded; "
                         + "no shutdown required");
