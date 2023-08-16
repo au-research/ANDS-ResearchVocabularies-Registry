@@ -9,8 +9,10 @@ import java.lang.invoke.MethodHandles;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.dbunit.DatabaseUnitException;
 import org.hibernate.HibernateException;
@@ -26,6 +28,7 @@ import au.org.ands.vocabs.registry.db.dao.ResourceOwnerHostDAO;
 import au.org.ands.vocabs.registry.db.dao.VersionDAO;
 import au.org.ands.vocabs.registry.db.dao.VocabularyDAO;
 import au.org.ands.vocabs.registry.db.entity.ResourceOwnerHost;
+import au.org.ands.vocabs.registry.db.entity.Version;
 import au.org.ands.vocabs.registry.enums.VersionStatus;
 import au.org.ands.vocabs.registry.solr.EntityIndexer;
 import au.org.ands.vocabs.registry.solr.SearchRegistryIndex;
@@ -130,6 +133,44 @@ public class RegistryTests extends ArquillianBaseTest {
                 versionEntity = VersionDAO.getVersionById(1);
         Assert.assertNotNull(versionEntity);
         Assert.assertEquals(versionEntity.getSlug(), versionEntity.getSlug());
+    }
+
+    /** Test of {@link
+     * VersionDAO#getCurrentVersionListForVocabularyByReleaseDateSlug(Integer)}.
+     * This test confirms the correct sorting of versions.
+     * @throws DatabaseUnitException If a problem with DbUnit.
+     * @throws HibernateException If a problem getting the underlying
+     *          JDBC connection.
+     * @throws IOException If a problem getting test data for DbUnit,
+     *          or reading JSON from the correct and test output files.
+     * @throws SQLException If DbUnit has a problem performing
+     *           performing JDBC operations.*/
+    @Test
+    public final void testVersionDAOVersionsByReleaseDateSlug()
+            throws DatabaseUnitException, SQLException, IOException {
+        String testName = "testVersionDAOVersionsByReleaseDateSlug";
+        ArquillianTestUtils.clearDatabase(REGISTRY);
+        ArquillianTestUtils.loadDbUnitTestFile(REGISTRY, CLASS_NAME_PREFIX
+                + testName);
+
+        List<Version> dbVersions = VersionDAO.
+            getCurrentVersionListForVocabularyByReleaseDateSlug(1);
+        Version[] versionsArray = dbVersions.toArray(new Version[0]);
+        Assert.assertTrue(ArrayUtils.isSorted(versionsArray,
+                                              new VersionComparator()),
+                          "Versions list is not sorted correctly");
+    }
+
+    static class VersionComparator implements Comparator<Version> {
+        @Override
+        public int compare(final Version v1, final Version v2) {
+            // Note "compare(v2, v1)", because we expect sorting
+            // in reverse order of both of the sort fields.
+            return Comparator
+                    .comparing(Version::getReleaseDate)
+                    .thenComparing(Version::getSlug)
+                    .compare(v2, v1);
+        }
     }
 
     /* Solr. */
