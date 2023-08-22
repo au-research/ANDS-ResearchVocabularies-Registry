@@ -126,7 +126,8 @@ public class GetVocabularies {
      * @param uriInfo The UriInfo of the request.
      * @param vocabularyId The VocabularyId of the vocabulary to be fetched.
      * @param includeVersions Whether or not to include version elements.
-     *      If enabled, versions are returned in reverse order of release date.
+     *      If enabled, versions are returned in reverse order of release date
+     *      and slug.
      * @param includeAccessPoints Whether or not to include access point
      *      elements.
      * @param includeRelatedEntitiesAndVocabularies Whether or not to include
@@ -219,7 +220,8 @@ public class GetVocabularies {
      * analytics logging.
      * @param vocabularyId The Vocabulary Id of the vocabulary to be fetched.
      * @param includeVersions Whether or not to include version elements.
-     *      If enabled, versions are returned in reverse order of release date.
+     *      If enabled, versions are returned in reverse order of release date
+     *      and slug.
      * @param includeAccessPoints Whether or not to include access point
      *      elements.
      * @param includeRelatedEntitiesAndVocabularies Whether or not to include
@@ -255,7 +257,7 @@ public class GetVocabularies {
         if (includeVersions || includeAccessPoints) {
             List<au.org.ands.vocabs.registry.db.entity.Version>
             dbVersions = VersionDAO.
-            getCurrentVersionListForVocabularyByReleaseDate(
+            getCurrentVersionListForVocabularyByReleaseDateSlug(
                     vocabularyId);
             List<Version> outputVersions = outputVocabulary.getVersion();
 
@@ -576,7 +578,7 @@ public class GetVocabularies {
 
         List<au.org.ands.vocabs.registry.db.entity.Version>
             dbVersions = VersionDAO.
-            getCurrentVersionListForVocabularyByReleaseDate(
+            getCurrentVersionListForVocabularyByReleaseDateSlug(
                     vocabularyId);
         VersionList outputVersionList = new VersionList();
         List<Version> outputVersions = outputVersionList.getVersion();

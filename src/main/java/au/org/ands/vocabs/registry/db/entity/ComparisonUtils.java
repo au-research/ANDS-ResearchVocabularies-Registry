@@ -157,7 +157,7 @@ public final class ComparisonUtils {
         // keys in the serialization of the JSON-flavoured data column.
         // See the comment in the static
         // block of JSONSerialization. And see also
-        // https://confluence.ardc.edu.au/display/PROJ/
+        // https://ardc-services.atlassian.net/wiki/spaces/PROJ/pages/3376952/
         //   Vocabulary+Registry+mappers+between+database+and+schema+objects
         return new EqualsBuilder().
                 append(re1.getType(), re2.getType()).

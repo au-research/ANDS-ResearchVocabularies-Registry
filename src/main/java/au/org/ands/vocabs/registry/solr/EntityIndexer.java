@@ -225,8 +225,8 @@ public final class EntityIndexer {
                         VocabularyJson.class);
 
         // The order of the fields matches:
-        // https://confluence.ardc.edu.au/display/PROJ/
-        //         Vocabulary+Solr+documents+and+queries+New+Generation
+        // https://ardc-services.atlassian.net/wiki/spaces/PROJ/pages/
+        //     3376942/Vocabulary+Solr+documents+and+queries+New+Generation
         addDataToDocument(document, LAST_UPDATED, vocabulary.getStartDate());
         addDataToDocument(document, ID, Integer.toString(vocabularyId));
         addDataToDocument(document, TITLE, vocabularyData.getTitle());

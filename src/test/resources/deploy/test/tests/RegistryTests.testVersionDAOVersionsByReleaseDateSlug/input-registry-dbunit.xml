@@ -1,0 +1,114 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE dataset SYSTEM "../../dbunit-registry-export-choice.dtd" >
+<dataset>
+
+  <VERSIONS ID="1" VERSION_ID="1" VOCABULARY_ID="1"
+            START_DATE="2017-10-01 10:10:00.0" END_DATE="9999-12-01 00:00:00.0"
+            MODIFIED_BY="TEST" STATUS="SUPERSEDED"
+            SLUG="version-01" RELEASE_DATE="2014-01"
+            DATA="{}"
+            />
+  <VERSIONS ID="2" VERSION_ID="2" VOCABULARY_ID="1"
+            START_DATE="2017-10-01 10:10:00.0" END_DATE="9999-12-01 00:00:00.0"
+            MODIFIED_BY="TEST" STATUS="SUPERSEDED"
+            SLUG="version-02" RELEASE_DATE="2015-01"
+            DATA="{}"
+            />
+  <VERSIONS ID="3" VERSION_ID="3" VOCABULARY_ID="1"
+            START_DATE="2017-10-01 10:10:00.0" END_DATE="9999-12-01 00:00:00.0"
+            MODIFIED_BY="TEST" STATUS="SUPERSEDED"
+            SLUG="version-09" RELEASE_DATE="2015-01"
+            DATA="{}"
+            />
+  <VERSIONS ID="4" VERSION_ID="4" VOCABULARY_ID="1"
+            START_DATE="2017-10-01 10:10:00.0" END_DATE="9999-12-01 00:00:00.0"
+            MODIFIED_BY="TEST" STATUS="SUPERSEDED"
+            SLUG="version-03" RELEASE_DATE="2016-01"
+            DATA="{}"
+            />
+  <VERSIONS ID="5" VERSION_ID="5" VOCABULARY_ID="1"
+            START_DATE="2017-10-01 10:10:00.0" END_DATE="9999-12-01 00:00:00.0"
+            MODIFIED_BY="TEST" STATUS="SUPERSEDED"
+            SLUG="version-08" RELEASE_DATE="2014-01"
+            DATA="{}"
+            />
+  <VERSIONS ID="6" VERSION_ID="6" VOCABULARY_ID="1"
+            START_DATE="2017-10-01 10:10:00.0" END_DATE="9999-12-01 00:00:00.0"
+            MODIFIED_BY="TEST" STATUS="SUPERSEDED"
+            SLUG="version-04" RELEASE_DATE="2014-01"
+            DATA="{}"
+            />
+  <VERSIONS ID="7" VERSION_ID="7" VOCABULARY_ID="1"
+            START_DATE="2017-10-01 10:10:00.0" END_DATE="9999-12-01 00:00:00.0"
+            MODIFIED_BY="TEST" STATUS="SUPERSEDED"
+            SLUG="version-05" RELEASE_DATE="2014-01"
+            DATA="{}"
+            />
+  <VERSIONS ID="8" VERSION_ID="8" VOCABULARY_ID="1"
+            START_DATE="2017-10-01 10:10:00.0" END_DATE="9999-12-01 00:00:00.0"
+            MODIFIED_BY="TEST" STATUS="SUPERSEDED"
+            SLUG="version-15" RELEASE_DATE="2016-01"
+            DATA="{}"
+            />
+  <VERSIONS ID="9" VERSION_ID="9" VOCABULARY_ID="1"
+            START_DATE="2017-10-01 10:10:00.0" END_DATE="9999-12-01 00:00:00.0"
+            MODIFIED_BY="TEST" STATUS="SUPERSEDED"
+            SLUG="version-25" RELEASE_DATE="2017-01"
+            DATA="{}"
+            />
+  <VERSIONS ID="10" VERSION_ID="10" VOCABULARY_ID="1"
+            START_DATE="2017-10-01 10:10:00.0" END_DATE="9999-12-01 00:00:00.0"
+            MODIFIED_BY="TEST" STATUS="SUPERSEDED"
+            SLUG="version-35" RELEASE_DATE="2018-01"
+            DATA="{}"
+            />
+  <VERSIONS ID="11" VERSION_ID="11" VOCABULARY_ID="1"
+            START_DATE="2017-10-01 10:10:00.0" END_DATE="9999-12-01 00:00:00.0"
+            MODIFIED_BY="TEST" STATUS="SUPERSEDED"
+            SLUG="version-45" RELEASE_DATE="2019-01"
+            DATA="{}"
+            />
+  <VERSIONS ID="12" VERSION_ID="12" VOCABULARY_ID="1"
+            START_DATE="2017-10-01 10:10:00.0" END_DATE="9999-12-01 00:00:00.0"
+            MODIFIED_BY="TEST" STATUS="SUPERSEDED"
+            SLUG="version-06" RELEASE_DATE="2014-01"
+            DATA="{}"
+            />
+  <VERSIONS ID="13" VERSION_ID="13" VOCABULARY_ID="1"
+            START_DATE="2017-10-01 10:10:00.0" END_DATE="9999-12-01 00:00:00.0"
+            MODIFIED_BY="TEST" STATUS="SUPERSEDED"
+            SLUG="version-19" RELEASE_DATE="2014-01"
+            DATA="{}"
+            />
+  <VERSIONS ID="14" VERSION_ID="14" VOCABULARY_ID="1"
+            START_DATE="2017-10-01 10:10:00.0" END_DATE="9999-12-01 00:00:00.0"
+            MODIFIED_BY="TEST" STATUS="SUPERSEDED"
+            SLUG="version-07" RELEASE_DATE="2015-01"
+            DATA="{}"
+            />
+  <VERSIONS ID="15" VERSION_ID="15" VOCABULARY_ID="1"
+            START_DATE="2017-10-01 10:10:00.0" END_DATE="9999-12-01 00:00:00.0"
+            MODIFIED_BY="TEST" STATUS="SUPERSEDED"
+            SLUG="version-27" RELEASE_DATE="2015-01"
+            DATA="{}"
+            />
+  <VERSIONS ID="16" VERSION_ID="16" VOCABULARY_ID="1"
+            START_DATE="2017-10-01 10:10:00.0" END_DATE="9999-12-01 00:00:00.0"
+            MODIFIED_BY="TEST" STATUS="SUPERSEDED"
+            SLUG="version-17" RELEASE_DATE="20"
+            DATA="{}"
+            />
+  <VERSIONS ID="17" VERSION_ID="17" VOCABULARY_ID="1"
+            START_DATE="2017-10-01 10:10:00.0" END_DATE="9999-12-01 00:00:00.0"
+            MODIFIED_BY="TEST" STATUS="SUPERSEDED"
+            SLUG="version-23" RELEASE_DATE="2015-01"
+            DATA="{}"
+            />
+  <VERSIONS ID="18" VERSION_ID="18" VOCABULARY_ID="1"
+            START_DATE="2017-10-01 10:10:00.0" END_DATE="9999-12-01 00:00:00.0"
+            MODIFIED_BY="TEST" STATUS="SUPERSEDED"
+            SLUG="version-24" RELEASE_DATE="2015-01"
+            DATA="{}"
+            />
+
+</dataset>

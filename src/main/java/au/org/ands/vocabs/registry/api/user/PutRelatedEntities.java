@@ -677,8 +677,9 @@ public class PutRelatedEntities {
                     Analytics.OWNER_FIELD, updatedDbRelatedEntity.getOwner(),
                     Analytics.WAS_MODIFIED_FIELD, reWasUpdated);
 
-            // Check https://confluence.ardc.edu.au/display/PROJ/
-            //   Vocabulary+Solr+documents+and+queries+New+Generation
+            // Check
+            // https://ardc-services.atlassian.net/wiki/spaces/PROJ/pages/
+            //   3376942/Vocabulary+Solr+documents+and+queries+New+Generation
             // (and the EntityIndexer class!)
             // to see how REs are involved in Solr indexing.
             // It seems: only publisher titles are indexed.
