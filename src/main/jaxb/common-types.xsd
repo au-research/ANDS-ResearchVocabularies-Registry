@@ -229,6 +229,11 @@ http://viaf.org/</xs:documentation>
                     <xs:documentation>For related entities of type party.</xs:documentation>
                 </xs:annotation>
             </xs:enumeration>
+            <xs:enumeration value="isFundedBy">
+                <xs:annotation>
+                    <xs:documentation>For related entities of type party.</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
             <xs:enumeration value="hasAssociationWith">
                 <xs:annotation>
                     <xs:documentation>For related entities of type service and vocabulary.</xs:documentation>
