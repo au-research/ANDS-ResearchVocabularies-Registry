@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd" >
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
+<!-- NB: The URL "http://testng.org/testng-1.0.dtd" is magic
+to TestNG; don't change it to "https" as long as we're
+using TestNG 6. Using the magic value means that TestNG
+uses its own internal copy of the DTD, rather then
+going out to the network to fetch it.
+-->
 
 <suite name="Vocab Registry Arquillian tests">
 
