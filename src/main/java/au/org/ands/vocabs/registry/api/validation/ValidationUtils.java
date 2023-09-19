@@ -656,6 +656,7 @@ public final class ValidationUtils {
         ALLOWED_RELATIONS_FOR_PARTY.add(RelatedEntityRelation.IMPLEMENTED_BY);
         ALLOWED_RELATIONS_FOR_PARTY.add(RelatedEntityRelation.POINT_OF_CONTACT);
         ALLOWED_RELATIONS_FOR_PARTY.add(RelatedEntityRelation.PUBLISHED_BY);
+        ALLOWED_RELATIONS_FOR_PARTY.add(RelatedEntityRelation.IS_FUNDED_BY);
 
         ALLOWED_RELATIONS_FOR_SERVICE.add(
                 RelatedEntityRelation.HAS_ASSOCIATION_WITH);
