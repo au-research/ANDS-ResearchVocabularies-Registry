@@ -27,7 +27,7 @@ public enum AuthenticationServiceId {
     @XmlEnumValue("AUTHENTICATION_SOCIAL_GOOGLE")
     AUTHENTICATION_SOCIAL_GOOGLE,
 
-    /** Twitter. */
+    /** X, formerly known as Twitter. */
     @XmlEnumValue("AUTHENTICATION_SOCIAL_TWITTER")
     AUTHENTICATION_SOCIAL_TWITTER
 
