@@ -562,13 +562,18 @@ public class CheckVocabularyImpl
                                 addPropertyNode("label").inIterable().
                                 atIndex(index).addConstraintViolation(),
                                 newValid);
-            if (SubjectSources.subjectRequiresIRI(subject)
-                    && !SubjectSources.subjectHasValidIRI(subject)) {
-                newValid = false;
-                constraintContext.buildConstraintViolationWithTemplate(
-                    "{" + INTERFACE_NAME + ".subject.unknown}").
-                addPropertyNode("subject").addBeanNode().inIterable().
-                atIndex(index).addConstraintViolation();
+            if (SubjectSources.subjectRequiresIRI(subject)) {
+                if (!SubjectSources.subjectHasValidIRI(subject)) {
+                    newValid = false;
+                    constraintContext.buildConstraintViolationWithTemplate(
+                            "{" + INTERFACE_NAME + ".subject.unknown}").
+                    addPropertyNode("subject").addBeanNode().inIterable().
+                    atIndex(index).addConstraintViolation();
+                } else {
+                    // No need for the caller to provide label and notation,
+                    // and we override any values the caller provides anyway.
+                    SubjectSources.resolveSubject(subject);
+                }
             }
             if (SubjectSources.ANZSRC_FOR.equals(subject.getSource())) {
                 validSubjects = true;
