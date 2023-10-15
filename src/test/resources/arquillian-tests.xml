@@ -47,7 +47,19 @@ going out to the network to fetch it.
     <packages>
       <package name="au.org.ands.vocabs.toolkit.test.*" />
       <package name="au.org.ands.vocabs.registry.test.*" />
+      <package name="au.org.ands.vocabs.registry.utils.*" />
    </packages>
+   <classes>
+     <class name="au.org.ands.vocabs.registry.utils.TestBotDetector">
+       <methods>
+         <!-- Exclude works here because the class extends
+              ArquillianBaseTest. Without that, would need to
+              use include, not exclude.
+         -->
+         <exclude name="testAreNotBots" />
+       </methods>
+     </class>
+   </classes>
   </test>
 
   <!-- Separate test group used for shutdown. -->

@@ -5,8 +5,11 @@ package au.org.ands.vocabs.registry.utils;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+import au.org.ands.vocabs.toolkit.test.arquillian.ArquillianBaseTest;
+
 /** Unit tests of the slug generator. */
-public class TestSlugGenerator {
+@Test
+public class TestSlugGenerator extends ArquillianBaseTest {
 
     /** Run tests of the slug generator. */
     @Test
