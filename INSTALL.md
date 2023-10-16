@@ -65,7 +65,7 @@ point to the gawk executable. For example, for bash, if the gawk
 executable is `/opt/gawk-4.2.1/bin`, add this to `.bashrc`:
 
 ```
-# gawk 4 is needed to run generate-matcher.sh
+# gawk 4.2 is needed to run generate-matcher.sh
 export GAWK=/opt/gawk-4.2.1/bin
 ```
 
