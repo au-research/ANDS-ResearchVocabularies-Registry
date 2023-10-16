@@ -2,7 +2,6 @@
 <!DOCTYPE related-entity>
 <related-entity
     xmlns="http://vocabs.ands.org.au/registry/schema/2017/01/vocabulary"
-    id="1"
     type="not-a-valid-type"
     email="not-a-valid-email"
     >
@@ -66,7 +65,7 @@
   <related-entity-identifier
       identifier-type="ror" identifier-value="03yrm5c26" />
   <related-entity-identifier
-      identifier-type="uri" identifier-value="http://ardc.edu.au/" />
+      identifier-type="uri" identifier-value="isbn:0123456789" />
   <related-entity-identifier
       identifier-type="viaf" identifier-value="158902398" />
 

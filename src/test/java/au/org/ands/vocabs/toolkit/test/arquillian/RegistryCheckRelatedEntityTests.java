@@ -93,12 +93,11 @@ public class RegistryCheckRelatedEntityTests extends ArquillianBaseTest {
                 + "}",
                 pathPrefix));
         // And now the specific errors ...
-        // First, id. NB: as per CC-2723, the validation is broken.
-        // Come back during CC-2737 to uncomment this.
-//        expectedErrors.add(new ValidationSummary(
-//                "{" + CheckRelatedEntity.INTERFACE_NAME
-//                + ".create.id}",
-//                pathPrefix + ".id"));
+        // First, id.
+        expectedErrors.add(new ValidationSummary(
+                "{" + CheckRelatedEntity.INTERFACE_NAME
+                + ".create.id}",
+                pathPrefix + ".id"));
 
         // type owner title email url
         expectedErrors.add(new ValidationSummary(
@@ -135,17 +134,12 @@ public class RegistryCheckRelatedEntityTests extends ArquillianBaseTest {
         // identifier[1] through identifier[14] have invalid values
         // CHECKSTYLE:OFF: MagicNumber
         for (int i = 1; i <= 14; i++) {
-            // Except, as per CC-2723, identifier[13] should be rejected,
-            // but isn't. When working on CC-2723, remove this test
-            // and the Checkstyle suppression markers above and below.
-            if (i != 13) {
-                // CHECKSTYLE:ON: MagicNumber
-                expectedErrors.add(new ValidationSummary(
-                        "{" + CheckRelatedEntity.INTERFACE_NAME
-                        + ".relatedEntityIdentifier.identifierValue}",
-                        pathPrefix + ".relatedEntityIdentifier["
-                                + i + "].identifierValue"));
-            }
+            // CHECKSTYLE:ON: MagicNumber
+            expectedErrors.add(new ValidationSummary(
+                    "{" + CheckRelatedEntity.INTERFACE_NAME
+                    + ".relatedEntityIdentifier.identifierValue}",
+                    pathPrefix + ".relatedEntityIdentifier["
+                            + i + "].identifierValue"));
         }
         /* Copy/paste/fill in as needed:
         expectedErrors.add(new ValidationSummary(
@@ -214,12 +208,11 @@ public class RegistryCheckRelatedEntityTests extends ArquillianBaseTest {
                 + "}",
                 pathPrefix));
         // And now the specific errors ...
-        // First, id. NB: as per CC-2723, the validation is broken.
-        // Come back during CC-2737 to uncomment this.
-//        expectedErrors.add(new ValidationSummary(
-//                "{" + CheckRelatedEntity.INTERFACE_NAME
-//                + ".create.id}",
-//                pathPrefix + ".id"));
+        // First, id.
+        expectedErrors.add(new ValidationSummary(
+                "{" + CheckRelatedEntity.INTERFACE_NAME
+                + ".update.id}",
+                pathPrefix + ".id"));
 
         // type owner title email url
         expectedErrors.add(new ValidationSummary(
@@ -252,17 +245,12 @@ public class RegistryCheckRelatedEntityTests extends ArquillianBaseTest {
         // identifier[1] through identifier[14] have invalid values
         // CHECKSTYLE:OFF: MagicNumber
         for (int i = 1; i <= 14; i++) {
-            // Except, as per CC-2723, identifier[13] should be rejected,
-            // but isn't. When working on CC-2723, remove this test
-            // and the Checkstyle suppression markers above and below.
-            if (i != 13) {
-                // CHECKSTYLE:ON: MagicNumber
-                expectedErrors.add(new ValidationSummary(
-                        "{" + CheckRelatedEntity.INTERFACE_NAME
-                        + ".relatedEntityIdentifier.identifierValue}",
-                        pathPrefix + ".relatedEntityIdentifier["
-                                + i + "].identifierValue"));
-            }
+            // CHECKSTYLE:ON: MagicNumber
+            expectedErrors.add(new ValidationSummary(
+                    "{" + CheckRelatedEntity.INTERFACE_NAME
+                    + ".relatedEntityIdentifier.identifierValue}",
+                    pathPrefix + ".relatedEntityIdentifier["
+                            + i + "].identifierValue"));
         }
         /* Copy/paste/fill in as needed:
         expectedErrors.add(new ValidationSummary(

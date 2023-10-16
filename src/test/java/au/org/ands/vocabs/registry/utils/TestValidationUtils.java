@@ -11,9 +11,11 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import au.org.ands.vocabs.registry.api.validation.ValidationUtils;
+import au.org.ands.vocabs.toolkit.test.arquillian.ArquillianBaseTest;
 
 /** Tests of the methods of the {@link ValidationUtils} class. */
-public class TestValidationUtils {
+@Test
+public class TestValidationUtils extends ArquillianBaseTest {
 
     // Leave logger here, though it is unused. We might want to use
     // it later.
@@ -25,8 +27,30 @@ public class TestValidationUtils {
     /** Run tests of the field validation methods. */
     @Test
     public void testFieldValidation() {
-        Assert.assertTrue(ValidationUtils.isValidURL(
+        Assert.assertFalse(ValidationUtils.isValidURL(
                 "http://invalid.com/with-\"-in"));
+
+        Assert.assertFalse(ValidationUtils.isValidURL("http://www"));
+        Assert.assertFalse(ValidationUtils.isValidURL("http://www\""));
+        Assert.assertFalse(ValidationUtils.isValidURL("http:/google.com"));
+        Assert.assertTrue(ValidationUtils.isValidURL("http://google.com"));
+        Assert.assertFalse(ValidationUtils.isValidURL("file://etc/passwd"));
+        Assert.assertFalse(ValidationUtils.isValidURL("http://localhost/x"));
+        Assert.assertFalse(ValidationUtils.isValidURL("https://www"));
+        Assert.assertFalse(ValidationUtils.isValidURL("https://www\""));
+        Assert.assertFalse(ValidationUtils.isValidURL("https:/google.com"));
+        Assert.assertTrue(ValidationUtils.isValidURL("https://google.com"));
+        Assert.assertFalse(ValidationUtils.isValidURL("https://localhost/x"));
+        Assert.assertFalse(ValidationUtils.isValidURL(
+                "mailto:no.body@dummy.com"));
+        Assert.assertFalse(ValidationUtils.isValidURL(" https://google.com"));
+
+        Assert.assertTrue(ValidationUtils.isValidURI(
+                "mailto:no.body@dummy.com"));
+        // JavaScript is explicitly disallowed by our implementation.
+        Assert.assertFalse(ValidationUtils.isValidURI(
+                "javascript:alert('Hello')"));
+
     }
 
     /** Run tests of the HTML validation method. */
