@@ -44,13 +44,20 @@ public class TestValidationUtils extends ArquillianBaseTest {
         Assert.assertFalse(ValidationUtils.isValidURL(
                 "mailto:no.body@dummy.com"));
         Assert.assertFalse(ValidationUtils.isValidURL(" https://google.com"));
+        // Compare this test, using isValidURL(), with the corresponding
+        // test below using isValidURI()!
+        Assert.assertFalse(ValidationUtils.isValidURL(
+                "http://url4/"));
 
         Assert.assertTrue(ValidationUtils.isValidURI(
                 "mailto:no.body@dummy.com"));
         // JavaScript is explicitly disallowed by our implementation.
         Assert.assertFalse(ValidationUtils.isValidURI(
                 "javascript:alert('Hello')"));
-
+        // Compare this test, using isValidURI(), with the corresponding
+        // test below using isValidURL()!
+        Assert.assertTrue(ValidationUtils.isValidURI(
+                "http://url4/"));
     }
 
     /** Run tests of the HTML validation method. */
