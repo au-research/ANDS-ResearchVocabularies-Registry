@@ -334,29 +334,37 @@ public final class EntityIndexer {
         }
 
         // The values of the remaining fields are determined by what
-        // is the "current version" of the vocabulary, if it has one.
-        addFieldsForCurrentVersion(em, vocabularyId, document);
+        // is the "most suitable version" of the vocabulary, if it has one.
+        addFieldsForMostSuitableVersion(em, vocabularyId, document);
         return document;
     }
 
-    /** Add the fields for the current version of the vocabulary.
+    /** Add the fields for the "most suitable" version of the vocabulary.
+     * Here, "most suitable" means the current version, if there is one.
+     * Otherwise, it means the most recent superseded version (if there
+     * is one), as returned by {@link
+     * VersionDAO#getCurrentVersionListForVocabularyByReleaseDateSlug(Integer)}.
+     * This implementation of "most suitable" matches the Portal
+     * implementation in {@code vocab.blade.php}.
      * @param em The EntityManager to use.
      * @param vocabularyId The vocabulary ID of the vocabulary. Used to
      *      fetch other database entities.
      * @param document The Solr document being generated. This method
      *      adds fields to it.
      */
-    private static void addFieldsForCurrentVersion(
+    private static void addFieldsForMostSuitableVersion(
             final EntityManager em,
             final Integer vocabularyId,
             final SolrInputDocument document) {
         List<Version> versions =
-                VersionDAO.getCurrentVersionListForVocabulary(em, vocabularyId);
+                VersionDAO.getCurrentVersionListForVocabularyByReleaseDateSlug(
+                        vocabularyId, em);
         // The widgetable flag is always added to the Solr document.
         // Assume false unless/until proven otherwise.
         boolean widgetable = false;
         ArrayList<String> concepts = new ArrayList<>();
         // Find the current version, if any.
+        Version mostSuitableVersion = null;
         Version currentVersion = null;
         for (Version version : versions) {
             if (version.getStatus() == VersionStatus.CURRENT) {
@@ -365,14 +373,25 @@ public final class EntityIndexer {
             }
         }
         if (currentVersion != null) {
+            mostSuitableVersion = currentVersion;
+        } else if (versions.size() > 0) {
+            // There's no current version, but there are versions,
+            // so the first one in the list is the "most suitable"
+            // superseded version.
+            // NB: if we ever introduce another version status value that
+            // would be "less suitable" than superseded, change this code
+            // to include a test of the status!
+            mostSuitableVersion = versions.get(0);
+        }
+        if (mostSuitableVersion != null) {
             // Now add the fields that depend on this.
-            Integer currentVersionId = currentVersion.getVersionId();
+            Integer mostSuitableVersionId = mostSuitableVersion.getVersionId();
             ArrayList<String> accessList = new ArrayList<>();
             ArrayList<String> formatList = new ArrayList<>();
             List<VersionArtefact> conceptLists =
                     VersionArtefactDAO.
                     getCurrentVersionArtefactListForVersionByType(
-                            currentVersionId,
+                            mostSuitableVersionId,
                             VersionArtefactType.CONCEPT_LIST, em);
             if (conceptLists != null && conceptLists.size() == 1) {
                 String artefactData = conceptLists.get(0).getData();
@@ -407,7 +426,8 @@ public final class EntityIndexer {
                 }
             }
             List<AccessPoint> accessPoints = AccessPointDAO.
-                    getCurrentAccessPointListForVersion(em, currentVersionId);
+                    getCurrentAccessPointListForVersion(em,
+                            mostSuitableVersionId);
             for (AccessPoint accessPoint : accessPoints) {
                 accessList.add(accessPointName.get(accessPoint.getType()));
                 switch (accessPoint.getType()) {

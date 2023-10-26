@@ -361,6 +361,35 @@
         return entityList;
     }
 
+    /** Get all current Version instances for a Vocabulary,
+     * with results returned in decreasing order of their releaseDate,
+     * then slug.
+     * This version of the method uses an existing EntityManager
+     * provided as a parameter; transaction begin/end must be
+     * managed by the caller.
+     * @param id The Vocabulary.
+     * @param em The EntityManager to be used.
+     * @return The list of current Version
+     *     instances for this Vocabulary.
+     */
+    @SuppressWarnings("checkstyle:LineLength")
+    public static List&lt;Version&gt;
+    getCurrentVersionListForVocabularyByReleaseDateSlug(
+            final Integer id,
+            final EntityManager em) {
+        TypedQuery&lt;Version&gt; q = em.createNamedQuery(
+            Version.
+                GET_CURR_VER_LIST_FOR_VOC_BY_RD_SLUG,
+            Version.class).
+            setParameter(
+                Version.
+                    GET_CURR_VER_LIST_FOR_VOC_BY_RD_SLUG_VOCABULARYID,
+                id);
+        q = TemporalUtils.setDatetimeConstantParameters(q);
+        List&lt;Version&gt; entityList = q.getResultList();
+        return entityList;
+    }
+
 </method>
       </extraQuery>
     </extraQueries>

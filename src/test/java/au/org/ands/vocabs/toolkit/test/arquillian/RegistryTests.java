@@ -12,8 +12,11 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
+import javax.persistence.EntityManager;
+
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.solr.client.solrj.SolrServerException;
+import org.apache.solr.common.SolrInputDocument;
 import org.dbunit.DatabaseUnitException;
 import org.hibernate.HibernateException;
 import org.slf4j.Logger;
@@ -218,6 +221,83 @@ public class RegistryTests extends ArquillianBaseTest {
                 "Language facet value");
         Assert.assertEquals(facetLanguage.get(1).asInt(), 1,
                 "Language facet count");
+    }
+
+    /** Test of Solr indexing with different types of "most suitable" version.
+     * There are two vocabularies: one with a current version (and superseded
+     * versions), and one with only superseded versions. We are particularly
+     * interested to confirm that the latter is also indexed with regard
+     * to its "most suitable" version.
+     * See {@link
+     * EntityIndexer#addFieldsForMostSuitableVersion(EntityManager,Integer,SolrInputDocument)}
+     * for details.
+     * @throws DatabaseUnitException If a problem with DbUnit.
+     * @throws HibernateException If a problem getting the underlying
+     *          JDBC connection.
+     * @throws IOException If a problem getting test data for DbUnit,
+     *          or reading JSON from the correct and test output files.
+     * @throws SQLException If DbUnit has a problem performing
+     *           performing JDBC operations.
+     * @throws SolrServerException If an error during Solr indexing.
+     */
+    @Test
+    @SuppressWarnings("checkstyle:MagicNumber")
+    public final void testSolrIndexing2()
+            throws HibernateException, DatabaseUnitException,
+            IOException, SQLException, SolrServerException {
+        ArquillianTestUtils.clearDatabase(REGISTRY);
+        ArquillianTestUtils.loadDbUnitTestFile(REGISTRY,
+                CLASS_NAME_PREFIX + "testSolrIndexing2");
+        EntityIndexer.indexAllVocabularies();
+        // Explicit commit is required so that we can do a search
+        // immediately.
+        EntityIndexer.commit();
+        List<Object> filtersAndResultsExtracted = new ArrayList<>();
+        String searchResults = SearchRegistryIndex.query("{}",
+                filtersAndResultsExtracted, false);
+        // Default sorting is alpha A-Z; we rely on that.
+        logger.info("Result: " + searchResults);
+        JsonNode resultsJson = TaskUtils.jsonStringToTree(searchResults);
+        JsonNode response = resultsJson.get("response");
+        Assert.assertEquals(response.get("numFound").asInt(), 2, "numFound");
+
+        // There are two vocabularies, and we expect the same sort of results
+        // for each.
+        for (int i = 0; i < 2; i++) {
+            int vocabularyId = i + 1;
+            String vocabularyIdString = Integer.toString(vocabularyId);
+            JsonNode doc = response.get("docs").get(i);
+            Assert.assertEquals(doc.get("id").asText(),
+                    vocabularyIdString, "id");
+            Assert.assertEquals(doc.get("slug").asText(),
+                    "rifcs" + vocabularyIdString, "slug");
+            // And so on, for the rest of the fields.
+        }
+        // Facets.
+        JsonNode facetCounts = resultsJson.get("facet_counts");
+        JsonNode facetFields = facetCounts.get("facet_fields");
+        JsonNode facetAccess = facetFields.get("access");
+        Assert.assertEquals(facetAccess.size(), 6, "access facet size");
+        // Each of the three counts should be 2: both vocabularies have a
+        // "most suitable" version with three access points.
+        Assert.assertEquals(facetAccess.get(1).asInt(), 2,
+                "access facet count");
+        Assert.assertEquals(facetAccess.get(3).asInt(), 2,
+                "access facet count");
+        Assert.assertEquals(facetAccess.get(5).asInt(), 2,
+                "access facet count");
+
+        JsonNode facetFormat = facetFields.get("format");
+        Assert.assertEquals(facetFormat.size(), 2, "format facet size");
+        // The count should be 2: both vocabularies have access points.
+        Assert.assertEquals(facetFormat.get(1).asInt(), 2,
+                "format facet count");
+
+        JsonNode facetWidgetable = facetFields.get("widgetable");
+        Assert.assertEquals(facetWidgetable.size(), 2, "widgetable facet size");
+        // The count should be 2: both vocabularies are widgetable.
+        Assert.assertEquals(facetWidgetable.get(1).asInt(), 2,
+                "widgetable facet count");
     }
 
     /** Tests of interpreting the "pp" parameter to the resource search,
