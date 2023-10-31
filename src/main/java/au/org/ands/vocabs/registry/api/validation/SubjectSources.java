@@ -85,6 +85,21 @@ public final class SubjectSources {
                 : subjectResolverSources) {
             RESOLVING_SUBJECT_SOURCES.add(subjectResolverSource.getSource());
         }
+        resolvingSubjectSourcesPopulated = true;
+    }
+
+    /** Reset the {@link RESOLVING_SUBJECT_SOURCES} set and
+     * the {@link resolvingSubjectSourcesPopulated} flag.
+     * The production code should never call this! It's provided
+     * only for use in the test suite.
+     */
+    public static void resetResolvingSubjectSources() {
+        if (!resolvingSubjectSourcesPopulated) {
+            // Already done.
+            return;
+        }
+        RESOLVING_SUBJECT_SOURCES.clear();
+        resolvingSubjectSourcesPopulated = false;
     }
 
     /** Decide if a Subject that has a source for which we resolve subjects,

@@ -1,0 +1,263 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE dataset SYSTEM "../../dbunit-registry-export-choice.dtd" >
+<dataset>
+
+  <RELATED_ENTITY_IDS ID="1"/>
+  <RELATED_ENTITY_IDS ID="2"/>
+  <RELATED_ENTITY_IDS ID="3"/>
+  <RELATED_ENTITY_IDS ID="4"/>
+  <RELATED_ENTITY_IDS ID="5"/>
+
+  <RELATED_ENTITIES ID="1" START_DATE="2015-11-26 10:04:05.0" END_DATE="9999-12-01 00:00:00" RELATED_ENTITY_ID="1" MODIFIED_BY="SYSTEM" OWNER="ANDS-Curated" TYPE="PARTY" TITLE="Australian National Data Service" DATA="{&quot;email&quot;:&quot;services@ands.org.au&quot;,&quot;url&quot;:[&quot;http://ands.org.au/&quot;]}"/>
+  <RELATED_ENTITIES ID="2" START_DATE="2016-09-23 09:52:50.0" END_DATE="9999-12-01 00:00:00" RELATED_ENTITY_ID="2" MODIFIED_BY="SYSTEM" OWNER="ANDS" TYPE="PARTY" TITLE="Food and Agriculture Organization (FAO)" DATA="{&quot;email&quot;:&quot;agrovoc@fao.org&quot;,&quot;url&quot;:[&quot;http://www.fao.org/home/&quot;]}"/>
+  <RELATED_ENTITIES ID="3" START_DATE="2016-09-27 13:24:05.0" END_DATE="9999-12-01 00:00:00" RELATED_ENTITY_ID="3" MODIFIED_BY="SYSTEM" OWNER="ANDS-NC" TYPE="PARTY" TITLE="Food and Agriculture Organization (FAO)" DATA="{&quot;email&quot;:&quot;agrovoc@fao.org&quot;,&quot;url&quot;:[&quot;http://www.fao.org/home/&quot;]}"/>
+  <RELATED_ENTITIES ID="4" START_DATE="2015-09-23 11:46:42.0" END_DATE="9999-12-01 00:00:00" RELATED_ENTITY_ID="4" MODIFIED_BY="SYSTEM" OWNER="ANDS" TYPE="PARTY" TITLE="United States Geological Survey" DATA="{&quot;url&quot;:[&quot;http://www.usgs.gov&quot;]}"/>
+  <RELATED_ENTITIES ID="5" START_DATE="2015-09-23 11:46:42.0" END_DATE="9999-12-01 00:00:00" RELATED_ENTITY_ID="5" MODIFIED_BY="SYSTEM" OWNER="ANDS" TYPE="PARTY" TITLE="Department of the Interior Office of Water Research and Technology" DATA="{}"/>
+
+  <VOCABULARY_IDS ID="1"/>
+  <VOCABULARY_IDS ID="2"/>
+
+  <VOCABULARIES ID="1" START_DATE="2015-06-24 10:56:30.0"
+                END_DATE="9999-12-01 00:00:00" VOCABULARY_ID="1"
+                MODIFIED_BY="SYSTEM" STATUS="PUBLISHED" SLUG="rifcs1"
+                OWNER="ANDS-Curated"
+                DATA="{''subjects'':[{''label'':''Information And Computing Sciences'',''source'':''anzsrc-for''}],''other-languages'':[],''acronym'':''RIF-CS'',''creation-date'':''2008-12-31'',''description'':''The RIF-CS schema ....'',''licence'':''CC-BY'',''primary-language'':''en'',''revision-cycle'':''Updated as required'',''title'':''Registry 1''}"/>
+  <VOCABULARIES ID="2" START_DATE="2015-06-25 00:00:00"
+                END_DATE="9999-12-01 00:00:00" VOCABULARY_ID="2"
+                MODIFIED_BY="SYSTEM" STATUS="PUBLISHED" SLUG="rifcs2"
+                OWNER="ANDS-Curated"
+                DATA="{''subjects'':[{''label'':''Information And Computing Sciences'',''source'':''anzsrc-for''}],''other-languages'':[],''acronym'':''RIF-CS'',''creation-date'':''2008-12-31'',''description'':''The RIF-CS schema ....'',''licence'':''CC-BY'',''primary-language'':''en'',''revision-cycle'':''Updated as required'',''title'':''Registry 2''}"/>
+
+  <VOCABULARY_RELATED_ENTITIES ID="1" START_DATE="2015-11-26 10:04:05.0" END_DATE="9999-12-01 00:00:00" VOCABULARY_ID="1" RELATED_ENTITY_ID="1" MODIFIED_BY="SYSTEM" RELATION="IMPLEMENTED_BY"/>
+  <VOCABULARY_RELATED_ENTITIES ID="2" START_DATE="2015-11-26 10:04:05.0" END_DATE="9999-12-01 00:00:00" VOCABULARY_ID="1" RELATED_ENTITY_ID="1" MODIFIED_BY="SYSTEM" RELATION="PUBLISHED_BY"/>
+  <VOCABULARY_RELATED_ENTITIES ID="3" START_DATE="2015-11-26 10:04:05.0" END_DATE="9999-12-01 00:00:00" VOCABULARY_ID="1" RELATED_ENTITY_ID="1" MODIFIED_BY="SYSTEM" RELATION="HAS_AUTHOR"/>
+  <VOCABULARY_RELATED_ENTITIES ID="4" START_DATE="2015-11-26 10:04:05.0" END_DATE="9999-12-01 00:00:00" VOCABULARY_ID="2" RELATED_ENTITY_ID="1" MODIFIED_BY="SYSTEM" RELATION="POINT_OF_CONTACT"/>
+  <VOCABULARY_RELATED_ENTITIES ID="5" START_DATE="2016-09-23 09:52:50.0" END_DATE="9999-12-01 00:00:00" VOCABULARY_ID="2" RELATED_ENTITY_ID="2" MODIFIED_BY="SYSTEM" RELATION="PUBLISHED_BY"/>
+  <VOCABULARY_RELATED_ENTITIES ID="6" START_DATE="2016-09-27 13:24:05.0" END_DATE="9999-12-01 00:00:00" VOCABULARY_ID="2" RELATED_ENTITY_ID="3" MODIFIED_BY="SYSTEM" RELATION="PUBLISHED_BY"/>
+
+  <VERSION_IDS ID="1"/>
+  <VERSION_IDS ID="2"/>
+  <VERSION_IDS ID="3"/>
+  <VERSION_IDS ID="4"/>
+  <VERSION_IDS ID="5"/>
+  <VERSION_IDS ID="6"/>
+  <VERSION_IDS ID="7"/>
+  <VERSION_IDS ID="8"/>
+
+  <!-- Versions for VOCABULARY_ID="1" -->
+  <VERSIONS ID="1" START_DATE="2015-11-26 10:04:05.0"
+            END_DATE="9999-12-01 00:00:00.0" VERSION_ID="1"
+            VOCABULARY_ID="1" MODIFIED_BY="SYSTEM" STATUS="SUPERSEDED"
+            SLUG="v1" RELEASE_DATE="2015-12-01"
+            DATA="{''browse-flag'':[''maySortByNotation'',''notationAlpha'',''mayResolveResources''],''do-import'':true,''do-poolparty-harvest'':false,''do-publish'':true,''title'':''Version 1''}"/>
+  <VERSIONS ID="2" START_DATE="2015-11-26 10:04:05.0"
+            END_DATE="9999-12-01 00:00:00.0" VERSION_ID="2"
+            VOCABULARY_ID="1" MODIFIED_BY="SYSTEM" STATUS="SUPERSEDED"
+            SLUG="v2" RELEASE_DATE="2016-12-01"
+            DATA="{''browse-flag'':[''maySortByNotation'',''notationAlpha'',''mayResolveResources'',''includeConceptSchemes''],''do-import'':true,''do-poolparty-harvest'':false,''do-publish'':true,''title'':''Version 2''}"/>
+  <VERSIONS ID="3" START_DATE="2015-11-26 10:04:05.0"
+            END_DATE="9999-12-01 00:00:00.0" VERSION_ID="3"
+            VOCABULARY_ID="1" MODIFIED_BY="SYSTEM" STATUS="SUPERSEDED"
+            SLUG="v3" RELEASE_DATE="2015-12-01"
+            DATA="{''browse-flag'':[''maySortByNotation'',''notationAlpha'',''mayResolveResources'',''includeCollections''],''do-import'':true,''do-poolparty-harvest'':false,''do-publish'':true,''title'':''Version 3''}"/>
+  <!-- This one is the "most suitable", as it has status CURRENT. -->
+  <VERSIONS ID="4" START_DATE="2015-11-26 10:04:05.0"
+            END_DATE="9999-12-01 00:00:00.0" VERSION_ID="4"
+            VOCABULARY_ID="1" MODIFIED_BY="SYSTEM" STATUS="CURRENT"
+            SLUG="v4" RELEASE_DATE="2015-12-01"
+            DATA="{''browse-flag'':[''maySortByNotation'',''notationAlpha'',''mayResolveResources'',''includeConceptSchemes'',''includeCollections''],''do-import'':true,''do-poolparty-harvest'':false,''do-publish'':true,''title'':''Version 4''}"/>
+
+  <!-- Versions for VOCABULARY_ID="2" -->
+  <VERSIONS ID="5" START_DATE="2015-11-26 10:04:05.0"
+            END_DATE="9999-12-01 00:00:00.0" VERSION_ID="5"
+            VOCABULARY_ID="2" MODIFIED_BY="SYSTEM" STATUS="SUPERSEDED"
+            SLUG="v5" RELEASE_DATE="2015-12-01"
+            DATA="{''browse-flag'':[''includeCollections''],''do-import'':true,''do-poolparty-harvest'':false,''do-publish'':true,''title'':''Version 5''}"/>
+  <!-- This one is the "most suitable", as it has the latest recent
+       RELEASE_DATE. -->
+  <VERSIONS ID="6" START_DATE="2015-11-26 10:04:05.0"
+            END_DATE="9999-12-01 00:00:00.0" VERSION_ID="6"
+            VOCABULARY_ID="2" MODIFIED_BY="SYSTEM" STATUS="SUPERSEDED"
+            SLUG="v6" RELEASE_DATE="2016-12-01"
+            DATA="{''browse-flag'':[''includeConceptSchemes''],''do-import'':true,''do-poolparty-harvest'':false,''do-publish'':true,''title'':''Version 6''}"/>
+  <VERSIONS ID="7" START_DATE="2015-11-26 10:04:05.0"
+            END_DATE="9999-12-01 00:00:00.0" VERSION_ID="7"
+            VOCABULARY_ID="2" MODIFIED_BY="SYSTEM" STATUS="SUPERSEDED"
+            SLUG="v7" RELEASE_DATE="2015-12-01"
+            DATA="{''browse-flag'':[''includeCollections''],''do-import'':true,''do-poolparty-harvest'':false,''do-publish'':true,''title'':''Version 7''}"/>
+  <VERSIONS ID="8" START_DATE="2015-11-26 10:04:05.0"
+            END_DATE="9999-12-01 00:00:00.0" VERSION_ID="8"
+            VOCABULARY_ID="2" MODIFIED_BY="SYSTEM" STATUS="SUPERSEDED"
+            SLUG="v8" RELEASE_DATE="2015-12-01"
+            DATA="{''browse-flag'':[''includeConceptSchemes'',''includeCollections''],''do-import'':true,''do-poolparty-harvest'':false,''do-publish'':true,''title'':''Version 8''}"/>
+
+
+  <UPLOADS ID="1" MODIFIED_BY="SYSTEM" OWNER="ANDS-Curated"
+           FORMAT="TTL" FILENAME="test1.ttl" />
+  <UPLOADS ID="2" MODIFIED_BY="SYSTEM" OWNER="ANDS-Curated"
+           FORMAT="TXT" FILENAME="test2.txt" />
+  <UPLOADS ID="3" MODIFIED_BY="SYSTEM" OWNER="ANDS-Curated"
+           FORMAT="TXT" FILENAME="test3.txt" />
+
+  <ACCESS_POINT_IDS ID="1"/>
+  <ACCESS_POINT_IDS ID="2"/>
+  <ACCESS_POINT_IDS ID="3"/>
+  <ACCESS_POINT_IDS ID="4"/>
+  <ACCESS_POINT_IDS ID="5"/>
+  <ACCESS_POINT_IDS ID="6"/>
+  <ACCESS_POINT_IDS ID="7"/>
+  <ACCESS_POINT_IDS ID="8"/>
+  <ACCESS_POINT_IDS ID="9"/>
+  <ACCESS_POINT_IDS ID="10"/>
+  <ACCESS_POINT_IDS ID="11"/>
+  <ACCESS_POINT_IDS ID="12"/>
+  <ACCESS_POINT_IDS ID="13"/>
+  <ACCESS_POINT_IDS ID="14"/>
+  <ACCESS_POINT_IDS ID="15"/>
+  <ACCESS_POINT_IDS ID="16"/>
+  <ACCESS_POINT_IDS ID="17"/>
+  <ACCESS_POINT_IDS ID="18"/>
+  <ACCESS_POINT_IDS ID="19"/>
+  <ACCESS_POINT_IDS ID="20"/>
+  <ACCESS_POINT_IDS ID="21"/>
+  <ACCESS_POINT_IDS ID="22"/>
+  <ACCESS_POINT_IDS ID="23"/>
+  <ACCESS_POINT_IDS ID="24"/>
+  <ACCESS_POINT_IDS ID="25"/>
+  <ACCESS_POINT_IDS ID="26"/>
+  <ACCESS_POINT_IDS ID="27"/>
+  <ACCESS_POINT_IDS ID="28"/>
+
+  <!-- Three access points for each "most-suitable" Version, and
+       only one for every other Version. -->
+
+  <ACCESS_POINTS ID="1" ACCESS_POINT_ID="1" VERSION_ID="1" DATA="{''url'':''http://www.researchdata.ands.org.au''}"
+                 START_DATE="2014-10-01 10:10:00.0" END_DATE="9999-12-01 00:00:00.0" MODIFIED_BY="TEST" SOURCE="USER"
+                 TYPE="WEB_PAGE" />
+  <!--
+  <ACCESS_POINTS ID="2" ACCESS_POINT_ID="2" VERSION_ID="1"
+                 START_DATE="2014-10-01 10:10:00.0" END_DATE="9999-12-01 00:00:00.0"
+                 MODIFIED_BY="SYSTEM" SOURCE="USER" TYPE="FILE"
+                 DATA="{''format'':''TXT'',''upload-id'':1,''path'':''{TEMP}/RegistryModelWorkflowTests.testApplyChangesDraftVoVREVeAPVAW1/1.txt'',''upload-id'':1,''url'':''{DOWNLOADPREFIX}1/test1.txt''}"
+            />
+  <ACCESS_POINTS ID="3" ACCESS_POINT_ID="3" VERSION_ID="1"
+                 DATA="{''url-prefix'':''http://myserver/repository/api/lda/ands-curated/rifcs/version-1''}"
+                 START_DATE="2014-10-01 10:10:00.0" END_DATE="9999-12-01 00:00:00.0" MODIFIED_BY="SYSTEM" SOURCE="USER"
+                 TYPE="SISSVOC" />
+  -->
+
+
+  <ACCESS_POINTS ID="4" ACCESS_POINT_ID="4" VERSION_ID="2" DATA="{''url'':''http://www.researchdata.ands.org.au''}"
+                 START_DATE="2014-10-01 10:10:00.0" END_DATE="9999-12-01 00:00:00.0" MODIFIED_BY="TEST" SOURCE="USER"
+                 TYPE="WEB_PAGE" />
+  <!--
+  <ACCESS_POINTS ID="5" ACCESS_POINT_ID="5" VERSION_ID="2"
+                 START_DATE="2014-10-01 10:10:00.0" END_DATE="9999-12-01 00:00:00.0"
+                 MODIFIED_BY="SYSTEM" SOURCE="USER" TYPE="FILE"
+                 DATA="{''format'':''TXT'',''upload-id'':1,''path'':''{TEMP}/RegistryModelWorkflowTests.testApplyChangesDraftVoVREVeAPVAW1/1.txt'',''upload-id'':1,''url'':''{DOWNLOADPREFIX}1/test1.txt''}"
+            />
+  <ACCESS_POINTS ID="6" ACCESS_POINT_ID="6" VERSION_ID="2"
+                 DATA="{''url-prefix'':''http://myserver/repository/api/lda/ands-curated/rifcs/version-1''}"
+                 START_DATE="2014-10-01 10:10:00.0" END_DATE="9999-12-01 00:00:00.0" MODIFIED_BY="SYSTEM" SOURCE="USER"
+                 TYPE="SISSVOC" />
+  -->
+
+  <ACCESS_POINTS ID="7" ACCESS_POINT_ID="7" VERSION_ID="3" DATA="{''url'':''http://www.researchdata.ands.org.au''}"
+                 START_DATE="2014-10-01 10:10:00.0" END_DATE="9999-12-01 00:00:00.0" MODIFIED_BY="TEST" SOURCE="USER"
+                 TYPE="WEB_PAGE" />
+  <!--
+  <ACCESS_POINTS ID="8" ACCESS_POINT_ID="8" VERSION_ID="3"
+                 START_DATE="2014-10-01 10:10:00.0" END_DATE="9999-12-01 00:00:00.0"
+                 MODIFIED_BY="SYSTEM" SOURCE="USER" TYPE="FILE"
+                 DATA="{''format'':''TXT'',''upload-id'':1,''path'':''{TEMP}/RegistryModelWorkflowTests.testApplyChangesDraftVoVREVeAPVAW1/1.txt'',''upload-id'':1,''url'':''{DOWNLOADPREFIX}1/test1.txt''}"
+            />
+  <ACCESS_POINTS ID="9" ACCESS_POINT_ID="9" VERSION_ID="3"
+                 DATA="{''url-prefix'':''http://myserver/repository/api/lda/ands-curated/rifcs/version-1''}"
+                 START_DATE="2014-10-01 10:10:00.0" END_DATE="9999-12-01 00:00:00.0" MODIFIED_BY="SYSTEM" SOURCE="USER"
+                 TYPE="SISSVOC" />
+  -->
+
+  <!-- These are for the "most suitable" version. -->
+  <ACCESS_POINTS ID="10" ACCESS_POINT_ID="10" VERSION_ID="4" DATA="{''url'':''http://www.researchdata.ands.org.au''}"
+                 START_DATE="2014-10-01 10:10:00.0" END_DATE="9999-12-01 00:00:00.0" MODIFIED_BY="TEST" SOURCE="USER"
+                 TYPE="WEB_PAGE" />
+  <ACCESS_POINTS ID="11" ACCESS_POINT_ID="11" VERSION_ID="4"
+                 START_DATE="2014-10-01 10:10:00.0" END_DATE="9999-12-01 00:00:00.0"
+                 MODIFIED_BY="SYSTEM" SOURCE="USER" TYPE="FILE"
+                 DATA="{''format'':''TXT'',''upload-id'':1,''path'':''{TEMP}/RegistryModelWorkflowTests.testApplyChangesDraftVoVREVeAPVAW1/1.txt'',''upload-id'':1,''url'':''{DOWNLOADPREFIX}1/test1.txt''}"
+            />
+  <ACCESS_POINTS ID="12" ACCESS_POINT_ID="12" VERSION_ID="4"
+                 DATA="{''url-prefix'':''http://myserver/repository/api/lda/ands-curated/rifcs/version-1''}"
+                 START_DATE="2014-10-01 10:10:00.0" END_DATE="9999-12-01 00:00:00.0" MODIFIED_BY="SYSTEM" SOURCE="USER"
+                 TYPE="SISSVOC" />
+
+  <ACCESS_POINTS ID="13" ACCESS_POINT_ID="13" VERSION_ID="5" DATA="{''url'':''http://www.researchdata.ands.org.au''}"
+                 START_DATE="2014-10-01 10:10:00.0" END_DATE="9999-12-01 00:00:00.0" MODIFIED_BY="TEST" SOURCE="USER"
+                 TYPE="WEB_PAGE" />
+  <!--
+  <ACCESS_POINTS ID="14" ACCESS_POINT_ID="14" VERSION_ID="5"
+                 START_DATE="2014-10-01 10:10:00.0" END_DATE="9999-12-01 00:00:00.0"
+                 MODIFIED_BY="SYSTEM" SOURCE="USER" TYPE="FILE"
+                 DATA="{''format'':''TXT'',''upload-id'':1,''path'':''{TEMP}/RegistryModelWorkflowTests.testApplyChangesDraftVoVREVeAPVAW1/1.txt'',''upload-id'':1,''url'':''{DOWNLOADPREFIX}1/test1.txt''}"
+            />
+  <ACCESS_POINTS ID="15" ACCESS_POINT_ID="15" VERSION_ID="5"
+                 DATA="{''url-prefix'':''http://myserver/repository/api/lda/ands-curated/rifcs/version-1''}"
+                 START_DATE="2014-10-01 10:10:00.0" END_DATE="9999-12-01 00:00:00.0" MODIFIED_BY="SYSTEM" SOURCE="USER"
+                 TYPE="SISSVOC" />
+  -->
+
+  <!-- These are for the "most suitable" version. -->
+  <ACCESS_POINTS ID="16" ACCESS_POINT_ID="16" VERSION_ID="6" DATA="{''url'':''http://www.researchdata.ands.org.au''}"
+                 START_DATE="2014-10-01 10:10:00.0" END_DATE="9999-12-01 00:00:00.0" MODIFIED_BY="TEST" SOURCE="USER"
+                 TYPE="WEB_PAGE" />
+  <ACCESS_POINTS ID="17" ACCESS_POINT_ID="17" VERSION_ID="6"
+                 START_DATE="2014-10-01 10:10:00.0" END_DATE="9999-12-01 00:00:00.0"
+                 MODIFIED_BY="SYSTEM" SOURCE="USER" TYPE="FILE"
+                 DATA="{''format'':''TXT'',''upload-id'':1,''path'':''{TEMP}/RegistryModelWorkflowTests.testApplyChangesDraftVoVREVeAPVAW1/1.txt'',''upload-id'':1,''url'':''{DOWNLOADPREFIX}1/test1.txt''}"
+            />
+  <ACCESS_POINTS ID="18" ACCESS_POINT_ID="18" VERSION_ID="6"
+                 DATA="{''url-prefix'':''http://myserver/repository/api/lda/ands-curated/rifcs/version-1''}"
+                 START_DATE="2014-10-01 10:10:00.0" END_DATE="9999-12-01 00:00:00.0" MODIFIED_BY="SYSTEM" SOURCE="USER"
+                 TYPE="SISSVOC" />
+
+
+  <ACCESS_POINTS ID="19" ACCESS_POINT_ID="19" VERSION_ID="7" DATA="{''url'':''http://www.researchdata.ands.org.au''}"
+                 START_DATE="2014-10-01 10:10:00.0" END_DATE="9999-12-01 00:00:00.0" MODIFIED_BY="TEST" SOURCE="USER"
+                 TYPE="WEB_PAGE" />
+  <!--
+  <ACCESS_POINTS ID="20" ACCESS_POINT_ID="20" VERSION_ID="7"
+                 START_DATE="2014-10-01 10:10:00.0" END_DATE="9999-12-01 00:00:00.0"
+                 MODIFIED_BY="SYSTEM" SOURCE="USER" TYPE="FILE"
+                 DATA="{''format'':''TXT'',''upload-id'':1,''path'':''{TEMP}/RegistryModelWorkflowTests.testApplyChangesDraftVoVREVeAPVAW1/1.txt'',''upload-id'':1,''url'':''{DOWNLOADPREFIX}1/test1.txt''}"
+            />
+  <ACCESS_POINTS ID="21" ACCESS_POINT_ID="21" VERSION_ID="7"
+                 DATA="{''url-prefix'':''http://myserver/repository/api/lda/ands-curated/rifcs/version-1''}"
+                 START_DATE="2014-10-01 10:10:00.0" END_DATE="9999-12-01 00:00:00.0" MODIFIED_BY="SYSTEM" SOURCE="USER"
+                 TYPE="SISSVOC" />
+  -->
+
+  <ACCESS_POINTS ID="22" ACCESS_POINT_ID="22" VERSION_ID="8" DATA="{''url'':''http://www.researchdata.ands.org.au''}"
+                 START_DATE="2014-10-01 10:10:00.0" END_DATE="9999-12-01 00:00:00.0" MODIFIED_BY="TEST" SOURCE="USER"
+                 TYPE="WEB_PAGE" />
+  <!--
+  <ACCESS_POINTS ID="23" ACCESS_POINT_ID="23" VERSION_ID="8"
+                 START_DATE="2014-10-01 10:10:00.0" END_DATE="9999-12-01 00:00:00.0"
+                 MODIFIED_BY="SYSTEM" SOURCE="USER" TYPE="FILE"
+                 DATA="{''format'':''TXT'',''upload-id'':1,''path'':''{TEMP}/RegistryModelWorkflowTests.testApplyChangesDraftVoVREVeAPVAW1/1.txt'',''upload-id'':1,''url'':''{DOWNLOADPREFIX}1/test1.txt''}"
+            />
+  <ACCESS_POINTS ID="24" ACCESS_POINT_ID="24" VERSION_ID="8"
+                 DATA="{''url-prefix'':''http://myserver/repository/api/lda/ands-curated/rifcs/version-1''}"
+                 START_DATE="2014-10-01 10:10:00.0" END_DATE="9999-12-01 00:00:00.0" MODIFIED_BY="SYSTEM" SOURCE="USER"
+                 TYPE="SISSVOC" />
+  -->
+
+
+<!--
+
+  <ACCESS_POINTS ID="" ACCESS_POINT_ID="" VERSION_ID="" DATA="{''url'':''http://www.researchdata.ands.org.au''}"
+                 START_DATE="2014-10-01 10:10:00.0" END_DATE="9999-12-01 00:00:00.0" MODIFIED_BY="TEST" SOURCE="USER"
+                 TYPE="WEB_PAGE" />
+-->
+
+
+</dataset>

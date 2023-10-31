@@ -71,6 +71,7 @@ public class ImporterProviderTests extends ArquillianBaseTest {
      * @throws SQLException If DbUnit has a problem performing
      *           performing JDBC operations.
      */
+    @Test
     public final void testNonRDFImport1() throws
         DatabaseUnitException, HibernateException, IOException, SQLException {
         String testName = CLASS_NAME_PREFIX

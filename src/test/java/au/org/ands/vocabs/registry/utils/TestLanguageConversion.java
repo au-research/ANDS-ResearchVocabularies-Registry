@@ -7,12 +7,14 @@ import org.testng.annotations.Test;
 
 import au.org.ands.vocabs.registry.solr.EntityIndexer;
 import au.org.ands.vocabs.registry.test.LanguageSubtagRegistryTests;
+import au.org.ands.vocabs.toolkit.test.arquillian.ArquillianBaseTest;
 
 /** Unit tests of the indexing of language names.
  * For more tests of language resolution, see
  * {@link LanguageSubtagRegistryTests}.
  */
-public class TestLanguageConversion {
+@Test
+public class TestLanguageConversion extends ArquillianBaseTest {
 
     /** Run tests of the language conversion. */
     @Test

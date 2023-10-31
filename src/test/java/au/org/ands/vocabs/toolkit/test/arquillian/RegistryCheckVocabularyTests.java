@@ -12,6 +12,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import javax.persistence.EntityManager;
+import javax.persistence.Query;
 import javax.validation.ConstraintViolation;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -24,7 +26,9 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import au.org.ands.vocabs.registry.api.validation.CheckVocabulary;
+import au.org.ands.vocabs.registry.api.validation.SubjectSources;
 import au.org.ands.vocabs.registry.schema.vocabulary201701.Vocabulary;
+import au.org.ands.vocabs.registry.schema.vocabulary201701.Vocabulary.Subject;
 import au.org.ands.vocabs.toolkit.test.utils.RegistrySchemaValidationHelper;
 
 /** Tests of the validation of vocabulary data provided to API methods. */
@@ -309,7 +313,80 @@ public class RegistryCheckVocabularyTests extends ArquillianBaseTest {
                 "fr-FR", "Other language 1 not canonicalized");
     }
 
+    /** Tests of the CheckVocabulary validator.
+     * This tests the resolution of subject labels and notations.
+     * @throws DatabaseUnitException If a problem with DbUnit.
+     * @throws IOException If a problem getting test data for DbUnit,
+     *          or reading JSON from the correct and test output files.
+     * @throws SQLException If DbUnit has a problem performing
+     *           performing JDBC operations.
+     * @throws JAXBException If there is an error configuring or
+     *      reading XML data.
+     */
+    @Test
+    public final void testCheckVocabulary4() throws
+    DatabaseUnitException, IOException, SQLException, JAXBException {
+        String testName = "testCheckVocabulary4";
+        ArquillianTestUtils.clearDatabase(REGISTRY);
+        ArquillianTestUtils.loadDbUnitTestFile(REGISTRY, CLASS_NAME_PREFIX
+                + testName);
+        EntityManager em = ArquillianTestUtils.getEntityManagerForDb(REGISTRY);
+        em.getTransaction().begin();
+        Query q = em.createQuery(
+                "UPDATE SubjectResolverEntry SET notation = '' "
+                + "WHERE source = 'gcmd'");
+        q.executeUpdate();
+        em.getTransaction().commit();
+        em.close();
 
+        // This test populates the subject resolver, by adding values
+        // to SubjectSources.RESOLVING_SUBJECT_SOURCES.
+        // We don't want other tests to use it, so we need to reset both
+        // before and after.
+        SubjectSources.resetResolvingSubjectSources();
+
+        Vocabulary newVocabulary;
+
+        InputStream is = ArquillianTestUtils.getResourceAsInputStream(
+                "test/tests/"
+                + CLASS_NAME_PREFIX
+                + testName
+                + "/test-validation-1.xml");
+        JAXBContext jaxbContext = JAXBContext.newInstance(Vocabulary.class);
+        Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
+        newVocabulary = (Vocabulary) jaxbUnmarshaller.unmarshal(is);
+
+        Set<ConstraintViolation<RegistrySchemaValidationHelper>>
+        errors = RegistrySchemaValidationHelper.getNewVocabularyValidation(
+                newVocabulary);
+
+        logger.error(errors.toString());
+
+        Assert.assertTrue(errors.isEmpty(),
+                "Non-empty set of validation errors");
+
+        List<Subject> subjects = newVocabulary.getSubject();
+        Subject subject = subjects.get(0);
+        Assert.assertEquals(subject.getNotation(), "08");
+        Assert.assertEquals(subject.getLabel(),
+                "INFORMATION AND COMPUTING SCIENCES");
+
+        subject = subjects.get(1);
+        Assert.assertEquals(subject.getNotation(), "8101");
+        Assert.assertEquals(subject.getLabel(),
+                "DEFENCE");
+
+        subject = subjects.get(2);
+        Assert.assertEquals(subject.getNotation(), "");
+        Assert.assertEquals(subject.getLabel(),
+                "ATMOSPHERE");
+
+        // This test populates the subject resolver, by adding values
+        // to SubjectSources.RESOLVING_SUBJECT_SOURCES.
+        // We don't want other tests to use it, so we need to reset both
+        // before and after.
+        SubjectSources.resetResolvingSubjectSources();
+    }
 
     /** Static nested class to aid comparison between actual and expected
      * sets of constraint violations. An instance of this class represents

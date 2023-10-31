@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!DOCTYPE vocabulary>
+<vocabulary xmlns="http://vocabs.ands.org.au/registry/schema/2017/01/vocabulary"  status="published" owner="string" slug="string" title="string" description="string" creation-date="2017-04-05" primary-language="en">
+  <!-- Subject labels must be specified, but they will be overridden
+       by the values fetched from the database. -->
+  <subject source="anzsrc-for"
+           iri="http://purl.org/au-research/vocabulary/anzsrc-for/2008/08"
+           label="l" />
+  <subject source="anzsrc-seo"
+           iri="http://purl.org/au-research/vocabulary/anzsrc-seo/2008/8101"
+           label="l" />
+  <subject source="gcmd"
+           iri="http://gcmdservices.gsfc.nasa.gov/kms/concept/c47f6052-634e-40ef-a5ac-13f69f6f4c2a"
+           label="l" />
+  <related-entity-ref id="1">
+    <relation>publishedBy</relation>
+  </related-entity-ref>
+</vocabulary>

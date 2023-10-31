@@ -1,0 +1,115 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE dataset SYSTEM "../../dbunit-registry-export-choice.dtd" >
+<dataset>
+
+  <RELATED_ENTITY_IDS ID="1"/>
+
+  <RELATED_ENTITIES ID="1" START_DATE="2015-11-26 10:04:05.0" END_DATE="9999-12-01 00:00:00" RELATED_ENTITY_ID="1" MODIFIED_BY="SYSTEM" OWNER="ANDS-Curated" TYPE="PARTY" TITLE="Australian National Data Service" DATA="{''email'':''services@ands.org.au'',''url'':[''http://ands.org.au/'']}"/>
+
+  <SUBJECT_RESOLVER_SOURCES ID="1" SOURCE="anzsrc-for"
+                            IRI="http://vocabs.ardc.edu.au/repository/api/sparql/anzsrc-for" />
+  <SUBJECT_RESOLVER_SOURCES ID="2" SOURCE="anzsrc-seo"
+                            IRI="http://vocabs.ardc.edu.au/repository/api/sparql/anzsrc-seo" />
+  <SUBJECT_RESOLVER_SOURCES ID="3" SOURCE="gcmd"
+                            IRI="http://vocabs.ardc.edu.au/repository/api/sparql/gcmd-sci" />
+
+  <SUBJECT_RESOLVER ID="1" SOURCE="anzsrc-for"
+                    IRI="http://purl.org/au-research/vocabulary/anzsrc-for/2008/04"
+                    NOTATION="04" LABEL="EARTH SCIENCES" />
+  <SUBJECT_RESOLVER ID="2" SOURCE="anzsrc-for"
+                    IRI="http://purl.org/au-research/vocabulary/anzsrc-for/2008/05"
+                    NOTATION="05" LABEL="ENVIRONMENTAL SCIENCES" />
+  <SUBJECT_RESOLVER ID="3" SOURCE="anzsrc-for"
+                    IRI="http://purl.org/au-research/vocabulary/anzsrc-for/2008/06"
+                    NOTATION="06" LABEL="BIOLOGICAL SCIENCES" />
+  <SUBJECT_RESOLVER ID="4" SOURCE="anzsrc-for"
+                    IRI="http://purl.org/au-research/vocabulary/anzsrc-for/2008/07"
+                    NOTATION="07" LABEL="AGRICULTURAL AND VETERINARY SCIENCES" />
+  <SUBJECT_RESOLVER ID="5" SOURCE="anzsrc-for"
+                    IRI="http://purl.org/au-research/vocabulary/anzsrc-for/2008/03"
+                    NOTATION="03" LABEL="CHEMICAL SCIENCES" />
+  <SUBJECT_RESOLVER ID="6" SOURCE="anzsrc-for"
+                    IRI="http://purl.org/au-research/vocabulary/anzsrc-for/2008/01"
+                    NOTATION="01" LABEL="MATHEMATICAL SCIENCES" />
+  <SUBJECT_RESOLVER ID="7" SOURCE="anzsrc-for"
+                    IRI="http://purl.org/au-research/vocabulary/anzsrc-for/2008/02"
+                    NOTATION="02" LABEL="PHYSICAL SCIENCES" />
+  <SUBJECT_RESOLVER ID="8" SOURCE="anzsrc-for"
+                    IRI="http://purl.org/au-research/vocabulary/anzsrc-for/2008/08"
+                    NOTATION="08" LABEL="INFORMATION AND COMPUTING SCIENCES" />
+  <SUBJECT_RESOLVER ID="9" SOURCE="anzsrc-for"
+                    IRI="http://purl.org/au-research/vocabulary/anzsrc-for/2008/09"
+                    NOTATION="09" LABEL="ENGINEERING" />
+  <SUBJECT_RESOLVER ID="10" SOURCE="anzsrc-for"
+                    IRI="http://purl.org/au-research/vocabulary/anzsrc-for/2008/10"
+                    NOTATION="10" LABEL="TECHNOLOGY" />
+  <SUBJECT_RESOLVER ID="1418" SOURCE="anzsrc-seo"
+                    IRI="http://purl.org/au-research/vocabulary/anzsrc-seo/2008/81"
+                    NOTATION="81" LABEL="DEFENCE" />
+  <SUBJECT_RESOLVER ID="1419" SOURCE="anzsrc-seo"
+                    IRI="http://purl.org/au-research/vocabulary/anzsrc-seo/2008/8101"
+                    NOTATION="8101" LABEL="DEFENCE" />
+  <SUBJECT_RESOLVER ID="1420" SOURCE="anzsrc-seo"
+                    IRI="http://purl.org/au-research/vocabulary/anzsrc-seo/2008/810101"
+                    NOTATION="810101" LABEL="Air Force" />
+  <SUBJECT_RESOLVER ID="1421" SOURCE="anzsrc-seo"
+                    IRI="http://purl.org/au-research/vocabulary/anzsrc-seo/2008/810102"
+                    NOTATION="810102" LABEL="Army" />
+  <SUBJECT_RESOLVER ID="1422" SOURCE="anzsrc-seo"
+                    IRI="http://purl.org/au-research/vocabulary/anzsrc-seo/2008/810103"
+                    NOTATION="810103" LABEL="Command, Control and Communications" />
+  <SUBJECT_RESOLVER ID="1423" SOURCE="anzsrc-seo"
+                    IRI="http://purl.org/au-research/vocabulary/anzsrc-seo/2008/810104"
+                    NOTATION="810104" LABEL="Emerging Defence Technologies" />
+  <SUBJECT_RESOLVER ID="1424" SOURCE="anzsrc-seo"
+                    IRI="http://purl.org/au-research/vocabulary/anzsrc-seo/2008/810105"
+                    NOTATION="810105" LABEL="Intelligence" />
+  <SUBJECT_RESOLVER ID="1425" SOURCE="anzsrc-seo"
+                    IRI="http://purl.org/au-research/vocabulary/anzsrc-seo/2008/810106"
+                    NOTATION="810106" LABEL="Logistics" />
+  <SUBJECT_RESOLVER ID="1426" SOURCE="anzsrc-seo"
+                    IRI="http://purl.org/au-research/vocabulary/anzsrc-seo/2008/810107"
+                    NOTATION="810107" LABEL="National Security" />
+  <SUBJECT_RESOLVER ID="1427" SOURCE="anzsrc-seo"
+                    IRI="http://purl.org/au-research/vocabulary/anzsrc-seo/2008/810108"
+                    NOTATION="810108" LABEL="Navy" />
+
+  <!-- Oops, by default we can't specify empty notation values; DbUnit
+       complains. We could override by setting
+       DatabaseConfig.FEATURE_ALLOW_EMPTY_FIELDS (as we do for
+       accessing the roles database), but that affects every test.
+       So don't bother; specify a dummy value, and use a database
+       update in the test method to set it to the empty string. -->
+
+  <SUBJECT_RESOLVER ID="2402" SOURCE="gcmd"
+                    IRI="http://gcmdservices.gsfc.nasa.gov/kms/concept/1eb0ea0a-312c-4d74-8d42-6f1ad758f999"
+                    NOTATION="no-notation" LABEL="Science Keywords" />
+  <SUBJECT_RESOLVER ID="2403" SOURCE="gcmd"
+                    IRI="http://gcmdservices.gsfc.nasa.gov/kms/concept/df160e31-ae45-41a4-9093-a80fe5303cea"
+                    NOTATION="no-notation" LABEL="ATMOSPHERIC WINDS" />
+  <SUBJECT_RESOLVER ID="2404" SOURCE="gcmd"
+                    IRI="http://gcmdservices.gsfc.nasa.gov/kms/concept/c47f6052-634e-40ef-a5ac-13f69f6f4c2a"
+                    NOTATION="no-notation" LABEL="ATMOSPHERE" />
+  <SUBJECT_RESOLVER ID="2405" SOURCE="gcmd"
+                    IRI="http://gcmdservices.gsfc.nasa.gov/kms/concept/ebce0874-7635-4094-8ef4-968851873771"
+                    NOTATION="no-notation" LABEL="CONVECTION" />
+  <SUBJECT_RESOLVER ID="2406" SOURCE="gcmd"
+                    IRI="http://gcmdservices.gsfc.nasa.gov/kms/concept/a2cc8e02-3207-4c40-af41-9656404bac0a"
+                    NOTATION="no-notation" LABEL="CONVERGENCE/DIVERGENCE" />
+  <SUBJECT_RESOLVER ID="2407" SOURCE="gcmd"
+                    IRI="http://gcmdservices.gsfc.nasa.gov/kms/concept/eaeb5cdd-365f-4368-8e20-6defe111b3b4"
+                    NOTATION="no-notation" LABEL="STREAMFUNCTIONS" />
+  <SUBJECT_RESOLVER ID="2408" SOURCE="gcmd"
+                    IRI="http://gcmdservices.gsfc.nasa.gov/kms/concept/10685919-bc01-43e7-901a-b62ac44627f3"
+                    NOTATION="no-notation" LABEL="SURFACE WINDS" />
+  <SUBJECT_RESOLVER ID="2409" SOURCE="gcmd"
+                    IRI="http://gcmdservices.gsfc.nasa.gov/kms/concept/226d05da-dd0b-4314-919a-0b259ce724b5"
+                    NOTATION="no-notation" LABEL="TURBULENCE" />
+  <SUBJECT_RESOLVER ID="2410" SOURCE="gcmd"
+                    IRI="http://gcmdservices.gsfc.nasa.gov/kms/concept/592d49c4-e8ae-4ab4-bf24-ae4a896d0637"
+                    NOTATION="no-notation" LABEL="UPPER LEVEL WINDS" />
+  <SUBJECT_RESOLVER ID="2411" SOURCE="gcmd"
+                    IRI="http://gcmdservices.gsfc.nasa.gov/kms/concept/841a7ac7-5981-4e93-895f-1b57c3d892a0"
+                    NOTATION="no-notation" LABEL="VERTICAL WIND MOTION" />
+
+</dataset>

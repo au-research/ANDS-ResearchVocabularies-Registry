@@ -3,14 +3,13 @@
 package au.org.ands.vocabs.registry.api.validation;
 
 import java.lang.invoke.MethodHandles;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
@@ -24,6 +23,7 @@ import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.validator.routines.UrlValidator;
 import org.jsoup.Jsoup;
 import org.jsoup.safety.Whitelist;
 import org.slf4j.Logger;
@@ -719,8 +719,18 @@ public final class ValidationUtils {
         return ALLOWED_RELATIONS_FOR_INTERNAL_VOCABULARY.contains(relation);
     }
 
+    /** Validator for validating URLs. */
+    private static final UrlValidator URL_VALIDATOR = new UrlValidator();
+
+    /** URI scheme for JavaScript. String comparison may rely on the fact
+     * that this is all lowercase. */
+    private static final String JAVASCRIPT = "javascript";
+
     /** Determine if a string is a valid URL, i.e., has the
      * correct format.
+     * This implemented using Apache Commons Validator.
+     * Only schemes "http", "https", and "ftp" are permitted.
+     * The host "localhost" is not permitted.
      * @param url The URL value to be tested.
      * @return true, if the url value is valid.
      */
@@ -728,13 +738,34 @@ public final class ValidationUtils {
         if (url == null || url.isEmpty()) {
             return false;
         }
+        return URL_VALIDATOR.isValid(url);
+    }
+
+    /** Determine if a string is a valid URI, i.e., has the
+     * correct format.
+     * The URI must be absolute; that is, it must include a scheme component.
+     * @param aUri The URI value to be tested.
+     * @return true, if the URI value is valid.
+     */
+    public static boolean isValidURI(final String aUri) {
+        if (aUri == null || aUri.isEmpty()) {
+            return false;
+        }
         try {
-            // Just try to parse it. If parsing succeeds ...
-            new URL(url);
-            // ... it is a valid URL.
-            return true;
-        } catch (MalformedURLException e) {
-            // Otherwise, parsing failed, and it is not a valid URL.
+            URI uri = new URI(aUri);
+            // We're going to lowercase the scheme further down, so we
+            // have to make sure that it's non-null first.
+            String scheme = uri.getScheme();
+            if (scheme == null) {
+                return false;
+            }
+            // We explicitly disallow JavaScript.
+            if (JAVASCRIPT.equals(scheme.toLowerCase(Locale.ROOT))) {
+                return false;
+            }
+            return uri.isAbsolute();
+        } catch (URISyntaxException e) {
+            // Otherwise, parsing failed, and it is not a valid URI.
             return false;
         }
     }
@@ -758,9 +789,12 @@ public final class ValidationUtils {
             Pattern.compile(ROR_REGEX);
 
     /** Determine if a String value represents a valid ROR.
-     * How to validate an ROR? It seems <a target="_blank"
+     * How to validate an ROR? It seems now-deleted <a target="_blank"
      * href="https://twitter.com/JoakimPhilipson/status/1098194723397922817">this
-     *  tweeted reply by Martin Fenner</a> is the only documentation.
+     *  tweeted reply by Martin Fenner</a> was the only documentation.
+     * There's now <a target="_blank"
+     * href="https://ror.readme.io/docs/ror-identifier-pattern">this
+     * documentation</a>.
      * I.e., valid values are as follows:
      * <ul>
      *   <li>Valid values are exactly 9 characters long.
@@ -875,18 +909,7 @@ public final class ValidationUtils {
         case ROR:
             return isValidROR(value);
         case URI:
-            // For now, use Java's provided way. May need to be modified
-            // if users provide values that are erroneously rejected.
-            try {
-                new URI(value);
-                // But see CC-2723. The above allows through relative URIs.
-                // Remove the above, and replace with:
-//                URI uri = new URI(value);
-//                return uri.isAbsolute();
-            } catch (URISyntaxException | NullPointerException e) {
-                return false;
-            }
-            return true;
+            return isValidURI(value);
         case VIAF:
             return validator.validateValue(FVH_CLASS,
                     FieldValidationHelper.VIAF_FIELDNAME, value).isEmpty();

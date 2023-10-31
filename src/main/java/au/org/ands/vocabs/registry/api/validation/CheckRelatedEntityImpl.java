@@ -120,18 +120,18 @@ public class CheckRelatedEntityImpl
         // url
         // identifiers
 
-        // id: if mode == CREATE, required _not_ to be provided
-        // CC-2723: the following is wrong; it allows through
-        // an id on creation.
+        // id: if mode == CREATE, required _not_ to be provided.
         if (isNew && relatedEntity.getId() != null) {
             /* User can't specify an id for a new related entity. */
-            valid = ValidationUtils.requireFieldNotNull(
-                    INTERFACE_NAME + ".create",
-                    relatedEntity.getId(), "id",
-                    constraintContext, valid);
+            valid = false;
+            constraintContext.buildConstraintViolationWithTemplate(
+                    "{" + INTERFACE_NAME + ".create.id}").
+            addPropertyNode("id").
+            addConstraintViolation();
         }
         // id: if mode == UPDATE, _required_ to be provided
-        if (!isNew && relatedEntity.getId() == null) {
+        if (!isNew && (relatedEntity.getId() == null
+                || relatedEntity.getId() <= 0)) {
             /* User must specify an id for an update. */
             valid = false;
             constraintContext.buildConstraintViolationWithTemplate(
