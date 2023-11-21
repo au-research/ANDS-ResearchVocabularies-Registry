@@ -132,6 +132,12 @@ public final class EntityIndexer {
      * without getting a {@code NullPointerException}. */
     private static HashMap<String, String> licenceGroups = new HashMap<>();
 
+    /** Fallback value to use for licence, if the vocabulary does
+     * not specify a licence, or it specifies a licence value,
+     * but that value is not one of the keys of
+     * {@code licenceGroups}. */
+    private static final String LICENCE_UNKNOWN = "Unknown/Other";
+
     static {
         licenceGroups.put("GPL", "Open Licence");
         licenceGroups.put("CC-BY-SA", "Open Licence");
@@ -141,16 +147,13 @@ public final class EntityIndexer {
         licenceGroups.put("CC-BY-NC", "Non-Commercial Licence");
         licenceGroups.put("CC-BY", "Open Licence");
         licenceGroups.put("CC0", "Open Licence");
-        licenceGroups.put("CSIRO Data Licence", "Non-Commercial Licence");
+        licenceGroups.put("ODC-By", "Open Licence");
+        licenceGroups.put("CSIRODataLicence", "Non-Commercial Licence");
         licenceGroups.put("AusGoalRestrictive", "Restrictive Licence");
         licenceGroups.put("NoLicence", "No Licence");
+        // Allow users to specify LICENCE_UNKNOWN itself!
+        licenceGroups.put(LICENCE_UNKNOWN, LICENCE_UNKNOWN);
     }
-
-    /** Fallback value to use for licence, if the vocabulary does
-     * not specify a licence, or it specifies a licence value,
-     * but that value is not one of the keys of
-     * {@code licenceGroups}. */
-    private static final String LICENCE_UNKNOWN = "Unknown/Other";
 
     /** Map of access point types to a human-readable description. */
     private static Map<AccessPointType, String> accessPointName =
