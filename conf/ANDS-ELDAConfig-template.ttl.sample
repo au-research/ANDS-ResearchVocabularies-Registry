@@ -49,13 +49,14 @@
 
 
 ##############################################################
-## TODO: deployer to make changes here
-## change "test" to give this API a name to distinguish it from any other API hosted by the same LDA service
 
 svoc:${SVC_ID} a api:API
 
-## it would be great if this could be made to help somehow, but ELDA does not currently appear to implement it
-#	; api:base "http://def.seegrid.csiro.au/sissvoc${SVC_PREFIX}"
+	# ARDC note: upstream SISSVoc commit 5ea5033, but with
+	# a slash appended, which is required to make it work.
+	# Not needed for current config, but needed if/when we upgrade
+	# to Elda 2. See https://github.com/epimorphics/elda/issues/220
+	; api:base "${DEPLOYPATH}/"
 
 ## end of TODO:
 ##############################################################
@@ -98,6 +99,8 @@ svoc:${SVC_ID} a api:API
                 # ARDC: uncomment as needed.
 		# svoc:LandingPage ,
 		svoc:URIEndpoint ,
+		svoc:resourceLabelEndpoint ,
+		svoc:resourceLabelContainsEndpoint ,
 		svoc:conceptSchemeEndpoint ,
 		svoc:conceptCollectionEndpoint ,
 		svoc:conceptListEndpoint ,
@@ -291,9 +294,9 @@ svoc:LandingPage a api:ItemEndpoint
 
 
 ## 0. This is the basic "tell me what you know about the resource identified by this URI" request.
-# ARDC: This endpoint's uriTemplate is referred to in the Vocab Toolkit's
+# ARDC: This endpoint's uriTemplate is referred to in the Vocab Registry's
 # IRI resolution service. See:
-#   au.org.ands.vocabs.toolkit.db.ResourceMapEntryUtils#RESOURCE_ENDPOINT.
+#   au.org.ands.vocabs.registry.api.user.ResolveIRI#RESOURCE_ENDPOINT.
 svoc:URIEndpoint a api:ItemEndpoint
 		; rdfs:comment "Describe this resource"
 ##############################################################
@@ -314,6 +317,71 @@ svoc:URIEndpoint a api:ItemEndpoint
 # Uncomment the next line (and the definition of andsvocabs:fullxml above)
 # when you need to do some debugging.
 #                ; api:formatter andsvocabs:fullxml
+		.
+
+# ARDC: upstream (https://github.com/SISS/SISSVoc)
+# commit 290f23b82b328a91be15977bc4869eaed9f80378
+# includes definitions of endpoints 0.1 and 0.2;
+# these have not yet been merged into the master branch.
+# Fixed to include matching final brace.
+
+## 0.1. List resource by label. This was /concept?anylabel={text}";
+# the latter now filters to SKOS concepts.
+## ARDC: Use api:select in order to be able to specify "DISTINCT".
+svoc:resourceLabelEndpoint a api:ListEndpoint
+		; rdfs:comment "List resources where a skos label property has exact match to text"
+		; api:uriTemplate  "${SVC_PREFIX}/resource?anylabel={text}"
+		; api:exampleRequestPath  "${SVC_PREFIX}/resource?anylabel=Cambrian"
+		; api:selector [
+			api:select
+			   """PREFIX  skos: <http://www.w3.org/2004/02/skos/core#>
+			      PREFIX  rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+			      SELECT DISTINCT ?item
+			      WHERE {
+				{
+					?item skos:prefLabel ?l
+				}
+				UNION
+				{
+					?item skos:altLabel ?l
+				}
+				UNION
+				{
+					?item rdfs:label ?l
+				}
+				FILTER ( str(?l)=?text ) } """
+		]
+		; api:defaultViewer svoc:basicConceptViewer
+		; api:viewer  api:basicViewer,svoc:basicConceptViewer
+		.
+
+## 0.2. List of resources where a label contains the text, any language, case-insensitive
+# This was /concept?labelcontains={text}"; the latter now filters to SKOS concepts.
+svoc:resourceLabelContainsEndpoint a api:ListEndpoint
+		; rdfs:comment "List resources where a skos label property contains this text, case-insensitive"
+		; api:uriTemplate  "${SVC_PREFIX}/resource?labelcontains={text}"
+		; api:exampleRequestPath  "${SVC_PREFIX}/resource?labelcontains=cambrian"
+		; api:selector [
+			api:select
+			   """PREFIX  skos: <http://www.w3.org/2004/02/skos/core#>
+			      PREFIX  rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+			      SELECT DISTINCT ?item
+			      WHERE {
+				{
+					?item skos:prefLabel ?l
+				}
+				UNION
+				{
+					?item skos:altLabel ?l
+				}
+				UNION
+				{
+					?item rdfs:label ?l
+				}
+				FILTER regex( str(?l) , ?text , 'i' ) } """
+		]
+		; api:defaultViewer svoc:basicConceptViewer
+		; api:viewer  api:basicViewer,svoc:basicConceptViewer
 		.
 
 ## 1. List of concept schemes - basic-view
@@ -392,14 +460,22 @@ svoc:conceptLabelEndpoint a api:ListEndpoint
 
 ## end of TODO:
 ##############################################################
+## ARDC: Use api:select in order to be able to specify "DISTINCT".
+## Limit to SKOS concepts: https://github.com/SISS/SISSVoc/pull/15
 		; api:selector [
-				api:where
-					""" { ?item skos:prefLabel ?l }
-							UNION
-							{ ?item skos:altLabel ?l }
-							UNION
-							{ ?item rdfs:label ?l }
-							FILTER ( str(?l)=?text ) """
+				api:select
+					"""PREFIX  skos: <http://www.w3.org/2004/02/skos/core#>
+					   PREFIX  rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+					   SELECT DISTINCT ?item
+					   WHERE {
+					      { ?item skos:prefLabel ?l }
+					      UNION
+					      { ?item skos:altLabel ?l }
+					      UNION
+					      { ?item rdfs:label ?l }
+					      ?item a skos:Concept
+					      FILTER ( str(?l)=?text )
+					      } """
 		]
 		; api:defaultViewer svoc:basicConceptViewer
 		; api:viewer  api:basicViewer,svoc:basicConceptViewer
@@ -419,14 +495,25 @@ svoc:conceptLabelContainsEndpoint a api:ListEndpoint
 
 ## end of TODO:
 ##############################################################
+## ARDC: Use api:select in order to be able to specify "DISTINCT".
+## https://github.com/SISS/SISSVoc/issues/5
+## https://github.com/epimorphics/elda/issues/173
+## https://jira.ardc.edu.au/browse/RVA-298
+## Limit to SKOS concepts: https://github.com/SISS/SISSVoc/pull/15
 		; api:selector [
-				api:where
-					""" { ?item skos:prefLabel ?l }
-							UNION
-							{ ?item skos:altLabel ?l }
-							UNION
-							{ ?item rdfs:label ?l }
-							FILTER regex( str(?l) , ?text , 'i' ) """
+				api:select
+					"""PREFIX  skos: <http://www.w3.org/2004/02/skos/core#>
+					   PREFIX  rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+					   SELECT DISTINCT ?item
+					   WHERE {
+					      { ?item skos:prefLabel ?l }
+					      UNION
+					      { ?item skos:altLabel ?l }
+					      UNION
+					      { ?item rdfs:label ?l }
+					      ?item a skos:Concept
+					      FILTER regex( str(?l) , ?text , 'i' )
+					   } """
 		]
 		; api:defaultViewer svoc:basicConceptViewer
 		; api:viewer  api:basicViewer,svoc:basicConceptViewer
@@ -534,15 +621,21 @@ svoc:broaderLabelEndpoint a api:ListEndpoint
 
 ## end of TODO:
 ##############################################################
+## ARDC: Use api:select in order to be able to specify "DISTINCT".
 		; api:selector [
-				api:where
-					""" ?i0 skos:broader ?item .
+				api:select
+					"""PREFIX  skos: <http://www.w3.org/2004/02/skos/core#>
+					   PREFIX  rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+					   SELECT DISTINCT ?item
+					   WHERE {
+					      ?i0 skos:broader ?item .
 							{ ?i0 rdfs:label ?l }
 							UNION
 							{ ?i0 skos:prefLabel ?l }
 							UNION
 							{ ?i0 skos:altLabel ?l }
-							FILTER ( str(?l)=?text ) """
+							FILTER ( str(?l)=?text )
+					      } """
 		]
 		; api:defaultViewer svoc:basicConceptViewer
 		; api:viewer  api:basicViewer,svoc:basicConceptViewer
@@ -562,15 +655,21 @@ svoc:narrowerLabelEndpoint a api:ListEndpoint
 
 ## end of TODO:
 ##############################################################
+## ARDC: Use api:select in order to be able to specify "DISTINCT".
 		; api:selector [
-				api:where
-					""" ?i0 skos:narrower ?item .
+				api:select
+					"""PREFIX  skos: <http://www.w3.org/2004/02/skos/core#>
+					   PREFIX  rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+					   SELECT DISTINCT ?item
+					   WHERE {
+					      ?i0 skos:narrower ?item .
 							{ ?i0 rdfs:label ?l }
 							UNION
 							{ ?i0 skos:prefLabel ?l }
 							UNION
 							{ ?i0 skos:altLabel ?l }
-							FILTER ( str(?l)=?text ) """
+							FILTER ( str(?l)=?text )
+					      } """
 		]
 		; api:defaultViewer svoc:basicConceptViewer
 		; api:viewer  api:basicViewer,svoc:basicConceptViewer
@@ -590,15 +689,21 @@ svoc:broaderTransitiveLabelEndpoint a api:ListEndpoint
 
 ## end of TODO:
 ##############################################################
+## ARDC: Use api:select in order to be able to specify "DISTINCT".
 		; api:selector [
-				api:where
-					""" ?i0 skos:broaderTransitive ?item .
+				api:select
+					"""PREFIX  skos: <http://www.w3.org/2004/02/skos/core#>
+					   PREFIX  rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+					   SELECT DISTINCT ?item
+					   WHERE {
+					      ?i0 skos:broaderTransitive ?item .
 							{ ?i0 rdfs:label ?l }
 							UNION
 							{ ?i0 skos:prefLabel ?l }
 							UNION
 							{ ?i0 skos:altLabel ?l }
-							FILTER ( str(?l)=?text ) """
+							FILTER ( str(?l)=?text )
+					      } """
 		]
 		; api:defaultViewer svoc:basicConceptViewer
 		; api:viewer  api:basicViewer,svoc:basicConceptViewer
@@ -618,15 +723,21 @@ svoc:narrowerTransitiveLabelEndpoint a api:ListEndpoint
 
 ## end of TODO:
 ##############################################################
+## ARDC: Use api:select in order to be able to specify "DISTINCT".
 		; api:selector [
-				api:where
-					""" ?i0 skos:narrowerTransitive ?item .
+				api:select
+					"""PREFIX  skos: <http://www.w3.org/2004/02/skos/core#>
+					   PREFIX  rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+					   SELECT DISTINCT ?item
+					   WHERE {
+					      ?i0 skos:narrowerTransitive ?item .
 							{ ?i0 rdfs:label ?l }
 							UNION
 							{ ?i0 skos:prefLabel ?l }
 							UNION
 							{ ?i0 skos:altLabel ?l }
-							FILTER ( str(?l)=?text ) """
+							FILTER ( str(?l)=?text )
+					      } """
 		]
 		; api:defaultViewer svoc:basicConceptViewer
 		; api:viewer  api:basicViewer,svoc:basicConceptViewer

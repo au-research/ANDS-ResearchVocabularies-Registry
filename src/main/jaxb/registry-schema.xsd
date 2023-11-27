@@ -206,6 +206,8 @@ CC0
 ODC-By
 GPL
 AusGoalRestrictive
+CSIRODataLicence
+Unknown/Other
 NoLicence</xs:documentation>
                 </xs:annotation>
             </xs:attribute>
