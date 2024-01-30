@@ -1,4 +1,15 @@
 /** See the file "LICENSE" for the full license governing this code. */
+
+/* NB: Although this class is within the package
+ * "...registry.workflow...", this code is pre-Registry and should
+ * not be used as-is. It still has multiple references to the Toolkit:
+ * classes, property names, etc. If desired to use this code,
+ * it is necessary to update all of these references.
+ *
+ * Please then also add some test cases to describe the expected
+ * behaviour.
+ */
+
 package au.org.ands.vocabs.registry.workflow.provider.transform;
 
 import java.io.File;
