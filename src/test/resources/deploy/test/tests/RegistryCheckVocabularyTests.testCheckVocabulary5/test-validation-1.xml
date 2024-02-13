@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!DOCTYPE vocabulary>
+<vocabulary xmlns="http://vocabs.ands.org.au/registry/schema/2017/01/vocabulary" status="published" owner="string" slug="string" title="string" description="string" note="string" revision-cycle="string" creation-date="2017-04-05" primary-language="en">
+  <subject source="anzsrc-for" label="INFORMATION AND COMPUTING SCIENCES" iri="http://purl.org/au-research/vocabulary/anzsrc-for/2008/08" />
+  <version xmlns="http://vocabs.ands.org.au/registry/schema/2017/01/vocabulary" status="current" title="string" slug="string" note="string" release-date="2017-04-05">
+    <access-point discriminator="sesameDownload" source="user">
+      <ap-sesame-download url-prefix="http://abc" />
+    </access-point>
+  </version>
+  <related-entity-ref id="1">
+    <relation>publishedBy</relation>
+  </related-entity-ref>
+</vocabulary>

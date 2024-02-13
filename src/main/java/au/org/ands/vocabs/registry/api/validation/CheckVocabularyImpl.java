@@ -1457,12 +1457,33 @@ public class CheckVocabularyImpl
             final ApSesameDownload apSesameDownload,
             final ConstraintValidatorContext constraintContext) {
         boolean newValid = valid;
-        if (mode == ValidationMode.CREATE
-                && newAccessPoint.getSource() != ApSource.USER) {
+        if (mode == ValidationMode.CREATE) {
+            // CC-2406 We don't allow user-specified Sesame download
+            // access points, so there can be no reason for the user to specify
+            // even a system-generated one as part of vocabulary creation.
             newValid = false;
             constraintContext.buildConstraintViolationWithTemplate(
                     "{" + INTERFACE_NAME
-                    + ".accessPoint.apSesameDownload.source.create}").
+                    + ".accessPoint.apSesameDownload.create}").
+                addPropertyNode("version").
+                addPropertyNode("accessPoint").
+                inIterable().atIndex(versionIndex).
+                addPropertyNode("apSesameDownload").
+                inIterable().atIndex(accessPointIndex).
+                addConstraintViolation();
+        }
+        // We allow the user to specify a system-generated access point
+        // if we're updating. Note what happens in the workflow processing
+        // (see AccessPointsModel, and WorkflowMethods.insertAccessPoint())
+        // If there's not also an access point ID,
+        // it will be ignored; if an access point ID is specified,
+        // it will be checked against the existing access points.
+        if (mode == ValidationMode.UPDATE
+                && newAccessPoint.getSource() != ApSource.SYSTEM) {
+            newValid = false;
+            constraintContext.buildConstraintViolationWithTemplate(
+                    "{" + INTERFACE_NAME
+                    + ".accessPoint.apSesameDownload.source}").
                 addPropertyNode("version").
                 addPropertyNode("accessPoint").
                 inIterable().atIndex(versionIndex).
@@ -1483,7 +1504,7 @@ public class CheckVocabularyImpl
                 inIterable().atIndex(versionIndex).
                 addPropertyNode("apSesameDownload").
                 inIterable().atIndex(accessPointIndex).
-                addPropertyNode("url").
+                addPropertyNode("urlPrefix").
                 addConstraintViolation(),
                 newValid);
         return newValid;
@@ -1531,7 +1552,7 @@ public class CheckVocabularyImpl
                 inIterable().atIndex(versionIndex).
                 addPropertyNode("apSissvoc").
                 inIterable().atIndex(accessPointIndex).
-                addPropertyNode("url").
+                addPropertyNode("urlPrefix").
                 addConstraintViolation(),
                 newValid);
         return newValid;

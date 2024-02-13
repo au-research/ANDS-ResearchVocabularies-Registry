@@ -388,6 +388,119 @@ public class RegistryCheckVocabularyTests extends ArquillianBaseTest {
         SubjectSources.resetResolvingSubjectSources();
     }
 
+    /** Test of the CheckVocabulary validator.
+     * The test data contains errors relating to SesameDownload access points.
+     * @throws DatabaseUnitException If a problem with DbUnit.
+     * @throws IOException If a problem getting test data for DbUnit,
+     *          or reading JSON from the correct and test output files.
+     * @throws SQLException If DbUnit has a problem performing
+     *           performing JDBC operations.
+     * @throws JAXBException If there is an error configuring or
+     *      reading XML data.
+     */
+    @Test
+    public final void testCheckVocabulary5() throws
+    DatabaseUnitException, IOException, SQLException, JAXBException {
+        String testName = "testCheckVocabulary5";
+        ArquillianTestUtils.clearDatabase(REGISTRY);
+        ArquillianTestUtils.loadDbUnitTestFile(REGISTRY, CLASS_NAME_PREFIX
+                + testName);
+
+        Vocabulary newVocabulary;
+
+        InputStream is = ArquillianTestUtils.getResourceAsInputStream(
+                "test/tests/"
+                + CLASS_NAME_PREFIX
+                + testName
+                + "/test-validation-1.xml");
+        JAXBContext jaxbContext = JAXBContext.newInstance(Vocabulary.class);
+        Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
+        newVocabulary = (Vocabulary) jaxbUnmarshaller.unmarshal(is);
+
+        Set<ConstraintViolation<RegistrySchemaValidationHelper>>
+        errors = RegistrySchemaValidationHelper.getNewVocabularyValidation(
+                newVocabulary);
+
+        List<ValidationSummary> actualErrors = new ArrayList<>();
+        for (ConstraintViolation<RegistrySchemaValidationHelper> oneError
+                : errors) {
+//            logger.info("One error: message template: "
+//                + oneError.getMessageTemplate()
+//                + "; propertypath: " + oneError.getPropertyPath()
+//                + "; message: " + oneError.getMessage());
+            actualErrors.add(new ValidationSummary(
+                    oneError.getMessageTemplate(),
+                    oneError.getPropertyPath().toString()));
+        }
+
+        List<ValidationSummary> expectedErrors = new ArrayList<>();
+        String pathPrefix = "testNewVocabulary.newVocabulary.";
+        expectedErrors.add(new ValidationSummary(
+                "{" + CheckVocabulary.INTERFACE_NAME
+                + ".accessPoint.apSesameDownload.create}",
+                pathPrefix + "version[0].accessPoint[0].apSesameDownload"));
+        expectedErrors.add(new ValidationSummary(
+                "{" + CheckVocabulary.INTERFACE_NAME
+                + ".accessPoint.apSesameDownload.urlPrefix}",
+                pathPrefix + "version[0].accessPoint[0]."
+                        + "apSesameDownload.urlPrefix"));
+
+//        expectedErrors.add(new ValidationSummary(
+//                "{" + CheckVocabulary.INTERFACE_NAME
+//                + "}",
+//                pathPrefix + ""));
+
+        Assert.assertEqualsNoOrder(actualErrors.toArray(),
+                expectedErrors.toArray(),
+                "Set of validation errors does not match");
+
+        is = ArquillianTestUtils.getResourceAsInputStream(
+                "test/tests/"
+                + CLASS_NAME_PREFIX
+                + testName
+                + "/test-validation-2.xml");
+        Vocabulary updatedVocabulary =
+                (Vocabulary) jaxbUnmarshaller.unmarshal(is);
+
+        errors = RegistrySchemaValidationHelper.getUpdatedVocabularyValidation(
+                updatedVocabulary);
+
+        actualErrors = new ArrayList<>();
+        for (ConstraintViolation<RegistrySchemaValidationHelper> oneError
+                : errors) {
+//            logger.info("One error: message template: "
+//                + oneError.getMessageTemplate()
+//                + "; propertypath: " + oneError.getPropertyPath()
+//                + "; message: " + oneError.getMessage());
+            actualErrors.add(new ValidationSummary(
+                    oneError.getMessageTemplate(),
+                    oneError.getPropertyPath().toString()));
+        }
+
+        expectedErrors = new ArrayList<>();
+        pathPrefix = "testUpdatedVocabulary.updatedVocabulary.";
+        expectedErrors.add(new ValidationSummary(
+                "{" + CheckVocabulary.INTERFACE_NAME
+                + ".accessPoint.apSesameDownload.source}",
+                pathPrefix + "version[0].accessPoint[0]."
+                        + "apSesameDownload.source"));
+        expectedErrors.add(new ValidationSummary(
+                "{" + CheckVocabulary.INTERFACE_NAME
+                + ".accessPoint.apSesameDownload.urlPrefix}",
+                pathPrefix + "version[0].accessPoint[0]."
+                        + "apSesameDownload.urlPrefix"));
+
+//        expectedErrors.add(new ValidationSummary(
+//                "{" + CheckVocabulary.INTERFACE_NAME
+//                + "}",
+//                pathPrefix + ""));
+
+        Assert.assertEqualsNoOrder(actualErrors.toArray(),
+                expectedErrors.toArray(),
+                "Set of validation errors does not match");
+
+    }
+
     /** Static nested class to aid comparison between actual and expected
      * sets of constraint violations. An instance of this class represents
      * one violation simplified to its essentials. */

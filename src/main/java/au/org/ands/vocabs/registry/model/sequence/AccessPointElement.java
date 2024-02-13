@@ -184,7 +184,10 @@ public class AccessPointElement
                         // of type sesameDownload is not yet supported.
                         // See the case for SESAME_DOWNLOAD in
                         // WorkflowMethods.insertAccessPoint().
-                        // If you try, you get a NullPointerException
+                        // If you try (by overriding the validation done by
+                        // CheckVocabularyImpl.
+                        // isValidAccessPointSesameDownload(),
+                        // you get a NullPointerException
                         // out of the corresponding visitInsertCommand()
                         // method of AccessPointsModel.
                         // If this functionality is added, revisit the comment
