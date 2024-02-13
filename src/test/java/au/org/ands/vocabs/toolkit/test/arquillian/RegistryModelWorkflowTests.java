@@ -1056,7 +1056,7 @@ public class RegistryModelWorkflowTests extends ArquillianBaseTest {
      * @throws JAXBException If a problem loading vocabulary data.
      *  */
     @SuppressWarnings("checkstyle:MagicNumber")
-    @Test(enabled = false)
+    @Test
     public final void testApplyChangesCurrentVoVREVeAPVAW12() throws
     DatabaseUnitException, IOException, SQLException, JAXBException {
         String testName = CLASS_NAME_PREFIX

@@ -871,25 +871,36 @@ public class VersionsModel extends ModelBase {
                                         SubtaskOperationType.INSERT,
                                         vocabularyModel.
                                         getCurrentVocabulary()));
-                        // And also do a (re-)import and metadata re-insertion,
-                        // if doImport is set.
-                        if (BooleanUtils.isTrue(
-                                newCurrentVersionJson.isDoImport())) {
-                            task.addSubtask(WorkflowMethods.
-                                    createImporterSesameSubtask(
-                                            SubtaskOperationType.INSERT));
-                            task.addSubtask(WorkflowMethods.
-                                    createSesameInsertMetadataSubtask(
-                                            SubtaskOperationType.PERFORM));
-                        }
                     } else {
                         // If this is not even a PoolParty project, this
                         // will schedule a subtask which does nothing.
+                        // NB: see addImpliedSubtasks() for code that
+                        // takes advantage of this!
                         task.addSubtask(WorkflowMethods.
                                 createHarvestPoolPartySubtask(
                                         SubtaskOperationType.DELETE,
                                         vocabularyModel.
                                         getCurrentVocabulary()));
+                    }
+                    // And also do a (re-)import if doImport is set.
+                    // (Also do metadata re-insertion, if doPoolPartyHarvest
+                    // is set.)
+                    // Why would we do this if we just added a harvest DELETE?
+                    // Because there can also be a FILE access point
+                    // in this version, and we need to re-import
+                    // to clear out the existing harvested data
+                    // and put back just the data from the FILE access point.
+                    if (BooleanUtils.isTrue(
+                            newCurrentVersionJson.isDoImport())) {
+                        task.addSubtask(WorkflowMethods.
+                                createImporterSesameSubtask(
+                                        SubtaskOperationType.INSERT));
+                        if (BooleanUtils.isTrue(
+                                newCurrentVersionJson.isDoPoolpartyHarvest())) {
+                            task.addSubtask(WorkflowMethods.
+                                    createSesameInsertMetadataSubtask(
+                                            SubtaskOperationType.PERFORM));
+                        }
                     }
                 }
                 // Cope with slug changes.
