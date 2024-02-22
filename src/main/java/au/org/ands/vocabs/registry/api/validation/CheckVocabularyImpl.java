@@ -238,7 +238,17 @@ public class CheckVocabularyImpl
         if (slug == null && newVocabulary.getTitle() != null) {
             String slugFromTitle =
                     SlugGenerator.generateSlug(newVocabulary.getTitle());
+            // Is the generated slug an empty string?
+            if (slugFromTitle.isEmpty()) {
+                // NB: we mark the error against the title field.
+                valid = false;
+                constraintContext.buildConstraintViolationWithTemplate(
+                        "{" + INTERFACE_NAME + ".title.generatedSlugEmpty}").
+                addPropertyNode("title").
+                addConstraintViolation();
+            }
             if (VocabularyDAO.isSlugInUse(slugFromTitle)) {
+                // NB: we mark the error against the title field.
                 valid = false;
                 constraintContext.buildConstraintViolationWithTemplate(
                     "{" + INTERFACE_NAME
@@ -453,6 +463,16 @@ public class CheckVocabularyImpl
             String versionSlug = version.getSlug();
             if (versionSlug == null) {
                 versionSlug = SlugGenerator.generateSlug(version.getTitle());
+                if (versionSlug.isEmpty()) {
+                    // NB: we mark the error against the title field.
+                    valid = false;
+                    constraintContext.buildConstraintViolationWithTemplate(
+                            "{" + INTERFACE_NAME
+                            + ".version.title.generatedSlugEmpty}").
+                    addPropertyNode("version").
+                    addPropertyNode("title").inIterable().
+                    atIndex(versionIndex).addConstraintViolation();
+                }
             }
             if (versionSlugs.contains(versionSlug)) {
                 valid = false;
