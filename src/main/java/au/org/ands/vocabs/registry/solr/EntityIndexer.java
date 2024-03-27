@@ -115,6 +115,11 @@ public final class EntityIndexer {
 
     /** The Solr endpoint for sending updates. */
     private static final String UPDATE_ENDPOINT = "/update";
+    /* Note to self: there are constant values "/update/json" and
+       "/update/json/docs" defined as Solr's
+       UpdateRequestHandler.JSON_PATH and
+       UpdateRequestHandler.DOC_PATH, respectively. Close, but not
+       close enough. */
 
     /** Logger for this class. */
     private static final Logger LOGGER = LoggerFactory.getLogger(
