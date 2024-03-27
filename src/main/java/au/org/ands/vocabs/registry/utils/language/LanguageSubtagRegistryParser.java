@@ -334,9 +334,8 @@ public final class LanguageSubtagRegistryParser {
      */
     public void parseFile(final String filename) {
         File file = new File(filename);
-        Scanner scanner;
-        try {
-            scanner = new Scanner(file, StandardCharsets.UTF_8.name());
+        try (Scanner scanner = new Scanner(file,
+                StandardCharsets.UTF_8.name())) {
             scanner.useDelimiter("%%");
             while (scanner.hasNext()) {
                 parseEntry(scanner.next());
