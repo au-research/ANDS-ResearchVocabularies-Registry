@@ -635,12 +635,14 @@
             value="https://docs.oracle.com/javase/8/docs/api/" />
   <property name="jee.javadoc"
             value="https://docs.oracle.com/javaee/7/api/" />
+  <!-- Was: value="https://www.slf4j.org/api/" -->
   <property name="slf4j.javadoc"
-            value="https://www.slf4j.org/api/" />
+            value="https://www.javadoc.io/doc/org.slf4j/slf4j-api/1.7.25/" />
   <property name="pac4j.javadoc"
             value="https://www.pac4j.org/apidocs/pac4j/2.0.0/" />
+  <!-- Was: value="https://archive.rdf4j.org/javadoc/sesame-2.8.3/" -->
   <property name="openrdf.javadoc"
-            value="https://archive.rdf4j.org/javadoc/sesame-2.8.3/" />
+            value="https://hasmac-as.github.io/archive-sesame/javadoc/sesame-2.8.3/" />
   <property name="commons-collections.javadoc"
             value="https://commons.apache.org/proper/commons-collections/javadocs/api-4.1/" />
 
